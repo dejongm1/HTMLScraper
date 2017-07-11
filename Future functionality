@@ -1,9 +1,9 @@
 Functionality to add
+
 Add help documentation
 Constants class for messages
-Word count 
 Search for specific word(s)
 	- variations of those words
 Traverse a sites pages
 	- specified level deep
-	- complete
+	- complete site (possible by domain?)

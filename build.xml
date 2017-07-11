@@ -10,6 +10,7 @@
     	<!-- TODO 
     		 Add a date to jar
     	     Move old jar to archive
+    	     copy htmls files to jar destination for offline testing?
     	     			-->
         <jar destfile="${dir.workspace}/HTMLScraper.jar" filesetmanifest="mergewithoutmain">
             <manifest>

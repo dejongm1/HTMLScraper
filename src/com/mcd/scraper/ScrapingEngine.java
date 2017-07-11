@@ -72,7 +72,7 @@ public class ScrapingEngine {
 
 	private Document getHtmlAsDoc(String url) {
 		try {
-			if (Boolean.valueOf(System.getProperty("runInEclipse"))) {
+			if (HTMLScraperUtil.offline()) {
 				String htmlLocation;
 				switch (url) {
 					case "https://www.intoxalock.com/" : 									htmlLocation = "intoxalock-homepage.html";
