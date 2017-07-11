@@ -1,5 +1,6 @@
 Functionality to add
 
+Exclude common words (the, a, and, of, in, etc)
 Add help documentation
 Constants class for messages
 Search for specific word(s)
