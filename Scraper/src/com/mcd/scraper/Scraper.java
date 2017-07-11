@@ -1,9 +1,12 @@
 package com.mcd.scraper;
 
-import java.io.Console;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Arrays;
 
+import org.apache.commons.validator.routines.UrlValidator;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -15,38 +18,33 @@ import org.jsoup.select.Elements;
  *
  */
 public class Scraper {
+	
+	private static String prompt;
 
 	public static void  main(String[] args) throws IOException {
-		
-		Console console = System.console();
-		if (console == null) {
-            System.err.println("No console.");
-            System.exit(1);
-        }
 		ScrapingEngine engine = new ScrapingEngine();
-		
-		String scrapingType = console.readLine("What do you want to do? Get popular words or scrape for text?");
-		if (scrapingType.toLowerCase().contains("popular")) {
-			String url = console.readLine("URL: ");
-			int numberOfWords = 0;
-			try {
-				numberOfWords = Integer.valueOf(console.readLine("Number of words: "));
-			} catch (Exception e) {
-				try {
-					numberOfWords = Integer.valueOf(console.readLine("Please enter a enter between 1 and 100: "));
-				} catch (Exception e2) {
-					console.writer().println("Since you don't want to listen, I'll give you 5 words");
-					numberOfWords = 5;
-				}
+		prompt = args.length==0?"What do you want to do? Get popular words or scrape for text? ":args[0];
+		try {
+			String scrapingType = engine.readLine(prompt);
+			if (scrapingType.toLowerCase().contains("popular")) {
+				String url = engine.validateURL(engine.readLine("URL: "));
+				int numberOfWords = engine.validateNumber(engine.readLine("Number of words: "));
+				engine.getPopularWords(url, numberOfWords);
+				
+			} else if (scrapingType.toLowerCase().contains("text")) {
+				String url = engine.validateURL(engine.readLine("URL: "));
+				String selector = engine.readLine("Selector(s): ");
+				engine.getTextBySelector(url, selector);
+			} else if (scrapingType.toLowerCase().contains("quit")) {
+				System.exit(0);
+			}else {
+				main(new String[] {"I'm not sure what you want me to do. Get popular words or scrape for text? Or type quit if you changed your mind."});
 			}
-			engine.getPopularWords(url, numberOfWords);
-		} else if (scrapingType.toLowerCase().contains("text")) {
-			String url = console.readLine("URL: ");
-			String selector = console.readLine("selector: ");
-			
-			engine.getTextBySelector(url, selector);
 		}
-		
+		catch (IOException ioe) {
+			System.err.println("I'm not sure what you did but I don't like it. I quit.");
+			System.exit(0);
+		}
 	}
 	
 	public static void  mainSingle(String[] args) throws IOException {

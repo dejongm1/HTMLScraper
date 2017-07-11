@@ -7,7 +7,11 @@
     <property name="dir.workspace" value="${dir.buildfile}/.."/>
     <property name="dir.jarfile" value="${dir.workspace}"/>
     <target name="create_run_jar">
-        <jar destfile="${dir.workspace}/Scraper_7-10-2017.jar" filesetmanifest="mergewithoutmain">
+    	<!-- TODO 
+    		 Add a date to jar
+    	     Move old jar to archive
+    	     			-->
+        <jar destfile="${dir.workspace}/HTMLScraper.jar" filesetmanifest="mergewithoutmain">
             <manifest>
                 <attribute name="Main-Class" value="com.mcd.scraper.Scraper"/>
                 <attribute name="Class-Path" value="."/>
