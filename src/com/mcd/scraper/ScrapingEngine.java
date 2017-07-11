@@ -6,12 +6,17 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ConnectException;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.apache.commons.validator.routines.UrlValidator;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+
+import org.apache.commons.collections4.map.CaseInsensitiveMap;
 
 /**
  * 
@@ -21,10 +26,38 @@ import org.jsoup.select.Elements;
 public class ScrapingEngine {
 
 	protected void getPopularWords(String url, int numberOfWords /*, int levelsDeep*/) {
-		
+		long time = System.currentTimeMillis();
+		Document doc = getHtmlAsDoc(url);
+		Map<String, Word> wordCountMap = new CaseInsensitiveMap<String, Word>();
+		if (doc!=null) {
+			//TODO -remove special characters/numbers
+			String bodyText = doc.body().text();
+			String[] wordsInBody = bodyText.split(" ");
+			for (String word : wordsInBody) {
+				Word wordObj = wordCountMap.get(word);
+				if (wordObj == null) {
+					wordObj = new Word(word, 0);
+					wordCountMap.put(word, wordObj);
+				}
+				wordObj.increment();
+			}
+			
+			SortedSet<Word> sortedWords = new TreeSet<Word>(wordCountMap.values());
+			int i = 0;
+			for (Word word : sortedWords) {
+				if (i >= numberOfWords) {
+					break;
+				}
+				System.out.println(word.getCount() + "\t" + word.getWord());
+				i++;
+			}
+			time = System.currentTimeMillis() - time;
+			System.out.println("Took " + time + " ms");
+		}
 	}
 
 	protected void getTextBySelector(String url, String selector) {
+		long time = System.currentTimeMillis();
 		Document doc = getHtmlAsDoc(url);
 		if (doc!=null) {
 			Elements tags = doc.select(selector);
@@ -32,6 +65,9 @@ public class ScrapingEngine {
 				System.out.println(tag.text());
 			}
 		}
+
+		time = System.currentTimeMillis() - time;
+		System.out.println("Took " + time + " ms");
 	}
 
 	private Document getHtmlAsDoc(String url) {
@@ -48,7 +84,7 @@ public class ScrapingEngine {
 					default : 																htmlLocation = "";
 																							break;
 				}
-				File input = new File("Scraper/htmls/" + htmlLocation);
+				File input = new File("htmls/" + htmlLocation);
 				return Jsoup.parse(input, "UTF-8", url);
 	
 			} else {
