@@ -1,12 +1,8 @@
 package com.mcd.scraper;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Arrays;
 
-import org.apache.commons.validator.routines.UrlValidator;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -18,20 +14,18 @@ import org.jsoup.select.Elements;
  *
  */
 public class Scraper {
-	
-	private static String prompt;
 
 	public static void  main(String[] args) throws IOException {
 		ScrapingEngine engine = new ScrapingEngine();
-		prompt = args.length==0?"What do you want to do? Get popular words or scrape for text? ":args[0];
+		String prompt = args.length==0?"What do you want to do? Get popular words or scrape for text? ":args[0];
 		try {
 			String scrapingType = engine.readLine(prompt);
-			if (scrapingType.toLowerCase().contains("popular")) {
+			if (scrapingType.toLowerCase().contains("popular") || scrapingType.toLowerCase().contains("words")) {
 				String url = engine.validateURL(engine.readLine("URL: "));
 				int numberOfWords = engine.validateNumber(engine.readLine("Number of words: "));
 				engine.getPopularWords(url, numberOfWords);
 				
-			} else if (scrapingType.toLowerCase().contains("text")) {
+			} else if (scrapingType.toLowerCase().contains("text") || scrapingType.toLowerCase().contains("scrape")) {
 				String url = engine.validateURL(engine.readLine("URL: "));
 				String selector = engine.readLine("Selector(s): ");
 				engine.getTextBySelector(url, selector);
