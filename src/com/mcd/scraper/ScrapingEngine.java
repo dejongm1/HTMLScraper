@@ -103,17 +103,16 @@ public class ScrapingEngine {
 	protected String validateURL(String url) throws IOException {
 		String validUrl;
 		String[] schemes = {"http","https"};
+		validUrl = !url.startsWith("http")?"http://"+url:url;
 		UrlValidator urlValidator = new UrlValidator(schemes);
-		if (!urlValidator.isValid(url)) {
-			validUrl = readLine("Please enter a valid URL, including protocol (http://, https://, etc)): ");
+		if (!urlValidator.isValid(validUrl)) {
+			validUrl = readLine("Please enter a valid URL, including protocol (http://, https://)): ");
 			if (!urlValidator.isValid(validUrl)) {
 				validUrl = readLine("Still no good. Try again or I'm kicking you out: ");
 				if (!urlValidator.isValid(validUrl)) {
 					System.exit(0);
 				}
 			}
-		} else {
-			return url;
 		}
 		return validUrl;
 	}

@@ -17,10 +17,10 @@ public class Scraper {
 
 	public static void  main(String[] args) throws IOException {
 		ScrapingEngine engine = new ScrapingEngine();
-		String prompt = args.length==0?"What do you want to do? Get popular words or scrape for text? ":args[0];
+		String prompt = args.length==0?"What do you want to do? Get frequent words or scrape for text? ":args[0];
 		try {
 			String scrapingType = engine.readLine(prompt);
-			if (scrapingType.toLowerCase().contains("popular") || scrapingType.toLowerCase().contains("words")) {
+			if (scrapingType.toLowerCase().contains("frequent") || scrapingType.toLowerCase().contains("words")) {
 				String url = engine.validateURL(engine.readLine("URL: "));
 				int numberOfWords = engine.validateNumber(engine.readLine("Number of words: "));
 				engine.getPopularWords(url, numberOfWords);
