@@ -6,17 +6,15 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ConnectException;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.Map.Entry;
 
-import org.apache.commons.validator.routines.UrlValidator;
+import org.apache.commons.collections4.map.CaseInsensitiveMap;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-
-import org.apache.commons.collections4.map.CaseInsensitiveMap;
 
 /**
  * 
@@ -28,31 +26,38 @@ public class ScrapingEngine {
 	protected void getPopularWords(String url, int numberOfWords /*, int levelsDeep*/) {
 		long time = System.currentTimeMillis();
 		Document doc = getHtmlAsDoc(url);
-		Map<String, Word> wordCountMap = new CaseInsensitiveMap<String, Word>();
 		if (doc!=null) {
-			//TODO -remove special characters/numbers
+			//give option to leave in numbers? 
+			Map<String, Term> termCountMap = new CaseInsensitiveMap<String, Term>();
 			String bodyText = doc.body().text();
-			String[] wordsInBody = bodyText.split(" ");
-			for (String word : wordsInBody) {
-				Word wordObj = wordCountMap.get(word);
-				if (wordObj == null) {
-					wordObj = new Word(word, 0);
-					wordCountMap.put(word, wordObj);
+			String[] termsInBody = bodyText.split("\\s+");
+			for (String term : termsInBody) {
+				term = term.replaceAll("[[^\\p{L}\\p{Nd}]+]", "");
+				//instead of get, can this be a generous match?
+				if (!term.equals("")) {
+					Term termObj = termCountMap.get(term);
+					if (termObj == null) {
+						termObj = new Term(term, 1);
+						termCountMap.put(term, termObj);
+					} else {
+						termObj.increment();
+					}
 				}
-				wordObj.increment();
 			}
 			
-			SortedSet<Word> sortedWords = new TreeSet<Word>(wordCountMap.values());
+			Map<String, Term> sortedWords = HTMLScraperUtil.sortByValue(termCountMap);
 			int i = 0;
-			for (Word word : sortedWords) {
-				if (i >= numberOfWords) {
-					break;
+			Iterator<Entry<String, Term>> iter = sortedWords.entrySet().iterator();
+			while (iter.hasNext()) {
+				Term term =  iter.next().getValue();
+				if (i < numberOfWords && !term.getWord().equals("")) {
+					System.out.println(term.getCount() + "\t" + term.getWord());
+					i++;
 				}
-				System.out.println(word.getCount() + "\t" + word.getWord());
-				i++;
 			}
 			time = System.currentTimeMillis() - time;
 			System.out.println("Took " + time + " ms");
+			
 		}
 	}
 
@@ -101,20 +106,17 @@ public class ScrapingEngine {
 	}
 	
 	protected String validateURL(String url) throws IOException {
-		String validUrl;
-		String[] schemes = {"http","https"};
-		validUrl = !url.startsWith("http")?"http://"+url:url;
-		UrlValidator urlValidator = new UrlValidator(schemes);
-		if (!urlValidator.isValid(validUrl)) {
-			validUrl = readLine("Please enter a valid URL, including protocol (http://, https://)): ");
-			if (!urlValidator.isValid(validUrl)) {
-				validUrl = readLine("Still no good. Try again or I'm kicking you out: ");
-				if (!urlValidator.isValid(validUrl)) {
+		if (!HTMLScraperUtil.generousValidateUrl(url)) {
+			url = readLine("Please enter a valid URL, including protocol (http://, https://)): ");
+			if (!HTMLScraperUtil.generousValidateUrl(url)) {
+				url = readLine("Still no good. Try again or I'm kicking you out: ");
+				if (!HTMLScraperUtil.generousValidateUrl(url)) {
+					System.err.println("I'm not sure what you did but I don't like it. I quit.");
 					System.exit(0);
 				}
 			}
 		}
-		return validUrl;
+		return url;
 	}
 
 	protected int validateNumber(String numberOfWordsString) throws IOException {
