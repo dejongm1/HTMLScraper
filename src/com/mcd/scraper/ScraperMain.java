@@ -13,7 +13,7 @@ import org.jsoup.select.Elements;
  * @author U569220
  *
  */
-public class Scraper {
+public class ScraperMain {
 
 	public static void  main(String[] args) throws IOException {
 		ScrapingEngine engine = new ScrapingEngine();
@@ -54,14 +54,14 @@ public class Scraper {
 			System.out.println("	* Second argument is the html tag(s) to get the text of.");
 			System.out.println("	* Third argument is \"true\" only if using offline or behind a firewall.");
 			System.out.println("  For example: " );
-			System.out.println("	java -jar Scraper.jar http://en.wikipedia.org/ \"#mp-itn b a\"");
+			System.out.println("	java -jar ScraperMain.jar http://en.wikipedia.org/ \"#mp-itn b a\"");
 		} else if (args[0].contains("help")) {
 			System.out.println("Usage: ");
 			System.out.println("	* First argument is the URL of the page to be parsed.");
 			System.out.println("	* Second argument is the html tag(s) to get the text of.");
 			System.out.println("	* Third argument is true only if using offline or behind a firewall.");
 			System.out.println("For example: " );
-			System.out.println("	java -jar Scraper.jar https://www.intoxalock.com/iowa/installation-locations \"#dnn_dnnInstalationCenters_instalationLocationList .info-block\" true");
+			System.out.println("	java -jar ScraperMain.jar https://www.intoxalock.com/iowa/installation-locations \"#dnn_dnnInstalationCenters_instalationLocationList .info-block\" true");
 		} else {
 			String htmlLocation = "";
 			try {
