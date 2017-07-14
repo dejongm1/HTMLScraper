@@ -5,6 +5,8 @@ import java.net.InetAddress;
 import java.util.*;
 
 public class HTMLScraperUtil {
+	
+	private HTMLScraperUtil(){}
 
 	public static boolean offline(){
 		try {

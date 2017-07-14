@@ -1,17 +1,21 @@
 package com.mcd.scraper;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.ConnectException;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.apache.commons.collections4.map.CaseInsensitiveMap;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-
-import java.io.*;
-import java.net.ConnectException;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
 
 /**
  * 
@@ -83,6 +87,14 @@ public class ScrapingEngine {
 																							break;
 					case "https://www.intoxalock.com/iowa/installation-locations" : 		htmlLocation = "intoxalock-iowa-locations.html";
 																							break;
+					case "http://iowa.arrests.org/?page=1&results=56" : 					htmlLocation = "iowa-arrests-56-results.htm";
+																							break;
+					case "http://iowa.arrests.org/Arrests/Charles_Ross_33669899/?d=1" : 	htmlLocation = "iowa-arrests-Charles-Ross.htm";
+																							break;
+					case "http://iowa.arrests.org/Arrests/Shelley_Bridges_33669900/?d=1" : 	htmlLocation = "iowa-arrests-Shelley-Bridges.htm";
+																							break;
+					case "http://iowa.arrests.org/Arrests/David_Edwards_33669901/?d=1" : 	htmlLocation = "iowa-arrests-David-Edwards.htm";
+																							break;
 					default : 																htmlLocation = "";
 																							break;
 				}
@@ -102,20 +114,10 @@ public class ScrapingEngine {
 		return null;
 	}
 	
-	protected String validateURL(String url) throws IOException {
+	protected boolean validURL(String url) throws IOException {
 		String[] schemes = {"http","https"};
-		UrlValidator urlValidator = new UrlValidator(schemes);
-		if (!urlValidator.isValid(url)) {
-			url = readLine("Please enter a valid URL, including protocol (http://, https://)): ");
-			if (!urlValidator.isValid(url)) {
-				url = readLine("Still no good. Try again or I'm kicking you out: ");
-				if (!urlValidator.isValid(url)) {
-					System.err.println("I'm not sure what you did but I don't like it. I quit.");
-					System.exit(0);
-				}
-			}
-		}
-		return url;
+	    UrlValidator urlValidator = new UrlValidator(schemes);
+	    return urlValidator.isValid(url);
 	}
 
 	protected int validateNumber(String numberOfWordsString) throws IOException {
@@ -136,14 +138,60 @@ public class ScrapingEngine {
 		return numberOfWords;
 	}
 
+	protected String getInput(String prompt, int numberOfTries, String validationType) throws IOException {
+		for(int t=1;t <= numberOfTries; t++){
+			if (validationType!= null && validationType.equals(HTMLScraperConstants.URL_VALIDATION)) {
+				String url = readLine(prompt);
+				url = !url.startsWith("http")?"http://"+url:url;
+				if (validURL(url)){
+					return url;
+				} else {
+					System.out.println("That's not a valid url\n");
+				}
+			} else if (validationType!= null && validationType.equals(HTMLScraperConstants.NUMBER_VALIDATION)) {
+				try {
+					int number = Integer.parseInt(readLine(prompt));
+					return String.valueOf(number);
+				} catch (NumberFormatException nfe) {
+					System.out.println("That's not a number\n");
+				}
+			} else {
+				return readLine(prompt);
+			}
+		}
+		System.exit(0);
+		return null;
+	}
+	
 	protected String readLine(String arg) throws IOException {
 		if (System.console() != null) {
-			return System.console().readLine(arg);
+			String input = System.console().readLine(arg);
+			if (!quitting(input)) {
+				return input;
+			} else {
+				System.exit(0);
+				return null;
+			}
 		}
+		
+		//for debugging in Eclipse
 		System.out.print(arg);
 		BufferedReader reader = new BufferedReader(new InputStreamReader(
 				System.in));
-		return reader.readLine();
+		String input = reader.readLine();
+		if (!quitting(input)) {
+			return input;
+		} else {
+			System.exit(0);
+			return null;
+		}
 	}
-
+	
+	protected boolean quitting(String input) {
+		if (input.equalsIgnoreCase("quit")) {
+			return true;
+		} else {
+			return false;
+		}
+	}
 }
