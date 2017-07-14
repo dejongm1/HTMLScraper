@@ -8,10 +8,10 @@ import java.util.Map;
 public final class State {
 	private static Map<String, State> abbreviationToState = new HashMap();
 	private static Map<String, State> nameToState = new HashMap();
-	private static List<State> allStates = new ArrayList<>();;
+	private static List<State> allStates = new ArrayList<>();
 
-	private String abbreviation;
 	private String name;
+	private String abbreviation;
 	private Site[] sites;
 
 	public static final State AL = new State("Alabama", "AL", new Site[]{Site.ArrestsDotOrg});
@@ -26,9 +26,9 @@ public final class State {
 	public static final State GA = new State("Georgia", "GA", new Site[]{Site.ArrestsDotOrg});
 	public static final State HI = new State("Hawaii", "HI", new Site[]{Site.ArrestsDotOrg});
 	public static final State ID = new State("Idaho", "ID", new Site[]{Site.ArrestsDotOrg});
-	public static final State IL = new State("IL", "Illinois", new Site[]{Site.ArrestsDotOrg});
+	public static final State IL = new State("Illinois", "IL", new Site[]{Site.ArrestsDotOrg});
 	public static final State IN = new State("Indiana", "IN", new Site[]{Site.ArrestsDotOrg});
-	public static final State IA = new State("IA", "Iowa", new Site[]{Site.ArrestsDotOrg});
+	public static final State IA = new State("Iowa", "IA", new Site[]{Site.ArrestsDotOrg});
 	public static final State KS = new State("Kansas", "KS", new Site[]{Site.ArrestsDotOrg});
 	public static final State KY = new State("Kentucky", "KY", new Site[]{Site.ArrestsDotOrg});
 	public static final State LA = new State("Louisiana", "LA", new Site[]{Site.ArrestsDotOrg});
@@ -75,19 +75,19 @@ public final class State {
 	public static final State VI = new State("Virgin Islands", "VI", new Site[]{});
 
 
-	private State(String abbreviation, String name, Site[] sites) {
-		this.abbreviation = abbreviation;
+	private State(String name, String abbreviation, Site[] sites) {
 		this.name = name;
+		this.abbreviation = abbreviation;
 		this.sites = sites;
 		abbreviationToState.put(abbreviation, this);
 		nameToState.put(name, this);
 		allStates.add(this);
 	}
-	public String getAbbreviation() {
-		return abbreviation;
-	}
 	public String getName() {
 		return name;
+	}
+	public String getAbbreviation() {
+		return abbreviation;
 	}
 	public Site[] getSites() {
 		return sites;

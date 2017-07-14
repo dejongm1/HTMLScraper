@@ -1,5 +1,12 @@
 package com.mcd.scraper;
 
+import org.apache.commons.collections4.map.CaseInsensitiveMap;
+import org.apache.commons.validator.routines.UrlValidator;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -10,13 +17,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import org.apache.commons.collections4.map.CaseInsensitiveMap;
-import org.apache.commons.validator.routines.UrlValidator;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 /**
  * 
@@ -78,23 +78,29 @@ public class ScrapingEngine {
 	}
 	
 	protected void getRecords(List<State> states) {
+		long totalTime = System.currentTimeMillis();
 		for (State state : states){
-			long time = System.currentTimeMillis();
+			long stateTime = System.currentTimeMillis();
 			Site[] sites = state.getSites();
 			for(Site site : sites){
+				long time = System.currentTimeMillis();
 				String stateSpecificUrl = site.getProtocol()+state.getName().toLowerCase()+"."+site.getDomain();
 				Document doc = getHtmlAsDoc(stateSpecificUrl+site.getExtensions()[0]);
+				System.out.println("1");
 				if (doc!=null) {
-					//logic goes here
 					//eventually output to spreadsheet
 					String[] selectors = site.getSelectors();
 					Elements profileDetailTags = doc.select(selectors[0]);
+					System.out.println("2");
 					for (Element pdTag : profileDetailTags) {
 						String pdLink = pdTag.attr("href");
 						Document profileDetailDoc = getHtmlAsDoc(stateSpecificUrl+pdLink);
+
+						System.out.println("3");
 						if(profileDetailDoc!=null){
 							Elements profileDetails = profileDetailDoc.select(selectors[1]);
 							System.out.println(pdTag.text());
+							System.out.println("4");
 							for (Element profileDetail : profileDetails) {
 								System.out.println("\t" + profileDetail.text());	
 							}
@@ -104,11 +110,16 @@ public class ScrapingEngine {
 					}
 
 				}
+				time = System.currentTimeMillis() - time;
+				System.out.println(stateSpecificUrl + " took " + time + " ms");
 			}
 
-			time = System.currentTimeMillis() - time;
-			System.out.println("Took " + time + " ms");
+			stateTime = System.currentTimeMillis() - stateTime;
+			System.out.println(state.getName() + " took " + stateTime + " ms");
 		}
+
+		totalTime = System.currentTimeMillis() - totalTime;
+		System.out.println(states.size() + " states took " + totalTime + " ms");
 	}
 
 	private Document getHtmlAsDoc(String url) {
@@ -116,7 +127,11 @@ public class ScrapingEngine {
 			if (HTMLScraperUtil.offline()) {
 				return HTMLScraperUtil.getOfflinePage(url);
 			} else {
-				return Jsoup.connect(url).userAgent("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.104 Safari/537.36").get();
+				return Jsoup.connect(url).userAgent("Baiduspider") //select randomly from list
+											.header("Accept-Encoding", "gzip, deflate")
+											.maxBodySize(0)
+											.timeout(60000)
+											.get();
 			}
 		} catch (FileNotFoundException fne) {
 			System.err.println("I couldn't find an html file for " + url);
@@ -223,10 +238,6 @@ public class ScrapingEngine {
 	}
 	
 	protected boolean quitting(String input) {
-		if (input.equalsIgnoreCase("quit")) {
-			return true;
-		} else {
-			return false;
-		}
+        return input.equalsIgnoreCase("quit");
 	}
 }
