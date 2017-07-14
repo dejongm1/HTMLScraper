@@ -1,12 +1,12 @@
 package com.mcd.scraper;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ConnectException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -76,59 +76,44 @@ public class ScrapingEngine {
 		System.out.println("Took " + time + " ms");
 	}
 	
-	protected void getRecords(State state) {
-		long time = System.currentTimeMillis();
-		Document doc = getHtmlAsDoc(state.getUrl());
-		if (doc!=null) {
-			//logic goes here
-			//eventually output to spreadsheet
-			String[] selectors = state.getSelector().split(HTMLScraperConstants.SELECTOR_SEPARATOR);
-			Elements profileDetailTags = doc.select(selectors[0]);
-			for (Element pdTag : profileDetailTags) {
-				String pdLink = pdTag.attr("href");
-				Document profileDetailDoc = getHtmlAsDoc(state.getUrl()+pdLink);
-				if(profileDetailDoc!=null){
-					Elements profileDetails = profileDetailDoc.select(selectors[1]);
-					System.out.println(pdTag.text());
-					for (Element profileDetail : profileDetails) {
-						System.out.println("\t" + profileDetail.text());	
+	protected void getRecords(List<State> states) {
+		for (State state : states){
+			long time = System.currentTimeMillis();
+			Site[] sites = state.getSites();
+			for(Site site : sites){
+				String stateSpecificUrl = site.getProtocol()+state.getName().toLowerCase()+"."+site.getDomain();
+				Document doc = getHtmlAsDoc(stateSpecificUrl+site.getExtensions()[0]);
+				if (doc!=null) {
+					//logic goes here
+					//eventually output to spreadsheet
+					String[] selectors = site.getSelectors();
+					Elements profileDetailTags = doc.select(selectors[0]);
+					for (Element pdTag : profileDetailTags) {
+						String pdLink = pdTag.attr("href");
+						Document profileDetailDoc = getHtmlAsDoc(stateSpecificUrl+pdLink);
+						if(profileDetailDoc!=null){
+							Elements profileDetails = profileDetailDoc.select(selectors[1]);
+							System.out.println(pdTag.text());
+							for (Element profileDetail : profileDetails) {
+								System.out.println("\t" + profileDetail.text());	
+							}
+						} else {
+							System.out.println("Couldn't load details for " + pdTag.text());
+						}
 					}
-				} else {
-					System.out.println("Couldn't load details for " + pdTag.text());
+
 				}
 			}
 
+			time = System.currentTimeMillis() - time;
+			System.out.println("Took " + time + " ms");
 		}
-
-		time = System.currentTimeMillis() - time;
-		System.out.println("Took " + time + " ms");
 	}
 
 	private Document getHtmlAsDoc(String url) {
 		try {
 			if (HTMLScraperUtil.offline()) {
-				String htmlLocation;
-				switch (url) {
-					case "https://www.intoxalock.com/" : 									htmlLocation = "intoxalock-homepage.html";
-																							break;
-					case "https://en.wikipedia.org/" : 										htmlLocation = "wikipedia-homepage.html";
-																							break;
-					case "https://www.intoxalock.com/iowa/installation-locations" : 		htmlLocation = "intoxalock-iowa-locations.html";
-																							break;
-					case "http://iowa.arrests.org" : 										htmlLocation = "iowa-arrests-56-results.htm";
-																							break;	
-					case "http://iowa.arrests.org/Arrests/Charles_Ross_33669899/?d=1" : 	htmlLocation = "iowa-arrests-Charles-Ross.htm";
-																							break;
-					case "http://iowa.arrests.org/Arrests/Shelley_Bridges_33669900/?d=1" : 	htmlLocation = "iowa-arrests-Shelley-Bridges.htm";
-																							break;
-					case "http://iowa.arrests.org/Arrests/David_Edwards_33669901/?d=1" : 	htmlLocation = "iowa-arrests-David-Edwards.htm";
-																							break;
-					default : 																htmlLocation = "";
-																							break;
-				}
-				File input = new File("htmls/" + htmlLocation);
-				return Jsoup.parse(input, "UTF-8", url);
-	
+				return HTMLScraperUtil.getOfflinePage(url);
 			} else {
 				return Jsoup.connect(url).userAgent("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.104 Safari/537.36").get();
 			}
@@ -138,7 +123,7 @@ public class ScrapingEngine {
 			System.err.println("I couldn't connect to " + url + ". Please be sure you're using a site that exists and are connected to the interweb.");
 		} catch (IOException ioe) {
 			System.err.println("I tried to scrape that site but had some trouble. \n" + ioe.getMessage());
-		} 
+		}
 		return null;
 	}
 	
@@ -184,9 +169,9 @@ public class ScrapingEngine {
 					System.out.println("That's not a number\n");
 				}
 			} else if (validationType!= null && validationType.equals(HTMLScraperConstants.STATE_VALIDATION)) {
-				State state = State.getState(readLine(prompt));
-				if (state!=null) {
-					return state;
+				List<State> states = State.confirmState(readLine(prompt));
+				if (states!=null) {
+					return states;
 				} else {
 					System.out.println("That's not an American state\n");
 				}

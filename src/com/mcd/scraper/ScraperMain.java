@@ -2,13 +2,12 @@ package com.mcd.scraper;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-
-import com.mcd.scraper.HTMLScraperConstants;
 /**
  * 
  * @author U569220
@@ -18,6 +17,7 @@ public class ScraperMain {
 	
 	private ScraperMain(){}
 
+	@SuppressWarnings("unchecked")
 	public static void  main(String[] args) throws IOException {
 		ScrapingEngine engine = new ScrapingEngine();
 		String prompt = args.length==0?"What do you want to do?\n "
@@ -48,8 +48,8 @@ public class ScraperMain {
 			} else if (choice.toLowerCase().contains("arrest")
 					|| choice.toLowerCase().contains("record")
 					|| choice.equals("4")) {
-				State state = (State) engine.getInput("State or \"All\": ", 1, HTMLScraperConstants.STATE_VALIDATION);
-				engine.getRecords(state);
+				List<State> states = (List<State>) engine.getInput("State(s) or \"All\": ", 1, HTMLScraperConstants.STATE_VALIDATION);
+				engine.getRecords(states);
 			} else if (engine.quitting(choice)) {
 				System.exit(0);
 			} else {

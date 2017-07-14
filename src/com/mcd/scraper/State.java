@@ -1,5 +1,6 @@
 package com.mcd.scraper;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -7,26 +8,22 @@ import java.util.Map;
 public final class State {
 	private static Map<String, State> abbreviationToState = new HashMap();
 	private static Map<String, State> nameToState = new HashMap();
+	private static List<State> allStates = new ArrayList<>();;
 
 	private String abbreviation;
 	private String name;
-	private String url;
-	private String selector;
-	private static final String SELECTOR_SEPARATOR = ">>>";
+	private Site[] sites;
 
-	public static final State IA = new State("IA", "Iowa", "http://iowa.arrests.org",
-			".profile-card .title a[href]" + SELECTOR_SEPARATOR
-			+ ".info .section-content div, .section-content.charges .charge-title, .section-content.charges .charge-description");
+	public static final State IA = new State("IA", "Iowa", new Site[]{Site.ArrestsDotOrg});
+	public static final State IL = new State("IL", "Illinois", new Site[]{Site.ArrestsDotOrg});
 
-	//future 
-	//private State(String abbreviation, String name, String urls[], String[]s selectors) {
-	private State(String abbreviation, String name, String url, String selector) {
+	private State(String abbreviation, String name, Site[] sites) {
 		this.abbreviation = abbreviation;
 		this.name = name;
-		this.url = url;
-		this.selector = selector;
+		this.sites = sites;
 		abbreviationToState.put(abbreviation, this);
 		nameToState.put(name, this);
+		allStates.add(this);
 	}
 	public String getAbbreviation() {
 		return abbreviation;
@@ -34,14 +31,20 @@ public final class State {
 	public String getName() {
 		return name;
 	}
-	public String getUrl() {
-		return url;
-	}
-	public String getSelector() {
-		return selector;
+	public Site[] getSites() {
+		return sites;
 	}
 	public static List<State> values() {
 		return (List<State>) abbreviationToState.values();
+	}
+	public static List<State> confirmState(String value) {
+		if (value.equalsIgnoreCase("all")) {
+			return allStates;
+		} else {
+			List<State> states = new ArrayList<>();
+			states.add(getState(value));
+			return states;
+		}
 	}
 	public static State getState(String value) {
 		//way to ignore case here?
