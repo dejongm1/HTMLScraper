@@ -2,14 +2,7 @@ package com.mcd.scraper;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.validator.routines.UrlValidator;
+import java.util.*;
 
 public class HTMLScraperUtil {
 
@@ -19,13 +12,6 @@ public class HTMLScraperUtil {
 		} catch (IOException e) {
 			return true;
 		}
-	}
-
-	public static boolean generousValidateUrl(String url) {
-		String generousUrl = !url.startsWith("http")?"http://"+url:url;
-		String[] schemes = {"http","https"};
-		UrlValidator urlValidator = new UrlValidator(schemes);
-		return urlValidator.isValid(generousUrl);		
 	}
 
 	public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue( Map<K, V> map ) {

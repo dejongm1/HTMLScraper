@@ -1,20 +1,17 @@
 package com.mcd.scraper;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.ConnectException;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import org.apache.commons.collections4.map.CaseInsensitiveMap;
+import org.apache.commons.validator.routines.UrlValidator;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+
+import java.io.*;
+import java.net.ConnectException;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * 
@@ -106,11 +103,13 @@ public class ScrapingEngine {
 	}
 	
 	protected String validateURL(String url) throws IOException {
-		if (!HTMLScraperUtil.generousValidateUrl(url)) {
+		String[] schemes = {"http","https"};
+		UrlValidator urlValidator = new UrlValidator(schemes);
+		if (!urlValidator.isValid(url)) {
 			url = readLine("Please enter a valid URL, including protocol (http://, https://)): ");
-			if (!HTMLScraperUtil.generousValidateUrl(url)) {
+			if (!urlValidator.isValid(url)) {
 				url = readLine("Still no good. Try again or I'm kicking you out: ");
-				if (!HTMLScraperUtil.generousValidateUrl(url)) {
+				if (!urlValidator.isValid(url)) {
 					System.err.println("I'm not sure what you did but I don't like it. I quit.");
 					System.exit(0);
 				}
