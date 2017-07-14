@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ConnectException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -169,7 +170,21 @@ public class ScrapingEngine {
 					System.out.println("That's not a number\n");
 				}
 			} else if (validationType!= null && validationType.equals(HTMLScraperConstants.STATE_VALIDATION)) {
-				List<State> states = State.confirmState(readLine(prompt));
+				String input = readLine(prompt);
+				List<State> states = new ArrayList<>();
+				if (input.contains(",")) {
+					String[] inputSplit = input.split("\\s*,\\s*");
+					for (String inputPiece : inputSplit) {
+						State state = State.getState(inputPiece);
+						if (state!= null) {
+							states.add(state);
+						} else {
+							System.out.println(inputPiece + " is not an American state");
+						}
+					}
+				} else {
+					states = State.confirmState(input);	
+				}
 				if (states!=null) {
 					return states;
 				} else {
