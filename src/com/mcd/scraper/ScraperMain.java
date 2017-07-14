@@ -26,18 +26,18 @@ public class ScraperMain {
 										+ "3 - Search for a term\n "
 										+ "4 - Iowa Arrests\n ":args[0];
 		try {
-			String choice = engine.getInput(prompt, 3, "");
+			String choice = (String) engine.getInput(prompt, 3, "");
 			if (choice.toLowerCase().contains("frequen")
 					|| choice.toLowerCase().contains("words")
 					|| choice.equals("1")) {
-				String url = engine.getInput("URL: ", 3, HTMLScraperConstants.URL_VALIDATION);
-				int numberOfWords = Integer.parseInt(engine.getInput("Number of words: ", 3, HTMLScraperConstants.NUMBER_VALIDATION));
+				String url = (String) engine.getInput("URL: ", 3, HTMLScraperConstants.URL_VALIDATION);
+				int numberOfWords = (int) engine.getInput("Number of words: ", 3, HTMLScraperConstants.NUMBER_VALIDATION);
 				engine.getPopularWords(url, numberOfWords);
 			} else if (choice.toLowerCase().contains("text")
 					|| choice.toLowerCase().contains("scrape")
 					|| choice.equals("2")) {
-				String url = engine.getInput("URL: ", 3, HTMLScraperConstants.URL_VALIDATION);
-				String selector = engine.getInput("Selector(s): ", 1, HTMLScraperConstants.NO_VALIDATION);
+				String url = (String) engine.getInput("URL: ", 3, HTMLScraperConstants.URL_VALIDATION);
+				String selector = (String) engine.getInput("Selector(s): ", 1, HTMLScraperConstants.NO_VALIDATION);
 				engine.getTextBySelector(url, selector);
 			} else if (choice.toLowerCase().contains("search")
 					|| choice.toLowerCase().contains("term")
@@ -45,6 +45,12 @@ public class ScraperMain {
 //				String url = engine.getInput("URL: ", 3, HTMLScraperConstants.URL_VALIDATION);
 //				String term = engine.readLine("Term: ", 1, HTMLScraperConstants.NO_VALIDATION);
 //				engine.getSearchTerms(url, term);
+			} else if (choice.toLowerCase().contains("arrest")
+					|| choice.toLowerCase().contains("record")
+					|| choice.equals("4")) {
+				String url = (String) engine.getInput("URL: ", 3, HTMLScraperConstants.URL_VALIDATION);
+				State state = (State) engine.getInput("State or \"All\": ", 1, HTMLScraperConstants.STATE_VALIDATION);
+				engine.getRecords(url, state);
 			} else if (engine.quitting(choice)) {
 				System.exit(0);
 			} else {

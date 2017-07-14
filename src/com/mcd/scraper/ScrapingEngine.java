@@ -75,6 +75,18 @@ public class ScrapingEngine {
 		time = System.currentTimeMillis() - time;
 		System.out.println("Took " + time + " ms");
 	}
+	
+	protected void getRecords(String url, State state) {
+		long time = System.currentTimeMillis();
+		Document doc = getHtmlAsDoc(url);
+		if (doc!=null) {
+			//logic goes here
+
+		}
+
+		time = System.currentTimeMillis() - time;
+		System.out.println("Took " + time + " ms");
+	}
 
 	private Document getHtmlAsDoc(String url) {
 		try {
@@ -138,7 +150,7 @@ public class ScrapingEngine {
 		return numberOfWords;
 	}
 
-	protected String getInput(String prompt, int numberOfTries, String validationType) throws IOException {
+	protected Object getInput(String prompt, int numberOfTries, String validationType) throws IOException {
 		for(int t=1;t <= numberOfTries; t++){
 			if (validationType!= null && validationType.equals(HTMLScraperConstants.URL_VALIDATION)) {
 				String url = readLine(prompt);
@@ -151,9 +163,16 @@ public class ScrapingEngine {
 			} else if (validationType!= null && validationType.equals(HTMLScraperConstants.NUMBER_VALIDATION)) {
 				try {
 					int number = Integer.parseInt(readLine(prompt));
-					return String.valueOf(number);
+					return number;
 				} catch (NumberFormatException nfe) {
 					System.out.println("That's not a number\n");
+				}
+			} else if (validationType!= null && validationType.equals(HTMLScraperConstants.STATE_VALIDATION)) {
+				State state = State.getState(readLine(prompt));
+				if (state!=null) {
+					return state;
+				} else {
+					System.out.println("That's not an American state\n");
 				}
 			} else {
 				return readLine(prompt);
