@@ -13,30 +13,39 @@ import org.jsoup.select.Elements;
  * @author U569220
  *
  */
-public class Scraper {
+public class ScraperMain {
 
 	public static void  main(String[] args) throws IOException {
 		ScrapingEngine engine = new ScrapingEngine();
-		String prompt = args.length==0?"What do you want to do? Get frequent words or scrape for text? ":args[0];
+		String prompt = args.length==0?"What do you want to do?\n 1 - Get words by frequency\n 2 - Scrape for text\n 3 - Search for a term\n":args[0];
 		try {
-			String scrapingType = engine.readLine(prompt);
-			if (scrapingType.toLowerCase().contains("frequent") || scrapingType.toLowerCase().contains("words")) {
+			String choice = engine.readLine(prompt);
+			if (choice.toLowerCase().contains("frequen")
+					|| choice.toLowerCase().contains("words")
+					|| choice.equals("1")) {
 				String url = engine.validateURL(engine.readLine("URL: "));
 				int numberOfWords = engine.validateNumber(engine.readLine("Number of words: "));
 				engine.getPopularWords(url, numberOfWords);
-				
-			} else if (scrapingType.toLowerCase().contains("text") || scrapingType.toLowerCase().contains("scrape")) {
+			} else if (choice.toLowerCase().contains("text")
+					|| choice.toLowerCase().contains("scrape")
+					|| choice.equals("2")) {
 				String url = engine.validateURL(engine.readLine("URL: "));
 				String selector = engine.readLine("Selector(s): ");
 				engine.getTextBySelector(url, selector);
-			} else if (scrapingType.toLowerCase().contains("quit")) {
+			}  else if (choice.toLowerCase().contains("search")
+					|| choice.toLowerCase().contains("term")
+					|| choice.equals("3")) {
+//				String url = engine.validateURL(engine.readLine("URL: "));
+//				String selector = engine.readLine("Selector(s): ");
+//				engine.getTextBySelector(url, selector);
+			} else if (choice.toLowerCase().contains("quit")) {
 				System.exit(0);
 			}else {
 				main(new String[] {"I'm not sure what you want me to do. Get popular words or scrape for text? Or type quit if you changed your mind. "});
 			}
 		}
 		catch (IOException ioe) {
-			System.err.println("I'm not sure what you did but I don't like it. I quit.");
+			System.err.println("Dunno what you did but I don't like it. I quit.");
 			System.exit(0);
 		}
 	}
@@ -54,14 +63,14 @@ public class Scraper {
 			System.out.println("	* Second argument is the html tag(s) to get the text of.");
 			System.out.println("	* Third argument is \"true\" only if using offline or behind a firewall.");
 			System.out.println("  For example: " );
-			System.out.println("	java -jar Scraper.jar http://en.wikipedia.org/ \"#mp-itn b a\"");
+			System.out.println("	java -jar ScraperMain.jar http://en.wikipedia.org/ \"#mp-itn b a\"");
 		} else if (args[0].contains("help")) {
 			System.out.println("Usage: ");
 			System.out.println("	* First argument is the URL of the page to be parsed.");
 			System.out.println("	* Second argument is the html tag(s) to get the text of.");
 			System.out.println("	* Third argument is true only if using offline or behind a firewall.");
 			System.out.println("For example: " );
-			System.out.println("	java -jar Scraper.jar https://www.intoxalock.com/iowa/installation-locations \"#dnn_dnnInstalationCenters_instalationLocationList .info-block\" true");
+			System.out.println("	java -jar ScraperMain.jar https://www.intoxalock.com/iowa/installation-locations \"#dnn_dnnInstalationCenters_instalationLocationList .info-block\" true");
 		} else {
 			String htmlLocation = "";
 			try {

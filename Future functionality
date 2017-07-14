@@ -1,12 +1,21 @@
 Functionality to add
 
-Exclude common words (the, a, and, of, in, etc)
-Exclude special characters (and numbers?)
-Add help documentation
+
 Constants class for messages
 Search for specific word(s)
 	- variations of those words
+
+Exclude special characters (and numbers?)
+Add help documentation
+
 Traverse a sites pages
 	- specified level deep
 	- complete site (possible by domain?)
-Start logging commands and results
+	- find all <a href=>
+
+Blacklist file
+	- flag for excluding common words (the, a, and, of, in, etc)
+	- flag for including numbers
+	- add to/remove from list
+
+If website can't be reached with http://, try https://

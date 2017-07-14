@@ -11,10 +11,12 @@
     		 Add a date to jar
     	     Move old jar to archive
     	     copy htmls files to jar destination for offline testing?
+    	     package properties file
+    	     package blacklist
     	     			-->
         <jar destfile="${dir.workspace}/HTMLScraper.jar" filesetmanifest="mergewithoutmain">
             <manifest>
-                <attribute name="Main-Class" value="com.mcd.scraper.Scraper"/>
+                <attribute name="Main-Class" value="com.mcd.scraper.ScraperMain"/>
                 <attribute name="Class-Path" value="."/>
             </manifest>
             <zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/jsoup-1.10.3.jar"/>
