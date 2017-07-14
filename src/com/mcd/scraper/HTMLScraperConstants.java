@@ -7,4 +7,6 @@ public class HTMLScraperConstants {
 	public static final String STATE_VALIDATION = "state";
 	public static final String NO_VALIDATION = "";
 
+	public static final String SELECTOR_SEPARATOR = ">>>";
+
 }

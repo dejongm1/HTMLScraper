@@ -24,7 +24,7 @@ public class ScraperMain {
 										+ "1 - Get words by frequency\n "
 										+ "2 - Scrape for text\n "
 										+ "3 - Search for a term\n "
-										+ "4 - Iowa Arrests\n ":args[0];
+										+ "4 - Arrest Records\n ":args[0];
 		try {
 			String choice = (String) engine.getInput(prompt, 3, "");
 			if (choice.toLowerCase().contains("frequen")
@@ -48,9 +48,8 @@ public class ScraperMain {
 			} else if (choice.toLowerCase().contains("arrest")
 					|| choice.toLowerCase().contains("record")
 					|| choice.equals("4")) {
-				String url = (String) engine.getInput("URL: ", 3, HTMLScraperConstants.URL_VALIDATION);
 				State state = (State) engine.getInput("State or \"All\": ", 1, HTMLScraperConstants.STATE_VALIDATION);
-				engine.getRecords(url, state);
+				engine.getRecords(state);
 			} else if (engine.quitting(choice)) {
 				System.exit(0);
 			} else {

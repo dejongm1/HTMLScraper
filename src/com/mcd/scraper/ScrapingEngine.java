@@ -76,11 +76,27 @@ public class ScrapingEngine {
 		System.out.println("Took " + time + " ms");
 	}
 	
-	protected void getRecords(String url, State state) {
+	protected void getRecords(State state) {
 		long time = System.currentTimeMillis();
-		Document doc = getHtmlAsDoc(url);
+		Document doc = getHtmlAsDoc(state.getUrl());
 		if (doc!=null) {
 			//logic goes here
+			//eventually output to spreadsheet
+			String[] selectors = state.getSelector().split(HTMLScraperConstants.SELECTOR_SEPARATOR);
+			Elements profileDetailTags = doc.select(selectors[0]);
+			for (Element pdTag : profileDetailTags) {
+				String pdLink = pdTag.attr("href");
+				Document profileDetailDoc = getHtmlAsDoc(state.getUrl()+pdLink);
+				if(profileDetailDoc!=null){
+					Elements profileDetails = profileDetailDoc.select(selectors[1]);
+					System.out.println(pdTag.text());
+					for (Element profileDetail : profileDetails) {
+						System.out.println("\t" + profileDetail.text());	
+					}
+				} else {
+					System.out.println("Couldn't load details for " + pdTag.text());
+				}
+			}
 
 		}
 
@@ -99,8 +115,8 @@ public class ScrapingEngine {
 																							break;
 					case "https://www.intoxalock.com/iowa/installation-locations" : 		htmlLocation = "intoxalock-iowa-locations.html";
 																							break;
-					case "http://iowa.arrests.org/?page=1&results=56" : 					htmlLocation = "iowa-arrests-56-results.htm";
-																							break;
+					case "http://iowa.arrests.org" : 										htmlLocation = "iowa-arrests-56-results.htm";
+																							break;	
 					case "http://iowa.arrests.org/Arrests/Charles_Ross_33669899/?d=1" : 	htmlLocation = "iowa-arrests-Charles-Ross.htm";
 																							break;
 					case "http://iowa.arrests.org/Arrests/Shelley_Bridges_33669900/?d=1" : 	htmlLocation = "iowa-arrests-Shelley-Bridges.htm";
