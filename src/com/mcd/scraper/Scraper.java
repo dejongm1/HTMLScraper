@@ -32,7 +32,7 @@ public class Scraper {
 			} else if (scrapingType.toLowerCase().contains("quit")) {
 				System.exit(0);
 			}else {
-				main(new String[] {"I'm not sure what you want me to do. Get popular words or scrape for text? Or type quit if you changed your mind."});
+				main(new String[] {"I'm not sure what you want me to do. Get popular words or scrape for text? Or type quit if you changed your mind. "});
 			}
 		}
 		catch (IOException ioe) {
