@@ -81,26 +81,22 @@ public class ScrapingEngine {
 		long totalTime = System.currentTimeMillis();
 		for (State state : states){
 			long stateTime = System.currentTimeMillis();
+            System.out.println("----State: " + state.getName() + "----");
 			Site[] sites = state.getSites();
 			for(Site site : sites){
 				long time = System.currentTimeMillis();
 				String stateSpecificUrl = site.getProtocol()+state.getName().toLowerCase()+"."+site.getDomain();
 				Document doc = getHtmlAsDoc(stateSpecificUrl+site.getExtensions()[0]);
-				System.out.println("1");
 				if (doc!=null) {
 					//eventually output to spreadsheet
 					String[] selectors = site.getSelectors();
 					Elements profileDetailTags = doc.select(selectors[0]);
-					System.out.println("2");
 					for (Element pdTag : profileDetailTags) {
 						String pdLink = pdTag.attr("href");
 						Document profileDetailDoc = getHtmlAsDoc(stateSpecificUrl+pdLink);
-
-						System.out.println("3");
 						if(profileDetailDoc!=null){
 							Elements profileDetails = profileDetailDoc.select(selectors[1]);
 							System.out.println(pdTag.text());
-							System.out.println("4");
 							for (Element profileDetail : profileDetails) {
 								System.out.println("\t" + profileDetail.text());	
 							}
@@ -127,10 +123,9 @@ public class ScrapingEngine {
 			if (HTMLScraperUtil.offline()) {
 				return HTMLScraperUtil.getOfflinePage(url);
 			} else {
-				return Jsoup.connect(url).userAgent("Baiduspider") //select randomly from list
-											.header("Accept-Encoding", "gzip, deflate")
+				return Jsoup.connect(url).userAgent(HTMLScraperUtil.avoidBlackList()) //select randomly from list
 											.maxBodySize(0)
-											.timeout(60000)
+											.timeout(30000)
 											.get();
 			}
 		} catch (FileNotFoundException fne) {

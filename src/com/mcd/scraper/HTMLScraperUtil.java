@@ -1,17 +1,12 @@
 package com.mcd.scraper;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
+import java.util.*;
 
 public class HTMLScraperUtil {
 
@@ -74,5 +69,12 @@ public class HTMLScraperUtil {
 			result.put( entry.getKey(), entry.getValue() );
 		}
 		return result;
+	}
+
+	public static String avoidBlackList() {
+		Random random = new Random();
+		int r = random.nextInt(/*size of user-agent list*/);
+		//get the rth item in the user-agent list
+		return "";
 	}
 }

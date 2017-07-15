@@ -1,20 +1,23 @@
 package com.mcd.scraper;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.Properties;
 /**
  * 
  * @author U569220
  *
  */
 public class ScraperMain {
-	
+
+	private Properties properties = null;
+
 	private ScraperMain(){}
 
 	@SuppressWarnings("unchecked")
@@ -60,6 +63,20 @@ public class ScraperMain {
 			System.err.println("Dunno what you did but I don't like it. I quit.");
 			System.exit(0);
 		}
+	}
+
+	public String getProperties(String property) {
+//		if (properties == null) {
+//			InputStream inputStream = new ClassPathResource("scraper.properties").getInputStream();
+//			properties = new Properties();
+//			try {
+//				properties.load(inputStream);
+//				inputStream.close();
+//			} catch (IOException e) {
+//				System.err.println(e);
+//			}
+//		}
+		return properties.getProperty(property);
 	}
 	
 //	public static void  main2(String[] args) throws IOException {

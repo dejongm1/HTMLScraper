@@ -8,15 +8,17 @@ Search for specific word(s)
 
 Exclude special characters (and numbers?)
 Add help documentation
+Result exclusion file for frequent words
+	- flag for excluding common words (the, a, and, of, in, etc)
+	- flag for including numbers
+	- add to/remove from list
+
 
 Traverse a sites pages
 	- specified level deep
 	- complete site (possible by domain?)
 	- find all <a href=>
 
-Blacklist file
-	- flag for excluding common words (the, a, and, of, in, etc)
-	- flag for including numbers
-	- add to/remove from list
-
 If website can't be reached with http://, try https://
+
+Crawl slowly, crawl randomly, rotate IPs, rotate User-agents
