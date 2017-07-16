@@ -6,9 +6,12 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Properties;
+
 /**
  * 
  * @author U569220
@@ -16,13 +19,12 @@ import java.util.Properties;
  */
 public class ScraperMain {
 
-	private Properties properties = null;
-
 	private ScraperMain(){}
 
 	@SuppressWarnings("unchecked")
 	public static void  main(String[] args) throws IOException {
 		ScrapingEngine engine = new ScrapingEngine();
+		//loadProperties();
 		String prompt = args.length==0?"What do you want to do?\n "
 										+ "1 - Get words by frequency\n "
 										+ "2 - Scrape for text\n "
@@ -51,7 +53,7 @@ public class ScraperMain {
 			} else if (choice.toLowerCase().contains("arrest")
 					|| choice.toLowerCase().contains("record")
 					|| choice.equals("4")) {
-				List<State> states = (List<State>) engine.getInput("State(s) or \"All\": ", 1, HTMLScraperConstants.STATE_VALIDATION);
+				List<State> states = (List<State>) engine.getInput("State(s) or \"All\": ", 3, HTMLScraperConstants.STATE_VALIDATION);
 				engine.getRecords(states);
 			} else if (engine.quitting(choice)) {
 				System.exit(0);
@@ -65,20 +67,30 @@ public class ScraperMain {
 		}
 	}
 
-	public String getProperties(String property) {
-//		if (properties == null) {
-//			InputStream inputStream = new ClassPathResource("scraper.properties").getInputStream();
-//			properties = new Properties();
-//			try {
-//				properties.load(inputStream);
-//				inputStream.close();
-//			} catch (IOException e) {
-//				System.err.println(e);
-//			}
-//		}
-		return properties.getProperty(property);
+	private static void loadProperties() {
+		InputStream input = null;
+		java.util.Properties properties = new java.util.Properties();
+		try {
+			input = new FileInputStream("config.properties");
+			// load a properties file
+			properties.load(input);
+			System.setProperties(properties);
+			Properties props = System.getProperties();
+			String prop = props.getProperty("user.agent.crawlers");
+			System.out.println(prop);
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		} finally {
+			if (input != null) {
+				try {
+					input.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
-	
+
 //	public static void  main2(String[] args) throws IOException {
 //		ScrapingEngine engine = new ScrapingEngine();
 //		String prompt = args.length==0?"What do you want to do?\n 1 - Get words by frequency\n 2 - Scrape for text\n 3 - Search for a term\n":args[0];

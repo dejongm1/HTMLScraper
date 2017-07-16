@@ -2,7 +2,6 @@ package com.mcd.scraper;
 
 import org.apache.commons.collections4.map.CaseInsensitiveMap;
 import org.apache.commons.validator.routines.UrlValidator;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -24,6 +23,8 @@ import java.util.Map.Entry;
  *
  */
 public class ScrapingEngine {
+
+	HTMLScraperUtil util = new HTMLScraperUtil();
 
 	protected void getPopularWords(String url, int numberOfWords /*, int levelsDeep*/) {
 		long time = System.currentTimeMillis();
@@ -47,7 +48,7 @@ public class ScrapingEngine {
 				}
 			}
 			
-			Map<String, Term> sortedWords = HTMLScraperUtil.sortByValue(termCountMap);
+			Map<String, Term> sortedWords = util.sortByValue(termCountMap);
 			int i = 0;
 			Iterator<Entry<String, Term>> iter = sortedWords.entrySet().iterator();
 			while (iter.hasNext()) {
@@ -120,13 +121,16 @@ public class ScrapingEngine {
 
 	private Document getHtmlAsDoc(String url) {
 		try {
-			if (HTMLScraperUtil.offline()) {
-				return HTMLScraperUtil.getOfflinePage(url);
+			if (util.offline()) {
+				return util.getOfflinePage(url);
 			} else {
-				return Jsoup.connect(url).userAgent(HTMLScraperUtil.avoidBlackList()) //select randomly from list
-											.maxBodySize(0)
-											.timeout(30000)
-											.get();
+				return util.getConnection(url).get();
+//				return Jsoup.connect(url)
+//                                //.userAgent(util.avoidBlackList()) //select randomly from list
+//                                .userAgent("MJ12bot") //select randomly from list
+//                                .maxBodySize(0)
+//                                .timeout(30000)
+//                                .get();
 			}
 		} catch (FileNotFoundException fne) {
 			System.err.println("I couldn't find an html file for " + url);
@@ -144,23 +148,23 @@ public class ScrapingEngine {
 	    return urlValidator.isValid(url);
 	}
 
-	protected int validateNumber(String numberOfWordsString) throws IOException {
-		int numberOfWords = 0;
-		try {
-			numberOfWords = Integer.valueOf(numberOfWordsString);
-		} catch (NumberFormatException nfe) {
-			try {
-				numberOfWords = Integer.valueOf(readLine("Please enter a enter a number between 1 and 100: "));
-			} catch (NumberFormatException nfe2) {
-				try {
-					numberOfWords = Integer.valueOf(readLine("Last chance. Enter a number or you're just gonna get 5. "));
-				} catch (NumberFormatException nfe3) {
-					numberOfWords = 5;
-				}
-			}
-		}
-		return numberOfWords;
-	}
+//	protected int validateNumber(String numberOfWordsString) throws IOException {
+//		int numberOfWords = 0;
+//		try {
+//			numberOfWords = Integer.valueOf(numberOfWordsString);
+//		} catch (NumberFormatException nfe) {
+//			try {
+//				numberOfWords = Integer.valueOf(readLine("Please enter a enter a number between 1 and 100: "));
+//			} catch (NumberFormatException nfe2) {
+//				try {
+//					numberOfWords = Integer.valueOf(readLine("Last chance. Enter a number or you're just gonna get 5. "));
+//				} catch (NumberFormatException nfe3) {
+//					numberOfWords = 5;
+//				}
+//			}
+//		}
+//		return numberOfWords;
+//	}
 
 	protected Object getInput(String prompt, int numberOfTries, String validationType) throws IOException {
 		for(int t=1;t <= numberOfTries; t++){
@@ -195,7 +199,7 @@ public class ScrapingEngine {
 				} else {
 					states = State.confirmState(input);	
 				}
-				if (states!=null) {
+				if (states!=null && !states.isEmpty()) {
 					return states;
 				} else {
 					System.out.println("That's not an American state\n");

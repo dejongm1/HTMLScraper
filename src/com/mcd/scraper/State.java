@@ -100,7 +100,10 @@ public final class State {
 			return allStates;
 		} else {
 			List<State> states = new ArrayList<>();
-			states.add(getState(value));
+			State confirmedState = getState(value);
+			if (confirmedState!=null) {
+				states.add(confirmedState);
+			}
 			return states;
 		}
 	}
