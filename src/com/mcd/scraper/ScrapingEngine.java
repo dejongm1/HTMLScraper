@@ -125,12 +125,6 @@ public class ScrapingEngine {
 				return util.getOfflinePage(url);
 			} else {
 				return util.getConnection(url).get();
-//				return Jsoup.connect(url)
-//                                //.userAgent(util.avoidBlackList()) //select randomly from list
-//                                .userAgent("MJ12bot") //select randomly from list
-//                                .maxBodySize(0)
-//                                .timeout(30000)
-//                                .get();
 			}
 		} catch (FileNotFoundException fne) {
 			System.err.println("I couldn't find an html file for " + url);
@@ -147,24 +141,6 @@ public class ScrapingEngine {
 	    UrlValidator urlValidator = new UrlValidator(schemes);
 	    return urlValidator.isValid(url);
 	}
-
-//	protected int validateNumber(String numberOfWordsString) throws IOException {
-//		int numberOfWords = 0;
-//		try {
-//			numberOfWords = Integer.valueOf(numberOfWordsString);
-//		} catch (NumberFormatException nfe) {
-//			try {
-//				numberOfWords = Integer.valueOf(readLine("Please enter a enter a number between 1 and 100: "));
-//			} catch (NumberFormatException nfe2) {
-//				try {
-//					numberOfWords = Integer.valueOf(readLine("Last chance. Enter a number or you're just gonna get 5. "));
-//				} catch (NumberFormatException nfe3) {
-//					numberOfWords = 5;
-//				}
-//			}
-//		}
-//		return numberOfWords;
-//	}
 
 	protected Object getInput(String prompt, int numberOfTries, String validationType) throws IOException {
 		for(int t=1;t <= numberOfTries; t++){

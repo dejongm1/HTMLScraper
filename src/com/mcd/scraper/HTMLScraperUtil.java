@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.util.*;
-import java.util.Properties;
 
 public class HTMLScraperUtil {
 
@@ -89,13 +88,9 @@ public class HTMLScraperUtil {
 
 	protected String avoidBlackList() {
 		String[] crawlerList = System.getProperties().getProperty("user.agent.crawlers").split(", ");
-		System.out.println(crawlerList[1]);
-		System.out.println(crawlerList[2]);
-		System.out.println(crawlerList[3]);
-
 		Random random = new Random();
 		int r = random.nextInt(crawlerList.length-1);
-		//get the rth item in the user-agent list
+		System.out.println("Crawler: " + crawlerList[r]);
 		return crawlerList[r];
 	}
 
@@ -107,9 +102,6 @@ public class HTMLScraperUtil {
 			// load a properties file
 			properties.load(input);
 			System.setProperties(properties);
-			Properties props = System.getProperties();
-			String prop = props.getProperty("user.agent.crawlers");
-			System.out.println(prop);
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		} finally {

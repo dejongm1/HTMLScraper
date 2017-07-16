@@ -6,11 +6,8 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
-import java.util.Properties;
 
 /**
  * 
@@ -64,30 +61,6 @@ public class ScraperMain {
 		catch (IOException ioe) {
 			System.err.println("Dunno what you did but I don't like it. I quit.");
 			System.exit(0);
-		}
-	}
-
-	private static void loadProperties() {
-		InputStream input = null;
-		java.util.Properties properties = new java.util.Properties();
-		try {
-			input = new FileInputStream("config.properties");
-			// load a properties file
-			properties.load(input);
-			System.setProperties(properties);
-			Properties props = System.getProperties();
-			String prop = props.getProperty("user.agent.crawlers");
-			System.out.println(prop);
-		} catch (IOException ex) {
-			ex.printStackTrace();
-		} finally {
-			if (input != null) {
-				try {
-					input.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
 		}
 	}
 
