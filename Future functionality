@@ -1,6 +1,11 @@
 Functionality to add
 
-accept list of states
+getRecords()
+not getting counties
+Crawl slowly, crawl randomly, rotate IPs, rotate User-agents
+
+
+
 
 Constants class for messages
 Search for specific word(s)
@@ -21,4 +26,3 @@ Traverse a sites pages
 
 If website can't be reached with http://, try https://
 
-Crawl slowly, crawl randomly, rotate IPs, rotate User-agents

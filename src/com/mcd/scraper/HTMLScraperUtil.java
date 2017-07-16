@@ -2,11 +2,9 @@ package com.mcd.scraper;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
-import org.jsoup.examples.HtmlToPlainText;
 import org.jsoup.nodes.Document;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
@@ -78,10 +76,9 @@ public class HTMLScraperUtil {
 	}
 
 	protected Connection getConnection(String url) {
-		org.jsoup.examples.HtmlToPlainText temp = new HtmlToPlainText();
 		return Jsoup.connect(url)
-				.userAgent(avoidBlackList()) //select randomly from list
-				//.userAgent("MJ12bot") //select randomly from list
+//				.userAgent(avoidBlackList()) //select randomly from list
+				.userAgent("NutchCVS/0.7 (Nutch; http://lucene.apache.org/nutch/bot.html; nutch-agent@lucene.apache.org)") //select randomly from list
 				.maxBodySize(0)
 				.timeout(30000);
 	}
@@ -96,12 +93,15 @@ public class HTMLScraperUtil {
 
 	private void loadProperties() {
 		InputStream input = null;
-		java.util.Properties properties = new java.util.Properties();
+		Properties properties = new Properties();
 		try {
-			input = new FileInputStream("config.properties");
 			// load a properties file
-			properties.load(input);
-			System.setProperties(properties);
+			properties.load(HTMLScraperUtil.class.getResourceAsStream("/config.properties"));
+			Properties systemProperties = System.getProperties();
+			for (String propertyName : properties.stringPropertyNames()) {
+				systemProperties.setProperty(propertyName, properties.getProperty(propertyName));
+			}
+			System.setProperties(systemProperties);
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		} finally {
