@@ -10,7 +10,7 @@ public class Site {
 	
 	public static final Site ArrestsDotOrg = new Site("http://",
 													  "arrests.org/",
-													  new String[]{"?page=1&results=14"}, //results in multiples of 14 up to 56
+													  new String[]{"?page=1&results=56"}, //results in multiples of 14 up to 56
 													  "Arrests.org", 
 													  new String[]{".profile-card .title a",
 																   ".info .section-content div, .section-content.charges .charge-title, .section-content.charges .charge-description"});

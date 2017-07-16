@@ -77,13 +77,13 @@ public class HTMLScraperUtil {
 
 	protected Connection getConnection(String url) {
 		return Jsoup.connect(url)
-//				.userAgent(avoidBlackList()) //select randomly from list
-				.userAgent("NutchCVS/0.7 (Nutch; http://lucene.apache.org/nutch/bot.html; nutch-agent@lucene.apache.org)") //select randomly from list
+				.userAgent(getRandomUserAgent())
+//				.userAgent("findlinks/1.1.2-a5 (+http\\://wortschatz.uni-leipzig.de/findlinks/)")
 				.maxBodySize(0)
 				.timeout(30000);
 	}
 
-	protected String avoidBlackList() {
+	protected String getRandomUserAgent() { //to avoid getting blacklisted
 		String[] crawlerList = System.getProperties().getProperty("user.agent.crawlers").split(", ");
 		Random random = new Random();
 		int r = random.nextInt(crawlerList.length-1);

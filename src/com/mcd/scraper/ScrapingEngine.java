@@ -80,6 +80,8 @@ public class ScrapingEngine {
 	
 	protected void getRecords(List<State> states) {
 		long totalTime = System.currentTimeMillis();
+		long perRecordSleepTime = 2000;
+		long numberOfRecordsAttempted = 0;
 		for (State state : states){
 			long stateTime = System.currentTimeMillis();
             System.out.println("----State: " + state.getName() + "----");
@@ -87,11 +89,13 @@ public class ScrapingEngine {
 			for(Site site : sites){
 				long time = System.currentTimeMillis();
 				String stateSpecificUrl = site.getProtocol()+state.getName().toLowerCase()+"."+site.getDomain();
+				//Add some retries if first connection to state site fails
 				Document doc = getHtmlAsDoc(stateSpecificUrl+site.getExtensions()[0]);
 				if (doc!=null) {
 					//eventually output to spreadsheet
 					String[] selectors = site.getSelectors();
 					Elements profileDetailTags = doc.select(selectors[0]);
+					numberOfRecordsAttempted += profileDetailTags.size();
 					for (Element pdTag : profileDetailTags) {
 						String pdLink = pdTag.attr("href");
 						Document profileDetailDoc = getHtmlAsDoc(stateSpecificUrl+pdLink);
@@ -103,6 +107,11 @@ public class ScrapingEngine {
 							}
 						} else {
 							System.out.println("Couldn't load details for " + pdTag.text());
+						}
+						try {
+							Thread.sleep(perRecordSleepTime);
+						} catch (InterruptedException ie) {
+							System.err.println(ie.getMessage());
 						}
 					}
 
@@ -116,7 +125,9 @@ public class ScrapingEngine {
 		}
 
 		totalTime = System.currentTimeMillis() - totalTime;
+		System.out.println("Sleep time was " + numberOfRecordsAttempted*perRecordSleepTime + " ms");
 		System.out.println(states.size() + " states took " + totalTime + " ms");
+		System.out.println("Processing time was " + (totalTime-(numberOfRecordsAttempted*perRecordSleepTime)) + " ms");
 	}
 
 	private Document getHtmlAsDoc(String url) {
