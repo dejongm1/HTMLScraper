@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="conf"/>
 	<classpathentry kind="lib" path="C:/Users/U569220/Downloads/Misc/workspace/HTMLScraper/lib/jsoup-1.10.3-javadoc.jar"/>
 	<classpathentry kind="lib" path="C:/Users/U569220/Downloads/Misc/workspace/HTMLScraper/lib/jsoup-1.10.3-sources.jar"/>
 	<classpathentry kind="lib" path="C:/Users/U569220/Downloads/Misc/workspace/HTMLScraper/lib/jsoup-1.10.3.jar"/>

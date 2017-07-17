@@ -1,4 +1,4 @@
-package com.mcd.scraper;
+package com.mcd.scraper.entities;
 
 import java.util.ArrayList;
 import java.util.HashMap;

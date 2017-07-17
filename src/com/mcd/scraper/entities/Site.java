@@ -1,4 +1,4 @@
-package com.mcd.scraper;
+package com.mcd.scraper.entities;
 
 public class Site {
 
@@ -9,8 +9,8 @@ public class Site {
 	private String[] selectors;
 	
 	public static final Site ArrestsDotOrg = new Site("http://",
-													  "arrests.org/",
-													  new String[]{"?page=1&results=56"}, //results in multiples of 14 up to 56
+													  "arrests.org",
+													  new String[]{"/?page=1&results=56"}, //results in multiples of 14 up to 56
 													  "Arrests.org", 
 													  new String[]{".profile-card .title a",
 																   ".info .section-content div, .section-content.charges .charge-title, .section-content.charges .charge-description"});

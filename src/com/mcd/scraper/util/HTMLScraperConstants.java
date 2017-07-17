@@ -1,4 +1,4 @@
-package com.mcd.scraper;
+package com.mcd.scraper.util;
 
 public class HTMLScraperConstants {
 	

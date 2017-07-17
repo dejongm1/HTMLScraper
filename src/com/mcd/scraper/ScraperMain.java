@@ -5,6 +5,10 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import com.mcd.scraper.entities.State;
+import com.mcd.scraper.util.HTMLScraperConstants;
+import com.mcd.scraper.util.InputUtil;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -21,25 +25,27 @@ public class ScraperMain {
 	@SuppressWarnings("unchecked")
 	public static void  main(String[] args) throws IOException {
 		ScrapingEngine engine = new ScrapingEngine();
-		//loadProperties();
+		InputUtil inputUtil = new InputUtil();
+		
+		//accept parameters to bypass the separate choices?
 		String prompt = args.length==0?"What do you want to do?\n "
 										+ "1 - Get words by frequency\n "
 										+ "2 - Scrape for text\n "
 										+ "3 - Search for a term\n "
 										+ "4 - Arrest Records\n ":args[0];
 		try {
-			String choice = (String) engine.getInput(prompt, 3, "");
+			String choice = (String) inputUtil.getInput(prompt, 3, "");
 			if (choice.toLowerCase().contains("frequen")
 					|| choice.toLowerCase().contains("words")
 					|| choice.equals("1")) {
-				String url = (String) engine.getInput("URL: ", 3, HTMLScraperConstants.URL_VALIDATION);
-				int numberOfWords = (int) engine.getInput("Number of words: ", 3, HTMLScraperConstants.NUMBER_VALIDATION);
+				String url = (String) inputUtil.getInput("URL: ", 3, HTMLScraperConstants.URL_VALIDATION);
+				int numberOfWords = (int) inputUtil.getInput("Number of words: ", 3, HTMLScraperConstants.NUMBER_VALIDATION);
 				engine.getPopularWords(url, numberOfWords);
 			} else if (choice.toLowerCase().contains("text")
 					|| choice.toLowerCase().contains("scrape")
 					|| choice.equals("2")) {
-				String url = (String) engine.getInput("URL: ", 3, HTMLScraperConstants.URL_VALIDATION);
-				String selector = (String) engine.getInput("Selector(s): ", 1, HTMLScraperConstants.NO_VALIDATION);
+				String url = (String) inputUtil.getInput("URL: ", 3, HTMLScraperConstants.URL_VALIDATION);
+				String selector = (String) inputUtil.getInput("Selector(s): ", 1, HTMLScraperConstants.NO_VALIDATION);
 				engine.getTextBySelector(url, selector);
 			} else if (choice.toLowerCase().contains("search")
 					|| choice.toLowerCase().contains("term")
@@ -50,9 +56,9 @@ public class ScraperMain {
 			} else if (choice.toLowerCase().contains("arrest")
 					|| choice.toLowerCase().contains("record")
 					|| choice.equals("4")) {
-				List<State> states = (List<State>) engine.getInput("State(s) or \"All\": ", 3, HTMLScraperConstants.STATE_VALIDATION);
+				List<State> states = (List<State>) inputUtil.getInput("State(s) or \"All\": ", 3, HTMLScraperConstants.STATE_VALIDATION);
 				engine.getRecords(states);
-			} else if (engine.quitting(choice)) {
+			} else if (inputUtil.quitting(choice)) {
 				System.exit(0);
 			} else {
 				main(new String[] {"I'm not sure what you want me to do. Type \"quit\" if you changed your mind. \n" + prompt});
@@ -64,41 +70,6 @@ public class ScraperMain {
 		}
 	}
 
-//	public static void  main2(String[] args) throws IOException {
-//		ScrapingEngine engine = new ScrapingEngine();
-//		String prompt = args.length==0?"What do you want to do?\n 1 - Get words by frequency\n 2 - Scrape for text\n 3 - Search for a term\n":args[0];
-//		try {
-//			String choice = engine.readLine(prompt);
-//			if (choice.toLowerCase().contains("frequen")
-//					|| choice.toLowerCase().contains("words")
-//					|| choice.equals("1")) {
-//				String url = engine.validateURL(engine.readLine("URL: "));
-//				int numberOfWords = engine.validateNumber(engine.readLine("Number of words: "));
-//				engine.getPopularWords(url, numberOfWords);
-//			} else if (choice.toLowerCase().contains("text")
-//					|| choice.toLowerCase().contains("scrape")
-//					|| choice.equals("2")) {
-//				String url = engine.validateURL(engine.readLine("URL: "));
-//				String selector = engine.readLine("Selector(s): ");
-//				engine.getTextBySelector(url, selector);
-//			}  else if (choice.toLowerCase().contains("search")
-//					|| choice.toLowerCase().contains("term")
-//					|| choice.equals("3")) {
-////				String url = engine.validateURL(engine.readLine("URL: "));
-////				String selector = engine.readLine("Selector(s): ");
-////				engine.getTextBySelector(url, selector);
-//			} else if (choice.toLowerCase().contains("quit")) {
-//				System.exit(0);
-//			}else {
-//				main(new String[] {"I'm not sure what you want me to do. Get popular words or scrape for text? Or type quit if you changed your mind. "});
-//			}
-//		}
-//		catch (IOException ioe) {
-//			System.err.println("Dunno what you did but I don't like it. I quit.");
-//			System.exit(0);
-//		}
-//	}
-	
 	public static void  mainSingle(String[] args) throws IOException {
 		/** args[0] - method to call
 		 *  

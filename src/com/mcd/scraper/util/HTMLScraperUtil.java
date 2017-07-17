@@ -1,12 +1,14 @@
-package com.mcd.scraper;
+package com.mcd.scraper.util;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.util.*;
 
@@ -16,15 +18,17 @@ public class HTMLScraperUtil {
 		loadProperties();
 	}
 
-	protected boolean offline(){
+	public boolean offline(){
 		try {
-			return (Boolean.valueOf(System.getProperty("runInEclipse")) || !InetAddress.getByName("google.com").isReachable(5000));
+			return (Boolean.valueOf(System.getProperty("runInEclipse")) 
+					|| !InetAddress.getByName("google.com").isReachable(3000)
+					|| Boolean.valueOf(System.getProperty("runOffline")));
 		} catch (IOException e) {
 			return true;
 		}
 	}
 
-	protected Document getOfflinePage(String url) throws IOException {
+	public Document getOfflinePage(String url) throws IOException {
 		String htmlLocation;
 		switch (url) {
 			case "https://www.intoxalock.com/" : 									htmlLocation = "intoxalock-homepage.html";
@@ -58,7 +62,7 @@ public class HTMLScraperUtil {
 		return Jsoup.parse(input, "UTF-8", url);
 	}
 
-	protected <K, V extends Comparable<? super V>> Map<K, V> sortByValue( Map<K, V> map ) {
+	public <K, V extends Comparable<? super V>> Map<K, V> sortByValue( Map<K, V> map ) {
 		List<Map.Entry<K, V>> list = new LinkedList<>( map.entrySet() );
 		Collections.sort( list, new Comparator<Map.Entry<K, V>>() {
 			@Override
@@ -75,7 +79,7 @@ public class HTMLScraperUtil {
 		return result;
 	}
 
-	protected Connection getConnection(String url) {
+	public Connection getConnection(String url) {
 		return Jsoup.connect(url)
 				.userAgent(getRandomUserAgent())
 //				.userAgent("findlinks/1.1.2-a5 (+http\\://wortschatz.uni-leipzig.de/findlinks/)")
@@ -90,20 +94,24 @@ public class HTMLScraperUtil {
 		System.out.println("Crawler: " + crawlerList[r]);
 		return crawlerList[r];
 	}
-
+	
 	private void loadProperties() {
 		InputStream input = null;
 		Properties properties = new Properties();
 		try {
 			// load a properties file
-			properties.load(HTMLScraperUtil.class.getResourceAsStream("/config.properties"));
+			ClassLoader loader = Thread.currentThread().getContextClassLoader();
+			input = loader.getResourceAsStream("config.properties");
+			properties.load(input);
 			Properties systemProperties = System.getProperties();
 			for (String propertyName : properties.stringPropertyNames()) {
 				systemProperties.setProperty(propertyName, properties.getProperty(propertyName));
 			}
 			System.setProperties(systemProperties);
-		} catch (IOException ex) {
-			ex.printStackTrace();
+		} catch (IOException ioe) {
+			ioe.printStackTrace();
+		} catch (NullPointerException np) {
+			System.out.println("Properties file cannot be found");
 		} finally {
 			if (input != null) {
 				try {
