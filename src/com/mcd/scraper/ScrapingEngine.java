@@ -1,26 +1,22 @@
 package com.mcd.scraper;
 
-import org.apache.commons.collections4.map.CaseInsensitiveMap;
-import org.apache.commons.validator.routines.UrlValidator;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import com.mcd.scraper.entities.Site;
-import com.mcd.scraper.entities.State;
-import com.mcd.scraper.entities.Term;
-import com.mcd.scraper.util.ScraperUtil;
-
-import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.ConnectException;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import org.apache.commons.collections4.map.CaseInsensitiveMap;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import com.mcd.scraper.entities.State;
+import com.mcd.scraper.entities.Term;
+import com.mcd.scraper.entities.site.Site;
+import com.mcd.scraper.util.ScraperUtil;
 
 /**
  * 
@@ -78,61 +74,66 @@ public class ScrapingEngine {
 				System.out.println(tag.text());
 			}
 		}
-
 		time = System.currentTimeMillis() - time;
 		System.out.println("Took " + time + " ms");
 	}
 	
-	protected void getRecords(List<State> states) {
+	protected void getArrestRecords(List<State> states, long maxNumberOfResults) {
+		//split into more specific methods
 		long totalTime = System.currentTimeMillis();
-		long perRecordSleepTime = 2000;
-		long numberOfRecordsAttempted = 0;
+		long perRecordSleepTime = util.offline()?0:2000;
+		long recordsProcessed = 0;
+		//use maxNumberOfResults to stop processing once this method has been broken up
 		for (State state : states){
 			long stateTime = System.currentTimeMillis();
-            System.out.println("----State: " + state.getName() + "----");
+			System.out.println("----State: " + state.getName() + "----");
 			Site[] sites = state.getSites();
 			for(Site site : sites){
 				long time = System.currentTimeMillis();
-				String stateSpecificUrl = site.getProtocol()+state.getName().toLowerCase()+"."+site.getDomain();
-				//Add some retries if first connection to state site fails
-				Document doc = getHtmlAsDoc(stateSpecificUrl+site.getExtensions()[0]);
-				if (doc!=null) {
-					//eventually output to spreadsheet
-					String[] selectors = site.getSelectors();
-					Elements profileDetailTags = doc.select(selectors[0]);
-					numberOfRecordsAttempted += profileDetailTags.size();
-					for (Element pdTag : profileDetailTags) {
-						String pdLink = pdTag.attr("href");
-						Document profileDetailDoc = getHtmlAsDoc(stateSpecificUrl+pdLink);
-						if(profileDetailDoc!=null){
-							Elements profileDetails = profileDetailDoc.select(selectors[1]);
-							System.out.println(pdTag.text());
-							for (Element profileDetail : profileDetails) {
-								System.out.println("\t" + profileDetail.text());	
+				String baseUrl = site.getBaseUrl(new String[]{state.getName()});
+				//Add some retries if first connection to state site fails?
+				Document recordListingDoc = getHtmlAsDoc(baseUrl);
+				if (recordListingDoc!=null) {
+					int numberOfPages = site.getPages(recordListingDoc);
+					if (numberOfPages==0) {
+						numberOfPages = 1;
+					}
+					for (int p=1; p<=numberOfPages;p++) {
+						//eventually output to spreadsheet
+						Elements profileDetailTags = site.getRecordElements(recordListingDoc);
+						for (Element pdTag : profileDetailTags) {
+							Document profileDetailDoc = getHtmlAsDoc(site.getRecordDetailDocUrl(pdTag));
+							recordsProcessed++;
+							if(profileDetailDoc!=null){
+								Elements profileDetails = site.getRecordDetailElements(profileDetailDoc);
+								System.out.println(pdTag.text());
+								for (Element profileDetail : profileDetails) {
+									System.out.println("\t" + profileDetail.text());
+								}
+							} else {
+								System.out.println("Couldn't load details for " + pdTag.text());
 							}
-						} else {
-							System.out.println("Couldn't load details for " + pdTag.text());
-						}
-						try {
-							Thread.sleep(perRecordSleepTime);
-						} catch (InterruptedException ie) {
-							System.err.println(ie.getMessage());
+							try {
+								Thread.sleep(perRecordSleepTime);
+							} catch (InterruptedException ie) {
+								System.err.println(ie.getMessage());
+							}
 						}
 					}
-
 				}
 				time = System.currentTimeMillis() - time;
-				System.out.println(stateSpecificUrl + " took " + time + " ms");
+				System.out.println(baseUrl + " took " + time + " ms");
 			}
 
 			stateTime = System.currentTimeMillis() - stateTime;
 			System.out.println(state.getName() + " took " + stateTime + " ms");
+			
 		}
 
 		totalTime = System.currentTimeMillis() - totalTime;
-		System.out.println("Sleep time was " + numberOfRecordsAttempted*perRecordSleepTime + " ms");
+		System.out.println("Sleep time was " + recordsProcessed*perRecordSleepTime + " ms");
 		System.out.println(states.size() + " states took " + totalTime + " ms");
-		System.out.println("Processing time was " + (totalTime-(numberOfRecordsAttempted*perRecordSleepTime)) + " ms");
+		System.out.println("Processing time was " + (totalTime-(recordsProcessed*perRecordSleepTime)) + " ms");
 	}
 
 	private Document getHtmlAsDoc(String url) {

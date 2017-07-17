@@ -92,6 +92,7 @@ public class ScraperMain {
 	@SuppressWarnings("unchecked")
 	private static void getArrestRecords(String[] args) throws IOException {
 		List<State> states = args.length>=2?inputUtil.convertToStates(args[1]):(List<State>) inputUtil.getInput("State(s) or \"All\": ", 3, ScraperConstants.STATE_VALIDATION);
-		engine.getRecords(states);
+		long maxNumberOfResults = args.length>=3?inputUtil.convertToNumber(args[2]):999999;
+		engine.getArrestRecords(states, maxNumberOfResults);
 	}
 }

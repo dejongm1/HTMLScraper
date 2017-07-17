@@ -47,9 +47,9 @@ public class ScraperUtil {
 				break;
 			case "http://iowa.arrests.org/Arrests/David_Edwards_33669901/?d=1" : 	htmlLocation = "iowa-arrests-David-Edwards.htm";
 				break;
-			case "http://illinois.arrests.org/Arrests/Paul_Rinaldi_33672705/?d=1" : htmlLocation = "iowa-arrests-Paul-Rinaldi.htm";
+			case "http://illinois.arrests.org/Arrests/Paul_Rinaldi_33672705/?d=1" : htmlLocation = "illinois-arrests-Paul-Rinaldi.htm";
 				break;
-			case "http://illinois.arrests.org/Arrests/Nicole_Shula_33672706/?d=1" : htmlLocation = "iowa-arrests-Nicole-Shula.htm";
+			case "http://illinois.arrests.org/Arrests/Nicole_Shula_33672706/?d=1" : htmlLocation = "illinois-arrests-Nicole-Shula.htm";
 				break;
 			case "http://illinois.arrests.org" : 									htmlLocation = "illinois-arrests.htm";
 				break;
