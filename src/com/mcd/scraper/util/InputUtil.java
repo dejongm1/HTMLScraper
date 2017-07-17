@@ -15,55 +15,71 @@ public class InputUtil {
 	public InputUtil() {}
 
 	public Object getInput(String prompt, int numberOfTries, String validationType) throws IOException {
+		Object result;
 		for(int t=1;t <= numberOfTries; t++){
+			String input = readLine(prompt);
 			if (validationType!= null && validationType.equals(ScraperConstants.URL_VALIDATION)) {
-				String url = readLine(prompt);
-				url = !url.startsWith("http")?"http://"+url:url;
-				if (validURL(url)){
-					return url;
-				} else {
-					System.out.println("That's not a valid url\n");
-				}
+				result = convertToUrl(input);
 			} else if (validationType!= null && validationType.equals(ScraperConstants.NUMBER_VALIDATION)) {
-				try {
-					int number = Integer.parseInt(readLine(prompt));
-					return number;
-				} catch (NumberFormatException nfe) {
-					System.out.println("That's not a number\n");
-				}
+				result = convertToNumber(input);
 			} else if (validationType!= null && validationType.equals(ScraperConstants.STATE_VALIDATION)) {
-				String input = readLine(prompt);
-				List<State> states = new ArrayList<>();
-				if (input.contains(",")) {
-					String[] inputSplit = input.split("\\s*,\\s*");
-					for (String inputPiece : inputSplit) {
-						State state = State.getState(inputPiece);
-						if (state!= null) {
-							states.add(state);
-						} else {
-							System.out.println(inputPiece + " is not an American state");
-						}
-					}
-				} else {
-					states = State.confirmState(input);	
-				}
-				if (states!=null && !states.isEmpty()) {
-					return states;
-				} else {
-					System.out.println("That's not an American state\n");
-				}
+				result = convertToStates(input);
 			} else {
-				return readLine(prompt);
+				result = input;
+			}
+			if (result!=null) {
+				return result;
 			}
 		}
 		System.exit(0);
 		return null;
 	}
 	
-	protected boolean validURL(String url) throws IOException {
+	public String convertToUrl(String input) {
+		String result = null;
+		String url = !input.startsWith("http")?"http://"+input:input;
 		String[] schemes = {"http","https"};
 	    UrlValidator urlValidator = new UrlValidator(schemes);
-	    return urlValidator.isValid(url);
+		if (urlValidator.isValid(url)) {
+			result = url;
+		} else {
+			System.out.println("That's not a valid url\n");
+		}
+		return result;
+		
+	}
+	
+	public Integer convertToNumber(String input) {
+		Integer result = null;
+		try {
+			result = Integer.parseInt(input);
+		} catch (NumberFormatException nfe) {
+			System.out.println("That's not a number\n");
+		}
+		return result;
+	}
+	
+	public List<State> convertToStates(String input) {
+		List<State> result = new ArrayList<>();
+		if (input.contains(",")) {
+			String[] inputSplit = input.split("\\s*,\\s*");
+			for (String inputPiece : inputSplit) {
+				State state = State.getState(inputPiece);
+				if (state!= null) {
+					result.add(state);
+				} else {
+					System.out.println(inputPiece + " is not an American state");
+				}
+			}
+		} else {
+			result = State.confirmState(input);	
+		}
+		if (result!=null && !result.isEmpty()) {
+			return result;
+		} else {
+			System.out.println("That's not an American state\n");
+			return null;
+		}
 	}
 	
 	protected String readLine(String arg) throws IOException {
