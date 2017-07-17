@@ -12,9 +12,9 @@ import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.util.*;
 
-public class HTMLScraperUtil {
+public class ScraperUtil {
 
-	public HTMLScraperUtil(){
+	public ScraperUtil(){
 		loadProperties();
 	}
 

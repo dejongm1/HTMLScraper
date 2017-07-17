@@ -1,6 +1,6 @@
 package com.mcd.scraper.util;
 
-public class HTMLScraperConstants {
+public class ScraperConstants {
 	
 	public static final String URL_VALIDATION = "url";
 	public static final String NUMBER_VALIDATION = "number";

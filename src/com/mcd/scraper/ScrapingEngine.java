@@ -9,7 +9,7 @@ import org.jsoup.select.Elements;
 import com.mcd.scraper.entities.Site;
 import com.mcd.scraper.entities.State;
 import com.mcd.scraper.entities.Term;
-import com.mcd.scraper.util.HTMLScraperUtil;
+import com.mcd.scraper.util.ScraperUtil;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -29,7 +29,7 @@ import java.util.Map.Entry;
  */
 public class ScrapingEngine {
 
-	HTMLScraperUtil util = new HTMLScraperUtil();
+	ScraperUtil util = new ScraperUtil();
 
 	protected void getPopularWords(String url, int numberOfWords /*, int levelsDeep*/) {
 		long time = System.currentTimeMillis();

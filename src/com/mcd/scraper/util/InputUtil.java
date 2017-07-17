@@ -12,13 +12,11 @@ import com.mcd.scraper.entities.State;
 
 public class InputUtil {
 	
-	public InputUtil() {//should it accept the first input as as parameter?
-		
-	}
+	public InputUtil() {}
 
 	public Object getInput(String prompt, int numberOfTries, String validationType) throws IOException {
 		for(int t=1;t <= numberOfTries; t++){
-			if (validationType!= null && validationType.equals(HTMLScraperConstants.URL_VALIDATION)) {
+			if (validationType!= null && validationType.equals(ScraperConstants.URL_VALIDATION)) {
 				String url = readLine(prompt);
 				url = !url.startsWith("http")?"http://"+url:url;
 				if (validURL(url)){
@@ -26,14 +24,14 @@ public class InputUtil {
 				} else {
 					System.out.println("That's not a valid url\n");
 				}
-			} else if (validationType!= null && validationType.equals(HTMLScraperConstants.NUMBER_VALIDATION)) {
+			} else if (validationType!= null && validationType.equals(ScraperConstants.NUMBER_VALIDATION)) {
 				try {
 					int number = Integer.parseInt(readLine(prompt));
 					return number;
 				} catch (NumberFormatException nfe) {
 					System.out.println("That's not a number\n");
 				}
-			} else if (validationType!= null && validationType.equals(HTMLScraperConstants.STATE_VALIDATION)) {
+			} else if (validationType!= null && validationType.equals(ScraperConstants.STATE_VALIDATION)) {
 				String input = readLine(prompt);
 				List<State> states = new ArrayList<>();
 				if (input.contains(",")) {
