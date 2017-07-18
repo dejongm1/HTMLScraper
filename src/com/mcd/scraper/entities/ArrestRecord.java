@@ -2,7 +2,7 @@ package com.mcd.scraper.entities;
 
 import java.util.Calendar;
 
-public class ArrestRecord {
+public class ArrestRecord implements Record {
 	
 	//create a person entity?	
 	private String id;
@@ -26,9 +26,11 @@ public class ArrestRecord {
 
 	public ArrestRecord(){};
 	
+	@Override
 	public String getId() {
 		return id;
 	}
+	@Override
 	public void setId(String string) {
 		this.id = string;
 	}
@@ -135,6 +137,16 @@ public class ArrestRecord {
 		this.charges = charges;
 	}
 	
-	
+//	public getFieldsToOutput() {
+//	
+//	}
+//	
+//	public outputToExcel() {
+//		
+//	}
+//	
+//	public outputAsText() {
+//	
+//	}
 
 }

@@ -18,6 +18,7 @@ import com.mcd.scraper.entities.ArrestRecord;
 import com.mcd.scraper.entities.State;
 import com.mcd.scraper.entities.Term;
 import com.mcd.scraper.entities.site.Site;
+import com.mcd.scraper.util.ExcelWriter;
 import com.mcd.scraper.util.ScraperUtil;
 
 /**
@@ -65,7 +66,6 @@ public class ScrapingEngine {
 			}
 			time = System.currentTimeMillis() - time;
 			logger.info("Took " + time + " ms");
-			
 		}
 	}
 
@@ -88,6 +88,7 @@ public class ScrapingEngine {
 		long recordsProcessed = 0;
 		int sleepTimeSum = 0;
 		int sitesScraped = 0;
+		
 		//use maxNumberOfResults to stop processing once this method has been broken up
 		//this currently won't stop a single site from processing more than the max number of records
 		//while(recordsProcessed <= maxNumberOfResults) {
@@ -95,6 +96,8 @@ public class ScrapingEngine {
 				long stateTime = System.currentTimeMillis();
 				logger.info("----State: " + state.getName() + "----");
 				Site[] sites = state.getSites();
+				ExcelWriter excelWriter  = new ExcelWriter(state);
+				excelWriter.createSpreadhseet(ArrestRecord.class);
 				for(Site site : sites){
 					sitesScraped++;
 					sleepTimeSum += util.offline()?0:site.getPerRecordSleepTime();
@@ -103,6 +106,8 @@ public class ScrapingEngine {
 					time = System.currentTimeMillis() - time;
 					logger.info(site.getBaseUrl(new String[]{state.getName()}) + " took " + time + " ms");
 				}
+
+				//******excelWriter.closeSaveSpreadsheet();********//
 				stateTime = System.currentTimeMillis() - stateTime;
 				logger.info(state.getName() + " took " + stateTime + " ms");
 				
@@ -152,7 +157,8 @@ public class ScrapingEngine {
 			if(profileDetailDoc!=null){
 				recordsProcessed++;
 				arrestRecords.add(populateArrestRecord(profileDetailDoc, site));
-				//addToSpreadsheet(arrestRecords);
+				//****** OR just ****************//
+				//******excelWriter.exportToSpreadsheet(arrestRecords);********//
 				try {
 					Thread.sleep(perRecordSleepTime);
 				} catch (InterruptedException ie) {
@@ -181,7 +187,7 @@ public class ScrapingEngine {
 		String label = profileDetail.select("b").text().toLowerCase();
 		Elements charges = profileDetail.select(".charges li");
 		if (!charges.isEmpty()) {
-			//should I try to categorize charge types???
+			//should I try to categorize charge types here???
 			String[] chargeStrings = new String[charges.size()];
 			for (int c = 0; c < charges.size(); c++) {
 				chargeStrings[c] = charges.get(c).text();
