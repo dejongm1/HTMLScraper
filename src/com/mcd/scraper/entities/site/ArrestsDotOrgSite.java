@@ -44,7 +44,7 @@ public class ArrestsDotOrgSite implements Site {
 	}
 	@Override
 	public Elements getRecordElements(Document doc) {
-		return doc.select(".profile-card .title a");
+		return doc.select(".search-results .profile-card .title a");
 	}
 	@Override
 	public String getRecordDetailDocUrl(Element record) {

@@ -1,5 +1,14 @@
 package com.mcd.scraper;
 
+import com.mcd.scraper.entities.State;
+import com.mcd.scraper.entities.Term;
+import com.mcd.scraper.entities.site.Site;
+import com.mcd.scraper.util.ScraperUtil;
+import org.apache.commons.collections4.map.CaseInsensitiveMap;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.ConnectException;
@@ -7,16 +16,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import org.apache.commons.collections4.map.CaseInsensitiveMap;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import com.mcd.scraper.entities.State;
-import com.mcd.scraper.entities.Term;
-import com.mcd.scraper.entities.site.Site;
-import com.mcd.scraper.util.ScraperUtil;
 
 /**
  * 
@@ -99,6 +98,7 @@ public class ScrapingEngine {
 						numberOfPages = 1;
 					}
 					for (int p=1; p<=numberOfPages;p++) {
+						System.out.println("----State: " + state.getName() + ": Page " + p);
 						//eventually output to spreadsheet
 						Elements profileDetailTags = site.getRecordElements(recordListingDoc);
 						for (Element pdTag : profileDetailTags) {

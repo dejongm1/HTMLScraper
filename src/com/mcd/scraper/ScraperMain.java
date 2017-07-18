@@ -1,11 +1,11 @@
 package com.mcd.scraper;
 
-import java.io.IOException;
-import java.util.List;
-
 import com.mcd.scraper.entities.State;
 import com.mcd.scraper.util.InputUtil;
 import com.mcd.scraper.util.ScraperConstants;
+
+import java.io.IOException;
+import java.util.List;
 
 /**
  * 
@@ -25,7 +25,7 @@ public class ScraperMain {
 		inputUtil = new InputUtil();
 		engine = new ScrapingEngine();
 		
-		if (prompt!=null) {
+		if (prompt==null) {
 			prompt = "What do you want to do?\n "
 						+ "\t 1 - Get words by frequency\n "
 						+ "\t 2 - Scrape for text\n "

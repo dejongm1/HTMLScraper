@@ -4,11 +4,9 @@ import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.util.*;
 
@@ -101,7 +99,11 @@ public class ScraperUtil {
 		try {
 			// load a properties file
 			ClassLoader loader = Thread.currentThread().getContextClassLoader();
-			input = loader.getResourceAsStream("config.properties");
+			if (Boolean.valueOf(System.getProperty("runInEclipse"))) {
+				input = loader.getResourceAsStream("config.properties");
+			} else {
+				input = ScraperUtil.class.getResourceAsStream("/conf/config.properties");
+			}
 			properties.load(input);
 			Properties systemProperties = System.getProperties();
 			for (String propertyName : properties.stringPropertyNames()) {
