@@ -4,6 +4,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -113,7 +115,12 @@ public class ScrapingEngine {
 		int perRecordSleepTimeAverage = sitesScraped!=0?(sleepTimeSum/sitesScraped):0;
 		totalTime = System.currentTimeMillis() - totalTime;
 		logger.info(states.size() + " states took " + totalTime + " ms");
-		logger.info("Processing time was approximately " + (totalTime-(recordsProcessed*perRecordSleepTimeAverage)) + " ms");
+		if (!util.offline()) {
+			logger.info("Processing time was " + (totalTime-(recordsProcessed*perRecordSleepTimeAverage)) + " ms");
+		} else {
+			logger.info("Processing time was " + totalTime + " ms");
+		}
+		
 	}
 
 	private int scrapeSite(State state, Site site) {
@@ -163,6 +170,8 @@ public class ScrapingEngine {
 	
 	private ArrestRecord populateArrestRecord(Document profileDetailDoc, Site site) {
 		Elements profileDetails = site.getRecordDetailElements(profileDetailDoc);
+		ArrestRecord record = new ArrestRecord();
+		record.setId(profileDetails.get(0).baseUri().substring(profileDetails.get(0).baseUri().lastIndexOf("/")+1));
 //			ArrestRecord record = new ArrestRecord(id, 
 //					fullName, 
 //					arrestDate, 
@@ -177,10 +186,53 @@ public class ScrapingEngine {
 //					eyeColor, 
 //					charges);
 		for (Element profileDetail : profileDetails) {
+			matchPropertyToField(record, profileDetail);
 			logger.info("\t" + profileDetail.text());
 		}
-		//return record;
-		return new ArrestRecord(0, "", null, 0, 0, "", "", "", "", 0, "", "", new String[]{});
+		return record;
+	}
+	
+	@SuppressWarnings("deprecation")
+	private void matchPropertyToField(ArrestRecord record, Element profileDetail) {
+		String label = profileDetail.select("b").text().toLowerCase();
+		if (label!=null) {
+			try {
+				if (label.contains("full name")) {
+					record.setFullName(profileDetail.select("span").text());
+	//			} else if (label.contains("Date")) {
+	//				Date date = new Date(profileDetail.select("span").text());
+	//				Calendar calendar = Calendar.getInstance();
+	//				calendar.setTime(date);
+	//				record.setArrestDate(calendar);
+				} else if (label.contains("arrest age")) {
+					record.setArrestAge(Integer.parseInt(profileDetail.select("span").text()));
+				} else if (label.contains("gender")) {
+					record.setGender(profileDetail.select("span").text());
+				} else if (label.contains("city")) {
+					String city = profileDetail.select("span[itemProp=\"addressLocality\"]").text();
+					String state = profileDetail.select("span[itemprop=\"addressRegion\"]").text();
+					record.setCity(city);
+					record.setCity(state);
+				} else if (label.contains("total bond")) {
+					int totalBond = Integer.parseInt(profileDetail.select("span").text().replace("$", ""));
+					record.setTotalBond(totalBond);
+				} else if (label.contains("height")) {
+					record.setHeight(profileDetail.select("span").text());
+				} else if (label.contains("weight")) {
+					record.setWeight(profileDetail.select("span").text());
+				} else if (label.contains("hair color")) {
+					record.setHairColor(profileDetail.select("span").text());
+				} else if (label.contains("eye color")) {
+					record.setEyeColor(profileDetail.select("span").text());
+				} else if (label.contains("birth")) {
+					record.setBirthPlace(profileDetail.select("span").text());
+				}
+			} catch (NumberFormatException nfe) {
+				logger.error("Couldn't parse a numeric value from " + profileDetail.text());
+			}
+		} else if (profileDetail.select("h3").hasText()) {
+			record.setCounty(profileDetail.select("h3").text());
+		}
 	}
 	
 	private Document getHtmlAsDoc(String url) {

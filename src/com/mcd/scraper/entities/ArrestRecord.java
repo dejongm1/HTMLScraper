@@ -5,43 +5,49 @@ import java.util.Calendar;
 public class ArrestRecord {
 	
 	//create a person entity?	
-	private long id;
+	private String id;
 	private String fullName;
 	private Calendar arrestDate;
-	private int bond;
+	private int totalBond;
 	private int arrestAge;
 	private String gender;
 	private String city;
 	private String state;
+	private String county;
 	private String height;
-	private int weight;
+	private String weight;
 	private String hairColor;
 	private String eyeColor;
+	private String birthPlace;
 	private String[] charges;
 
-	public ArrestRecord(long id, String fullName, Calendar arrestDate, int bond, int arrestAge, String gender,
-			String city, String state, String height, int weight, String hairColor, String eyeColor, String[] charges) {
+	public ArrestRecord(){};
+	
+	public ArrestRecord(String id, String fullName, Calendar arrestDate, int totalBond, int arrestAge, String gender,
+			String city, String state, String county, String height, String weight, String hairColor, String eyeColor, String birthPlace, String[] charges) {
 		super();
 		this.id = id;
 		this.fullName = fullName;
 		this.arrestDate = arrestDate;
-		this.bond = bond;
+		this.totalBond = totalBond;
 		this.arrestAge = arrestAge;
 		this.gender = gender;
 		this.city = city;
 		this.state = state;
+		this.county = county;
 		this.height = height;
 		this.weight = weight;
 		this.hairColor = hairColor;
 		this.eyeColor = eyeColor;
+		this.birthPlace = birthPlace;
 		this.charges = charges;
 	}
 	
-	public long getId() {
+	public String getId() {
 		return id;
 	}
-	public void setId(long id) {
-		this.id = id;
+	public void setId(String string) {
+		this.id = string;
 	}
 	public String getFullName() {
 		return fullName;
@@ -55,11 +61,11 @@ public class ArrestRecord {
 	public void setArrestDate(Calendar arrestDate) {
 		this.arrestDate = arrestDate;
 	}
-	public int getBond() {
-		return bond;
+	public int getTotalBond() {
+		return totalBond;
 	}
-	public void setBond(int bond) {
-		this.bond = bond;
+	public void setTotalBond(int totalBond) {
+		this.totalBond = totalBond;
 	}
 	public int getArrestAge() {
 		return arrestAge;
@@ -85,16 +91,22 @@ public class ArrestRecord {
 	public void setState(String state) {
 		this.state = state;
 	}
+	public String getCounty() {
+		return county;
+	}
+	public void setCounty(String county) {
+		this.county = county;
+	}
 	public String getHeight() {
 		return height;
 	}
 	public void setHeight(String height) {
 		this.height = height;
 	}
-	public int getWeight() {
+	public String getWeight() {
 		return weight;
 	}
-	public void setWeight(int weight) {
+	public void setWeight(String weight) {
 		this.weight = weight;
 	}
 	public String getHairColor() {
@@ -108,6 +120,12 @@ public class ArrestRecord {
 	}
 	public void setEyeColor(String eyeColor) {
 		this.eyeColor = eyeColor;
+	}
+	public String getBirthPlace() {
+		return birthPlace;
+	}
+	public void setBirthPlace(String birthPlace) {
+		this.birthPlace = birthPlace;
 	}
 	public String[] getCharges() {
 		return charges;
