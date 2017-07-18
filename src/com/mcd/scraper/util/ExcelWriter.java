@@ -18,7 +18,7 @@ public class ExcelWriter {
 	
 	public ExcelWriter(State state) {
 		Calendar date = Calendar.getInstance();
-		this.baseDocName = state.getName() + "_" + (date.get(Calendar.MONTH)+1) + "-" + date.get(Calendar.DAY_OF_MONTH) + "-" + date.get(Calendar.YEAR);
+		this.baseDocName = "output/" + state.getName() + "_" + (date.get(Calendar.MONTH)+1) + "-" + date.get(Calendar.DAY_OF_MONTH) + "-" + date.get(Calendar.YEAR);
 	}
 
 	public String getBaseDocName() {
