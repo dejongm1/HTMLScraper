@@ -12,7 +12,7 @@
     	     Move old jar to archive
     	     copy htmls files to jar destination for offline testing?
     	     package properties file
-    	     package blacklist
+    	     package blacklist of common words
     	     			-->
         <jar destfile="${dir.workspace}/HTMLScraper.jar" filesetmanifest="mergewithoutmain">
             <manifest>
@@ -23,6 +23,7 @@
         	<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/commons-validator-1.6.jar"/>
         	<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/commons-collections4-4.1.jar"/>
         	<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/log4j-1.2.17.jar"/>
+        	<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/jxl-2.6.jar"/>
             <fileset dir="${dir.buildfile}/bin"/>
             <!--<zipfileset dir="${dir.buildfile}/lib" includes="jsoup-1.10.3-sources.jar"/>
             <zipfileset dir="${dir.buildfile}/lib" includes="jsoup-1.10.3-javadoc.jar"/>
