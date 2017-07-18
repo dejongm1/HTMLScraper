@@ -97,16 +97,18 @@ public class ScrapingEngine {
 				logger.info("----State: " + state.getName() + "----");
 				Site[] sites = state.getSites();
 				ExcelWriter excelWriter  = new ExcelWriter(state);
-				excelWriter.createSpreadhseet(ArrestRecord.class);
+				excelWriter.createSpreadhseet(new ArrestRecord());
 				for(Site site : sites){
 					sitesScraped++;
 					sleepTimeSum += util.offline()?0:site.getPerRecordSleepTime();
 					long time = System.currentTimeMillis();
-					recordsProcessed += scrapeSite(state, site);
+					recordsProcessed += scrapeSite(state, site, excelWriter);
 					time = System.currentTimeMillis() - time;
 					logger.info(site.getBaseUrl(new String[]{state.getName()}) + " took " + time + " ms");
 				}
 
+				//remove ID column on final save? 
+				//or use for future processing? check for ID and start where left off 
 				//******excelWriter.closeSaveSpreadsheet();********//
 				stateTime = System.currentTimeMillis() - stateTime;
 				logger.info(state.getName() + " took " + stateTime + " ms");
@@ -125,7 +127,7 @@ public class ScrapingEngine {
 		
 	}
 
-	private int scrapeSite(State state, Site site) {
+	private int scrapeSite(State state, Site site, ExcelWriter excelWriter) {
 		int recordsProcessed = 0;
 		long perRecordSleepTime = util.offline()?0:site.getPerRecordSleepTime();
 		String baseUrl = site.getBaseUrl(new String[]{state.getName()});
@@ -139,14 +141,14 @@ public class ScrapingEngine {
 			for (int p=1; p<=numberOfPages;p++) {
 				logger.debug("----Site: " + site.getName() + " - " + state.getName() + ": Page " + p);
 				Document resultsPageDoc = util.getHtmlAsDoc(site.getResultsPageUrl(p, 14));
-				recordsProcessed += scrapePage(resultsPageDoc, site, perRecordSleepTime);
+				recordsProcessed += scrapePage(resultsPageDoc, site, perRecordSleepTime, excelWriter);
 			}
 		}
 		logger.info("Sleep time for site " + site.getName() + " was " + recordsProcessed*perRecordSleepTime + " ms");
 		return recordsProcessed;
 	}
 	
-	private int scrapePage(Document resultsPageDoc, Site site, long perRecordSleepTime) {
+	private int scrapePage(Document resultsPageDoc, Site site, long perRecordSleepTime, ExcelWriter excelWriter) {
 		//eventually output to spreadsheet
 		int recordsProcessed = 0;
 		List<ArrestRecord> arrestRecords = new ArrayList<>();
@@ -158,6 +160,7 @@ public class ScrapingEngine {
 				recordsProcessed++;
 				arrestRecords.add(populateArrestRecord(profileDetailDoc, site));
 				//****** OR just ****************//
+				//should we check for ID or not bother unless we see duplicates?
 				//******excelWriter.exportToSpreadsheet(arrestRecords);********//
 				try {
 					Thread.sleep(perRecordSleepTime);

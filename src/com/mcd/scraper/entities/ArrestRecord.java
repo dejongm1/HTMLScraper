@@ -1,6 +1,10 @@
 package com.mcd.scraper.entities;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
+
 
 public class ArrestRecord implements Record {
 	
@@ -137,9 +141,26 @@ public class ArrestRecord implements Record {
 		this.charges = charges;
 	}
 	
-//	public getFieldsToOutput() {
-//	
-//	}
+	@Override
+	public List<Field> getFieldsToOutput() {
+		List<Field> fields = new ArrayList<>();
+		try {
+			fields.add(this.getClass().getDeclaredField("id"));
+			fields.add(this.getClass().getDeclaredField("fullName"));
+			fields.add(this.getClass().getDeclaredField("gender"));
+			fields.add(this.getClass().getDeclaredField("height"));
+			fields.add(this.getClass().getDeclaredField("weight"));
+			fields.add(this.getClass().getDeclaredField("hairColor"));
+			fields.add(this.getClass().getDeclaredField("eyeColor"));
+			fields.add(this.getClass().getDeclaredField("birthPlace"));
+			fields.add(this.getClass().getDeclaredField("city"));
+			fields.add(this.getClass().getDeclaredField("county"));
+			fields.add(this.getClass().getDeclaredField("charges"));
+		} catch (NoSuchFieldException | SecurityException e) {
+			e.printStackTrace();
+		}
+		return fields;	
+	}
 //	
 //	public outputToExcel() {
 //		
