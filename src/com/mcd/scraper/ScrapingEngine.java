@@ -1,8 +1,5 @@
 package com.mcd.scraper;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -30,13 +27,13 @@ import com.mcd.scraper.util.ScraperUtil;
  */
 public class ScrapingEngine {
 
-	private static final Logger logger = Logger.getLogger(ScrapingEngine.class);
+	public static final Logger logger = Logger.getLogger(ScrapingEngine.class);
 	
 	ScraperUtil util = new ScraperUtil();
 
 	protected void getPopularWords(String url, int numberOfWords /*, int levelsDeep*/) {
 		long time = System.currentTimeMillis();
-		Document doc = getHtmlAsDoc(url);
+		Document doc = util.getHtmlAsDoc(url);
 		if (doc!=null) {
 			//give option to leave in numbers? 
 			Map<String, Term> termCountMap = new CaseInsensitiveMap<String, Term>();
@@ -74,7 +71,7 @@ public class ScrapingEngine {
 
 	protected void getTextBySelector(String url, String selector) {
 		long time = System.currentTimeMillis();
-		Document doc = getHtmlAsDoc(url);
+		Document doc = util.getHtmlAsDoc(url);
 		if (doc!=null) {
 			Elements tags = doc.select(selector);
 			for (Element tag : tags) {
@@ -128,7 +125,7 @@ public class ScrapingEngine {
 		long perRecordSleepTime = util.offline()?0:site.getPerRecordSleepTime();
 		String baseUrl = site.getBaseUrl(new String[]{state.getName()});
 		//Add some retries if first connection to state site fails?
-		Document mainPageDoc = getHtmlAsDoc(baseUrl);
+		Document mainPageDoc = util.getHtmlAsDoc(baseUrl);
 		if (mainPageDoc!=null) {
 			int numberOfPages = site.getPages(mainPageDoc);
 			if (numberOfPages==0) {
@@ -136,7 +133,7 @@ public class ScrapingEngine {
 			}
 			for (int p=1; p<=numberOfPages;p++) {
 				logger.debug("----Site: " + site.getName() + " - " + state.getName() + ": Page " + p);
-				Document resultsPageDoc = getHtmlAsDoc(site.getResultsPageUrl(p, 14));
+				Document resultsPageDoc = util.getHtmlAsDoc(site.getResultsPageUrl(p, 14));
 				recordsProcessed += scrapePage(resultsPageDoc, site, perRecordSleepTime);
 			}
 		}
@@ -151,7 +148,7 @@ public class ScrapingEngine {
 		Elements profileDetailTags = site.getRecordElements(resultsPageDoc);
 		for (Element pdTag : profileDetailTags) {
 			logger.info(pdTag.text());
-			Document profileDetailDoc = getHtmlAsDoc(site.getRecordDetailDocUrl(pdTag));
+			Document profileDetailDoc = util.getHtmlAsDoc(site.getRecordDetailDocUrl(pdTag));
 			if(profileDetailDoc!=null){
 				recordsProcessed++;
 				arrestRecords.add(populateArrestRecord(profileDetailDoc, site));
@@ -171,20 +168,7 @@ public class ScrapingEngine {
 	private ArrestRecord populateArrestRecord(Document profileDetailDoc, Site site) {
 		Elements profileDetails = site.getRecordDetailElements(profileDetailDoc);
 		ArrestRecord record = new ArrestRecord();
-		record.setId(profileDetails.get(0).baseUri().substring(profileDetails.get(0).baseUri().lastIndexOf("/")+1));
-//			ArrestRecord record = new ArrestRecord(id, 
-//					fullName, 
-//					arrestDate, 
-//					bond, 
-//					arrestAge, 
-//					gender, 
-//					city, 
-//					state, 
-//					height, 
-//					weight, 
-//					hairColor, 
-//					eyeColor, 
-//					charges);
+		record.setId(profileDetails.get(0).baseUri().substring(profileDetails.get(0).baseUri().lastIndexOf('/')+1));
 		for (Element profileDetail : profileDetails) {
 			matchPropertyToField(record, profileDetail);
 			logger.info("\t" + profileDetail.text());
@@ -195,61 +179,79 @@ public class ScrapingEngine {
 	@SuppressWarnings("deprecation")
 	private void matchPropertyToField(ArrestRecord record, Element profileDetail) {
 		String label = profileDetail.select("b").text().toLowerCase();
-		if (label!=null) {
+		Elements charges = profileDetail.select(".charges li");
+		if (!charges.isEmpty()) {
+			//should I try to categorize charge types???
+			String[] chargeStrings = new String[charges.size()];
+			for (int c = 0; c < charges.size(); c++) {
+				chargeStrings[c] = charges.get(c).text();
+			}
+			record.setCharges(chargeStrings);
+		} else if (!label.equals("")) {
 			try {
 				if (label.contains("full name")) {
-					record.setFullName(profileDetail.select("span").text());
-	//			} else if (label.contains("Date")) {
-	//				Date date = new Date(profileDetail.select("span").text());
-	//				Calendar calendar = Calendar.getInstance();
-	//				calendar.setTime(date);
-	//				record.setArrestDate(calendar);
+					formatFullName(record, profileDetail);
+				} else if (label.contains("date")) {
+					Date date = new Date(stripOffLabel(profileDetail));
+					Calendar calendar = Calendar.getInstance();
+					calendar.setTime(date);
+					record.setArrestDate(calendar);
+				} else if (label.contains("time")) {
+					formatArrestTime(record, profileDetail);
 				} else if (label.contains("arrest age")) {
-					record.setArrestAge(Integer.parseInt(profileDetail.select("span").text()));
+					record.setArrestAge(Integer.parseInt(stripOffLabel(profileDetail)));
 				} else if (label.contains("gender")) {
-					record.setGender(profileDetail.select("span").text());
+					record.setGender(stripOffLabel(profileDetail));
 				} else if (label.contains("city")) {
 					String city = profileDetail.select("span[itemProp=\"addressLocality\"]").text();
 					String state = profileDetail.select("span[itemprop=\"addressRegion\"]").text();
 					record.setCity(city);
-					record.setCity(state);
+					record.setState(state);
 				} else if (label.contains("total bond")) {
-					int totalBond = Integer.parseInt(profileDetail.select("span").text().replace("$", ""));
+					String bondAmount = stripOffLabel(profileDetail);
+					int totalBond = Integer.parseInt(bondAmount.replace("$", ""));
 					record.setTotalBond(totalBond);
 				} else if (label.contains("height")) {
-					record.setHeight(profileDetail.select("span").text());
+					record.setHeight(stripOffLabel(profileDetail));
 				} else if (label.contains("weight")) {
-					record.setWeight(profileDetail.select("span").text());
+					record.setWeight(stripOffLabel(profileDetail));
 				} else if (label.contains("hair color")) {
-					record.setHairColor(profileDetail.select("span").text());
+					record.setHairColor(stripOffLabel(profileDetail));
 				} else if (label.contains("eye color")) {
-					record.setEyeColor(profileDetail.select("span").text());
+					record.setEyeColor(stripOffLabel(profileDetail));
 				} else if (label.contains("birth")) {
-					record.setBirthPlace(profileDetail.select("span").text());
+					record.setBirthPlace(stripOffLabel(profileDetail));
 				}
 			} catch (NumberFormatException nfe) {
 				logger.error("Couldn't parse a numeric value from " + profileDetail.text());
 			}
 		} else if (profileDetail.select("h3").hasText()) {
-			record.setCounty(profileDetail.select("h3").text());
+			record.setCounty(profileDetail.select("h3").text().replaceAll("(?i)county", "").trim());
 		}
 	}
 	
-	private Document getHtmlAsDoc(String url) {
-		try {
-			if (util.offline()) {
-				return util.getOfflinePage(url);
-			} else {
-				return util.getConnection(url).get();
-			}
-		} catch (FileNotFoundException fne) {
-			logger.error("I couldn't find an html file for " + url);
-		} catch (ConnectException ce) {
-			logger.error("I couldn't connect to " + url + ". Please be sure you're using a site that exists and are connected to the interweb.");
-		} catch (IOException ioe) {
-			logger.error("I tried to scrape that site but had some trouble. \n" + ioe.getMessage());
-		}
-		return null;
+	private void formatFullName(ArrestRecord record, Element profileDetail) {
+		record.setFirstName(profileDetail.select("span [itemprop=\"givenName\"]").text());
+		record.setMiddleName(profileDetail.select("span [itemprop=\"additionalName\"]").text());
+		record.setLastName(profileDetail.select("span [itemprop=\"familyName\"]").text());
+		String fullName = record.getFirstName();
+		fullName += record.getMiddleName()!=null?" " + record.getMiddleName():"";
+		fullName += " " + record.getLastName();
+		record.setFullName(fullName);
 	}
-
+	
+	private void formatArrestTime(ArrestRecord record, Element profileDetail) {
+		Calendar arrestDate = record.getArrestDate();
+		if (arrestDate!=null) {
+			String arrestTimeText = profileDetail.text().replaceAll("(?i)time:", "").trim();
+			arrestDate.set(Calendar.HOUR, Integer.parseInt(arrestTimeText.substring(0, arrestTimeText.indexOf(':'))));
+			arrestDate.set(Calendar.MINUTE, Integer.parseInt(arrestTimeText.substring(arrestTimeText.indexOf(':')+1, arrestTimeText.indexOf(' '))));
+			arrestDate.set(Calendar.AM, arrestTimeText.substring(arrestTimeText.indexOf(' ')+1)=="AM"?1:0);
+			record.setArrestDate(arrestDate);
+		}
+	}
+	
+	private String stripOffLabel(Element profileDetail) {
+		return profileDetail.text().substring(profileDetail.text().indexOf(':')+1).trim();
+	}
 }

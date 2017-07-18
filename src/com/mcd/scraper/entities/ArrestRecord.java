@@ -7,6 +7,9 @@ public class ArrestRecord {
 	//create a person entity?	
 	private String id;
 	private String fullName;
+	private String firstName;
+	private String middleName;
+	private String lastName;
 	private Calendar arrestDate;
 	private int totalBond;
 	private int arrestAge;
@@ -23,26 +26,6 @@ public class ArrestRecord {
 
 	public ArrestRecord(){};
 	
-	public ArrestRecord(String id, String fullName, Calendar arrestDate, int totalBond, int arrestAge, String gender,
-			String city, String state, String county, String height, String weight, String hairColor, String eyeColor, String birthPlace, String[] charges) {
-		super();
-		this.id = id;
-		this.fullName = fullName;
-		this.arrestDate = arrestDate;
-		this.totalBond = totalBond;
-		this.arrestAge = arrestAge;
-		this.gender = gender;
-		this.city = city;
-		this.state = state;
-		this.county = county;
-		this.height = height;
-		this.weight = weight;
-		this.hairColor = hairColor;
-		this.eyeColor = eyeColor;
-		this.birthPlace = birthPlace;
-		this.charges = charges;
-	}
-	
 	public String getId() {
 		return id;
 	}
@@ -54,6 +37,24 @@ public class ArrestRecord {
 	}
 	public void setFullName(String fullName) {
 		this.fullName = fullName;
+	}
+	public String getFirstName() {
+		return firstName;
+	}
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+	public String getMiddleName() {
+		return middleName;
+	}
+	public void setMiddleName(String middleName) {
+		this.middleName = middleName;
+	}
+	public String getLastName() {
+		return lastName;
+	}
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
 	}
 	public Calendar getArrestDate() {
 		return arrestDate;

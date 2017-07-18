@@ -6,10 +6,13 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import com.mcd.scraper.ScraperMain;
+import com.mcd.scraper.ScrapingEngine;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.util.*;
 
@@ -94,6 +97,23 @@ public class ScraperUtil {
 		return result;
 	}
 
+	public Document getHtmlAsDoc(String url) {
+		try {
+			if (offline()) {
+				return getOfflinePage(url);
+			} else {
+				return getConnection(url).get();
+			}
+		} catch (FileNotFoundException fne) {
+			ScrapingEngine.logger.error("I couldn't find an html file for " + url);
+		} catch (ConnectException ce) {
+			ScrapingEngine.logger.error("I couldn't connect to " + url + ". Please be sure you're using a site that exists and are connected to the interweb.");
+		} catch (IOException ioe) {
+			ScrapingEngine.logger.error("I tried to scrape that site but had some trouble. \n" + ioe.getMessage());
+		}
+		return null;
+	}
+	
 	public Connection getConnection(String url) {
 		return Jsoup.connect(url)
 				.userAgent(getRandomUserAgent())

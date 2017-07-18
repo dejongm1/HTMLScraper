@@ -69,7 +69,7 @@ public class ArrestsDotOrgSite implements Site {
 	}
 	@Override
 	public Elements getRecordDetailElements(Document doc) {
-		return doc.select(".content-box.profile.profile-full h3, .info .section-content div, .section-content.charges .charge-title, .section-content.charges .charge-description");
+		return doc.select(".content-box.profile.profile-full h3, .info .section-content div, .section-content.charges");
 	}
 	@Override
 	public int getPages(Document doc) {
