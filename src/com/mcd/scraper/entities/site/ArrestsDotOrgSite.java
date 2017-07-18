@@ -59,11 +59,12 @@ public class ArrestsDotOrgSite implements Site {
 	@Override
 	public String getRecordDetailDocUrl(Element record) {
 		String pdLink = record.attr("href");
+		pdLink = pdLink.replace("/?d=1", "");
 		return getBaseUrl(new String[]{})+pdLink;
 	}
 	@Override
 	public Elements getRecordDetailElements(Document doc) {
-		return doc.select(".info .section-content div, .section-content.charges .charge-title, .section-content.charges .charge-description");
+		return doc.select(".content-box.profile.profile-full h3, .info .section-content div, .section-content.charges .charge-title, .section-content.charges .charge-description");
 	}
 	@Override
 	public int getPages(Document doc) {
