@@ -22,6 +22,7 @@
             <zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/jsoup-1.10.3.jar"/>
         	<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/commons-validator-1.6.jar"/>
         	<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/commons-collections4-4.1.jar"/>
+        	<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/log4j-1.2.17.jar"/>
             <fileset dir="${dir.buildfile}/bin"/>
             <!--<zipfileset dir="${dir.buildfile}/lib" includes="jsoup-1.10.3-sources.jar"/>
             <zipfileset dir="${dir.buildfile}/lib" includes="jsoup-1.10.3-javadoc.jar"/>

@@ -5,6 +5,7 @@ import com.mcd.scraper.entities.Term;
 import com.mcd.scraper.entities.site.Site;
 import com.mcd.scraper.util.ScraperUtil;
 import org.apache.commons.collections4.map.CaseInsensitiveMap;
+import org.apache.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -24,6 +25,8 @@ import java.util.Map.Entry;
  */
 public class ScrapingEngine {
 
+	private static final Logger logger = Logger.getLogger(ScrapingEngine.class);
+	
 	ScraperUtil util = new ScraperUtil();
 
 	protected void getPopularWords(String url, int numberOfWords /*, int levelsDeep*/) {
@@ -54,12 +57,12 @@ public class ScrapingEngine {
 			while (iter.hasNext()) {
 				Term term =  iter.next().getValue();
 				if (i < numberOfWords && !term.getWord().equals("")) {
-					System.out.println(term.getCount() + "\t" + term.getWord());
+					logger.info(term.getCount() + "\t" + term.getWord());
 					i++;
 				}
 			}
 			time = System.currentTimeMillis() - time;
-			System.out.println("Took " + time + " ms");
+			logger.info("Took " + time + " ms");
 			
 		}
 	}
@@ -70,11 +73,11 @@ public class ScrapingEngine {
 		if (doc!=null) {
 			Elements tags = doc.select(selector);
 			for (Element tag : tags) {
-				System.out.println(tag.text());
+				logger.info(tag.text());
 			}
 		}
 		time = System.currentTimeMillis() - time;
-		System.out.println("Took " + time + " ms");
+		logger.info("Took " + time + " ms");
 	}
 	
 	protected void getArrestRecords(List<State> states, long maxNumberOfResults) {
@@ -85,7 +88,7 @@ public class ScrapingEngine {
 		//use maxNumberOfResults to stop processing once this method has been broken up
 		for (State state : states){
 			long stateTime = System.currentTimeMillis();
-			System.out.println("----State: " + state.getName() + "----");
+			logger.info("----State: " + state.getName() + "----");
 			Site[] sites = state.getSites();
 			for(Site site : sites){
 				long time = System.currentTimeMillis();
@@ -98,7 +101,8 @@ public class ScrapingEngine {
 						numberOfPages = 1;
 					}
 					for (int p=1; p<=numberOfPages;p++) {
-						System.out.println("----State: " + state.getName() + ": Page " + p);
+						logger.debug("----State: " + state.getName() + ": Page " + p);
+						recordListingDoc = getHtmlAsDoc(site.getResultsPageUrl(p, 14));
 						//eventually output to spreadsheet
 						Elements profileDetailTags = site.getRecordElements(recordListingDoc);
 						for (Element pdTag : profileDetailTags) {
@@ -106,34 +110,34 @@ public class ScrapingEngine {
 							recordsProcessed++;
 							if(profileDetailDoc!=null){
 								Elements profileDetails = site.getRecordDetailElements(profileDetailDoc);
-								System.out.println(pdTag.text());
+								logger.info(pdTag.text());
 								for (Element profileDetail : profileDetails) {
-									System.out.println("\t" + profileDetail.text());
+									logger.info("\t" + profileDetail.text());
 								}
 							} else {
-								System.out.println("Couldn't load details for " + pdTag.text());
+								logger.error("Couldn't load details for " + pdTag.text());
 							}
 							try {
 								Thread.sleep(perRecordSleepTime);
 							} catch (InterruptedException ie) {
-								System.err.println(ie.getMessage());
+								logger.error(ie.getMessage());
 							}
 						}
 					}
 				}
 				time = System.currentTimeMillis() - time;
-				System.out.println(baseUrl + " took " + time + " ms");
+				logger.info(baseUrl + " took " + time + " ms");
 			}
 
 			stateTime = System.currentTimeMillis() - stateTime;
-			System.out.println(state.getName() + " took " + stateTime + " ms");
+			logger.info(state.getName() + " took " + stateTime + " ms");
 			
 		}
 
 		totalTime = System.currentTimeMillis() - totalTime;
-		System.out.println("Sleep time was " + recordsProcessed*perRecordSleepTime + " ms");
-		System.out.println(states.size() + " states took " + totalTime + " ms");
-		System.out.println("Processing time was " + (totalTime-(recordsProcessed*perRecordSleepTime)) + " ms");
+		logger.info("Sleep time was " + recordsProcessed*perRecordSleepTime + " ms");
+		logger.info(states.size() + " states took " + totalTime + " ms");
+		logger.info("Processing time was " + (totalTime-(recordsProcessed*perRecordSleepTime)) + " ms");
 	}
 
 	private Document getHtmlAsDoc(String url) {
@@ -144,11 +148,11 @@ public class ScrapingEngine {
 				return util.getConnection(url).get();
 			}
 		} catch (FileNotFoundException fne) {
-			System.err.println("I couldn't find an html file for " + url);
+			logger.error("I couldn't find an html file for " + url);
 		} catch (ConnectException ce) {
-			System.err.println("I couldn't connect to " + url + ". Please be sure you're using a site that exists and are connected to the interweb.");
+			logger.error("I couldn't connect to " + url + ". Please be sure you're using a site that exists and are connected to the interweb.");
 		} catch (IOException ioe) {
-			System.err.println("I tried to scrape that site but had some trouble. \n" + ioe.getMessage());
+			logger.error("I tried to scrape that site but had some trouble. \n" + ioe.getMessage());
 		}
 		return null;
 	}

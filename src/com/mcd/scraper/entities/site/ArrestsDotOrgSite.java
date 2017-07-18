@@ -8,8 +8,6 @@ public class ArrestsDotOrgSite implements Site {
 
 	private static final Url url = new Url("http://", "arrests.org", new String[]{});
 	private static final String name = "Arrests.org";
-	private String[] selectors = new String[]{".profile-card .title a",
-	   										  ".info .section-content div, .section-content.charges .charge-title, .section-content.charges .charge-description"};
 	private String baseUrl;
 	private int pages;
 	private int totalRecordCount;
@@ -23,6 +21,18 @@ public class ArrestsDotOrgSite implements Site {
 	@Override
 	public String getName() {
 		return name;
+	}
+	@Override
+	public String getResultsPageUrl(int page, int resultsPerPage) {
+		String builtUrl = baseUrl;
+		builtUrl += "/?page="+page;
+		if (resultsPerPage % 14 == 0) {
+			builtUrl += "&results="+resultsPerPage;
+		} else {
+			builtUrl += "&results=14";
+		}
+		return builtUrl;
+		
 	}
 	@Override
 	public String getBaseUrl(String[] args) {

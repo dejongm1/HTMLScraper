@@ -1,11 +1,13 @@
 package com.mcd.scraper;
 
+import java.io.IOException;
+import java.util.List;
+
+import org.apache.log4j.Logger;
+
 import com.mcd.scraper.entities.State;
 import com.mcd.scraper.util.InputUtil;
 import com.mcd.scraper.util.ScraperConstants;
-
-import java.io.IOException;
-import java.util.List;
 
 /**
  * 
@@ -14,6 +16,7 @@ import java.util.List;
  */
 public class ScraperMain {
 
+	private static final Logger logger = Logger.getLogger(ScraperMain.class);
 	private static InputUtil inputUtil;
 	private static ScrapingEngine engine;
 	
@@ -22,6 +25,7 @@ public class ScraperMain {
 	private ScraperMain(){}
 
 	public static void  main(String[] args) throws IOException {
+		logger.info("Application started");
 		inputUtil = new InputUtil();
 		engine = new ScrapingEngine();
 		

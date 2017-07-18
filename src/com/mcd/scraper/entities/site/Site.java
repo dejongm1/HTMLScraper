@@ -18,5 +18,6 @@ public interface Site {
 	public Elements getRecordDetailElements(Document doc);
 	public int getPages(Document doc);
 	public int getTotalRecordCount(Document doc);
+	public String getResultsPageUrl(int page, int resultsPerPage);
 	
 }
