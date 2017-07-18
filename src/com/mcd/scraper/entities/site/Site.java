@@ -19,5 +19,6 @@ public interface Site {
 	public int getPages(Document doc);
 	public int getTotalRecordCount(Document doc);
 	public String getResultsPageUrl(int page, int resultsPerPage);
+	public int getPerRecordSleepTime();
 	
 }

@@ -1,22 +1,25 @@
 package com.mcd.scraper;
 
-import com.mcd.scraper.entities.State;
-import com.mcd.scraper.entities.Term;
-import com.mcd.scraper.entities.site.Site;
-import com.mcd.scraper.util.ScraperUtil;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.ConnectException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.apache.commons.collections4.map.CaseInsensitiveMap;
 import org.apache.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.ConnectException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
+import com.mcd.scraper.entities.ArrestRecord;
+import com.mcd.scraper.entities.State;
+import com.mcd.scraper.entities.Term;
+import com.mcd.scraper.entities.site.Site;
+import com.mcd.scraper.util.ScraperUtil;
 
 /**
  * 
@@ -83,63 +86,103 @@ public class ScrapingEngine {
 	protected void getArrestRecords(List<State> states, long maxNumberOfResults) {
 		//split into more specific methods
 		long totalTime = System.currentTimeMillis();
-		long perRecordSleepTime = util.offline()?0:2000;
 		long recordsProcessed = 0;
+		int sleepTimeSum = 0;
+		int sitesScraped = 0;
 		//use maxNumberOfResults to stop processing once this method has been broken up
-		for (State state : states){
-			long stateTime = System.currentTimeMillis();
-			logger.info("----State: " + state.getName() + "----");
-			Site[] sites = state.getSites();
-			for(Site site : sites){
-				long time = System.currentTimeMillis();
-				String baseUrl = site.getBaseUrl(new String[]{state.getName()});
-				//Add some retries if first connection to state site fails?
-				Document recordListingDoc = getHtmlAsDoc(baseUrl);
-				if (recordListingDoc!=null) {
-					int numberOfPages = site.getPages(recordListingDoc);
-					if (numberOfPages==0) {
-						numberOfPages = 1;
-					}
-					for (int p=1; p<=numberOfPages;p++) {
-						logger.debug("----State: " + state.getName() + ": Page " + p);
-						recordListingDoc = getHtmlAsDoc(site.getResultsPageUrl(p, 14));
-						//eventually output to spreadsheet
-						Elements profileDetailTags = site.getRecordElements(recordListingDoc);
-						for (Element pdTag : profileDetailTags) {
-							Document profileDetailDoc = getHtmlAsDoc(site.getRecordDetailDocUrl(pdTag));
-							recordsProcessed++;
-							if(profileDetailDoc!=null){
-								Elements profileDetails = site.getRecordDetailElements(profileDetailDoc);
-								logger.info(pdTag.text());
-								for (Element profileDetail : profileDetails) {
-									logger.info("\t" + profileDetail.text());
-								}
-							} else {
-								logger.error("Couldn't load details for " + pdTag.text());
-							}
-							try {
-								Thread.sleep(perRecordSleepTime);
-							} catch (InterruptedException ie) {
-								logger.error(ie.getMessage());
-							}
-						}
-					}
+		//this currently won't stop a single site from processing more than the max number of records
+		//while(recordsProcessed <= maxNumberOfResults) {
+			for (State state : states){
+				long stateTime = System.currentTimeMillis();
+				logger.info("----State: " + state.getName() + "----");
+				Site[] sites = state.getSites();
+				for(Site site : sites){
+					sitesScraped++;
+					sleepTimeSum += util.offline()?0:site.getPerRecordSleepTime();
+					long time = System.currentTimeMillis();
+					recordsProcessed += scrapeSite(state, site);
+					time = System.currentTimeMillis() - time;
+					logger.info(site.getBaseUrl(new String[]{state.getName()}) + " took " + time + " ms");
 				}
-				time = System.currentTimeMillis() - time;
-				logger.info(baseUrl + " took " + time + " ms");
+				stateTime = System.currentTimeMillis() - stateTime;
+				logger.info(state.getName() + " took " + stateTime + " ms");
+				
 			}
+		//}
 
-			stateTime = System.currentTimeMillis() - stateTime;
-			logger.info(state.getName() + " took " + stateTime + " ms");
-			
-		}
-
+		int perRecordSleepTimeAverage = sitesScraped!=0?(sleepTimeSum/sitesScraped):0;
 		totalTime = System.currentTimeMillis() - totalTime;
-		logger.info("Sleep time was " + recordsProcessed*perRecordSleepTime + " ms");
 		logger.info(states.size() + " states took " + totalTime + " ms");
-		logger.info("Processing time was " + (totalTime-(recordsProcessed*perRecordSleepTime)) + " ms");
+		logger.info("Processing time was approximately " + (totalTime-(recordsProcessed*perRecordSleepTimeAverage)) + " ms");
 	}
 
+	private int scrapeSite(State state, Site site) {
+		int recordsProcessed = 0;
+		long perRecordSleepTime = util.offline()?0:site.getPerRecordSleepTime();
+		String baseUrl = site.getBaseUrl(new String[]{state.getName()});
+		//Add some retries if first connection to state site fails?
+		Document mainPageDoc = getHtmlAsDoc(baseUrl);
+		if (mainPageDoc!=null) {
+			int numberOfPages = site.getPages(mainPageDoc);
+			if (numberOfPages==0) {
+				numberOfPages = 1;
+			}
+			for (int p=1; p<=numberOfPages;p++) {
+				logger.debug("----Site: " + site.getName() + " - " + state.getName() + ": Page " + p);
+				Document resultsPageDoc = getHtmlAsDoc(site.getResultsPageUrl(p, 14));
+				recordsProcessed += scrapePage(resultsPageDoc, site, perRecordSleepTime);
+			}
+		}
+		logger.info("Sleep time for site " + site.getName() + " was " + recordsProcessed*perRecordSleepTime + " ms");
+		return recordsProcessed;
+	}
+	
+	private int scrapePage(Document resultsPageDoc, Site site, long perRecordSleepTime) {
+		//eventually output to spreadsheet
+		int recordsProcessed = 0;
+		List<ArrestRecord> arrestRecords = new ArrayList<>();
+		Elements profileDetailTags = site.getRecordElements(resultsPageDoc);
+		for (Element pdTag : profileDetailTags) {
+			logger.info(pdTag.text());
+			Document profileDetailDoc = getHtmlAsDoc(site.getRecordDetailDocUrl(pdTag));
+			if(profileDetailDoc!=null){
+				recordsProcessed++;
+				arrestRecords.add(populateArrestRecord(profileDetailDoc, site));
+				//addToSpreadsheet(arrestRecords);
+				try {
+					Thread.sleep(perRecordSleepTime);
+				} catch (InterruptedException ie) {
+					logger.error(ie.getMessage());
+				}
+			} else {
+				logger.error("Couldn't load details for " + pdTag.text());
+			}
+		}
+		return recordsProcessed;
+	}
+	
+	private ArrestRecord populateArrestRecord(Document profileDetailDoc, Site site) {
+		Elements profileDetails = site.getRecordDetailElements(profileDetailDoc);
+//			ArrestRecord record = new ArrestRecord(id, 
+//					fullName, 
+//					arrestDate, 
+//					bond, 
+//					arrestAge, 
+//					gender, 
+//					city, 
+//					state, 
+//					height, 
+//					weight, 
+//					hairColor, 
+//					eyeColor, 
+//					charges);
+		for (Element profileDetail : profileDetails) {
+			logger.info("\t" + profileDetail.text());
+		}
+		//return record;
+		return new ArrestRecord(0, "", null, 0, 0, "", "", "", "", 0, "", "", new String[]{});
+	}
+	
 	private Document getHtmlAsDoc(String url) {
 		try {
 			if (util.offline()) {

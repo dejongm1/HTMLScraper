@@ -11,6 +11,7 @@ public class ArrestsDotOrgSite implements Site {
 	private String baseUrl;
 	private int pages;
 	private int totalRecordCount;
+	private static final int perRecordSleepTime = 2000;
 
 	public ArrestsDotOrgSite() {}
 	
@@ -21,6 +22,10 @@ public class ArrestsDotOrgSite implements Site {
 	@Override
 	public String getName() {
 		return name;
+	}
+	@Override
+	public int getPerRecordSleepTime() {
+		return perRecordSleepTime;
 	}
 	@Override
 	public String getResultsPageUrl(int page, int resultsPerPage) {
