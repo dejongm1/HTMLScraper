@@ -178,6 +178,7 @@ public class ScrapingEngine {
     		}
 		}
 		excelWriter.saveRecordsToWorkbook(arrestRecords);
+		//excelWriter.removeIDColumnFromSpreadsheet();
 		return recordsProcessed;
 	}
 	

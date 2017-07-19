@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 import com.mcd.scraper.entities.Record;
 import com.mcd.scraper.entities.State;
 
+import jxl.Cell;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
 import jxl.write.Label;
@@ -27,6 +28,10 @@ public class ExcelWriter {
 	private State state;
 	private Record record;
 	private static final String OUTPUT_DIR = "output/";
+	private File oldBook;
+	private File newBook;
+	private Workbook currentWorkbook;
+	private WritableWorkbook copyWorkbook;
 
 	public ExcelWriter(State state, Record record) {
 		Calendar date = Calendar.getInstance();
@@ -51,14 +56,40 @@ public class ExcelWriter {
 	public State getState() {
 		return state;
 	}
-	
+	public File getOldBook() {
+		return oldBook;
+	}
+	public void setOldBook(File oldBook) {
+		this.oldBook = oldBook;
+	}
+	public File getNewBook() {
+		return newBook;
+	}
+	public void setNewBook(File newBook) {
+		this.newBook = newBook;
+	}
+	public Workbook getCurrentWorkbook() {
+		return currentWorkbook;
+	}
+
+	public void setCurrentWorkbook(Workbook currentWorkbook) {
+		this.currentWorkbook = currentWorkbook;
+	}
+
+	public WritableWorkbook getCopyWorkbook() {
+		return copyWorkbook;
+	}
+
+	public void setCopyWorkbook(WritableWorkbook copyWorkbook) {
+		this.copyWorkbook = copyWorkbook;
+	}
+
 	public void createSpreadhseet() {
 		WritableWorkbook newWorkbook = null;
 		try {
-			//currently overwrites previous workbook - need something different
+			//currently overwrites previous workbook - need something different?
 			newWorkbook = Workbook.createWorkbook(new File(OUTPUT_DIR + docName));
 
-			// create an Excel sheet
 			WritableSheet excelSheet = newWorkbook.createSheet(state.getName(), 0);
 
 			//create columns based on Record.getFieldsToOutput()
@@ -91,46 +122,65 @@ public class ExcelWriter {
 
 	}
 
-	public WritableSheet getWorksheet(int sheetNumber) {
-	    return getWorkbook().getSheet(sheetNumber);
-    }
-
 	public void saveRecordsToWorkbook(List<Record> records) {
-		File oldWorkbook = new File(OUTPUT_DIR + docName);
-		File newWorkbook = new File(OUTPUT_DIR + "temp.xls");
 		try {
-			Workbook currentWorkbook = Workbook.getWorkbook(oldWorkbook);
-			WritableWorkbook copy = Workbook.createWorkbook(newWorkbook, currentWorkbook);
-			int rowNumber = copy.getSheet(0).getRows();
+			createWorkbookCopy();
+			
+			int rowNumber = getCopyWorkbook().getSheet(0).getRows();
 			for (Record currentRecord : records) {
-				currentRecord.addToExcelSheet(copy, rowNumber);
+				currentRecord.addToExcelSheet(getCopyWorkbook(), rowNumber);
 				rowNumber++;
 			}
-			copy.write(); 
-			copy.close();
-			currentWorkbook.close();
 			
-			//swap temp book for new book
-		} catch (IOException | BiffException | WriteException | IllegalAccessException  e) {
+			replaceOldBookWithNew();
+		} catch (IOException | WriteException | IllegalAccessException | BiffException  e) {
 			logger.error("Error trying to save data to workbook", e);
 		}
-		if (oldWorkbook.delete()) {
-			newWorkbook.renameTo(new File(OUTPUT_DIR + docName));
-		} else {
-			//making sure we don't lose data or override good data
-			newWorkbook.renameTo(new File(OUTPUT_DIR + docName + System.currentTimeMillis()));
-		}
-		
 	}
 	
 	public void findPossibleDuplicates() {
 		//use name
 	}
 	
-	public boolean removeIDColumnFromSpreadsheet(String excelFilePath) {
+	public boolean removeIDColumnFromSpreadsheet(/*String excelFilePath*/) {
 		boolean successful = false;
-		
+		try {
+			createWorkbookCopy();
+			
+			WritableSheet sheet = getCopyWorkbook().getSheet(0);
+			
+			Cell[] row = sheet.getRow(0);
+			for (int c=0;c<row.length;c++) {
+				if (row[c].getContents().equals("ID")) {
+					sheet.removeColumn(c);
+				}
+			}
+
+			replaceOldBookWithNew();
+		} catch (IOException | WriteException | BiffException e) {
+			logger.error("Error trying to remove ID column from workbook", e);
+		}
 		return successful;
+	}
+	
+	private void createWorkbookCopy() throws BiffException, IOException {
+		setOldBook(new File(OUTPUT_DIR + docName));
+		setNewBook(new File(OUTPUT_DIR + "temp_copy.xls"));
+		setCurrentWorkbook(Workbook.getWorkbook(getOldBook()));
+		setCopyWorkbook(Workbook.createWorkbook(getNewBook(), getCurrentWorkbook()));
+	}
+	
+	private void replaceOldBookWithNew() throws IOException, WriteException {
+		getCopyWorkbook().write(); 
+		getCopyWorkbook().close();
+		getCurrentWorkbook().close();
+		
+		if (getOldBook().delete()) {
+			getNewBook().renameTo(new File(OUTPUT_DIR + docName));
+		} else {
+			//making sure we don't lose data or override good data
+			getNewBook().renameTo(new File(OUTPUT_DIR + docName + System.currentTimeMillis()));
+		}
 	}
 
 }
