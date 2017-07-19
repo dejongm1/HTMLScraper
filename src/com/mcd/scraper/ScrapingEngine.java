@@ -1,21 +1,27 @@
 package com.mcd.scraper;
 
-import com.mcd.scraper.entities.ArrestRecord;
-import com.mcd.scraper.entities.Record;
-import com.mcd.scraper.entities.State;
-import com.mcd.scraper.entities.Term;
-import com.mcd.scraper.entities.site.Site;
-import com.mcd.scraper.util.ExcelWriter;
-import com.mcd.scraper.util.Util;
-import jxl.write.WritableSheet;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.apache.commons.collections4.map.CaseInsensitiveMap;
 import org.apache.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.util.*;
-import java.util.Map.Entry;
+import com.mcd.scraper.entities.ArrestRecord;
+import com.mcd.scraper.entities.Record;
+import com.mcd.scraper.entities.State;
+import com.mcd.scraper.entities.Term;
+import com.mcd.scraper.entities.site.Site;
+import com.mcd.scraper.util.EmailUtil;
+import com.mcd.scraper.util.ExcelWriter;
+import com.mcd.scraper.util.Util;
 
 /**
  * 
@@ -109,13 +115,20 @@ public class ScrapingEngine {
 
 				//remove ID column on final save? 
 				//or use for future processing? check for ID and start where left off 
-				//******excelWriter.closeSaveSpreadsheet();********//
 				stateTime = System.currentTimeMillis() - stateTime;
 				logger.info(state.getName() + " took " + stateTime + " ms");
 				
+				try {
+					EmailUtil.send("dejong.c.michael@gmail.com", 
+							"Pack##92", //need to encrypt
+							"dejong.c.michael@gmail.com", 
+							"Arrest record parsing for " + state.getName(), 
+							"Michael's a stud, he just successfully parsed the interwebs for arrest records in the state of Iowa");
+				} catch (RuntimeException re) {
+					logger.error("An error occurred, email not sent");
+				}
 			}
 		//}
-
 		int perRecordSleepTimeAverage = sitesScraped!=0?(sleepTimeSum/sitesScraped):0;
 		totalTime = System.currentTimeMillis() - totalTime;
 		logger.info(states.size() + " states took " + totalTime + " ms");
@@ -124,7 +137,6 @@ public class ScrapingEngine {
 		} else {
 			logger.info("Processing time was " + totalTime + " ms");
 		}
-		
 	}
 
 	private int scrapeSite(State state, Site site, ExcelWriter excelWriter) {

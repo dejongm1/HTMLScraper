@@ -8,6 +8,8 @@ getRecords()
 	After so many failed getHtmlAsDoc()s stop trying
 	
 	Send e-mail when finished
+		- store addresses and details in props
+		- maybe separate e-mail.properties
 	
 	Don't override spreadsheet each run
 	One spreadsheet per state if running for multiple
@@ -20,6 +22,7 @@ getRecords()
 		- keep track of the page we're on? we would only retry a certain number of records
 		- output more info per record to spreadsheet. Read the spreadsheet in first, then start there
 		
+	Keep properties file separate from jar?
 
 
 

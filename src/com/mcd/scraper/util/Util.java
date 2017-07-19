@@ -1,34 +1,45 @@
 package com.mcd.scraper.util;
 
-import org.apache.log4j.Logger;
-import org.jsoup.Connection;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-
-import com.mcd.scraper.ScraperMain;
-import com.mcd.scraper.ScrapingEngine;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.ConnectException;
 import java.net.InetAddress;
-import java.util.*;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Random;
+
+import org.apache.log4j.Logger;
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+
+import com.mcd.scraper.ScrapingEngine;
 
 public class Util {
 	
 	private static final Logger logger = Logger.getLogger(Util.class);
-
+	private Properties properties;
+	
 	public Util(){
-		loadProperties();
+		this.properties = loadProperties();
+	}
+	
+	public Properties getProperties() {
+		return this.properties;
 	}
 
 	public boolean offline(){
 		try {
 			return (Boolean.valueOf(System.getProperty("runInEclipse")) 
-					|| !InetAddress.getByName("google.com").isReachable(3000)
-					|| Boolean.valueOf(System.getProperty("runOffline")));
+					|| Boolean.valueOf(System.getProperty("runOffline"))
+					|| !InetAddress.getByName("google.com").isReachable(3000));
 		} catch (IOException e) {
 			return true;
 		}
@@ -125,16 +136,16 @@ public class Util {
 	}
 
 	protected String getRandomUserAgent() { //to avoid getting blacklisted
-		String[] crawlerList = System.getProperties().getProperty("user.agent").split(", ");
+		String[] crawlerList = getProperty("user.agent").split(", ");
 		Random random = new Random();
 		int r = random.nextInt(crawlerList.length-1);
 		logger.debug("Crawler: " + crawlerList[r]);
 		return crawlerList[r];
 	}
 	
-	private void loadProperties() {
+	public Properties loadProperties() {
 		InputStream input = null;
-		Properties properties = new Properties();
+		Properties tempProperties = new Properties();
 		try {
 			// load a properties file
 			ClassLoader loader = Thread.currentThread().getContextClassLoader();
@@ -143,12 +154,12 @@ public class Util {
 			} else {
 				input = Util.class.getResourceAsStream("/resources/config.properties");
 			}
-			properties.load(input);
-			Properties systemProperties = System.getProperties();
-			for (String propertyName : properties.stringPropertyNames()) {
-				systemProperties.setProperty(propertyName, properties.getProperty(propertyName));
-			}
-			System.setProperties(systemProperties);
+			tempProperties.load(input);
+//			Properties systemProperties = System.getProperties();
+//			for (String propertyName : properties.stringPropertyNames()) {
+//				systemProperties.setProperty(propertyName, properties.getProperty(propertyName));
+//			}
+//			System.setProperties(systemProperties);
 		} catch (IOException ioe) {
 			logger.info("Error getting properties file", ioe);
 		} catch (NullPointerException np) {
@@ -162,5 +173,10 @@ public class Util {
 				}
 			}
 		}
+		return tempProperties;
+	}
+	
+	public String getProperty(String propertyKey) {
+		return getProperties().getProperty(propertyKey);
 	}
 }

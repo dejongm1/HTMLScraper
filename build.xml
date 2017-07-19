@@ -24,12 +24,11 @@
         	<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/commons-collections4-4.1.jar"/>
         	<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/log4j-1.2.17.jar"/>
         	<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/jxl-2.6.jar"/>
+        	<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/mail.jar"/>
+        	<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/activation.jar"/>
             <fileset dir="${dir.buildfile}/bin"/>
-            <!--<zipfileset dir="${dir.buildfile}/lib" includes="jsoup-1.10.3-sources.jar"/>
-            <zipfileset dir="${dir.buildfile}/lib" includes="jsoup-1.10.3-javadoc.jar"/>
-            <zipfileset dir="${dir.buildfile}/lib" includes="commons-validator-1.6-sources.jar"/>
-            <zipfileset dir="${dir.buildfile}/lib" includes="commons-validator-1.6-javadoc.jar"/> -->
-            <zipfileset dir="${dir.buildfile}/htmls" includes="*.html" prefix="htmls"/>
+        	<!--<zipfileset dir="${dir.buildfile}/htmls" includes="*.htm*" prefix="htmls"/> -->
+            <zipfileset dir="${dir.buildfile}/resources" includes="*.*" prefix="resources"/>
         </jar>
     </target>
 </project>
