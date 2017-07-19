@@ -1,6 +1,7 @@
 package com.mcd.scraper.entities;
 
 import jxl.write.WritableSheet;
+import jxl.write.WritableWorkbook;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -16,5 +17,5 @@ public interface Record {
 
     List<Field> getFieldsToOutput();
 
-    WritableSheet addToExcelSheet(WritableSheet worksheet, int rowNumber) throws IllegalAccessException;
+    WritableSheet addToExcelSheet(WritableWorkbook workbook, int rowNumber) throws IllegalAccessException;
 }

@@ -2,6 +2,7 @@ package com.mcd.scraper.entities;
 
 import jxl.write.Label;
 import jxl.write.WritableSheet;
+import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
 import org.apache.log4j.Logger;
 
@@ -170,15 +171,30 @@ public class ArrestRecord implements Record {
 	}
 
 	@Override
-	public WritableSheet addToExcelSheet(WritableSheet worksheet, int rowNumber) throws IllegalAccessException {
+	public WritableSheet addToExcelSheet(WritableWorkbook workbook, int rowNumber) throws IllegalAccessException {
 		int columnNumber = 0;
+		WritableSheet worksheet = workbook.getSheet(0);
 		for (Field field : getFieldsToOutput()) {
-			Label label = new Label(columnNumber, rowNumber, field.get(this).toString());
-			try {
-				worksheet.addCell(label);
-			} catch (WriteException e) {
-				logger.error("Trouble writing info from " + this.getFullName() + " into row " + rowNumber + ", column " + columnNumber);
-			}
+			Object fieldValue = field.get(this);
+			StringBuilder fieldValueString = new StringBuilder();
+				if (fieldValue instanceof String) {
+					fieldValueString.append((String) field.get(this));
+				} else if (fieldValue instanceof String[]) {
+					for (String stringItem : (String[]) field.get(this)) {
+						fieldValueString.append(stringItem + ";" );
+						//fieldValueString.append(stringItem + "\n" );
+					}
+				}
+				try {
+					Label label = new Label(columnNumber, rowNumber, fieldValueString.toString());
+					worksheet.addCell(label);
+
+				} catch (WriteException we) {
+					logger.error("Trouble writing info from " + this.getFullName() + " into row " + rowNumber + ", column " + columnNumber, we);
+				} catch (NullPointerException npe) {
+					logger.error("Trouble writing info from " + this.getFullName() + " into row " + rowNumber + ", column " + columnNumber, npe);
+				}
+				columnNumber++;
 		}
 		return worksheet;
 	}

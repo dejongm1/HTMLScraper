@@ -1,6 +1,7 @@
 package com.mcd.scraper;
 
 import com.mcd.scraper.entities.ArrestRecord;
+import com.mcd.scraper.entities.Record;
 import com.mcd.scraper.entities.State;
 import com.mcd.scraper.entities.Term;
 import com.mcd.scraper.entities.site.Site;
@@ -30,7 +31,7 @@ public class ScrapingEngine {
 	protected void getPopularWords(String url, int numberOfWords /*, int levelsDeep*/) {
 		long time = System.currentTimeMillis();
 		Document doc = util.getHtmlAsDoc(url);
-		if (doc!=null) {
+		if (docWasRetrieved(doc)) {
 			//give option to leave in numbers? 
 			Map<String, Term> termCountMap = new CaseInsensitiveMap<String, Term>();
 			String bodyText = doc.body().text();
@@ -61,17 +62,21 @@ public class ScrapingEngine {
 			}
 			time = System.currentTimeMillis() - time;
 			logger.info("Took " + time + " ms");
+		} else {
+			logger.error("Failed to load html doc from " + url);
 		}
 	}
 
 	protected void getTextBySelector(String url, String selector) {
 		long time = System.currentTimeMillis();
 		Document doc = util.getHtmlAsDoc(url);
-		if (doc!=null) {
+		if (docWasRetrieved(doc)) {
 			Elements tags = doc.select(selector);
 			for (Element tag : tags) {
 				logger.info(tag.text());
 			}
+		} else {
+			logger.error("Failed to load html doc from " + url);
 		}
 		time = System.currentTimeMillis() - time;
 		logger.info("Took " + time + " ms");
@@ -91,14 +96,13 @@ public class ScrapingEngine {
 				long stateTime = System.currentTimeMillis();
 				logger.info("----State: " + state.getName() + "----");
 				Site[] sites = state.getSites();
-				ExcelWriter excelWriter  = new ExcelWriter(state);
-				excelWriter.createSpreadhseet(new ArrestRecord());
-				WritableSheet sheet = excelWriter.getWorksheet(0);//just do one sheet per excel for now
+				ExcelWriter excelWriter  = new ExcelWriter(state, new ArrestRecord());
+				excelWriter.createSpreadhseet();
 				for(Site site : sites){
-					sitesScraped++;
 					sleepTimeSum += util.offline()?0:site.getPerRecordSleepTime();
 					long time = System.currentTimeMillis();
-					recordsProcessed += scrapeSite(state, site, sheet);
+					recordsProcessed += scrapeSite(state, site, excelWriter);
+					sitesScraped++;
 					time = System.currentTimeMillis() - time;
 					logger.info(site.getBaseUrl(new String[]{state.getName()}) + " took " + time + " ms");
 				}
@@ -123,13 +127,13 @@ public class ScrapingEngine {
 		
 	}
 
-	private int scrapeSite(State state, Site site, WritableSheet sheet) {
+	private int scrapeSite(State state, Site site, ExcelWriter excelWriter) {
 		int recordsProcessed = 0;
 		long perRecordSleepTime = util.offline()?0:site.getPerRecordSleepTime();
 		String baseUrl = site.getBaseUrl(new String[]{state.getName()});
 		//Add some retries if first connection to state site fails?
 		Document mainPageDoc = util.getHtmlAsDoc(baseUrl);
-		if (mainPageDoc!=null) { //TODO check if page is just <head><body>...
+		if (docWasRetrieved(mainPageDoc)) { //TODO check if page is just <head><body>...
 			int numberOfPages = site.getPages(mainPageDoc);
 			if (numberOfPages==0) {
 				numberOfPages = 1;
@@ -137,49 +141,56 @@ public class ScrapingEngine {
 			for (int p=1; p<=numberOfPages;p++) {
 				logger.debug("----Site: " + site.getName() + " - " + state.getName() + ": Page " + p);
 				Document resultsPageDoc = util.getHtmlAsDoc(site.getResultsPageUrl(p, 14));
-				recordsProcessed += scrapePage(resultsPageDoc, site, perRecordSleepTime, sheet);
+				if (docWasRetrieved(resultsPageDoc)){
+					recordsProcessed += scrapePage(resultsPageDoc, site, perRecordSleepTime, excelWriter);
+				} else {
+					//log something
+				}
 			}
+		} else {
+			logger.error("Failed to load html doc from " + baseUrl);
 		}
 		logger.info("Sleep time for site " + site.getName() + " was " + recordsProcessed*perRecordSleepTime + " ms");
 		return recordsProcessed;
 	}
 	
-	private int scrapePage(Document resultsPageDoc, Site site, long perRecordSleepTime, WritableSheet sheet) {
+	private int scrapePage(Document resultsPageDoc, Site site, long perRecordSleepTime, ExcelWriter excelWriter) {
 		//eventually output to spreadsheet
 		int recordsProcessed = 0;
-		List<ArrestRecord> arrestRecords = new ArrayList<>();
-		ArrestRecord record = new ArrestRecord();
+		List<Record> arrestRecords = new ArrayList<>();
+		//ArrestRecord record = new ArrestRecord();
 		Elements profileDetailTags = site.getRecordElements(resultsPageDoc);
+		//WritableSheet sheet = excelWriter.getWorksheet(0);//just do one sheet per excel for now
 		for (Element pdTag : profileDetailTags) {
-			logger.info(pdTag.text());
+			logger.debug(pdTag.text());
 			Document profileDetailDoc = util.getHtmlAsDoc(site.getRecordDetailDocUrl(pdTag));
-			if(profileDetailDoc!=null){
+			if(docWasRetrieved(profileDetailDoc)){
 				recordsProcessed++;
 				//should we check for ID first or not bother unless we see duplicates??
                 try {
-                    populateArrestRecord(profileDetailDoc, site, record);
-                    record.addToExcelSheet(sheet, recordsProcessed); //get the first empty row if we're enabling starting where we stopped
+                    arrestRecords.add(populateArrestRecord(profileDetailDoc, site));
 					Thread.sleep(perRecordSleepTime);
 				} catch (InterruptedException ie) {
-					logger.error(ie.getMessage());
-				} catch (IllegalAccessException e) {
-                    logger.error("Trouble adding " + record.getFullName() + " \n" + e.getMessage());
-                }
+					logger.error(ie);
+				}
             } else {
-				logger.error("Couldn't load details for " + pdTag.text());
-			}
+    			logger.error("Failed to load html doc from " + pdTag);
+    		}
 		}
+		excelWriter.saveRecordsToWorkbook(arrestRecords);
 		return recordsProcessed;
 	}
 	
-	private void populateArrestRecord(Document profileDetailDoc, Site site, ArrestRecord record) {
+	private ArrestRecord populateArrestRecord(Document profileDetailDoc, Site site) {
 		Elements profileDetails = site.getRecordDetailElements(profileDetailDoc);
-		record.setId(profileDetails.get(0).baseUri().substring(profileDetails.get(0).baseUri().indexOf("/Arrests")+9));//TODO not working
+		String baseURI = profileDetailDoc.baseUri();
+		ArrestRecord record = new ArrestRecord();
+		record.setId(profileDetails.get(0).baseUri().substring(baseURI.indexOf("/Arrests/")+9, baseURI.length()-1));
 		for (Element profileDetail : profileDetails) {
 			matchPropertyToField(record, profileDetail);
 			logger.info("\t" + profileDetail.text());
 		}
-		//return record;
+		return record;
 	}
 	
 	@SuppressWarnings("deprecation")
@@ -259,5 +270,9 @@ public class ScrapingEngine {
 	
 	private String stripOffLabel(Element profileDetail) {
 		return profileDetail.text().substring(profileDetail.text().indexOf(':')+1).trim();
+	}
+	
+	private boolean docWasRetrieved(Document doc) {
+		return doc!=null && !doc.body().text().equals("");
 	}
 }
