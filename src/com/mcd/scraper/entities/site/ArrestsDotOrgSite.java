@@ -64,7 +64,7 @@ public class ArrestsDotOrgSite implements Site {
 	@Override
 	public String getRecordDetailDocUrl(Element record) {
 		String pdLink = record.attr("href");
-		pdLink = pdLink.replace("/?d=1", "");
+		pdLink = pdLink.replace("?d=1", "");
 		return getBaseUrl(new String[]{})+pdLink;
 	}
 	@Override

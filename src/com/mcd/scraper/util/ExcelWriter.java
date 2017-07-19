@@ -1,20 +1,18 @@
 package com.mcd.scraper.util;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.util.Calendar;
-
-import org.apache.log4j.Logger;
-
 import com.mcd.scraper.entities.Record;
 import com.mcd.scraper.entities.State;
-
 import jxl.Workbook;
 import jxl.write.Label;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
+import org.apache.log4j.Logger;
+
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.Calendar;
 
 public class ExcelWriter {
 
@@ -60,12 +58,12 @@ public class ExcelWriter {
 				columnNumber++;
 			}
 			newWorkbook.write();
+            setWorkbook(newWorkbook);//this only works if I create one spreadsheet per ExcelWriter
 		} catch (IOException | WriteException e) {
 			logger.error(e.getMessage());
 		} finally {
         	if (newWorkbook != null) {
         		try {
-        			setWorkbook(newWorkbook);//this only works if I create one spreadsheet per ExcelWriter
         			newWorkbook.close();
         		} catch (IOException e) {
         			logger.error(e.getMessage());
@@ -80,7 +78,10 @@ public class ExcelWriter {
 		//use ID
 
 	}
-	
+
+	public WritableSheet getWorksheet(int sheetNumber) {
+	    return getWorkbook().getSheet(sheetNumber);
+    }
 
 	public void findPossibleDuplicates() {
 		//use name

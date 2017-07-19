@@ -1,5 +1,10 @@
 package com.mcd.scraper.entities;
 
+import jxl.write.Label;
+import jxl.write.WritableSheet;
+import jxl.write.WriteException;
+import org.apache.log4j.Logger;
+
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -7,7 +12,9 @@ import java.util.List;
 
 
 public class ArrestRecord implements Record {
-	
+
+	public static final Logger logger = Logger.getLogger(ArrestRecord.class);
+
 	//create a person entity?	
 	private String id;
 	private String fullName;
@@ -28,9 +35,9 @@ public class ArrestRecord implements Record {
 	private String birthPlace;
 	private String[] charges;
 
-	public ArrestRecord(){};
-	
-	@Override
+	public ArrestRecord(){}
+
+    @Override
 	public String getId() {
 		return id;
 	}
@@ -161,10 +168,20 @@ public class ArrestRecord implements Record {
 		}
 		return fields;	
 	}
-//	
-//	public outputToExcel() {
-//		
-//	}
+
+	@Override
+	public WritableSheet addToExcelSheet(WritableSheet worksheet, int rowNumber) throws IllegalAccessException {
+		int columnNumber = 0;
+		for (Field field : getFieldsToOutput()) {
+			Label label = new Label(columnNumber, rowNumber, field.get(this).toString());
+			try {
+				worksheet.addCell(label);
+			} catch (WriteException e) {
+				logger.error("Trouble writing info from " + this.getFullName() + " into row " + rowNumber + ", column " + columnNumber);
+			}
+		}
+		return worksheet;
+	}
 //	
 //	public outputAsText() {
 //	

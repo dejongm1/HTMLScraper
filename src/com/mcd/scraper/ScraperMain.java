@@ -1,13 +1,12 @@
 package com.mcd.scraper;
 
-import java.io.IOException;
-import java.util.List;
-
-import org.apache.log4j.Logger;
-
 import com.mcd.scraper.entities.State;
 import com.mcd.scraper.util.InputUtil;
 import com.mcd.scraper.util.ScraperConstants;
+import org.apache.log4j.Logger;
+
+import java.io.IOException;
+import java.util.List;
 
 /**
  * 
@@ -70,6 +69,7 @@ public class ScraperMain {
 			System.err.println("Dunno what you did but I don't like it. I quit.");
 			System.exit(0);
 		} catch (NullPointerException npe) {
+		    //Can i start over here when i catch exceptions? just pass something to start where it left off? Maybe count number of failures before giving up
 			prompt = "I didn't understand this parameter, please try again. Type \"quit\" if you changed your mind. \n" + prompt;
 			main(new String[] {});
 		}

@@ -1,25 +1,20 @@
 package com.mcd.scraper;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import org.apache.commons.collections4.map.CaseInsensitiveMap;
-import org.apache.log4j.Logger;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
 import com.mcd.scraper.entities.ArrestRecord;
 import com.mcd.scraper.entities.State;
 import com.mcd.scraper.entities.Term;
 import com.mcd.scraper.entities.site.Site;
 import com.mcd.scraper.util.ExcelWriter;
 import com.mcd.scraper.util.ScraperUtil;
+import jxl.write.WritableSheet;
+import org.apache.commons.collections4.map.CaseInsensitiveMap;
+import org.apache.log4j.Logger;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * 
@@ -98,11 +93,12 @@ public class ScrapingEngine {
 				Site[] sites = state.getSites();
 				ExcelWriter excelWriter  = new ExcelWriter(state);
 				excelWriter.createSpreadhseet(new ArrestRecord());
+				WritableSheet sheet = excelWriter.getWorksheet(0);//just do one sheet per excel for now
 				for(Site site : sites){
 					sitesScraped++;
 					sleepTimeSum += util.offline()?0:site.getPerRecordSleepTime();
 					long time = System.currentTimeMillis();
-					recordsProcessed += scrapeSite(state, site, excelWriter);
+					recordsProcessed += scrapeSite(state, site, sheet);
 					time = System.currentTimeMillis() - time;
 					logger.info(site.getBaseUrl(new String[]{state.getName()}) + " took " + time + " ms");
 				}
@@ -127,13 +123,13 @@ public class ScrapingEngine {
 		
 	}
 
-	private int scrapeSite(State state, Site site, ExcelWriter excelWriter) {
+	private int scrapeSite(State state, Site site, WritableSheet sheet) {
 		int recordsProcessed = 0;
 		long perRecordSleepTime = util.offline()?0:site.getPerRecordSleepTime();
 		String baseUrl = site.getBaseUrl(new String[]{state.getName()});
 		//Add some retries if first connection to state site fails?
 		Document mainPageDoc = util.getHtmlAsDoc(baseUrl);
-		if (mainPageDoc!=null) {
+		if (mainPageDoc!=null) { //TODO check if page is just <head><body>...
 			int numberOfPages = site.getPages(mainPageDoc);
 			if (numberOfPages==0) {
 				numberOfPages = 1;
@@ -141,48 +137,49 @@ public class ScrapingEngine {
 			for (int p=1; p<=numberOfPages;p++) {
 				logger.debug("----Site: " + site.getName() + " - " + state.getName() + ": Page " + p);
 				Document resultsPageDoc = util.getHtmlAsDoc(site.getResultsPageUrl(p, 14));
-				recordsProcessed += scrapePage(resultsPageDoc, site, perRecordSleepTime, excelWriter);
+				recordsProcessed += scrapePage(resultsPageDoc, site, perRecordSleepTime, sheet);
 			}
 		}
 		logger.info("Sleep time for site " + site.getName() + " was " + recordsProcessed*perRecordSleepTime + " ms");
 		return recordsProcessed;
 	}
 	
-	private int scrapePage(Document resultsPageDoc, Site site, long perRecordSleepTime, ExcelWriter excelWriter) {
+	private int scrapePage(Document resultsPageDoc, Site site, long perRecordSleepTime, WritableSheet sheet) {
 		//eventually output to spreadsheet
 		int recordsProcessed = 0;
 		List<ArrestRecord> arrestRecords = new ArrayList<>();
+		ArrestRecord record = new ArrestRecord();
 		Elements profileDetailTags = site.getRecordElements(resultsPageDoc);
 		for (Element pdTag : profileDetailTags) {
 			logger.info(pdTag.text());
 			Document profileDetailDoc = util.getHtmlAsDoc(site.getRecordDetailDocUrl(pdTag));
 			if(profileDetailDoc!=null){
 				recordsProcessed++;
-				arrestRecords.add(populateArrestRecord(profileDetailDoc, site));
-				//****** OR just ****************//
-				//should we check for ID or not bother unless we see duplicates?
-				//******excelWriter.exportToSpreadsheet(arrestRecords);********//
-				try {
+				//should we check for ID first or not bother unless we see duplicates??
+                try {
+                    populateArrestRecord(profileDetailDoc, site, record);
+                    record.addToExcelSheet(sheet, recordsProcessed); //get the first empty row if we're enabling starting where we stopped
 					Thread.sleep(perRecordSleepTime);
 				} catch (InterruptedException ie) {
 					logger.error(ie.getMessage());
-				}
-			} else {
+				} catch (IllegalAccessException e) {
+                    logger.error("Trouble adding " + record.getFullName() + " \n" + e.getMessage());
+                }
+            } else {
 				logger.error("Couldn't load details for " + pdTag.text());
 			}
 		}
 		return recordsProcessed;
 	}
 	
-	private ArrestRecord populateArrestRecord(Document profileDetailDoc, Site site) {
+	private void populateArrestRecord(Document profileDetailDoc, Site site, ArrestRecord record) {
 		Elements profileDetails = site.getRecordDetailElements(profileDetailDoc);
-		ArrestRecord record = new ArrestRecord();
-		record.setId(profileDetails.get(0).baseUri().substring(profileDetails.get(0).baseUri().lastIndexOf('/')+1));
+		record.setId(profileDetails.get(0).baseUri().substring(profileDetails.get(0).baseUri().indexOf("/Arrests")+9));//TODO not working
 		for (Element profileDetail : profileDetails) {
 			matchPropertyToField(record, profileDetail);
 			logger.info("\t" + profileDetail.text());
 		}
-		return record;
+		//return record;
 	}
 	
 	@SuppressWarnings("deprecation")
