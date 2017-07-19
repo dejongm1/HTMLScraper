@@ -82,7 +82,7 @@ public class Util {
 				break;
 			case "http://illinois.arrests.org" : 									htmlLocation = "illinois-arrests.htm";
 				break;
-			case "http://illinois.arrests.org/?page=1&results=56" :					htmlLocation = "illinois-arrests-56-results.htm";
+			case "http://illinois.arrests.org/?page=1&results=14" :					htmlLocation = "illinois-arrests-56-results.htm";
 				break;
 			case "http://www.browser-info.net/useragents" :							htmlLocation = "BROWSER-INFO - User-Agents.html";
 				break;

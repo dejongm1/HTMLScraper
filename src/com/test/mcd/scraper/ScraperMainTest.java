@@ -18,10 +18,18 @@ public class ScraperMainTest {
 	}
 	/**
 	 * Test no inputs
+	 * 
 	 * For each scrape type
 	 * 		Test 1 input
 	 * 		Test 2 inputs
 	 * 		Test 3 inputs
+	 * 
+	 * Test all variations of state input
+	 * 		TX, IA, IL
+	 * 		IL, AI
+	 * 		RI, IA 
+	 * 		All
+	 * 		All, IA, IL
 	 * 
 	 * Test online
 	 * Test offline

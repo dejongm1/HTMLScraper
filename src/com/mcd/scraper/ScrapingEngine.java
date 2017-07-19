@@ -152,7 +152,7 @@ public class ScrapingEngine {
 			}
 			for (int p=1; p<=numberOfPages;p++) {
 				logger.debug("----Site: " + site.getName() + " - " + state.getName() + ": Page " + p);
-				Document resultsPageDoc = util.getHtmlAsDoc(site.getResultsPageUrl(p, 14));
+				Document resultsPageDoc = util.getHtmlAsDoc(site.getResultsPageUrl(p, 14));//either pass this in or change from 14?
 				if (docWasRetrieved(resultsPageDoc)){
 					recordsProcessed += scrapePage(resultsPageDoc, site, perRecordSleepTime, excelWriter);
 				} else {

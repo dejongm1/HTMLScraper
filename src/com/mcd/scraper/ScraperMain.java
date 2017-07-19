@@ -70,6 +70,7 @@ public class ScraperMain {
 			System.exit(0);
 		} catch (NullPointerException npe) {
 		    //Can i start over here when i catch exceptions? just pass something to start where it left off? Maybe count number of failures before giving up
+			//Catch states that haven't been coded yet
 			prompt = "I didn't understand this parameter, please try again. Type \"quit\" if you changed your mind. \n" + prompt;
 			main(new String[] {});
 		}
