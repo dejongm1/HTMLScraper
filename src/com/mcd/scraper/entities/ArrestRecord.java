@@ -1,15 +1,18 @@
 package com.mcd.scraper.entities;
 
+import java.lang.reflect.Field;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.List;
+
+import org.apache.log4j.Logger;
+
 import jxl.write.Label;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
-import org.apache.log4j.Logger;
-
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
 
 
 public class ArrestRecord implements Record {
@@ -153,18 +156,21 @@ public class ArrestRecord implements Record {
 	public List<Field> getFieldsToOutput() {
 		List<Field> fields = new ArrayList<>();
 		try {
-			fields.add(this.getClass().getDeclaredField("id"));
-			fields.add(this.getClass().getDeclaredField("fullName"));
-			fields.add(this.getClass().getDeclaredField("gender"));
-			fields.add(this.getClass().getDeclaredField("height"));
-			fields.add(this.getClass().getDeclaredField("weight"));
-			fields.add(this.getClass().getDeclaredField("hairColor"));
-			fields.add(this.getClass().getDeclaredField("eyeColor"));
-			fields.add(this.getClass().getDeclaredField("birthPlace"));
-			fields.add(this.getClass().getDeclaredField("city"));
-			fields.add(this.getClass().getDeclaredField("county"));
-			fields.add(this.getClass().getDeclaredField("charges"));
-		} catch (NoSuchFieldException | SecurityException e) {
+			fields.addAll(Arrays.asList(this.getClass().getDeclaredFields()));
+			fields.remove(0);
+//			fields.add(this.getClass().getDeclaredField("id"));
+//			fields.add(this.getClass().getDeclaredField("fullName"));
+//			fields.add(this.getClass().getDeclaredField("gender"));
+//			fields.add(this.getClass().getDeclaredField("height"));
+//			fields.add(this.getClass().getDeclaredField("weight"));
+//			fields.add(this.getClass().getDeclaredField("hairColor"));
+//			fields.add(this.getClass().getDeclaredField("eyeColor"));
+//			fields.add(this.getClass().getDeclaredField("birthPlace"));
+//			fields.add(this.getClass().getDeclaredField("city"));
+//			fields.add(this.getClass().getDeclaredField("county"));
+//			fields.add(this.getClass().getDeclaredField("arrestDate"));
+//			fields.add(this.getClass().getDeclaredField("charges"));
+		} catch (/**NoSuchFieldException |*/ SecurityException e) {
 			e.printStackTrace();
 		}
 		return fields;	
@@ -181,9 +187,14 @@ public class ArrestRecord implements Record {
 					fieldValueString.append((String) field.get(this));
 				} else if (fieldValue instanceof String[]) {
 					for (String stringItem : (String[]) field.get(this)) {
-						fieldValueString.append(stringItem + ";" );
+						fieldValueString.append(stringItem + "; " );
 						//fieldValueString.append(stringItem + "\n" );
 					}
+				} else if (fieldValue instanceof Calendar) {
+					SimpleDateFormat formatter=new SimpleDateFormat("DD-MMM-yyyy hh:mm a"); 
+					fieldValueString.append(formatter.format(((Calendar)field.get(this)).getTime()));
+				} else if (fieldValue instanceof Integer) {
+					fieldValueString.append(String.valueOf(field.get(this)));
 				}
 				try {
 					Label label = new Label(columnNumber, rowNumber, fieldValueString.toString());

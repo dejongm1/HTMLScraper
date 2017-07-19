@@ -48,7 +48,7 @@ public class ScraperMain {
 					|| scrapeTypeChoice.equals("1")) {
 				getPopularWords(args);
 			} else if (scrapeTypeChoice.toLowerCase().contains("text")
-					|| scrapeTypeChoice.toLowerCase().contains("scrape")
+					|| scrapeTypeChoice.toLowerCase().contains("scrap")
 					|| scrapeTypeChoice.equals("2")) {
 				getTextBySelector(args);
 			} else if (scrapeTypeChoice.toLowerCase().contains("search")
