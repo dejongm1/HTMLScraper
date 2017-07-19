@@ -6,7 +6,7 @@ import com.mcd.scraper.entities.State;
 import com.mcd.scraper.entities.Term;
 import com.mcd.scraper.entities.site.Site;
 import com.mcd.scraper.util.ExcelWriter;
-import com.mcd.scraper.util.ScraperUtil;
+import com.mcd.scraper.util.Util;
 import jxl.write.WritableSheet;
 import org.apache.commons.collections4.map.CaseInsensitiveMap;
 import org.apache.log4j.Logger;
@@ -26,7 +26,7 @@ public class ScrapingEngine {
 
 	public static final Logger logger = Logger.getLogger(ScrapingEngine.class);
 	
-	ScraperUtil util = new ScraperUtil();
+	Util util = new Util();
 
 	protected void getPopularWords(String url, int numberOfWords /*, int levelsDeep*/) {
 		long time = System.currentTimeMillis();

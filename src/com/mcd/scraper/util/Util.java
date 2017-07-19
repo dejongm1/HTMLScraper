@@ -16,11 +16,11 @@ import java.net.ConnectException;
 import java.net.InetAddress;
 import java.util.*;
 
-public class ScraperUtil {
+public class Util {
 	
-	private static final Logger logger = Logger.getLogger(ScraperUtil.class);
+	private static final Logger logger = Logger.getLogger(Util.class);
 
-	public ScraperUtil(){
+	public Util(){
 		loadProperties();
 	}
 
@@ -65,13 +65,15 @@ public class ScraperUtil {
 				break;
 			case "http://iowa.arrests.org/Arrests/Tricia_Garvin-brown_33706569/" : 	htmlLocation = "iowa-arrests-Tricia Garvin-brown.htm";
 				break;
-			case "http://illinois.arrests.org/Arrests/Paul_Rinaldi_33672705/" : 		htmlLocation = "illinois-arrests-Paul-Rinaldi.htm";
+			case "http://illinois.arrests.org/Arrests/Paul_Rinaldi_33672705/" : 	htmlLocation = "illinois-arrests-Paul-Rinaldi.htm";
 				break;
-			case "http://illinois.arrests.org/Arrests/Nicole_Shula_33672706/" : 		htmlLocation = "illinois-arrests-Nicole-Shula.htm";
+			case "http://illinois.arrests.org/Arrests/Nicole_Shula_33672706/" : 	htmlLocation = "illinois-arrests-Nicole-Shula.htm";
 				break;
 			case "http://illinois.arrests.org" : 									htmlLocation = "illinois-arrests.htm";
 				break;
 			case "http://illinois.arrests.org/?page=1&results=56" :					htmlLocation = "illinois-arrests-56-results.htm";
+				break;
+			case "http://www.browser-info.net/useragents" :							htmlLocation = "BROWSER-INFO - User-Agents.html";
 				break;
 			default : 																htmlLocation = "";
 				break;
@@ -123,7 +125,7 @@ public class ScraperUtil {
 	}
 
 	protected String getRandomUserAgent() { //to avoid getting blacklisted
-		String[] crawlerList = System.getProperties().getProperty("user.agent.crawlers").split(", ");
+		String[] crawlerList = System.getProperties().getProperty("user.agent").split(", ");
 		Random random = new Random();
 		int r = random.nextInt(crawlerList.length-1);
 		logger.debug("Crawler: " + crawlerList[r]);
@@ -139,7 +141,7 @@ public class ScraperUtil {
 			if (Boolean.valueOf(System.getProperty("runInEclipse"))) {
 				input = loader.getResourceAsStream("config.properties");
 			} else {
-				input = ScraperUtil.class.getResourceAsStream("/resources/config.properties");
+				input = Util.class.getResourceAsStream("/resources/config.properties");
 			}
 			properties.load(input);
 			Properties systemProperties = System.getProperties();
@@ -148,15 +150,15 @@ public class ScraperUtil {
 			}
 			System.setProperties(systemProperties);
 		} catch (IOException ioe) {
-			ioe.printStackTrace();
+			logger.info("Error getting properties file", ioe);
 		} catch (NullPointerException np) {
-			logger.info("Properties file cannot be found");
+			logger.info("Properties file cannot be found", np);
 		} finally {
 			if (input != null) {
 				try {
 					input.close();
-				} catch (IOException e) {
-					e.printStackTrace();
+				} catch (IOException ioe) {
+					logger.info("Error getting properties file", ioe);
 				}
 			}
 		}
