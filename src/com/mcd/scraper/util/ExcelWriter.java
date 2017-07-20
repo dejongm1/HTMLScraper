@@ -142,18 +142,15 @@ public class ExcelWriter {
 		//use name
 	}
 	
-	public boolean removeIDColumnFromSpreadsheet(/*String excelFilePath*/) {
+	public boolean removeColumnsFromSpreadsheet(int[] args) {
 		boolean successful = false;
 		try {
 			createWorkbookCopy();
 			
 			WritableSheet sheet = getCopyWorkbook().getSheet(0);
 			
-			Cell[] row = sheet.getRow(0);
-			for (int c=0;c<row.length;c++) {
-				if (row[c].getContents().equals("ID")) {
-					sheet.removeColumn(c);
-				}
+			for (int c=0;c<args.length;c++) {
+				sheet.removeColumn(args[c]);
 			}
 
 			replaceOldBookWithNew();

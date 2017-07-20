@@ -11,7 +11,7 @@ public class ArrestsDotOrgSite implements Site {
 	private String baseUrl;
 	private int pages;
 	private int totalRecordCount;
-	private static final int perRecordSleepTime = 8000;
+	private static final int[] perRecordSleepRange = new int[]{5,15};
 
 	public ArrestsDotOrgSite() {}
 	
@@ -24,8 +24,8 @@ public class ArrestsDotOrgSite implements Site {
 		return name;
 	}
 	@Override
-	public int getPerRecordSleepTime() {
-		return perRecordSleepTime;
+	public int[] getPerRecordSleepRange() {
+		return perRecordSleepRange;
 	}
 	@Override
 	public String getResultsPageUrl(int page/*, int resultsPerPage*/) {

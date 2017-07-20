@@ -9,6 +9,8 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import com.mcd.scraper.entities.ArrestRecord.RecordColumnEnum;
+
 import jxl.write.Label;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
@@ -16,28 +18,64 @@ import jxl.write.WriteException;
 
 
 public class ArrestRecord implements Record {
+	
+	public enum RecordColumnEnum {
+		ID_COLUMN(0, "ID"),
+		FULLNAME_COLUMN(1, "Full Name"),
+		FIRSTNAME_COLUMN(2, "First Name"),
+		MIDDLENAME_COLUMN(3, "Middle Name"),
+		LASTNAME_COLUMN(4, "Last Name"),
+		ARRESTDATE_COLUMN(5, "Arrest Date"),
+		TOTALBOND_COLUMN(6, "Total Bond"),
+		ARRESTAGE_COLUMN(7, "Arrest Age"),
+		GENDER_COLUMN(8, "Gender"),
+		CITY_COLUMN(9, "City"),
+		STATE_COLUMN(10, "State"),
+		COUNTY_COLUMN(11, "County"),
+		HEIGHT_COLUMN(12, "Height"),
+		WEIGHT_COLUMN(13, "Weight"),
+		HAIRCOLOR_COLUMN(14, "Hair Color"),
+		EYECOLOR_COLUMN(15, "Eye Color"),
+		BIRTHPLACE_COLUMN(16, "Birth Place"),
+		CHARGES_COLUMN(17, "Charges");
+	
+		private int columnIndex;
+		private String columnTitle;
+		
+		RecordColumnEnum(int columnIndex, String columnTitle) {
+			this.columnIndex = columnIndex;
+			this.columnTitle = columnTitle;
+		}
+		public int index() {
+			return columnIndex;
+		}
+		public String title() {
+			return columnTitle;
+		}
+		
+	}
 
 	public static final Logger logger = Logger.getLogger(ArrestRecord.class);
 
 	//create a person entity?	
-	private String id;
-	private String fullName;
-	private String firstName;
-	private String middleName;
-	private String lastName;
-	private Calendar arrestDate;
-	private int totalBond;
-	private int arrestAge;
-	private String gender;
-	private String city;
-	private String state;
-	private String county;
-	private String height;
-	private String weight;
-	private String hairColor;
-	private String eyeColor;
-	private String birthPlace;
-	private String[] charges;
+	private String id;					
+	private String fullName;			
+	private String firstName;			
+	private String middleName;			
+	private String lastName;			
+	private Calendar arrestDate;		
+	private int totalBond;				
+	private int arrestAge;				
+	private String gender;				
+	private String city;				
+	private String state;				
+	private String county;				
+	private String height;				
+	private String weight;				
+	private String hairColor;			
+	private String eyeColor;			
+	private String birthPlace;			
+	private String[] charges;			
 
 	public ArrestRecord(){}
 
@@ -157,7 +195,11 @@ public class ArrestRecord implements Record {
 		List<Field> fields = new ArrayList<>();
 		try {
 			fields.addAll(Arrays.asList(this.getClass().getDeclaredFields()));
-			fields.remove(0);
+			for (int f=0;f<fields.size();f++) {
+				if (fields.get(f).getName().contains("logger") || fields.get(f).getName().contains("_COLUMN")) {
+					fields.remove(f);
+				}
+			}
 //			fields.add(this.getClass().getDeclaredField("id"));
 //			fields.add(this.getClass().getDeclaredField("fullName"));
 //			fields.add(this.getClass().getDeclaredField("gender"));

@@ -5,6 +5,7 @@ import com.mcd.scraper.entities.Record;
 import com.mcd.scraper.entities.State;
 import com.mcd.scraper.entities.Term;
 import com.mcd.scraper.entities.site.Site;
+import com.mcd.scraper.util.ConnectionUtil;
 import com.mcd.scraper.util.EmailUtil;
 import com.mcd.scraper.util.ExcelWriter;
 import com.mcd.scraper.util.Util;
@@ -102,6 +103,7 @@ public class ScrapingEngine {
 	}
 	
 	protected void getArrestRecords(List<State> states, long maxNumberOfResults) {
+		logger.debug("Sending spider " + (System.getProperty("offline").equals("true")?"offline":"online" ));
 		//split into more specific methods
 		long totalTime = System.currentTimeMillis();
 		long recordsProcessed = 0;
@@ -118,7 +120,8 @@ public class ScrapingEngine {
 				ExcelWriter excelWriter  = new ExcelWriter(state, new ArrestRecord());
 				excelWriter.createSpreadhseet();
 				for(Site site : sites){
-					sleepTimeSum += util.offline()?0:site.getPerRecordSleepTime();
+					int sleepTimeAverage = (site.getPerRecordSleepRange()[0]+site.getPerRecordSleepRange()[1])/2;
+					sleepTimeSum += util.offline()?0:sleepTimeAverage;
 					long time = System.currentTimeMillis();
 					recordsProcessed += scrapeSite(state, site, excelWriter);
 					sitesScraped++;
@@ -146,19 +149,19 @@ public class ScrapingEngine {
 		totalTime = System.currentTimeMillis() - totalTime;
 		logger.info(states.size() + " states took " + totalTime + " ms");
 		if (!util.offline()) {
-			logger.info("Processing time was " + (totalTime-(recordsProcessed*perRecordSleepTimeAverage)) + " ms");
+			logger.info("Sleep time was approximately " + (recordsProcessed*perRecordSleepTimeAverage) + " ms");
+			logger.info("Processing time was approximately " + (totalTime-(recordsProcessed*perRecordSleepTimeAverage)) + " ms");
 		} else {
-			logger.info("Processing time was " + totalTime + " ms");
+			logger.info("Total time taken was " + totalTime + " ms");
 		}
 	}
 
 	private int scrapeSite(State state, Site site, ExcelWriter excelWriter) {
 		int recordsProcessed = 0;
-		long perRecordSleepTime = util.offline()?0:site.getPerRecordSleepTime();
 		String baseUrl = site.getBaseUrl(new String[]{state.getName()});
 		//Add some retries if first connection to state site fails?
 		Document mainPageDoc = util.getHtmlAsDoc(baseUrl);
-		if (docWasRetrieved(mainPageDoc)) { //TODO check if page is just <head><body>...
+		if (docWasRetrieved(mainPageDoc)) {
 			int numberOfPages = site.getPages(mainPageDoc);
 			if (numberOfPages==0) {
 				numberOfPages = 1;
@@ -167,7 +170,7 @@ public class ScrapingEngine {
 				logger.debug("----Site: " + site.getName() + " - " + state.getName() + ": Page " + p);
 				Document resultsPageDoc = util.getHtmlAsDoc(site.getResultsPageUrl(p));
 				if (docWasRetrieved(resultsPageDoc)){
-					recordsProcessed += scrapePage(resultsPageDoc, site, perRecordSleepTime, excelWriter);
+					recordsProcessed += scrapePage(resultsPageDoc, site, excelWriter);
 				} else {
 					//log something
 				}
@@ -175,11 +178,10 @@ public class ScrapingEngine {
 		} else {
 			logger.error("Failed to load html doc from " + baseUrl);
 		}
-		logger.info("Sleep time for site " + site.getName() + " was " + recordsProcessed*perRecordSleepTime + " ms");
 		return recordsProcessed;
 	}
 	
-	private int scrapePage(Document resultsPageDoc, Site site, long perRecordSleepTime, ExcelWriter excelWriter) {
+	private int scrapePage(Document resultsPageDoc, Site site, ExcelWriter excelWriter) {
 		//eventually output to spreadsheet
 		int recordsProcessed = 0;
 		List<Record> arrestRecords = new ArrayList<>();
@@ -194,7 +196,9 @@ public class ScrapingEngine {
 				//should we check for ID first or not bother unless we see duplicates??
                 try {
                     arrestRecords.add(populateArrestRecord(profileDetailDoc, site));
-					Thread.sleep(perRecordSleepTime);
+                    int sleepTime = ConnectionUtil.getSleepTime(site);
+                    logger.debug("Sleeping for: " + sleepTime);
+					Thread.sleep(sleepTime);//sleep at random interval
 				} catch (InterruptedException ie) {
 					logger.error(ie);
 				}
@@ -203,7 +207,7 @@ public class ScrapingEngine {
     		}
 		}
 		excelWriter.saveRecordsToWorkbook(arrestRecords);
-		//excelWriter.removeIDColumnFromSpreadsheet();
+		//excelWriter.removeColumnsFromSpreadsheet(new int[]{ArrestRecord.RecordColumnEnum.ID_COLUMN.index()});
 		return recordsProcessed;
 	}
 	

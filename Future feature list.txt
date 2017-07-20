@@ -1,18 +1,18 @@
 Future feature list
 
 getRecords()
-	avoid blacklisting ---- already trying crawl slowly, rotate User-agents
-	    randomize sleep time
-        use Connection.proxy() for IP masking?
+	avoid blacklisting ---- already trying crawl slowly, sleep at random intervals, rotate User-agents
 
-	    generate full list of result page links, randomize then get docs and store in HashMap
-	        -re-sort to search for any records have already been scraped
-	        -remove it and subsequent records
-	    parse thses docs for details links and store in hashmap
-	    find some random hrefs to hashmap as well (use jSoup.listLinks())
-	    randomize list again
-	    go through map, scraping details docs and ignoring others
-	    sort by arrest date in spreadsheet. That will make it easier to find already parsed records later on
+    use Connection.proxy() for IP masking?
+
+    generate full list of result page links, randomize, then get docs and store in HashMap
+        -re-sort to search for any records have already been scraped
+        -remove it and subsequent records
+    parse thses docs for details links and store in hashmap
+    find some random hrefs to hashmap as well (use jSoup.listLinks())
+    randomize list again
+    go through map, scraping details docs and ignoring others
+    sort by arrest date in spreadsheet. That will make it easier to find already parsed records later on
 
 	On failed getHtmlAsDoc(baseDoc) getHtmlAsDoc(resultsPage), retry 3 times with different user-agent
 	On failed getHtmlAsDoc(recordDetail) retry once, keeping track of failed pages
@@ -35,7 +35,7 @@ getRecords()
 		- output more info per record to spreadsheet. Read the spreadsheet in first, then start there
 		
 	Keep properties file separate from jar?
-		-use it to tweak things like site(s), columns to export, flags, etc
+		-use it to tweak things like site(s), columns to export/exclude, flags, etc
 	
 
 

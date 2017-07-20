@@ -12,13 +12,13 @@ public interface Site {
 	Url getUrl();
 //	public Record getRecord();
 //	public List<Record> getRecords();
-Element getRecordElement(Document doc);
+	Element getRecordElement(Document doc);
 	Elements getRecordElements(Document doc);
 	String getRecordDetailDocUrl(Element record);
 	Elements getRecordDetailElements(Document doc);
 	int getPages(Document doc);
 	int getTotalRecordCount(Document doc);
 	String getResultsPageUrl(int page/*, int resultsPerPage*/);
-	int getPerRecordSleepTime();
+	int[] getPerRecordSleepRange();
 	
 }

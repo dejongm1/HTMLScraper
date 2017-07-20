@@ -44,7 +44,7 @@ public class EmailUtil {
 			//		props.setProperty("mail.smtp.auth");    
 			//		props.setProperty("mail.smtp.port");    
 			//get Session   
-			Session session = Session.getDefaultInstance(util.getProperties(),    
+			Session session = Session.getDefaultInstance(System.getProperties(),    
 					new javax.mail.Authenticator() {    
 				@Override
 				protected PasswordAuthentication getPasswordAuthentication() {    
