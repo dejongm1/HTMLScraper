@@ -1,6 +1,6 @@
-package com.mcd.scraper.util;
+package com.main.mcd.spider.util;
 
-public class ScraperConstants {
+public class SpiderConstants {
 	
 	public static final String URL_VALIDATION = "url";
 	public static final String NUMBER_VALIDATION = "number";

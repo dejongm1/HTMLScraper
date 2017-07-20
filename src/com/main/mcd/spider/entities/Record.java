@@ -1,4 +1,4 @@
-package com.mcd.scraper.entities;
+package com.main.mcd.spider.entities;
 
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;

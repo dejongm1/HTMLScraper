@@ -1,4 +1,4 @@
-package com.mcd.scraper.entities;
+package com.main.mcd.spider.entities;
 
 public class Term implements Comparable<Term>{
 	

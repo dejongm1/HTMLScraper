@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project default="create_run_jar" name="Create Runnable Jar for Project Scraper">
+<project default="create_run_jar" name="Create Runnable Jar for Project Spider">
     <!--this file was created by Eclipse Runnable JAR Export Wizard-->
     <!--ANT 1.7 is required                                        -->
     <!--define folder properties-->
@@ -14,9 +14,9 @@
     	     package properties file
     	     package blacklist of common words
     	     			-->
-        <jar destfile="${dir.workspace}/HTMLScraper.jar" filesetmanifest="mergewithoutmain">
+        <jar destfile="${dir.workspace}/HTMLSpider.jar" filesetmanifest="mergewithoutmain">
             <manifest>
-                <attribute name="Main-Class" value="com.mcd.scraper.ScraperMain"/>
+                <attribute name="Main-Class" value="com.main.mcd.spider.SpiderMain"/>
                 <attribute name="Class-Path" value="."/>
             </manifest>
             <zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/jsoup-1.10.3.jar"/>

@@ -5,4 +5,4 @@
  * @author U569220
  *
  */
-package com.mcd.scraper;
+package com.main.mcd.spider;

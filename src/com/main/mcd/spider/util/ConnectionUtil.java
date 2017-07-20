@@ -1,4 +1,4 @@
-package com.mcd.scraper.util;
+package com.main.mcd.spider.util;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -14,7 +14,7 @@ import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
-import com.mcd.scraper.entities.site.Site;
+import com.main.mcd.spider.entities.site.Site;
 
 public class ConnectionUtil {
 	

@@ -1,12 +1,12 @@
-package com.mcd.scraper.entities;
+package com.main.mcd.spider.entities;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.mcd.scraper.entities.site.ArrestsDotOrgSite;
-import com.mcd.scraper.entities.site.Site;
+import com.main.mcd.spider.entities.site.ArrestsDotOrgSite;
+import com.main.mcd.spider.entities.site.Site;
 
 public final class State {
 	private static Map<String, State> abbreviationToState = new HashMap();

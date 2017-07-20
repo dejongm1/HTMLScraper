@@ -1,4 +1,4 @@
-package com.mcd.scraper.util;
+package com.main.mcd.spider.util;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,8 +8,8 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import com.mcd.scraper.entities.Record;
-import com.mcd.scraper.entities.State;
+import com.main.mcd.spider.entities.Record;
+import com.main.mcd.spider.entities.State;
 
 import jxl.Cell;
 import jxl.Workbook;

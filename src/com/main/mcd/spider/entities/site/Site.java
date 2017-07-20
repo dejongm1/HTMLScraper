@@ -1,4 +1,4 @@
-package com.mcd.scraper.entities.site;
+package com.main.mcd.spider.entities.site;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;

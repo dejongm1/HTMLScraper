@@ -1,4 +1,4 @@
-package com.mcd.scraper.util;
+package com.main.mcd.spider.util;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -8,7 +8,7 @@ import java.util.List;
 
 import org.apache.commons.validator.routines.UrlValidator;
 
-import com.mcd.scraper.entities.State;
+import com.main.mcd.spider.entities.State;
 
 public class InputUtil {
 	
@@ -18,11 +18,11 @@ public class InputUtil {
 		Object result;
 		for(int t=1;t <= numberOfTries; t++){
 			String input = readLine(prompt);
-			if (validationType!= null && validationType.equals(ScraperConstants.URL_VALIDATION)) {
+			if (validationType!= null && validationType.equals(SpiderConstants.URL_VALIDATION)) {
 				result = convertToUrl(input);
-			} else if (validationType!= null && validationType.equals(ScraperConstants.NUMBER_VALIDATION)) {
+			} else if (validationType!= null && validationType.equals(SpiderConstants.NUMBER_VALIDATION)) {
 				result = convertToNumber(input);
-			} else if (validationType!= null && validationType.equals(ScraperConstants.STATE_VALIDATION)) {
+			} else if (validationType!= null && validationType.equals(SpiderConstants.STATE_VALIDATION)) {
 				result = convertToStates(input);
 			} else {
 				result = input;

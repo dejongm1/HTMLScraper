@@ -1,4 +1,4 @@
-package com.mcd.scraper.util;
+package com.main.mcd.spider.util;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;

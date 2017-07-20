@@ -1,9 +1,10 @@
-package com.mcd.scraper;
+package com.main.mcd.spider;
 
-import com.mcd.scraper.entities.State;
-import com.mcd.scraper.util.InputUtil;
-import com.mcd.scraper.util.ScraperConstants;
 import org.apache.log4j.Logger;
+
+import com.main.mcd.spider.entities.State;
+import com.main.mcd.spider.util.InputUtil;
+import com.main.mcd.spider.util.SpiderConstants;
 
 import java.io.IOException;
 import java.util.List;
@@ -13,20 +14,20 @@ import java.util.List;
  * @author U569220
  *
  */
-public class ScraperMain {
+public class SpiderMain {
 
-	private static final Logger logger = Logger.getLogger(ScraperMain.class);
+	private static final Logger logger = Logger.getLogger(SpiderMain.class);
 	private static InputUtil inputUtil;
-	private static ScrapingEngine engine;
+	private static SpiderEngine engine;
 	
 	private static String prompt;
 	
-	private ScraperMain(){}
+	private SpiderMain(){}
 
 	public static void  main(String[] args) throws IOException {
 		logger.info("Application started");
 		inputUtil = new InputUtil();
-		engine = new ScrapingEngine();
+		engine = new SpiderEngine();
 		
 		if (prompt==null) {
 			prompt = "What do you want to do?\n "
@@ -82,32 +83,32 @@ public class ScraperMain {
 	}
 
 	private static void getPopularWords(String[] args) throws IOException {
-		String url = args.length>=2?inputUtil.convertToUrl(args[1]):(String) inputUtil.getInput("URL: ", 3, ScraperConstants.URL_VALIDATION);
-		int numberOfWords = args.length>=3?inputUtil.convertToNumber(args[2]):(int) inputUtil.getInput("Number of words: ", 3, ScraperConstants.NUMBER_VALIDATION);
+		String url = args.length>=2?inputUtil.convertToUrl(args[1]):(String) inputUtil.getInput("URL: ", 3, SpiderConstants.URL_VALIDATION);
+		int numberOfWords = args.length>=3?inputUtil.convertToNumber(args[2]):(int) inputUtil.getInput("Number of words: ", 3, SpiderConstants.NUMBER_VALIDATION);
 		engine.getPopularWords(url, numberOfWords);
 	}
 	
 	private static void getTextBySelector(String[] args) throws IOException {
-		String url = args.length>=2?inputUtil.convertToUrl(args[1]):(String) inputUtil.getInput("URL: ", 3, ScraperConstants.URL_VALIDATION);
-		String selector = args.length>=3?args[2]:(String) inputUtil.getInput("Selector(s): ", 1, ScraperConstants.NO_VALIDATION);
+		String url = args.length>=2?inputUtil.convertToUrl(args[1]):(String) inputUtil.getInput("URL: ", 3, SpiderConstants.URL_VALIDATION);
+		String selector = args.length>=3?args[2]:(String) inputUtil.getInput("Selector(s): ", 1, SpiderConstants.NO_VALIDATION);
 		engine.getTextBySelector(url, selector);
 	}
 	
 	private static void getSearchTerms(String[] args) throws IOException {
-//		String url = (String) inputUtil.getInput("URL: ", 3, ScraperConstants.URL_VALIDATION);
-//		String term = (String) inputUtil.getInput("Term: ", 1, ScraperConstants.NO_VALIDATION);
+//		String url = (String) inputUtil.getInput("URL: ", 3, SpiderConstants.URL_VALIDATION);
+//		String term = (String) inputUtil.getInput("Term: ", 1, SpiderConstants.NO_VALIDATION);
 //		engine.getSearchTerms(url, term);
 	}
 	
 	@SuppressWarnings("unchecked")
 	private static void getArrestRecords(String[] args) throws IOException {
-		List<State> states = args.length>=2?inputUtil.convertToStates(args[1]):(List<State>) inputUtil.getInput("State(s) or \"All\": ", 3, ScraperConstants.STATE_VALIDATION);
+		List<State> states = args.length>=2?inputUtil.convertToStates(args[1]):(List<State>) inputUtil.getInput("State(s) or \"All\": ", 3, SpiderConstants.STATE_VALIDATION);
 		long maxNumberOfResults = args.length>=3?inputUtil.convertToNumber(args[2]):999999;
 		engine.getArrestRecords(states, maxNumberOfResults);
 	}
 
 	private static void testConnectionGetter(String[] args) throws IOException {
-        int numberOfTries = args.length>=2?inputUtil.convertToNumber(args[1]):(int) inputUtil.getInput("Number of connections to make: ", 3, ScraperConstants.NUMBER_VALIDATION);
+        int numberOfTries = args.length>=2?inputUtil.convertToNumber(args[1]):(int) inputUtil.getInput("Number of connections to make: ", 3, SpiderConstants.NUMBER_VALIDATION);
         engine.testRandomConnections(numberOfTries);
     }
 }

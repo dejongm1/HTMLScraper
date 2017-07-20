@@ -1,19 +1,20 @@
-package com.mcd.scraper;
+package com.main.mcd.spider;
 
-import com.mcd.scraper.entities.ArrestRecord;
-import com.mcd.scraper.entities.Record;
-import com.mcd.scraper.entities.State;
-import com.mcd.scraper.entities.Term;
-import com.mcd.scraper.entities.site.Site;
-import com.mcd.scraper.util.ConnectionUtil;
-import com.mcd.scraper.util.EmailUtil;
-import com.mcd.scraper.util.ExcelWriter;
-import com.mcd.scraper.util.Util;
 import org.apache.commons.collections4.map.CaseInsensitiveMap;
 import org.apache.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+
+import com.main.mcd.spider.entities.ArrestRecord;
+import com.main.mcd.spider.entities.Record;
+import com.main.mcd.spider.entities.State;
+import com.main.mcd.spider.entities.Term;
+import com.main.mcd.spider.entities.site.Site;
+import com.main.mcd.spider.util.ConnectionUtil;
+import com.main.mcd.spider.util.EmailUtil;
+import com.main.mcd.spider.util.ExcelWriter;
+import com.main.mcd.spider.util.Util;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -23,9 +24,9 @@ import java.util.Map.Entry;
  * @author U569220
  *
  */
-public class ScrapingEngine {
+public class SpiderEngine {
 
-	public static final Logger logger = Logger.getLogger(ScrapingEngine.class);
+	public static final Logger logger = Logger.getLogger(SpiderEngine.class);
 	
 	Util util = new Util();
 

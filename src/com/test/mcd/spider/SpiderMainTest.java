@@ -1,10 +1,10 @@
-package com.test.mcd.scraper;
+package com.test.mcd.spider;
 
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-public class ScraperMainTest {
+public class SpiderMainTest {
 	@BeforeMethod
 	public void beforeMethod() {
 	}

@@ -1,4 +1,4 @@
-package com.mcd.scraper.util;
+package com.main.mcd.spider.util;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -18,7 +18,7 @@ import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
-import com.mcd.scraper.ScrapingEngine;
+import com.main.mcd.spider.SpiderEngine;
 
 public class Util {
 	
@@ -74,11 +74,11 @@ public class Util {
         try {
             return ConnectionUtil.getConnectionDocumentTest(url);
         } catch (FileNotFoundException fne) {
-            ScrapingEngine.logger.error("I couldn't find an html file for " + url);
+            SpiderEngine.logger.error("I couldn't find an html file for " + url);
         } catch (ConnectException ce) {
-            ScrapingEngine.logger.error("I couldn't connect to " + url + ". Please be sure you're using a site that exists and are connected to the interweb.");
+            SpiderEngine.logger.error("I couldn't connect to " + url + ". Please be sure you're using a site that exists and are connected to the interweb.");
         } catch (IOException ioe) {
-            ScrapingEngine.logger.error("I tried to scrape that site but had some trouble. \n" + ioe.getMessage());
+            SpiderEngine.logger.error("I tried to scrape that site but had some trouble. \n" + ioe.getMessage());
         }
         return null;
     }
@@ -92,11 +92,11 @@ public class Util {
                 return ConnectionUtil.getConnection(url).get();
             }
         } catch (FileNotFoundException fne) {
-            ScrapingEngine.logger.error("I couldn't find an html file for " + url);
+            SpiderEngine.logger.error("I couldn't find an html file for " + url);
         } catch (ConnectException ce) {
-            ScrapingEngine.logger.error("I couldn't connect to " + url + ". Please be sure you're using a site that exists and are connected to the interweb.");
+            SpiderEngine.logger.error("I couldn't connect to " + url + ". Please be sure you're using a site that exists and are connected to the interweb.");
         } catch (IOException ioe) {
-            ScrapingEngine.logger.error("I tried to scrape that site but had some trouble. \n" + ioe.getMessage());
+            SpiderEngine.logger.error("I tried to scrape that site but had some trouble. \n" + ioe.getMessage());
         }
         return null;
     }
