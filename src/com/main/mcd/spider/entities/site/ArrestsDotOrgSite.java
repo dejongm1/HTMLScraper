@@ -18,7 +18,7 @@ public class ArrestsDotOrgSite implements Site {
 	private int pages;
 	private int totalRecordCount;
 	private static final int[] perRecordSleepRange = new int[]{5,15};
-	private Map<Integer,Document> resultsPageDocuments;
+	private Map<String,Document> resultsPageDocuments;
 
 	public ArrestsDotOrgSite() {}
 	
@@ -46,15 +46,17 @@ public class ArrestsDotOrgSite implements Site {
 		return builtUrl;
 	}
 	@Override
-	public void setOnlyResultsPageDocuments(Map<Integer,Document> resultsPlusMiscDocumentsMap) {
-		for(Entry<Integer, Document> entry : resultsPlusMiscDocumentsMap.entrySet()) {
+	public void setOnlyResultsPageDocuments(Map<String,Document> resultsPlusMiscDocumentsMap) {
+		Map<String,Document> resultsDocMap = new HashMap<>();
+		for(Entry<String, Document> entry : resultsPlusMiscDocumentsMap.entrySet()) {
 			if (isAResultsDoc(entry.getValue())) {
-				this.resultsPageDocuments.put(entry.getKey(), entry.getValue());
+				resultsDocMap.put(entry.getKey(), entry.getValue());
 			}
 		}
+		this.resultsPageDocuments = resultsDocMap;
 	}
 	@Override
-	public Map<Integer,Document> getResultsPageDocuments() {
+	public Map<String,Document> getResultsPageDocuments() {
 		return this.resultsPageDocuments;
 	}
 	@Override
@@ -70,11 +72,11 @@ public class ArrestsDotOrgSite implements Site {
 		}
 		return baseUrl;
 	}
-	@Override
-	public Element getRecordElement(Document doc) {
-		//need to return a specific record?
-		return null;
-	}
+//	@Override
+//	public Element getRecordElement(Document doc) {
+//		//need to return a specific record?
+//		return null;
+//	}
 	@Override
 	public Elements getRecordElements(Document doc) {
 		return doc.select(".search-results .profile-card .title a");
@@ -128,30 +130,39 @@ public class ArrestsDotOrgSite implements Site {
 		return Character.getNumericValue(baseUri.charAt(baseUri.indexOf('&')-1));
 	}
 	@Override
-	public Map<Integer,String> getMiscSafeUrlsFromDoc(Document doc, int pagesToMatch) {
+	public Map<String,String> getMiscSafeUrlsFromDoc(Document doc, int pagesToMatch) {
 		Elements links = doc.select("a[href]");
 		Collections.shuffle(links);
 		//get one misc page per results page
 		//double the size of the list and only fill the second half
-		Map<Integer,String> safeUrls = new HashMap<>();
-		for (int u=pagesToMatch+1;u<=pagesToMatch*2;u++) {
-			Element link = links.get(u);
-			//(ignore rel=stylesheet, include /ABC.php, '/ABC/', '/', '#', '/Arrests/ABC')
-			if (!link.hasAttr("rel")
-					&& (link.attr("href").endsWith(".php")
-						|| link.attr("href").startsWith("/Arrests/")
-						//|| link.attr("href").equals("#")
-						|| link.attr("href").matches("/[a-zA-Z]+/")
-						|| link.attr("href").equals("/"))) {
-				safeUrls.put(u,getBaseUrl(null) + link.attr("href"));
+		Map<String,String> safeUrls = new HashMap<>();
+		try {
+			for (int u=pagesToMatch+1;u<=pagesToMatch*2;u++) {
+				Element link = links.get(u);
+				//(ignore rel=stylesheet, include /ABC.php, '/ABC/', '/', '#', '/Arrests/ABC')
+				if (!link.hasAttr("rel")
+						&& (link.attr("href").endsWith(".php")
+							|| link.attr("href").startsWith("/Arrests/")
+							//|| link.attr("href").equals("#")
+							|| link.attr("href").matches("/[a-zA-Z]+/")
+							|| link.attr("href").equals("/"))) {
+					safeUrls.put(String.valueOf(u),getBaseUrl(null) + link.attr("href"));
+				}
 			}
+		} catch (IndexOutOfBoundsException aiobe) {
+			aiobe.printStackTrace();
+			return safeUrls;
 		}
 		return safeUrls;
 	}
 
 	@Override
 	public boolean isAResultsDoc(Document doc) {
-		return doc.baseUri().contains("/?page=") && doc.baseUri().contains("&results=");
+		if (doc!=null) {
+			return doc.baseUri().contains("/?page=") && doc.baseUri().contains("&results=");
+		} else {
+			return false;
+		}
 	}
 	
 }

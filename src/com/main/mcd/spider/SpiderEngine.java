@@ -169,26 +169,22 @@ public class SpiderEngine {
 			if (numberOfPages==0) {
 				numberOfPages = 1;
 			}
-			Map<Integer, String> resultsUrlPlusMiscMap = new HashMap<>();
+			Map<String, String> resultsUrlPlusMiscMap = new HashMap<>();
 			logger.debug("Generating list of results pages for : " + site.getName() + " - " + state.getName());
 			//also get misc urls
-			Map<Integer,String> miscUrls = site.getMiscSafeUrlsFromDoc(mainPageDoc, numberOfPages);
+			Map<String,String> miscUrls = site.getMiscSafeUrlsFromDoc(mainPageDoc, numberOfPages);
 			for (int p=1; p<=numberOfPages;p++) {
-				resultsUrlPlusMiscMap.put(p, site.generateResultsPageUrl(p));
+				resultsUrlPlusMiscMap.put(String.valueOf(p), site.generateResultsPageUrl(p));
 			}
-			//setResultsPageUrls(resultsPageUrlMap) //TODO do I want to do this or sort through docs later to find details pages?
 			
 			resultsUrlPlusMiscMap.putAll(miscUrls);
-			//need to sort urls before retrieving docs
-
-			//not sure if I can extract the logic to shuffle because I need a map, rather than list
-			//List<String> shuffledResultsPagePlusMiscUrlList = spiderUtil.shuffleMap(resultsPageUrlMap);
-			Map<Integer,Document> resultsDocPlusMiscMap = new HashMap<>();
 			
-			List<Integer> keys = new ArrayList<>(resultsUrlPlusMiscMap.keySet());
+			//shuffle urls before retrieving docs
+			Map<String,Document> resultsDocPlusMiscMap = new HashMap<>();
+			List<String> keys = new ArrayList<>(resultsUrlPlusMiscMap.keySet());
 			Collections.shuffle(keys);
-			for (Integer k : keys) {
-				resultsDocPlusMiscMap.put(k, spiderUtil.getHtmlAsDoc(resultsUrlPlusMiscMap.get(k)));
+			for (String k : keys) {
+				resultsDocPlusMiscMap.put(String.valueOf(k), spiderUtil.getHtmlAsDoc(resultsUrlPlusMiscMap.get(k)));
 				try {
 					int sleepTime = ConnectionUtil.getSleepTime(site);
 					Thread.sleep(sleepTime);
@@ -201,31 +197,49 @@ public class SpiderEngine {
 			//saving this for later?? should be able to get previous sorting by looking at page number in baseUri
 			site.setOnlyResultsPageDocuments(resultsDocPlusMiscMap);
 			
-			keys = new ArrayList<>(resultsDocPlusMiscMap.keySet());
-			Collections.shuffle(keys);
-			for (Integer k : keys) {
-				Document doc = resultsDocPlusMiscMap.get(k);
-				//only proceed if document is an actual results page
-				if (docWasRetrieved(doc) && site.isAResultsDoc(doc)){
-					logger.debug("Gather complete list of records to scrape " + doc.baseUri());
-					//****TODO
-					//****Parse list of result page docs for detail links and store in collection
-					//****use sorted map to check for already scraped records
-					//****Remove it and following records
-					//****include some non-detail page links then randomize
-					//****iterate over collection, scraping records and simply opening others
-					//****sort by arrest date (or something else) once everything has been gathered? can I sort spreadsheet after creation?
+			//build a list of details page urls by parsing only results page docs in order
+			Map<String,Document> resultsPageDocsMap = site.getResultsPageDocuments();
+			Map<String,String> recordDetailUrlMap = new HashMap<>();
+			for (Entry<String, Document> entry : resultsPageDocsMap.entrySet()) {
+				Document doc = entry.getValue();
+				//only proceed if document was retrieved
+				if (docWasRetrieved(doc)){
+					logger.debug("Gather complete list of records to scrape from " + doc.baseUri());
+					recordDetailUrlMap.putAll(parseDocForUrls(doc, site));
+					//including some non-detail page links then randomize
+					recordDetailUrlMap.putAll(site.getMiscSafeUrlsFromDoc(mainPageDoc, 56)); //TODO change from a static value
 					
 					//recordsProcessed += scrapePage(doc, site, excelWriter);
 				} else {
 					//log something
-					logger.info("Nothing was retrieved for " + resultsDocPlusMiscMap.get(k).baseUri());
+					logger.info("Nothing was retrieved for " + doc.baseUri());
 				}
 			}
+			
+			int recordsGathered = recordDetailUrlMap.size();
+			logger.info("Gathered links for " + recordsGathered + " record profiles and misc");
+
+			//****TODO
+			//****use sorted map to check for already scraped records - should I used ID as map.key instead of a sequence?  
+			
+			//****iterate over collection, scraping records and simply opening others
+			//****sort by arrest date (or something else) once everything has been gathered? can I sort spreadsheet after creation?
+
 		} else {
 			logger.error("Failed to load html doc from " + baseUrl);
 		}
 		return recordsProcessed;
+	}
+	
+	private Map<String,String> parseDocForUrls(Document doc, Site site) {
+		Map<String,String> recordDetailUrlMap = new HashMap<>();
+		Elements recordDetailElements = site.getRecordElements(doc);
+		for(int e=0;e<recordDetailElements.size();e++) {
+			String url = site.getRecordDetailDocUrl(recordDetailElements.get(e));
+			String id = url.substring(url.indexOf("/Arrests/")+9, url.length()-1);
+			recordDetailUrlMap.put(id, url);
+		}
+		return recordDetailUrlMap;
 	}
 	
 	private int scrapePage(Document resultsPageDoc, Site site, ExcelWriter excelWriter) {

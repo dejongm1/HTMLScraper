@@ -13,7 +13,7 @@ public interface Site {
 	String getBaseUrl(String[] arg);
 	String getName();
 	Url getUrl();
-	Element getRecordElement(Document doc);
+//	Element getRecordElement(Document doc);
 	Elements getRecordElements(Document doc);
 	String getRecordDetailDocUrl(Element record);
 	Map<String,String> getRecordDetailDocUrls(List<Document> resultsPageDocs);
@@ -21,11 +21,11 @@ public interface Site {
 	int getTotalPages(Document doc);
 	int getTotalRecordCount(Document doc);
 	String generateResultsPageUrl(int page/*, int resultsPerPage*/);
-	Map<Integer,Document> getResultsPageDocuments();
-	void setOnlyResultsPageDocuments(Map<Integer,Document> resultsPlusMiscDocuments);
+	Map<String, Document> getResultsPageDocuments();
+	void setOnlyResultsPageDocuments(Map<String,Document> resultsPlusMiscDocuments);
 	int[] getPerRecordSleepRange();
 	int getPageNumberFromDoc(Document doc);
-	Map<Integer,String> getMiscSafeUrlsFromDoc(Document doc, int pagesToMatch);
+	Map<String, String> getMiscSafeUrlsFromDoc(Document doc, int pagesToMatch);
 	boolean isAResultsDoc(Document doc);
 	
 }
