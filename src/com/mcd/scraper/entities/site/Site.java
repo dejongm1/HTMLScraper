@@ -7,18 +7,18 @@ import org.jsoup.select.Elements;
 public interface Site {
 	
 	
-	public String getBaseUrl(String[] arg);
-	public String getName();
-	public Url getUrl();
+	String getBaseUrl(String[] arg);
+	String getName();
+	Url getUrl();
 //	public Record getRecord();
 //	public List<Record> getRecords();
-	public Element getRecordElement(Document doc);
-	public Elements getRecordElements(Document doc);
-	public String getRecordDetailDocUrl(Element record);
-	public Elements getRecordDetailElements(Document doc);
-	public int getPages(Document doc);
-	public int getTotalRecordCount(Document doc);
-	public String getResultsPageUrl(int page, int resultsPerPage);
-	public int getPerRecordSleepTime();
+Element getRecordElement(Document doc);
+	Elements getRecordElements(Document doc);
+	String getRecordDetailDocUrl(Element record);
+	Elements getRecordDetailElements(Document doc);
+	int getPages(Document doc);
+	int getTotalRecordCount(Document doc);
+	String getResultsPageUrl(int page/*, int resultsPerPage*/);
+	int getPerRecordSleepTime();
 	
 }

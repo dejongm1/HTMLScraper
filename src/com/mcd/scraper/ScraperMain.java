@@ -33,7 +33,8 @@ public class ScraperMain {
 						+ "\t 1 - Get words by frequency\n "
 						+ "\t 2 - Scrape for text\n "
 						+ "\t 3 - Search for a term\n "
-						+ "\t 4 - Get arrest records\n ";
+						+ "\t 4 - Get arrest records\n "
+                        + "\t 5 - Test random connection getter \n";
 		}
 		String scrapeTypeChoice = "";
 		
@@ -56,10 +57,14 @@ public class ScraperMain {
 					|| scrapeTypeChoice.equals("3")) {
 				getSearchTerms(args);
 			} else if (scrapeTypeChoice.toLowerCase().contains("arrest")
-					|| scrapeTypeChoice.toLowerCase().contains("record")
-					|| scrapeTypeChoice.equals("4")) {
-				getArrestRecords(args);
-			} else if (inputUtil.quitting(scrapeTypeChoice)) {
+                    || scrapeTypeChoice.toLowerCase().contains("record")
+                    || scrapeTypeChoice.equals("4")) {
+                getArrestRecords(args);
+            } else if (scrapeTypeChoice.toLowerCase().contains("connect")
+                    || scrapeTypeChoice.toLowerCase().contains("test")
+                    || scrapeTypeChoice.equals("5")) {
+                testConnectionGetter(args);
+            } else if (inputUtil.quitting(scrapeTypeChoice)) {
 				System.exit(0);
 			} else {
 				prompt = "I'm not sure what you want me to do. Type \"quit\" if you changed your mind. \n" + prompt;
@@ -100,4 +105,9 @@ public class ScraperMain {
 		long maxNumberOfResults = args.length>=3?inputUtil.convertToNumber(args[2]):999999;
 		engine.getArrestRecords(states, maxNumberOfResults);
 	}
+
+	private static void testConnectionGetter(String[] args) throws IOException {
+        int numberOfTries = args.length>=2?inputUtil.convertToNumber(args[1]):(int) inputUtil.getInput("Number of connections to make: ", 3, ScraperConstants.NUMBER_VALIDATION);
+        engine.testRandomConnections(numberOfTries);
+    }
 }

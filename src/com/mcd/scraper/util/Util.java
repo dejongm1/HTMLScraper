@@ -1,26 +1,14 @@
 package com.mcd.scraper.util;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.ConnectException;
-import java.net.InetAddress;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Random;
-
+import com.mcd.scraper.ScrapingEngine;
 import org.apache.log4j.Logger;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
-import com.mcd.scraper.ScrapingEngine;
+import java.io.*;
+import java.net.*;
+import java.util.*;
 
 public class Util {
 	
@@ -56,12 +44,12 @@ public class Util {
 				break;
 			case "http://iowa.arrests.org" : 										htmlLocation = "iowa-arrests.htm";
 				break;
-			case "http://iowa.arrests.org/?page=1&results=14" : 					htmlLocation = "iowa-arrests-page1.htm";
+			case "http://iowa.arrests.org/?page=1&results=56" : 					htmlLocation = "iowa-arrests-page1.htm";
 				break;
-			case "http://iowa.arrests.org/?page=2&results=14" : 					htmlLocation = "iowa-arrests-page2.htm";
+			case "http://iowa.arrests.org/?page=2&results=56" : 					htmlLocation = "iowa-arrests-page2.htm";
 				break;
-			case "http://iowa.arrests.org/?page=1&results=56" :						htmlLocation = "iowa-arrests-56-results.htm";
-				break;
+//			case "http://iowa.arrests.org/?page=1&results=56" :						htmlLocation = "iowa-arrests-56-results.htm";
+//				break;
 			case "http://iowa.arrests.org/Arrests/Charles_Ross_33669899/" : 		htmlLocation = "iowa-arrests-Charles-Ross.htm";
 				break;
 			case "http://iowa.arrests.org/Arrests/Shelley_Bridges_33669900/" : 		htmlLocation = "iowa-arrests-Shelley-Bridges.htm";
@@ -110,24 +98,56 @@ public class Util {
 		return result;
 	}
 
-	public Document getHtmlAsDoc(String url) {
-		try {
-			if (offline()) {
-				return getOfflinePage(url);
-			} else {
-				return getConnection(url).get();
-			}
-		} catch (FileNotFoundException fne) {
-			ScrapingEngine.logger.error("I couldn't find an html file for " + url);
-		} catch (ConnectException ce) {
-			ScrapingEngine.logger.error("I couldn't connect to " + url + ". Please be sure you're using a site that exists and are connected to the interweb.");
-		} catch (IOException ioe) {
-			ScrapingEngine.logger.error("I tried to scrape that site but had some trouble. \n" + ioe.getMessage());
-		}
-		return null;
-	}
-	
-	public Connection getConnection(String url) {
+    public Document getHtmlAsDocTest(String url) {
+        try {
+            return getConnectionDocumentTest(url);
+        } catch (FileNotFoundException fne) {
+            ScrapingEngine.logger.error("I couldn't find an html file for " + url);
+        } catch (ConnectException ce) {
+            ScrapingEngine.logger.error("I couldn't connect to " + url + ". Please be sure you're using a site that exists and are connected to the interweb.");
+        } catch (IOException ioe) {
+            ScrapingEngine.logger.error("I tried to scrape that site but had some trouble. \n" + ioe.getMessage());
+        }
+        return null;
+    }
+
+    public Document getHtmlAsDoc(String url) {
+        try {
+
+            if (offline()) {
+                return getOfflinePage(url);
+            } else {
+                return getConnection(url).get();
+            }
+        } catch (FileNotFoundException fne) {
+            ScrapingEngine.logger.error("I couldn't find an html file for " + url);
+        } catch (ConnectException ce) {
+            ScrapingEngine.logger.error("I couldn't connect to " + url + ". Please be sure you're using a site that exists and are connected to the interweb.");
+        } catch (IOException ioe) {
+            ScrapingEngine.logger.error("I tried to scrape that site but had some trouble. \n" + ioe.getMessage());
+        }
+        return null;
+    }
+
+    public Document getConnectionDocumentTest(String url) throws IOException {
+        final URL website = new URL(url);
+
+        Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("127.0.0.1", 8080)); // set proxy server and port
+        HttpURLConnection httpUrlConnetion = (HttpURLConnection) website.openConnection(proxy);
+        httpUrlConnetion.connect();
+
+        BufferedReader br = new BufferedReader(new InputStreamReader(httpUrlConnetion.getInputStream()));
+        StringBuilder buffer = new StringBuilder();
+        String str;
+
+        while( (str = br.readLine()) != null )
+        {
+            buffer.append(str);
+        }
+        return Jsoup.parse(buffer.toString());
+    }
+
+	public Connection getConnection(String url) throws IOException {
 		return Jsoup.connect(url)
 				.userAgent(getRandomUserAgent())
 //				.userAgent("findlinks/1.1.2-a5 (+http\\://wortschatz.uni-leipzig.de/findlinks/)")
@@ -136,7 +156,8 @@ public class Util {
 	}
 
 	protected String getRandomUserAgent() { //to avoid getting blacklisted
-		String[] crawlerList = getProperty("user.agent").split(", ");
+        String crawlers = getProperty("user.agents");
+		String[] crawlerList = crawlers.split(", ");
 		Random random = new Random();
 		int r = random.nextInt(crawlerList.length-1);
 		logger.debug("Crawler: " + crawlerList[r]);

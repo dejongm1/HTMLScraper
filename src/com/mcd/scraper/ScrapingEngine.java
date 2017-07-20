@@ -1,19 +1,5 @@
 package com.mcd.scraper;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import org.apache.commons.collections4.map.CaseInsensitiveMap;
-import org.apache.log4j.Logger;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
 import com.mcd.scraper.entities.ArrestRecord;
 import com.mcd.scraper.entities.Record;
 import com.mcd.scraper.entities.State;
@@ -22,6 +8,14 @@ import com.mcd.scraper.entities.site.Site;
 import com.mcd.scraper.util.EmailUtil;
 import com.mcd.scraper.util.ExcelWriter;
 import com.mcd.scraper.util.Util;
+import org.apache.commons.collections4.map.CaseInsensitiveMap;
+import org.apache.log4j.Logger;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * 
@@ -33,6 +27,25 @@ public class ScrapingEngine {
 	public static final Logger logger = Logger.getLogger(ScrapingEngine.class);
 	
 	Util util = new Util();
+
+    protected void testRandomConnections(int numberOfTries) {
+        long time = System.currentTimeMillis();
+        int trie = 0;
+        while (trie<numberOfTries) {
+            Document doc = util.getHtmlAsDocTest("http://www.whoishostingthis.com/tools/user-agent/");
+            if (docWasRetrieved(doc)) {
+                Elements tags = doc.select("#user-agent .user-agent, #user-agent .ip");
+                for (Element tag : tags) {
+                    logger.debug(tag.text());
+                }
+            } else {
+                logger.error("Failed to load html for testing connection");
+            }
+            trie++;
+        }
+        time = System.currentTimeMillis() - time;
+        logger.info("Took " + time + " ms");
+    }
 
 	protected void getPopularWords(String url, int numberOfWords /*, int levelsDeep*/) {
 		long time = System.currentTimeMillis();
@@ -152,7 +165,7 @@ public class ScrapingEngine {
 			}
 			for (int p=1; p<=numberOfPages;p++) {
 				logger.debug("----Site: " + site.getName() + " - " + state.getName() + ": Page " + p);
-				Document resultsPageDoc = util.getHtmlAsDoc(site.getResultsPageUrl(p, 14));//either pass this in or change from 14?
+				Document resultsPageDoc = util.getHtmlAsDoc(site.getResultsPageUrl(p));
 				if (docWasRetrieved(resultsPageDoc)){
 					recordsProcessed += scrapePage(resultsPageDoc, site, perRecordSleepTime, excelWriter);
 				} else {

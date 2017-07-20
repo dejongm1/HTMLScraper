@@ -11,7 +11,7 @@ public class ArrestsDotOrgSite implements Site {
 	private String baseUrl;
 	private int pages;
 	private int totalRecordCount;
-	private static final int perRecordSleepTime = 2000;
+	private static final int perRecordSleepTime = 8000;
 
 	public ArrestsDotOrgSite() {}
 	
@@ -28,14 +28,14 @@ public class ArrestsDotOrgSite implements Site {
 		return perRecordSleepTime;
 	}
 	@Override
-	public String getResultsPageUrl(int page, int resultsPerPage) {
+	public String getResultsPageUrl(int page/*, int resultsPerPage*/) {
 		String builtUrl = baseUrl;
 		builtUrl += "/?page="+page;
-		if (resultsPerPage % 14 == 0) {
+		/*if (resultsPerPage % 14 == 0) {
 			builtUrl += "&results="+resultsPerPage;
-		} else {
-			builtUrl += "&results=14";
-		}
+		} else {*/
+			builtUrl += "&results=56";
+		/*}*/
 		return builtUrl;
 		
 	}
