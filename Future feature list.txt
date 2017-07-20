@@ -5,8 +5,10 @@ getRecords()
 
     use Connection.proxy() for IP masking?
 
-    generate full list of result page links, randomize, then get docs and store in HashMap
-        -re-sort to search for any records have already been scraped
+    generate full list of result page links
+    	-add misc hrefs (ignore rel=stylesheet, include /ABC.php, '/ABC/', '/', '#', '/Arrests/ABC')
+    	-randomize, then get docs and store in HashMap
+        -keep sorted map to search for any records have already been scraped
         -remove it and subsequent records
     parse thses docs for details links and store in hashmap
     find some random hrefs to hashmap as well (use jSoup.listLinks())

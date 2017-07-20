@@ -17,7 +17,7 @@ public class SpiderMainTest {
 	public void f() {
 	}
 	/**
-	 * Test no inputs
+	 * Test no main() input args
 	 * 
 	 * For each scrape type
 	 * 		Test 1 input
@@ -34,6 +34,8 @@ public class SpiderMainTest {
 	 * Test online
 	 * Test offline
 	 * Test sorting
+	 * 
+	 * Test empty <html><head><body></body></head></html> response
 	 * 
 	 * 	Test validators: positive and negative
 	 * 

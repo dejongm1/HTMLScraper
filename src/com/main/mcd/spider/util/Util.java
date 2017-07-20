@@ -6,8 +6,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.ConnectException;
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -70,6 +72,19 @@ public class Util {
 		return result;
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public List shuffleMap(Map mapToSort) {
+		List keys = new ArrayList(mapToSort.keySet());
+		List shuffledUrls = new ArrayList();
+		Collections.shuffle(keys);
+		for (Object k : keys) {
+			if (mapToSort.get(k)!=null){
+				shuffledUrls.add(mapToSort.get(k));
+			}
+		}
+		return shuffledUrls;
+	}
+	
     public Document getHtmlAsDocTest(String url) {
         try {
             return ConnectionUtil.getConnectionDocumentTest(url);

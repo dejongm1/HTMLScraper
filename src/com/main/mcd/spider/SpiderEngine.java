@@ -132,6 +132,7 @@ public class SpiderEngine {
 
 				//remove ID column on final save? 
 				//or use for future processing? check for ID and start where left off 
+				//excelWriter.removeColumnsFromSpreadsheet(new int[]{ArrestRecord.RecordColumnEnum.ID_COLUMN.index()});
 				stateTime = System.currentTimeMillis() - stateTime;
 				logger.info(state.getName() + " took " + stateTime + " ms");
 				
@@ -158,22 +159,69 @@ public class SpiderEngine {
 	}
 
 	private int scrapeSite(State state, Site site, ExcelWriter excelWriter) {
+		//****TODO build collection of results page urls, PLUS SOME MISC URLS
+		//****use sorted map to check for already scraped records
+		//****Remove it and following records
+		//****Parse this list of result page docs for detail links and store in collection
+		//****include some non-detail page links then randomize
+		//****iterate over collection, scraping records and simply opening others
+		//****sort by arrest date (or something else) once everything has been gathered? can I sort spreadsheet after creation?
+		
+		//refactor to split out randomizing functionality, maybe reuse
 		int recordsProcessed = 0;
 		String baseUrl = site.getBaseUrl(new String[]{state.getName()});
 		//Add some retries if first connection to state site fails?
 		Document mainPageDoc = util.getHtmlAsDoc(baseUrl);
 		if (docWasRetrieved(mainPageDoc)) {
-			int numberOfPages = site.getPages(mainPageDoc);
+			int numberOfPages = site.getTotalPages(mainPageDoc);
 			if (numberOfPages==0) {
 				numberOfPages = 1;
 			}
+			Map<Integer, String> resultsPageUrlMap = new HashMap<>();
+			logger.debug("Generating list of results pages for : " + site.getName() + " - " + state.getName());
+			//also get misc urls
+			Map<Integer,String> miscUrls = site.getMiscSafeUrlsFromDoc(mainPageDoc, numberOfPages);
 			for (int p=1; p<=numberOfPages;p++) {
-				logger.debug("----Site: " + site.getName() + " - " + state.getName() + ": Page " + p);
-				Document resultsPageDoc = util.getHtmlAsDoc(site.getResultsPageUrl(p));
-				if (docWasRetrieved(resultsPageDoc)){
-					recordsProcessed += scrapePage(resultsPageDoc, site, excelWriter);
+				//TODO add some bogus urls
+				resultsPageUrlMap.put(p, site.generateResultsPageUrl(p));
+			}
+			//setResultsPageUrls(resultsPageUrlMap) //do I want to do this or sort through docs later to find details pages?
+			
+			resultsPageUrlMap.putAll(miscUrls);
+			//need to sort urls before retrieving docs
+
+			List<String> shuffledResultsPagePlusMiscUrlList = util.shuffleMap(resultsPageUrlMap);
+			
+			List<Document> shuffledResultsPageDocList = new ArrayList<>();
+			for (String url : shuffledResultsPagePlusMiscUrlList) {
+				//Integer pageNumber = entry.getKey();
+				//String resultsPageDocUrl = entry.getValue();
+				shuffledResultsPageDocList.add(util.getHtmlAsDoc(url));
+				try {
+					int sleepTime = ConnectionUtil.getSleepTime(site);
+					Thread.sleep(sleepTime);
+					logger.debug("Sleeping for " + sleepTime + " after fetching " + url);
+				} catch (InterruptedException e) {
+					logger.error("Failed to sleep after fetching " + url, e);
+				}
+			}
+			//saving this for later??
+			//site.setResultsPageDocuments(resultsPageDocMap);
+			
+			//for (Document resultsDoc : shuffledResultsPageDocList) {
+			for (int d=0;d<shuffledResultsPageDocList.size();d++) {
+				if (docWasRetrieved(shuffledResultsPageDocList.get(d))){
+					Document doc = shuffledResultsPageDocList.get(d);
+					//only proceed if document is an actual results page
+					if (doc.baseUri().contains("/?page=") && doc.baseUri().contains("&results=")) {
+						logger.debug("Attempting to Scrape " + doc.baseUri());
+						//recordsProcessed += scrapePage(doc, site, excelWriter);
+					} else {
+						logger.debug("Skipping " + doc.baseUri() + " because it doesn't contain the records");
+					}
 				} else {
 					//log something
+					logger.error("Nothing was retrieved for " + shuffledResultsPagePlusMiscUrlList.get(d));
 				}
 			}
 		} else {
@@ -208,7 +256,6 @@ public class SpiderEngine {
     		}
 		}
 		excelWriter.saveRecordsToWorkbook(arrestRecords);
-		//excelWriter.removeColumnsFromSpreadsheet(new int[]{ArrestRecord.RecordColumnEnum.ID_COLUMN.index()});
 		return recordsProcessed;
 	}
 	
@@ -304,6 +351,16 @@ public class SpiderEngine {
 	}
 	
 	private boolean docWasRetrieved(Document doc) {
-		return doc!=null && !doc.body().text().equals("");
+		if (doc!=null) {
+			if (doc.body().text().equals("")) {
+				logger.error("You might be blocked. This doc retrieved was empty.");
+			} else {
+				return true;
+			}
+		} else {
+			logger.error("No document was retrieved");
+			return false;
+		}
+		return false;
 	}
 }
