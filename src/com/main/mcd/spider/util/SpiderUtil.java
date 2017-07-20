@@ -22,12 +22,12 @@ import org.jsoup.nodes.Document;
 
 import com.main.mcd.spider.SpiderEngine;
 
-public class Util {
+public class SpiderUtil {
 	
-	private static final Logger logger = Logger.getLogger(Util.class);
+	private static final Logger logger = Logger.getLogger(SpiderUtil.class);
 //	private Properties properties;
 	
-	public Util(){
+	public SpiderUtil(){
 		loadProperties();
 		//this.properties = loadProperties();
 	}
@@ -72,19 +72,6 @@ public class Util {
 		return result;
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public List shuffleMap(Map mapToSort) {
-		List keys = new ArrayList(mapToSort.keySet());
-		List shuffledUrls = new ArrayList();
-		Collections.shuffle(keys);
-		for (Object k : keys) {
-			if (mapToSort.get(k)!=null){
-				shuffledUrls.add(mapToSort.get(k));
-			}
-		}
-		return shuffledUrls;
-	}
-	
     public Document getHtmlAsDocTest(String url) {
         try {
             return ConnectionUtil.getConnectionDocumentTest(url);
@@ -127,7 +114,7 @@ public class Util {
 			if (Boolean.valueOf(System.getProperty("runInEclipse"))) {
 				input = loader.getResourceAsStream("config.properties");
 			} else {
-				input = Util.class.getResourceAsStream("/resources/config.properties");
+				input = SpiderUtil.class.getResourceAsStream("/resources/config.properties");
 			}
 //			tempProperties.load(input);
 			properties.load(input);

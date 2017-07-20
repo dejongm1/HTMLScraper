@@ -14,7 +14,7 @@ import com.main.mcd.spider.entities.site.Site;
 import com.main.mcd.spider.util.ConnectionUtil;
 import com.main.mcd.spider.util.EmailUtil;
 import com.main.mcd.spider.util.ExcelWriter;
-import com.main.mcd.spider.util.Util;
+import com.main.mcd.spider.util.SpiderUtil;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -28,13 +28,13 @@ public class SpiderEngine {
 
 	public static final Logger logger = Logger.getLogger(SpiderEngine.class);
 	
-	Util util = new Util();
+	SpiderUtil spiderUtil = new SpiderUtil();
 
     protected void testRandomConnections(int numberOfTries) {
         long time = System.currentTimeMillis();
         int trie = 0;
         while (trie<numberOfTries) {
-            Document doc = util.getHtmlAsDocTest("http://www.whoishostingthis.com/tools/user-agent/");
+            Document doc = spiderUtil.getHtmlAsDocTest("http://www.whoishostingthis.com/tools/user-agent/");
             if (docWasRetrieved(doc)) {
                 Elements tags = doc.select("#user-agent .user-agent, #user-agent .ip");
                 for (Element tag : tags) {
@@ -51,7 +51,7 @@ public class SpiderEngine {
 
 	protected void getPopularWords(String url, int numberOfWords /*, int levelsDeep*/) {
 		long time = System.currentTimeMillis();
-		Document doc = util.getHtmlAsDoc(url);
+		Document doc = spiderUtil.getHtmlAsDoc(url);
 		if (docWasRetrieved(doc)) {
 			//give option to leave in numbers? 
 			Map<String, Term> termCountMap = new CaseInsensitiveMap<String, Term>();
@@ -71,7 +71,7 @@ public class SpiderEngine {
 				}
 			}
 			
-			Map<String, Term> sortedWords = util.sortByValue(termCountMap);
+			Map<String, Term> sortedWords = spiderUtil.sortByValue(termCountMap);
 			int i = 0;
 			Iterator<Entry<String, Term>> iter = sortedWords.entrySet().iterator();
 			while (iter.hasNext()) {
@@ -90,7 +90,7 @@ public class SpiderEngine {
 
 	protected void getTextBySelector(String url, String selector) {
 		long time = System.currentTimeMillis();
-		Document doc = util.getHtmlAsDoc(url);
+		Document doc = spiderUtil.getHtmlAsDoc(url);
 		if (docWasRetrieved(doc)) {
 			Elements tags = doc.select(selector);
 			for (Element tag : tags) {
@@ -122,7 +122,7 @@ public class SpiderEngine {
 				excelWriter.createSpreadhseet();
 				for(Site site : sites){
 					int sleepTimeAverage = (site.getPerRecordSleepRange()[0]+site.getPerRecordSleepRange()[1])/2;
-					sleepTimeSum += util.offline()?0:sleepTimeAverage;
+					sleepTimeSum += spiderUtil.offline()?0:sleepTimeAverage;
 					long time = System.currentTimeMillis();
 					recordsProcessed += scrapeSite(state, site, excelWriter);
 					sitesScraped++;
@@ -150,7 +150,7 @@ public class SpiderEngine {
 		int perRecordSleepTimeAverage = sitesScraped!=0?(sleepTimeSum/sitesScraped):0;
 		totalTime = System.currentTimeMillis() - totalTime;
 		logger.info(states.size() + " states took " + totalTime + " ms");
-		if (!util.offline()) {
+		if (!spiderUtil.offline()) {
 			logger.info("Sleep time was approximately " + (recordsProcessed*perRecordSleepTimeAverage) + " ms");
 			logger.info("Processing time was approximately " + (totalTime-(recordsProcessed*perRecordSleepTimeAverage)) + " ms");
 		} else {
@@ -159,69 +159,67 @@ public class SpiderEngine {
 	}
 
 	private int scrapeSite(State state, Site site, ExcelWriter excelWriter) {
-		//****TODO build collection of results page urls, PLUS SOME MISC URLS
-		//****use sorted map to check for already scraped records
-		//****Remove it and following records
-		//****Parse this list of result page docs for detail links and store in collection
-		//****include some non-detail page links then randomize
-		//****iterate over collection, scraping records and simply opening others
-		//****sort by arrest date (or something else) once everything has been gathered? can I sort spreadsheet after creation?
-		
-		//refactor to split out randomizing functionality, maybe reuse
+		//refactor to split out randomizing functionality, maybe reuse??
 		int recordsProcessed = 0;
 		String baseUrl = site.getBaseUrl(new String[]{state.getName()});
 		//Add some retries if first connection to state site fails?
-		Document mainPageDoc = util.getHtmlAsDoc(baseUrl);
+		Document mainPageDoc = spiderUtil.getHtmlAsDoc(baseUrl);
 		if (docWasRetrieved(mainPageDoc)) {
 			int numberOfPages = site.getTotalPages(mainPageDoc);
 			if (numberOfPages==0) {
 				numberOfPages = 1;
 			}
-			Map<Integer, String> resultsPageUrlMap = new HashMap<>();
+			Map<Integer, String> resultsUrlPlusMiscMap = new HashMap<>();
 			logger.debug("Generating list of results pages for : " + site.getName() + " - " + state.getName());
 			//also get misc urls
 			Map<Integer,String> miscUrls = site.getMiscSafeUrlsFromDoc(mainPageDoc, numberOfPages);
 			for (int p=1; p<=numberOfPages;p++) {
-				//TODO add some bogus urls
-				resultsPageUrlMap.put(p, site.generateResultsPageUrl(p));
+				resultsUrlPlusMiscMap.put(p, site.generateResultsPageUrl(p));
 			}
-			//setResultsPageUrls(resultsPageUrlMap) //do I want to do this or sort through docs later to find details pages?
+			//setResultsPageUrls(resultsPageUrlMap) //TODO do I want to do this or sort through docs later to find details pages?
 			
-			resultsPageUrlMap.putAll(miscUrls);
+			resultsUrlPlusMiscMap.putAll(miscUrls);
 			//need to sort urls before retrieving docs
 
-			List<String> shuffledResultsPagePlusMiscUrlList = util.shuffleMap(resultsPageUrlMap);
+			//not sure if I can extract the logic to shuffle because I need a map, rather than list
+			//List<String> shuffledResultsPagePlusMiscUrlList = spiderUtil.shuffleMap(resultsPageUrlMap);
+			Map<Integer,Document> resultsDocPlusMiscMap = new HashMap<>();
 			
-			List<Document> shuffledResultsPageDocList = new ArrayList<>();
-			for (String url : shuffledResultsPagePlusMiscUrlList) {
-				//Integer pageNumber = entry.getKey();
-				//String resultsPageDocUrl = entry.getValue();
-				shuffledResultsPageDocList.add(util.getHtmlAsDoc(url));
+			List<Integer> keys = new ArrayList<>(resultsUrlPlusMiscMap.keySet());
+			Collections.shuffle(keys);
+			for (Integer k : keys) {
+				resultsDocPlusMiscMap.put(k, spiderUtil.getHtmlAsDoc(resultsUrlPlusMiscMap.get(k)));
 				try {
 					int sleepTime = ConnectionUtil.getSleepTime(site);
 					Thread.sleep(sleepTime);
-					logger.debug("Sleeping for " + sleepTime + " after fetching " + url);
+					logger.debug("Sleeping for " + sleepTime + " after fetching " + resultsUrlPlusMiscMap.get(k));
 				} catch (InterruptedException e) {
-					logger.error("Failed to sleep after fetching " + url, e);
+					logger.error("Failed to sleep after fetching " + resultsUrlPlusMiscMap.get(k), e);
 				}
 			}
-			//saving this for later??
-			//site.setResultsPageDocuments(resultsPageDocMap);
 			
-			//for (Document resultsDoc : shuffledResultsPageDocList) {
-			for (int d=0;d<shuffledResultsPageDocList.size();d++) {
-				if (docWasRetrieved(shuffledResultsPageDocList.get(d))){
-					Document doc = shuffledResultsPageDocList.get(d);
-					//only proceed if document is an actual results page
-					if (doc.baseUri().contains("/?page=") && doc.baseUri().contains("&results=")) {
-						logger.debug("Attempting to Scrape " + doc.baseUri());
-						//recordsProcessed += scrapePage(doc, site, excelWriter);
-					} else {
-						logger.debug("Skipping " + doc.baseUri() + " because it doesn't contain the records");
-					}
+			//saving this for later?? should be able to get previous sorting by looking at page number in baseUri
+			site.setOnlyResultsPageDocuments(resultsDocPlusMiscMap);
+			
+			keys = new ArrayList<>(resultsDocPlusMiscMap.keySet());
+			Collections.shuffle(keys);
+			for (Integer k : keys) {
+				Document doc = resultsDocPlusMiscMap.get(k);
+				//only proceed if document is an actual results page
+				if (docWasRetrieved(doc) && site.isAResultsDoc(doc)){
+					logger.debug("Gather complete list of records to scrape " + doc.baseUri());
+					//****TODO
+					//****Parse list of result page docs for detail links and store in collection
+					//****use sorted map to check for already scraped records
+					//****Remove it and following records
+					//****include some non-detail page links then randomize
+					//****iterate over collection, scraping records and simply opening others
+					//****sort by arrest date (or something else) once everything has been gathered? can I sort spreadsheet after creation?
+					
+					//recordsProcessed += scrapePage(doc, site, excelWriter);
 				} else {
 					//log something
-					logger.error("Nothing was retrieved for " + shuffledResultsPagePlusMiscUrlList.get(d));
+					logger.info("Nothing was retrieved for " + resultsDocPlusMiscMap.get(k).baseUri());
 				}
 			}
 		} else {
@@ -239,7 +237,7 @@ public class SpiderEngine {
 		//WritableSheet sheet = excelWriter.getWorksheet(0);//just do one sheet per excel for now
 		for (Element pdTag : profileDetailTags) {
 			logger.debug(pdTag.text());
-			Document profileDetailDoc = util.getHtmlAsDoc(site.getRecordDetailDocUrl(pdTag));
+			Document profileDetailDoc = spiderUtil.getHtmlAsDoc(site.getRecordDetailDocUrl(pdTag));
 			if(docWasRetrieved(profileDetailDoc)){
 				recordsProcessed++;
 				//should we check for ID first or not bother unless we see duplicates??

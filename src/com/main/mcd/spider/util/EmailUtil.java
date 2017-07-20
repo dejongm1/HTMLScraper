@@ -34,8 +34,8 @@ public class EmailUtil {
 	private EmailUtil(){}
 
 	public static void send(String from,String password,String to,String sub,String msg){  
-		Util util = new Util();
-		if (!util.offline()) {
+		SpiderUtil spiderUtil = new SpiderUtil();
+		if (!spiderUtil.offline()) {
 			//Create new properties object to only pass email props??
 		
 			//		props.setProperty("mail.smtp.host");  

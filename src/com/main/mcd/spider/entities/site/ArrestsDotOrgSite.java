@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -44,14 +45,18 @@ public class ArrestsDotOrgSite implements Site {
 		/*}*/
 		return builtUrl;
 	}
-//	@Override
-//	public void setResultsPageDocuments(Map<Integer,Document> resultsPageDocuments) {
-//		this.resultsPageDocuments = resultsPageDocuments;
-//	}
-//	@Override
-//	public Map<Integer,Document> getResultsPageDocuments() {
-//		return this.resultsPageDocuments;
-//	}
+	@Override
+	public void setOnlyResultsPageDocuments(Map<Integer,Document> resultsPlusMiscDocumentsMap) {
+		for(Entry<Integer, Document> entry : resultsPlusMiscDocumentsMap.entrySet()) {
+			if (isAResultsDoc(entry.getValue())) {
+				this.resultsPageDocuments.put(entry.getKey(), entry.getValue());
+			}
+		}
+	}
+	@Override
+	public Map<Integer,Document> getResultsPageDocuments() {
+		return this.resultsPageDocuments;
+	}
 	@Override
 	public String getBaseUrl(String[] args) {
 		if (baseUrl==null) {
@@ -119,9 +124,8 @@ public class ArrestsDotOrgSite implements Site {
 	}
 	@Override
 	public int getPageNumberFromDoc(Document doc) {
-		String url = doc.baseUri();
-		int pageNumber = Character.getNumericValue(url.charAt(url.indexOf('&')-1));
-		return pageNumber;
+		String baseUri = doc.baseUri();
+		return Character.getNumericValue(baseUri.charAt(baseUri.indexOf('&')-1));
 	}
 	@Override
 	public Map<Integer,String> getMiscSafeUrlsFromDoc(Document doc, int pagesToMatch) {
@@ -144,4 +148,10 @@ public class ArrestsDotOrgSite implements Site {
 		}
 		return safeUrls;
 	}
+
+	@Override
+	public boolean isAResultsDoc(Document doc) {
+		return doc.baseUri().contains("/?page=") && doc.baseUri().contains("&results=");
+	}
+	
 }

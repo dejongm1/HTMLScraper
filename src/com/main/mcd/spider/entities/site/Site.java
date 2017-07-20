@@ -21,10 +21,11 @@ public interface Site {
 	int getTotalPages(Document doc);
 	int getTotalRecordCount(Document doc);
 	String generateResultsPageUrl(int page/*, int resultsPerPage*/);
-//	Map<Integer,Document> getResultsPageDocuments();
-//	void setResultsPageDocuments(Map<Integer,Document> resultsPageDocuments);
+	Map<Integer,Document> getResultsPageDocuments();
+	void setOnlyResultsPageDocuments(Map<Integer,Document> resultsPlusMiscDocuments);
 	int[] getPerRecordSleepRange();
 	int getPageNumberFromDoc(Document doc);
 	Map<Integer,String> getMiscSafeUrlsFromDoc(Document doc, int pagesToMatch);
+	boolean isAResultsDoc(Document doc);
 	
 }
