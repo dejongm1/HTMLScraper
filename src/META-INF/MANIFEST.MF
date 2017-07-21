@@ -1,3 +1,3 @@
 Manifest-Version: 1.0
 Class-Path: .
-Main-Class: com.main.mcd.spider.SpiderMain
+Main-Class: com.mcd.spider.main.SpiderMain

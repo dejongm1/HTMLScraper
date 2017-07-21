@@ -1,8 +1,0 @@
-/**
- * 
- */
-/**
- * @author u569220
- *
- */
-package com.main.mcd.spider.exception;
