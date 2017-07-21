@@ -1,4 +1,4 @@
-package com.main.mcd.spider;
+package com.main.mcd.engine;
 
 import com.main.mcd.spider.entities.ArrestRecord;
 import com.main.mcd.spider.entities.Record;
@@ -29,7 +29,7 @@ public class SpiderEngine {
 	
 	SpiderUtil spiderUtil = new SpiderUtil();
 
-    protected void testRandomConnections(int numberOfTries) {
+    public void testRandomConnections(int numberOfTries) {
         long time = System.currentTimeMillis();
         int trie = 0;
         while (trie<numberOfTries) {
@@ -48,7 +48,7 @@ public class SpiderEngine {
         logger.info("Took " + time + " ms");
     }
 
-	protected void getPopularWords(String url, int numberOfWords /*, int levelsDeep*/) {
+	public void getPopularWords(String url, int numberOfWords /*, int levelsDeep*/) {
 		long time = System.currentTimeMillis();
 		Document doc = spiderUtil.getHtmlAsDoc(url);
 		if (docWasRetrieved(doc)) {
@@ -87,7 +87,7 @@ public class SpiderEngine {
 		}
 	}
 
-	protected void getTextBySelector(String url, String selector) {
+	public void getTextBySelector(String url, String selector) {
 		long time = System.currentTimeMillis();
 		Document doc = spiderUtil.getHtmlAsDoc(url);
 		if (docWasRetrieved(doc)) {
@@ -102,7 +102,7 @@ public class SpiderEngine {
 		logger.info("Took " + time + " ms");
 	}
 
-    protected void getArrestRecords(List<State> states, long maxNumberOfResults) {
+    public void getArrestRecords(List<State> states, long maxNumberOfResults) {
         logger.debug("Sending spider " + (System.getProperty("offline").equals("true")?"offline":"online" ));
         //split into more specific methods
         long totalTime = System.currentTimeMillis();
@@ -160,7 +160,7 @@ public class SpiderEngine {
     private int scrapeSite(State state, Site site, ExcelWriter excelWriter) {
         //refactor to split out randomizing functionality, maybe reuse??
         int recordsProcessed = 0;
-        String firstPageResults = site.getBaseUrl(new String[]{"Polk"});
+        String firstPageResults = site.getBaseUrl(null);
         //Add some retries if first connection to state site fails?
         Document mainPageDoc = spiderUtil.getHtmlAsDoc(firstPageResults);
         if (docWasRetrieved(mainPageDoc)) {
@@ -171,12 +171,12 @@ public class SpiderEngine {
             Map<String, String> resultsUrlPlusMiscMap = new HashMap<>();
             logger.debug("Generating list of results pages for : " + site.getName() + " - " + state.getName());
             //also get misc urls
-            Map<String,String> miscUrls = site.getMiscSafeUrlsFromDoc(mainPageDoc, numberOfPages);
+            //Map<String,String> miscUrls = site.getMiscSafeUrlsFromDoc(mainPageDoc, numberOfPages);
             for (int p=1; p<=numberOfPages;p++) {
                 resultsUrlPlusMiscMap.put(String.valueOf(p), site.generateResultsPageUrl(p));
             }
 
-            resultsUrlPlusMiscMap.putAll(miscUrls);
+            //resultsUrlPlusMiscMap.putAll(miscUrls);
 
             //shuffle urls before retrieving docs
             Map<String,Document> resultsDocPlusMiscMap = new HashMap<>();
@@ -237,7 +237,7 @@ public class SpiderEngine {
         Elements recordDetailElements = site.getRecordElements(doc);
         for(int e=0;e<recordDetailElements.size();e++) {
             String url = site.getRecordDetailDocUrl(recordDetailElements.get(e));
-            String id = url.substring(url.indexOf("&id=")+4, url.length()-1);
+            String id = site.getRecordId(url);
             //String id = url.substring(url.indexOf("/Arrests/")+9, url.length()-1);
             recordDetailUrlMap.put(id, url);
         }
@@ -248,19 +248,19 @@ public class SpiderEngine {
         int recordsProcessed = 0;
         List<Record> arrestRecords = new ArrayList<>();
         Record arrestRecord = new ArrestRecord();
-        List<String> keys = new ArrayList<>(recordsDetailsUrlMap.keySet());
-        Collections.shuffle(keys);
-        for (String k : keys) {
-            String id = k;
-            String url = recordsDetailsUrlMap.get(k);
+//        List<String> keys = new ArrayList<>(recordsDetailsUrlMap.keySet());
+//        Collections.shuffle(keys);
+//        for (String k : keys) {
+        for (Entry<String,String> entry : recordsDetailsUrlMap.entrySet()) {
+            String id = entry.getKey();
+            String url = recordsDetailsUrlMap.get(id);
             Document profileDetailDoc = spiderUtil.getHtmlAsDoc(url);
             if (site.isARecordDetailDoc(profileDetailDoc)) {
                 if (docWasRetrieved(profileDetailDoc)) {
                     recordsProcessed++;
                     //should we check for ID first or not bother unless we see duplicates??
                     try {
-                        arrestRecords.add(arrestRecord);
-                        populateArrestRecord(profileDetailDoc, site);
+                        arrestRecords.add(populateArrestRecord(profileDetailDoc, site));
                         //save each record in case of failures
                         //excelWriter.saveRecordsToWorkbook(arrestRecord);
                         int sleepTime = ConnectionUtil.getSleepTime(site);
@@ -282,9 +282,8 @@ public class SpiderEngine {
 
     private ArrestRecord populateArrestRecord(Document profileDetailDoc, Site site) {
         Elements profileDetails = site.getRecordDetailElements(profileDetailDoc);
-        String baseURI = profileDetailDoc.baseUri();
         ArrestRecord record = new ArrestRecord();
-        record.setId(profileDetails.get(0).baseUri().substring(baseURI.indexOf("/Arrests/")+9, baseURI.length()-1));
+        record.setId(site.getRecordId(profileDetailDoc.baseUri()));
         for (Element profileDetail : profileDetails) {
             matchPropertyToField(record, profileDetail);
             logger.info("\t" + profileDetail.text());
@@ -296,7 +295,7 @@ public class SpiderEngine {
 
 	@SuppressWarnings("deprecation")
 	private void matchPropertyToField(ArrestRecord record, Element profileDetail) {
-		String label = profileDetail.select("b").text().toLowerCase();
+		String label = profileDetail.select("th").text().toLowerCase();
 		Elements charges = profileDetail.select(".charges li");
 		if (!charges.isEmpty()) {
 			//should I try to categorize charge types here???
@@ -307,38 +306,36 @@ public class SpiderEngine {
 			record.setCharges(chargeStrings);
 		} else if (!label.equals("")) {
 			try {
-				if (label.contains("full name")) {
+				if (label.equals("name")) {
 					formatFullName(record, profileDetail);
-				} else if (label.contains("date")) {
-					Date date = new Date(stripOffLabel(profileDetail));
+				} else if (label.contains("book date")) {
+					Date date = new Date(extractValue(profileDetail));
 					Calendar calendar = Calendar.getInstance();
 					calendar.setTime(date);
 					record.setArrestDate(calendar);
-				} else if (label.contains("time")) {
-					formatArrestTime(record, profileDetail);
-				} else if (label.contains("arrest age")) {
-					record.setArrestAge(Integer.parseInt(stripOffLabel(profileDetail)));
-				} else if (label.contains("gender")) {
-					record.setGender(stripOffLabel(profileDetail));
+				} else if (label.contains("age")) {
+					record.setArrestAge(Integer.parseInt(extractValue(profileDetail)));
+				} else if (label.contains("offender")) {
+					record.setOffenderId(extractValue(profileDetail));
+				} else if (label.contains("sex")) {
+					record.setGender(extractValue(profileDetail));
 				} else if (label.contains("city")) {
-					String city = profileDetail.select("span[itemProp=\"addressLocality\"]").text();
-					String state = profileDetail.select("span[itemprop=\"addressRegion\"]").text();
-					record.setCity(city);
-					record.setState(state);
-				} else if (label.contains("total bond")) {
-					String bondAmount = stripOffLabel(profileDetail);
-					int totalBond = Integer.parseInt(bondAmount.replace("$", ""));
+//					record.setCity(city);
+//					record.setState(state);
+				} else if (label.contains("bond")) {
+					String bondAmount = extractValue(profileDetail);
+					int totalBond = Integer.parseInt(bondAmount.replace("$", "").replace(",", ""));
 					record.setTotalBond(totalBond);
 				} else if (label.contains("height")) {
-					record.setHeight(stripOffLabel(profileDetail));
+					record.setHeight(extractValue(profileDetail));
 				} else if (label.contains("weight")) {
-					record.setWeight(stripOffLabel(profileDetail));
-				} else if (label.contains("hair color")) {
-					record.setHairColor(stripOffLabel(profileDetail));
-				} else if (label.contains("eye color")) {
-					record.setEyeColor(stripOffLabel(profileDetail));
-				} else if (label.contains("birth")) {
-					record.setBirthPlace(stripOffLabel(profileDetail));
+					record.setWeight(extractValue(profileDetail));
+				} else if (label.contains("hair")) {
+					record.setHairColor(extractValue(profileDetail));
+				} else if (label.contains("eyes")) {
+					record.setEyeColor(extractValue(profileDetail));
+				} else if (label.contains("race")) {
+					record.setRace(extractValue(profileDetail));
 				}
 			} catch (NumberFormatException nfe) {
 				logger.error("Couldn't parse a numeric value from " + profileDetail.text());
@@ -349,28 +346,12 @@ public class SpiderEngine {
 	}
 	
 	private void formatFullName(ArrestRecord record, Element profileDetail) {
-		record.setFirstName(profileDetail.select("span [itemprop=\"givenName\"]").text());
-		record.setMiddleName(profileDetail.select("span [itemprop=\"additionalName\"]").text());
-		record.setLastName(profileDetail.select("span [itemprop=\"familyName\"]").text());
-		String fullName = record.getFirstName();
-		fullName += record.getMiddleName()!=null?" " + record.getMiddleName():"";
-		fullName += " " + record.getLastName();
+		String fullName = extractValue(profileDetail);
 		record.setFullName(fullName);
 	}
 	
-	private void formatArrestTime(ArrestRecord record, Element profileDetail) {
-		Calendar arrestDate = record.getArrestDate();
-		if (arrestDate!=null) {
-			String arrestTimeText = profileDetail.text().replaceAll("(?i)time:", "").trim();
-			arrestDate.set(Calendar.HOUR, Integer.parseInt(arrestTimeText.substring(0, arrestTimeText.indexOf(':'))));
-			arrestDate.set(Calendar.MINUTE, Integer.parseInt(arrestTimeText.substring(arrestTimeText.indexOf(':')+1, arrestTimeText.indexOf(' '))));
-			arrestDate.set(Calendar.AM, arrestTimeText.substring(arrestTimeText.indexOf(' ')+1)=="AM"?1:0);
-			record.setArrestDate(arrestDate);
-		}
-	}
-	
-	private String stripOffLabel(Element profileDetail) {
-		return profileDetail.text().substring(profileDetail.text().indexOf(':')+1).trim();
+	private String extractValue(Element profileDetail) {
+		return profileDetail.select("td").text().trim();
 	}
 	
 	private boolean docWasRetrieved(Document doc) {

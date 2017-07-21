@@ -27,6 +27,6 @@ public interface Site {
 	int getPageNumberFromDoc(Document doc);
 	Map<String, String> getMiscSafeUrlsFromDoc(Document doc, int pagesToMatch);
 	boolean isAResultsDoc(Document doc);
-
     boolean isARecordDetailDoc(Document doc);
+	String getRecordId(String url);
 }

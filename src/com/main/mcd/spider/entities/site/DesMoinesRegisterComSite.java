@@ -159,4 +159,9 @@ public class DesMoinesRegisterComSite implements Site {
         }
     }
 
+	@Override
+	public String getRecordId(String url) {
+		return url.substring(url.indexOf("&id=")+4, url.length()-1);
+	}
+
 }

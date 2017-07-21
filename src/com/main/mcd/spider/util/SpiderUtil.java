@@ -1,9 +1,10 @@
 package com.main.mcd.spider.util;
 
-import com.main.mcd.spider.SpiderEngine;
 import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+
+import com.main.mcd.engine.SpiderEngine;
 
 import java.io.File;
 import java.io.FileNotFoundException;

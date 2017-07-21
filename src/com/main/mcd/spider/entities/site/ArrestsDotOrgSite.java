@@ -174,4 +174,9 @@ public class ArrestsDotOrgSite implements Site {
         }
     }
 
+	@Override
+	public String getRecordId(String url) {
+		return url.substring(url.indexOf("/Arrests/")+9, url.length()-1);
+	}
+
 }

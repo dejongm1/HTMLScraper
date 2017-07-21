@@ -37,7 +37,9 @@ public class ArrestRecord implements Record {
 		HAIRCOLOR_COLUMN(14, "Hair Color"),
 		EYECOLOR_COLUMN(15, "Eye Color"),
 		BIRTHPLACE_COLUMN(16, "Birth Place"),
-		CHARGES_COLUMN(17, "Charges");
+		CHARGES_COLUMN(17, "Charges"),
+		OFFENDERID_COLUMN(18, "Offender ID"),
+		RACE(19, "Race");
 	
 		private int columnIndex;
 		private String columnTitle;
@@ -58,7 +60,7 @@ public class ArrestRecord implements Record {
 	public static final Logger logger = Logger.getLogger(ArrestRecord.class);
 
 	//create a person entity?	
-	private String id;					
+	private String id;
 	private String fullName;			
 	private String firstName;			
 	private String middleName;			
@@ -75,7 +77,9 @@ public class ArrestRecord implements Record {
 	private String hairColor;			
 	private String eyeColor;			
 	private String birthPlace;			
-	private String[] charges;			
+	private String[] charges;
+	private String offenderId;
+	private String race;
 
 	public ArrestRecord(){}
 
@@ -189,7 +193,21 @@ public class ArrestRecord implements Record {
 	public void setCharges(String[] charges) {
 		this.charges = charges;
 	}
+	public String getOffenderId() {
+		return offenderId;
+	}
+	public void setOffenderId(String offenderId) {
+		this.offenderId = offenderId;
+	}
 	
+	public String getRace() {
+		return race;
+	}
+
+	public void setRace(String race) {
+		this.race = race;
+	}
+
 	@Override
 	public List<Field> getFieldsToOutput() {
 		List<Field> fields = new ArrayList<>();
@@ -255,5 +273,4 @@ public class ArrestRecord implements Record {
 //	public outputAsText() {
 //	
 //	}
-
 }

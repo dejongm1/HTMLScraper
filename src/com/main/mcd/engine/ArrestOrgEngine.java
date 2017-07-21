@@ -1,4 +1,4 @@
-package com.main.mcd.spider;
+package com.main.mcd.engine;
 
 import com.main.mcd.spider.entities.ArrestRecord;
 import com.main.mcd.spider.entities.Record;
@@ -27,7 +27,7 @@ public class ArrestOrgEngine {
 
     SpiderUtil spiderUtil = new SpiderUtil();
 
-    protected void getArrestRecords(List<State> states, long maxNumberOfResults) {
+    public void getArrestRecords(List<State> states, long maxNumberOfResults) {
         logger.debug("Sending spider " + (System.getProperty("offline").equals("true")?"offline":"online" ));
         //split into more specific methods
         long totalTime = System.currentTimeMillis();
@@ -163,8 +163,7 @@ public class ArrestOrgEngine {
         Elements recordDetailElements = site.getRecordElements(doc);
         for(int e=0;e<recordDetailElements.size();e++) {
             String url = site.getRecordDetailDocUrl(recordDetailElements.get(e));
-            String id = url.substring(url.indexOf("&id=")+4, url.length()-1);
-            //String id = url.substring(url.indexOf("/Arrests/")+9, url.length()-1);
+            String id = site.getRecordId(url);
             recordDetailUrlMap.put(id, url);
         }
         return recordDetailUrlMap;
@@ -208,9 +207,8 @@ public class ArrestOrgEngine {
 
     private ArrestRecord populateArrestRecord(Document profileDetailDoc, Site site) {
         Elements profileDetails = site.getRecordDetailElements(profileDetailDoc);
-        String baseURI = profileDetailDoc.baseUri();
         ArrestRecord record = new ArrestRecord();
-        record.setId(profileDetails.get(0).baseUri().substring(baseURI.indexOf("/Arrests/")+9, baseURI.length()-1));
+        record.setId(site.getRecordId(profileDetailDoc.baseUri()));
         for (Element profileDetail : profileDetails) {
             matchPropertyToField(record, profileDetail);
             logger.info("\t" + profileDetail.text());

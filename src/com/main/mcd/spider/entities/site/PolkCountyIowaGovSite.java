@@ -12,12 +12,12 @@ import java.util.Map.Entry;
 
 public class PolkCountyIowaGovSite implements Site {
 
-	private static final Url url = new Url("http://", "http://apps2.polkcountyiowa.gov/inmatesontheweb", new String[]{});
+	private static final Url url = new Url("http://", "apps2.polkcountyiowa.gov/inmatesontheweb", new String[]{});
 	private static final String name = "PolkCountyIowa.gov";
 	private String baseUrl;
 	private int pages;
 	private int totalRecordCount;
-	private static final int[] perRecordSleepRange = new int[]{5,10};
+	private static final int[] perRecordSleepRange = new int[]{3,8};
 	private Map<String,Document> resultsPageDocuments;
 
 	public PolkCountyIowaGovSite() {}
@@ -82,7 +82,7 @@ public class PolkCountyIowaGovSite implements Site {
 	}
 	@Override
 	public Elements getRecordDetailElements(Document doc) {
-		return doc.select("#inmateDetails, #chargesSpace .inmateCharges");
+		return doc.select("#inmateDetails tr, #chargesSpace .inmateCharges tr");
 	}
 	@Override
 	public int getTotalPages(Document doc) {
@@ -158,6 +158,10 @@ public class PolkCountyIowaGovSite implements Site {
         } else {
             return false;
         }
+    }
+    @Override
+    public String getRecordId(String url) {
+    	return url.substring(url.indexOf("bi=")+3, url.length());
     }
 
 }
