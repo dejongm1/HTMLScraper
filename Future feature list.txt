@@ -7,21 +7,9 @@ getRecords()
             http://apps2.polkcountyiowa.gov/inmatesontheweb/BookedPrev24Hrs.aspx
             https://www.polkcountyiowa.gov/sheriff/divisions/detention/jail-and-arrest-information/
 
+	Read in spreadsheet at start of scrape to skip records
 
-	avoid blacklisting ---- already trying crawl slowly, sleep at random intervals, rotate User-agents
-    sleep for a minute or two after so many
-    use Connection.proxy() for IP masking?
-
-    generate full list of result page links
-    	-add misc hrefs (ignore rel=stylesheet, include /ABC.php, '/ABC/', '/', '#', '/Arrests/ABC')
-    	-randomize, then get docs and store in HashMap
-        -keep sorted map to search for any records have already been scraped
-        -remove it and subsequent records
-    parse thses docs for details links and store in hashmap
-    find some random hrefs to hashmap as well (use jSoup.listLinks())
-    randomize list again
-    go through map, scraping details docs and ignoring others
-    sort by arrest date in spreadsheet. That will make it easier to find already parsed records later on
+    sort in spreadsheet. That will make it easier to find already parsed records later on
 
 	On failed getHtmlAsDoc(baseDoc) getHtmlAsDoc(resultsPage), retry 3 times with different user-agent
 	On failed getHtmlAsDoc(recordDetail) retry once, keeping track of failed pages
