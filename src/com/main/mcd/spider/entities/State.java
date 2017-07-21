@@ -1,12 +1,13 @@
 package com.main.mcd.spider.entities;
 
+import com.main.mcd.spider.entities.site.ArrestsDotOrgSite;
+import com.main.mcd.spider.entities.site.PolkCountyIowaGovSite;
+import com.main.mcd.spider.entities.site.Site;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.main.mcd.spider.entities.site.ArrestsDotOrgSite;
-import com.main.mcd.spider.entities.site.Site;
 
 public final class State {
 	private static Map<String, State> abbreviationToState = new HashMap();
@@ -31,7 +32,8 @@ public final class State {
 	public static final State ID = new State("Idaho", "ID", new Site[]{new ArrestsDotOrgSite()});
 	public static final State IL = new State("Illinois", "IL", new Site[]{new ArrestsDotOrgSite()});
 	public static final State IN = new State("Indiana", "IN", new Site[]{new ArrestsDotOrgSite()});
-	public static final State IA = new State("Iowa", "IA", new Site[]{new ArrestsDotOrgSite()});
+	public static final State IA = new State("Iowa", "IA", new Site[]{new PolkCountyIowaGovSite()});
+    //public static final State IA = new State("Iowa", "IA", new Site[]{new ArrestsDotOrgSite()});
 	public static final State KS = new State("Kansas", "KS", new Site[]{new ArrestsDotOrgSite()});
 	public static final State KY = new State("Kentucky", "KY", new Site[]{new ArrestsDotOrgSite()});
 	public static final State LA = new State("Louisiana", "LA", new Site[]{new ArrestsDotOrgSite()});

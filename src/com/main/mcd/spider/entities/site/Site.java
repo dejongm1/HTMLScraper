@@ -1,11 +1,11 @@
 package com.main.mcd.spider.entities.site;
 
-import java.util.List;
-import java.util.Map;
-
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+
+import java.util.List;
+import java.util.Map;
 
 public interface Site {
 	
@@ -27,5 +27,6 @@ public interface Site {
 	int getPageNumberFromDoc(Document doc);
 	Map<String, String> getMiscSafeUrlsFromDoc(Document doc, int pagesToMatch);
 	boolean isAResultsDoc(Document doc);
-	
+
+    boolean isARecordDetailDoc(Document doc);
 }

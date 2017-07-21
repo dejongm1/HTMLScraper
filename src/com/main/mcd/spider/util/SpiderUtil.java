@@ -1,26 +1,17 @@
 package com.main.mcd.spider.util;
 
+import com.main.mcd.spider.SpiderEngine;
+import org.apache.log4j.Logger;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.ConnectException;
 import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import org.apache.log4j.Logger;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-
-import com.main.mcd.spider.SpiderEngine;
+import java.util.*;
 
 public class SpiderUtil {
 	
@@ -98,7 +89,7 @@ public class SpiderUtil {
         } catch (ConnectException ce) {
             SpiderEngine.logger.error("I couldn't connect to " + url + ". Please be sure you're using a site that exists and are connected to the interweb.");
         } catch (IOException ioe) {
-            SpiderEngine.logger.error("I tried to scrape that site but had some trouble. \n" + ioe.getMessage());
+            SpiderEngine.logger.error("I tried to scrape " + url + " but had some trouble. \n" + ioe.getMessage());
         }
         return null;
     }

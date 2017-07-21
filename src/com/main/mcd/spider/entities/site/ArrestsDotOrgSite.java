@@ -1,14 +1,14 @@
 package com.main.mcd.spider.entities.site;
 
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 public class ArrestsDotOrgSite implements Site {
 
@@ -17,10 +17,10 @@ public class ArrestsDotOrgSite implements Site {
 	private String baseUrl;
 	private int pages;
 	private int totalRecordCount;
-	private static final int[] perRecordSleepRange = new int[]{5,15};
+	private static final int[] perRecordSleepRange = new int[]{30,31};
 	private Map<String,Document> resultsPageDocuments;
 
-	public ArrestsDotOrgSite() {}
+	public ArrestsDotOrgSite () {}
 	
 	@Override
 	public Url getUrl() {
@@ -63,11 +63,11 @@ public class ArrestsDotOrgSite implements Site {
 	public String getBaseUrl(String[] args) {
 		if (baseUrl==null) {
 			Url url = getUrl();
-//			String resultsPerPage = args[1];
-//			String pageNumber = args[2];
+//			String resultsPerPage = args.length>1?args[1]:null;
+//			String pageNumber = args.length>2?args[2]:null;
 			String builtUrl = url.getProtocol() + (args[0]!=null?args[0]+".":"") + url.getDomain();
 //			builtUrl += "/?page="+(pageNumber!=null?pageNumber:"1");
-//			builtUrl += "&results="+(resultsPerPage!=null?resultsPerPage:"14");
+//			builtUrl += "&results="+(resultsPerPage!=null?resultsPerPage:"56");
 			baseUrl =  builtUrl.toLowerCase();
 		}
 		return baseUrl;
@@ -111,11 +111,11 @@ public class ArrestsDotOrgSite implements Site {
 	@Override
 	public int getTotalRecordCount(Document doc) {
 		if (totalRecordCount==0) {
-			int recordsPerPage = 12;//default
+			int recordsPerPage = 14;//default
 			Elements recordsPerDropdown = doc.select(".content-box .pager-options  option[selected=\"selected\"]");
 			for (Element recordsPer : recordsPerDropdown) {
 				try {
-					recordsPerPage = Integer.parseInt(recordsPer.text());
+					recordsPerPage = Integer.parseInt(recordsPer.text());//try to get actual
 				} catch (NumberFormatException nfe) {
 				}
 			}
@@ -137,7 +137,7 @@ public class ArrestsDotOrgSite implements Site {
 		//double the size of the list and only fill the second half
 		Map<String,String> safeUrls = new HashMap<>();
 		try {
-			for (int u=pagesToMatch+1;u<=pagesToMatch*2;u++) {
+			for (int u=pagesToMatch+1;u<pagesToMatch*2;u++) {
 				Element link = links.get(u);
 				//(ignore rel=stylesheet, include /ABC.php, '/ABC/', '/', '#', '/Arrests/ABC')
 				if (!link.hasAttr("rel")
@@ -156,13 +156,22 @@ public class ArrestsDotOrgSite implements Site {
 		return safeUrls;
 	}
 
-	@Override
-	public boolean isAResultsDoc(Document doc) {
-		if (doc!=null) {
-			return doc.baseUri().contains("/?page=") && doc.baseUri().contains("&results=");
-		} else {
-			return false;
-		}
-	}
-	
+    @Override
+    public boolean isAResultsDoc(Document doc) {
+        if (doc!=null) {
+            return doc.baseUri().contains("/?page=") && doc.baseUri().contains("&results=");
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean isARecordDetailDoc(Document doc) {
+        if (doc!=null) {
+            return doc.baseUri().matches("[A-Za-z]+_[0-9]");
+        } else {
+            return false;
+        }
+    }
+
 }

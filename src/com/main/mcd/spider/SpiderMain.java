@@ -1,10 +1,9 @@
 package com.main.mcd.spider;
 
-import org.apache.log4j.Logger;
-
 import com.main.mcd.spider.entities.State;
 import com.main.mcd.spider.util.InputUtil;
 import com.main.mcd.spider.util.SpiderConstants;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.util.List;
@@ -99,7 +98,14 @@ public class SpiderMain {
 //		String term = (String) inputUtil.getInput("Term: ", 1, SpiderConstants.NO_VALIDATION);
 //		engine.getSearchTerms(url, term);
 	}
-	
+
+    @SuppressWarnings("unchecked")
+    private static void getArrestRecordsArrestOrg(String[] args) throws IOException {
+	    ArrestOrgEngine engine = new ArrestOrgEngine();
+        List<State> states = args.length>=2?inputUtil.convertToStates(args[1]):(List<State>) inputUtil.getInput("State(s) or \"All\": ", 3, SpiderConstants.STATE_VALIDATION);
+        long maxNumberOfResults = args.length>=3?inputUtil.convertToNumber(args[2]):999999;
+        engine.getArrestRecords(states, maxNumberOfResults);
+    }
 	@SuppressWarnings("unchecked")
 	private static void getArrestRecords(String[] args) throws IOException {
 		List<State> states = args.length>=2?inputUtil.convertToStates(args[1]):(List<State>) inputUtil.getInput("State(s) or \"All\": ", 3, SpiderConstants.STATE_VALIDATION);

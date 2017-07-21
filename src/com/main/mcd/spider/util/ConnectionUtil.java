@@ -1,5 +1,11 @@
 package com.main.mcd.spider.util;
 
+import com.main.mcd.spider.entities.site.Site;
+import org.apache.log4j.Logger;
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -8,13 +14,6 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URL;
 import java.util.concurrent.ThreadLocalRandom;
-
-import org.apache.log4j.Logger;
-import org.jsoup.Connection;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-
-import com.main.mcd.spider.entities.site.Site;
 
 public class ConnectionUtil {
 	
@@ -43,14 +42,14 @@ public class ConnectionUtil {
 	public static Connection getConnection(String url) throws IOException {
 		return Jsoup.connect(url)
 				.userAgent(getRandomUserAgent())
-//				.userAgent("findlinks/1.1.2-a5 (+http\\://wortschatz.uni-leipzig.de/findlinks/)")
+//				.userAgent("Mozilla/5.0 (Windows NT 10.0; WOW64; rv:54.0) Gecko/20100101 Firefox/54.0")
 				.maxBodySize(0)
 				.timeout(30000);
 	}
 
 	private static String getRandomUserAgent() { //to avoid getting blacklisted
 		String[] userAgentList = System.getProperty("user.agents").split(", ");
-		int r = getRandom(userAgentList.length-1, -1);
+		int r = getRandom(userAgentList.length-1, -1, false);
 		logger.debug("User-agent: " + userAgentList[r]);
 		return userAgentList[r];
 	}
@@ -58,17 +57,17 @@ public class ConnectionUtil {
 	public static int getSleepTime(Site site) {
 		boolean offline = Boolean.parseBoolean(System.getProperty("offline"));
 		int[] sleepTimeRange = site.getPerRecordSleepRange();
-		return offline?0:getRandom(sleepTimeRange[0], sleepTimeRange[1]);
+		return offline?0:getRandom(sleepTimeRange[0], sleepTimeRange[1], true);
 	}
 	
-	private static int getRandom(int from, int to) {
+	private static int getRandom(int from, int to, boolean inMilliseconds) {
+	    int multiplier = inMilliseconds?1000:1;
 		// nextInt is normally exclusive of the top value,
 		// so add 1 to make it inclusive
 		if (to==-1) {
-			return ThreadLocalRandom.current().nextInt(from*1000);
+			return ThreadLocalRandom.current().nextInt(from*multiplier);
 		} else {
-			return ThreadLocalRandom.current().nextInt(from*1000, (to + 1)*1000);
+			return ThreadLocalRandom.current().nextInt(from*multiplier, to*multiplier);
 		}
 	}
-
 }

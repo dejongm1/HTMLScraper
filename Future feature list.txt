@@ -1,8 +1,15 @@
 Future feature list
 
 getRecords()
-	avoid blacklisting ---- already trying crawl slowly, sleep at random intervals, rotate User-agents
+            http://data.desmoinesregister.com/iowa-mugshots/?co=Polk
+            http://whotv.com/booked/
+            https://www.iowacourts.state.ia.us/ESAWebApp/DefaultFrame
+            http://apps2.polkcountyiowa.gov/inmatesontheweb/BookedPrev24Hrs.aspx
+            https://www.polkcountyiowa.gov/sheriff/divisions/detention/jail-and-arrest-information/
 
+
+	avoid blacklisting ---- already trying crawl slowly, sleep at random intervals, rotate User-agents
+    sleep for a minute or two after so many
     use Connection.proxy() for IP masking?
 
     generate full list of result page links
