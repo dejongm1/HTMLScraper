@@ -1,4 +1,17 @@
-package com.main.mcd.engine;
+package com.main.mcd.spider.engine.record;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import com.main.mcd.spider.entities.ArrestRecord;
 import com.main.mcd.spider.entities.Record;
@@ -6,14 +19,9 @@ import com.main.mcd.spider.entities.State;
 import com.main.mcd.spider.entities.site.Site;
 import com.main.mcd.spider.util.ConnectionUtil;
 import com.main.mcd.spider.util.EmailUtil;
+import com.main.mcd.spider.util.EngineUtil;
 import com.main.mcd.spider.util.ExcelWriter;
 import com.main.mcd.spider.util.SpiderUtil;
-import org.apache.log4j.Logger;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import java.util.*;
 
 /**
  *
@@ -21,13 +29,15 @@ import java.util.*;
  *
  */
 
-public class ArrestOrgEngine {
+public class ArrestOrgEngine implements ArrestRecordEngine {
 
     public static final Logger logger = Logger.getLogger(ArrestOrgEngine.class);
 
     SpiderUtil spiderUtil = new SpiderUtil();
+    EngineUtil engineUtil = new EngineUtil();
 
-    public void getArrestRecords(List<State> states, long maxNumberOfResults) {
+    @Override
+    public void getArrestRecords(State state, long maxNumberOfResults) {
         logger.debug("Sending spider " + (System.getProperty("offline").equals("true")?"offline":"online" ));
         //split into more specific methods
         long totalTime = System.currentTimeMillis();
@@ -38,42 +48,40 @@ public class ArrestOrgEngine {
         //use maxNumberOfResults to stop processing once this method has been broken up
         //this currently won't stop a single site from processing more than the max number of records
         //while(recordsProcessed <= maxNumberOfResults) {
-        for (State state : states){
-            long stateTime = System.currentTimeMillis();
-            logger.info("----State: " + state.getName() + "----");
-            Site[] sites = state.getSites();
-            ExcelWriter excelWriter  = new ExcelWriter(state, new ArrestRecord());
-            excelWriter.createSpreadhseet();
-            for(Site site : sites){
-                int sleepTimeAverage = (site.getPerRecordSleepRange()[0]+site.getPerRecordSleepRange()[1])/2;
-                sleepTimeSum += spiderUtil.offline()?0:sleepTimeAverage;
-                long time = System.currentTimeMillis();
-                recordsProcessed += scrapeSite(state, site, excelWriter);
-                sitesScraped++;
-                time = System.currentTimeMillis() - time;
-                logger.info(site.getBaseUrl(new String[]{state.getName()}) + " took " + time + " ms");
-            }
-
-            //remove ID column on final save?
-            //or use for future processing? check for ID and start where left off
-            //excelWriter.removeColumnsFromSpreadsheet(new int[]{ArrestRecord.RecordColumnEnum.ID_COLUMN.index()});
-            stateTime = System.currentTimeMillis() - stateTime;
-            logger.info(state.getName() + " took " + stateTime + " ms");
-
-            try {
-                EmailUtil.send("dejong.c.michael@gmail.com",
-                        "Pack##92", //need to encrypt
-                        "dejong.c.michael@gmail.com",
-                        "Arrest record parsing for " + state.getName(),
-                        "Michael's a stud, he just successfully parsed the interwebs for arrest records in the state of Iowa");
-            } catch (RuntimeException re) {
-                logger.error("An error occurred, email not sent");
-            }
+        long stateTime = System.currentTimeMillis();
+        logger.info("----State: " + state.getName() + "----");
+        Site[] sites = state.getSites();
+        ExcelWriter excelWriter  = new ExcelWriter(state, new ArrestRecord());
+        excelWriter.createSpreadhseet();
+        for(Site site : sites){
+            int sleepTimeAverage = (site.getPerRecordSleepRange()[0]+site.getPerRecordSleepRange()[1])/2;
+            sleepTimeSum += spiderUtil.offline()?0:sleepTimeAverage;
+            long time = System.currentTimeMillis();
+            recordsProcessed += scrapeSite(state, site, excelWriter);
+            sitesScraped++;
+            time = System.currentTimeMillis() - time;
+            logger.info(site.getBaseUrl(new String[]{state.getName()}) + " took " + time + " ms");
         }
+
+        //remove ID column on final save?
+        //or use for future processing? check for ID and start where left off
+        //excelWriter.removeColumnsFromSpreadsheet(new int[]{ArrestRecord.RecordColumnEnum.ID_COLUMN.index()});
+        stateTime = System.currentTimeMillis() - stateTime;
+        logger.info(state.getName() + " took " + stateTime + " ms");
+
+        try {
+            EmailUtil.send("dejong.c.michael@gmail.com",
+                    "Pack##92", //need to encrypt
+                    "dejong.c.michael@gmail.com",
+                    "Arrest record parsing for " + state.getName(),
+                    "Michael's a stud, he just successfully parsed the interwebs for arrest records in the state of Iowa");
+        } catch (RuntimeException re) {
+            logger.error("An error occurred, email not sent");
+        }
+        
         //}
         int perRecordSleepTimeAverage = sitesScraped!=0?(sleepTimeSum/sitesScraped):0;
         totalTime = System.currentTimeMillis() - totalTime;
-        logger.info(states.size() + " states took " + totalTime + " ms");
         if (!spiderUtil.offline()) {
             logger.info("Sleep time was approximately " + (recordsProcessed*perRecordSleepTimeAverage) + " ms");
             logger.info("Processing time was approximately " + (totalTime-(recordsProcessed*perRecordSleepTimeAverage)) + " ms");
@@ -82,14 +90,15 @@ public class ArrestOrgEngine {
         }
     }
 
-    private int scrapeSite(State state, Site site, ExcelWriter excelWriter) {
+    @Override
+    public int scrapeSite(State state, Site site, ExcelWriter excelWriter) {
         //refactor to split out randomizing functionality, maybe reuse??
         int recordsProcessed = 0;
         site.getBaseUrl(new String[]{state.getName()});
         String firstPageResults = site.generateResultsPageUrl(1);
         //Add some retries if first connection to state site fails?
         Document mainPageDoc = spiderUtil.getHtmlAsDoc(firstPageResults);
-        if (docWasRetrieved(mainPageDoc)) {
+        if (engineUtil.docWasRetrieved(mainPageDoc)) {
             int numberOfPages = site.getTotalPages(mainPageDoc);
             if (numberOfPages==0) {
                 numberOfPages = 1;
@@ -128,7 +137,7 @@ public class ArrestOrgEngine {
             for (Map.Entry<String, Document> entry : resultsPageDocsMap.entrySet()) {
                 Document doc = entry.getValue();
                 //only proceed if document was retrieved
-                if (docWasRetrieved(doc)){
+                if (engineUtil.docWasRetrieved(doc)){
                     logger.debug("Gather complete list of records to scrape from " + doc.baseUri());
                     recordDetailUrlMap.putAll(parseDocForUrls(doc, site));
                     //including some non-detail page links then randomize
@@ -157,8 +166,8 @@ public class ArrestOrgEngine {
         }
         return recordsProcessed;
     }
-
-    private Map<String,String> parseDocForUrls(Document doc, Site site) {
+    @Override
+    public Map<String,String> parseDocForUrls(Document doc, Site site) {
         Map<String,String> recordDetailUrlMap = new HashMap<>();
         Elements recordDetailElements = site.getRecordElements(doc);
         for(int e=0;e<recordDetailElements.size();e++) {
@@ -168,8 +177,8 @@ public class ArrestOrgEngine {
         }
         return recordDetailUrlMap;
     }
-
-    private int scrapeRecords(Map<String,String> recordsDetailsUrlMap, Site site, ExcelWriter excelWriter) {
+    @Override
+    public int scrapeRecords(Map<String,String> recordsDetailsUrlMap, Site site, ExcelWriter excelWriter) {
         int recordsProcessed = 0;
         List<Record> arrestRecords = new ArrayList<>();
         Record arrestRecord = new ArrestRecord();
@@ -180,7 +189,7 @@ public class ArrestOrgEngine {
             String url = recordsDetailsUrlMap.get(k);
             Document profileDetailDoc = spiderUtil.getHtmlAsDoc(url);
             if (site.isARecordDetailDoc(profileDetailDoc)) {
-                if (docWasRetrieved(profileDetailDoc)) {
+                if (engineUtil.docWasRetrieved(profileDetailDoc)) {
                     recordsProcessed++;
                     //should we check for ID first or not bother unless we see duplicates??
                     try {
@@ -204,8 +213,8 @@ public class ArrestOrgEngine {
         excelWriter.saveRecordsToWorkbook(arrestRecords);
         return recordsProcessed;
     }
-
-    private ArrestRecord populateArrestRecord(Document profileDetailDoc, Site site) {
+    @Override
+    public ArrestRecord populateArrestRecord(Document profileDetailDoc, Site site) {
         Elements profileDetails = site.getRecordDetailElements(profileDetailDoc);
         ArrestRecord record = new ArrestRecord();
         record.setId(site.getRecordId(profileDetailDoc.baseUri()));
@@ -216,9 +225,9 @@ public class ArrestOrgEngine {
         return record;
     }
 
-
+    @Override
     @SuppressWarnings("deprecation")
-    private void matchPropertyToField(ArrestRecord record, Element profileDetail) {
+    public void matchPropertyToField(ArrestRecord record, Element profileDetail) {
         String label = profileDetail.select("b").text().toLowerCase();
         Elements charges = profileDetail.select(".charges li");
         if (!charges.isEmpty()) {
@@ -231,37 +240,37 @@ public class ArrestOrgEngine {
         } else if (!label.equals("")) {
             try {
                 if (label.contains("full name")) {
-                    formatFullName(record, profileDetail);
+                    formatName(record, profileDetail);
                 } else if (label.contains("date")) {
-                    Date date = new Date(stripOffLabel(profileDetail));
+                    Date date = new Date(extractValue(profileDetail));
                     Calendar calendar = Calendar.getInstance();
                     calendar.setTime(date);
                     record.setArrestDate(calendar);
                 } else if (label.contains("time")) {
                     formatArrestTime(record, profileDetail);
                 } else if (label.contains("arrest age")) {
-                    record.setArrestAge(Integer.parseInt(stripOffLabel(profileDetail)));
+                    record.setArrestAge(Integer.parseInt(extractValue(profileDetail)));
                 } else if (label.contains("gender")) {
-                    record.setGender(stripOffLabel(profileDetail));
+                    record.setGender(extractValue(profileDetail));
                 } else if (label.contains("city")) {
                     String city = profileDetail.select("span[itemProp=\"addressLocality\"]").text();
                     String state = profileDetail.select("span[itemprop=\"addressRegion\"]").text();
                     record.setCity(city);
                     record.setState(state);
                 } else if (label.contains("total bond")) {
-                    String bondAmount = stripOffLabel(profileDetail);
+                    String bondAmount = extractValue(profileDetail);
                     int totalBond = Integer.parseInt(bondAmount.replace("$", ""));
                     record.setTotalBond(totalBond);
                 } else if (label.contains("height")) {
-                    record.setHeight(stripOffLabel(profileDetail));
+                    record.setHeight(extractValue(profileDetail));
                 } else if (label.contains("weight")) {
-                    record.setWeight(stripOffLabel(profileDetail));
+                    record.setWeight(extractValue(profileDetail));
                 } else if (label.contains("hair color")) {
-                    record.setHairColor(stripOffLabel(profileDetail));
+                    record.setHairColor(extractValue(profileDetail));
                 } else if (label.contains("eye color")) {
-                    record.setEyeColor(stripOffLabel(profileDetail));
+                    record.setEyeColor(extractValue(profileDetail));
                 } else if (label.contains("birth")) {
-                    record.setBirthPlace(stripOffLabel(profileDetail));
+                    record.setBirthPlace(extractValue(profileDetail));
                 }
             } catch (NumberFormatException nfe) {
                 logger.error("Couldn't parse a numeric value from " + profileDetail.text());
@@ -270,8 +279,8 @@ public class ArrestOrgEngine {
             record.setCounty(profileDetail.select("h3").text().replaceAll("(?i)county", "").trim());
         }
     }
-
-    private void formatFullName(ArrestRecord record, Element profileDetail) {
+    @Override
+    public void formatName(ArrestRecord record, Element profileDetail) {
         record.setFirstName(profileDetail.select("span [itemprop=\"givenName\"]").text());
         record.setMiddleName(profileDetail.select("span [itemprop=\"additionalName\"]").text());
         record.setLastName(profileDetail.select("span [itemprop=\"familyName\"]").text());
@@ -280,8 +289,8 @@ public class ArrestOrgEngine {
         fullName += " " + record.getLastName();
         record.setFullName(fullName);
     }
-
-    private void formatArrestTime(ArrestRecord record, Element profileDetail) {
+    @Override
+    public void formatArrestTime(ArrestRecord record, Element profileDetail) {
         Calendar arrestDate = record.getArrestDate();
         if (arrestDate!=null) {
             String arrestTimeText = profileDetail.text().replaceAll("(?i)time:", "").trim();
@@ -291,22 +300,8 @@ public class ArrestOrgEngine {
             record.setArrestDate(arrestDate);
         }
     }
-
-    private String stripOffLabel(Element profileDetail) {
+    @Override
+    public String extractValue(Element profileDetail) {
         return profileDetail.text().substring(profileDetail.text().indexOf(':')+1).trim();
-    }
-
-    private boolean docWasRetrieved(Document doc) {
-        if (doc!=null) {
-            if (doc.body().text().equals("")) {
-                logger.error("You might be blocked. This doc retrieved was empty.");
-            } else {
-                return true;
-            }
-        } else {
-            logger.error("No document was retrieved");
-            return false;
-        }
-        return false;
     }
 }

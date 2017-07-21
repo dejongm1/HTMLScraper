@@ -1,14 +1,15 @@
 package com.main.mcd.spider;
 
-import com.main.mcd.engine.ArrestOrgEngine;
-import com.main.mcd.engine.SpiderEngine;
-import com.main.mcd.spider.entities.State;
-import com.main.mcd.spider.util.InputUtil;
-import com.main.mcd.spider.util.SpiderConstants;
-import org.apache.log4j.Logger;
-
 import java.io.IOException;
 import java.util.List;
+
+import org.apache.log4j.Logger;
+
+import com.main.mcd.spider.engine.SpiderEngine;
+import com.main.mcd.spider.entities.State;
+import com.main.mcd.spider.exception.StateNotReadyException;
+import com.main.mcd.spider.util.InputUtil;
+import com.main.mcd.spider.util.SpiderConstants;
 
 /**
  * 
@@ -36,7 +37,8 @@ public class SpiderMain {
 						+ "\t 2 - Scrape for text\n "
 						+ "\t 3 - Search for a term\n "
 						+ "\t 4 - Get arrest records\n "
-                        + "\t 5 - Test random connection getter \n";
+                        //+ "\t 5 - Test random connection getter \n"
+						;
 		}
 		String scrapeTypeChoice = "";
 		
@@ -62,10 +64,10 @@ public class SpiderMain {
                     || scrapeTypeChoice.toLowerCase().contains("record")
                     || scrapeTypeChoice.equals("4")) {
                 getArrestRecords(args);
-            } else if (scrapeTypeChoice.toLowerCase().contains("connect")
-                    || scrapeTypeChoice.toLowerCase().contains("test")
-                    || scrapeTypeChoice.equals("5")) {
-                testConnectionGetter(args);
+//            } else if (scrapeTypeChoice.toLowerCase().contains("connect")
+//                    || scrapeTypeChoice.toLowerCase().contains("test")
+//                    || scrapeTypeChoice.equals("5")) {
+//                testConnectionGetter(args);
             } else if (inputUtil.quitting(scrapeTypeChoice)) {
 				System.exit(0);
 			} else {
@@ -80,6 +82,12 @@ public class SpiderMain {
 			//Catch states that haven't been coded yet
 			prompt = "I didn't understand this parameter, please try again. Type \"quit\" if you changed your mind. \n" + prompt;
 			main(new String[] {});
+		} catch (StateNotReadyException snre) {
+			logger.error(snre.getState().getName() + " has not been set up \n" );
+			prompt = snre.getState().getName() + " is not ready for scraping yet. Please try another\n" + prompt;
+			main(new String[] {"4"});
+		} catch (Exception e) {
+			logger.error("Exception caught but not handled", e);
 		}
 	}
 
@@ -101,22 +109,15 @@ public class SpiderMain {
 //		engine.getSearchTerms(url, term);
 	}
 
-    @SuppressWarnings("unchecked")
-    private static void getArrestRecordsArrestOrg(String[] args) throws IOException {
-	    ArrestOrgEngine engine = new ArrestOrgEngine();
-        List<State> states = args.length>=2?inputUtil.convertToStates(args[1]):(List<State>) inputUtil.getInput("State(s) or \"All\": ", 3, SpiderConstants.STATE_VALIDATION);
-        long maxNumberOfResults = args.length>=3?inputUtil.convertToNumber(args[2]):999999;
-        engine.getArrestRecords(states, maxNumberOfResults);
-    }
 	@SuppressWarnings("unchecked")
-	private static void getArrestRecords(String[] args) throws IOException {
+	private static void getArrestRecords(String[] args) throws IOException, StateNotReadyException {
 		List<State> states = args.length>=2?inputUtil.convertToStates(args[1]):(List<State>) inputUtil.getInput("State(s) or \"All\": ", 3, SpiderConstants.STATE_VALIDATION);
 		long maxNumberOfResults = args.length>=3?inputUtil.convertToNumber(args[2]):999999;
-		engine.getArrestRecords(states, maxNumberOfResults);
+		engine.getArrestRecordByState(states, maxNumberOfResults);
 	}
 
-	private static void testConnectionGetter(String[] args) throws IOException {
-        int numberOfTries = args.length>=2?inputUtil.convertToNumber(args[1]):(int) inputUtil.getInput("Number of connections to make: ", 3, SpiderConstants.NUMBER_VALIDATION);
-        engine.testRandomConnections(numberOfTries);
-    }
+//	private static void testConnectionGetter(String[] args) throws IOException {
+//        int numberOfTries = args.length>=2?inputUtil.convertToNumber(args[1]):(int) inputUtil.getInput("Number of connections to make: ", 3, SpiderConstants.NUMBER_VALIDATION);
+//        engine.testRandomConnections(numberOfTries);
+//    }
 }
