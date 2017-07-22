@@ -1,11 +1,10 @@
 package com.mcd.spider.main.util;
 
+import com.mcd.spider.main.entities.site.Site;
 import org.apache.log4j.Logger;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-
-import com.mcd.spider.main.entities.site.Site;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -48,7 +47,7 @@ public class ConnectionUtil {
 				.timeout(30000);
 	}
 
-	private static String getRandomUserAgent() { //to avoid getting blacklisted
+	public static String getRandomUserAgent() { //to avoid getting blacklisted
 		String[] userAgentList = System.getProperty("user.agents").split(", ");
 		int r = getRandom(userAgentList.length-1, -1, false);
 		logger.debug("User-agent: " + userAgentList[r]);

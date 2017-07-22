@@ -1,14 +1,12 @@
 package com.mcd.spider.main.entities.site;
 
+import com.mcd.spider.main.entities.service.DesMoinesRegisterComService;
+import com.mcd.spider.main.entities.service.Service;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.*;
 
 public class DesMoinesRegisterComSite implements Site {
 
@@ -17,8 +15,9 @@ public class DesMoinesRegisterComSite implements Site {
 	private String baseUrl;
 	private int pages;
 	private int totalRecordCount;
-	private static final int[] perRecordSleepRange = new int[]{5,15};
+	private static final int[] perRecordSleepRange = new int[]{1,2};
 	private Map<String,Document> resultsPageDocuments;
+	private Service service = new DesMoinesRegisterComService();
 
 	public DesMoinesRegisterComSite() {}
 	
@@ -36,22 +35,12 @@ public class DesMoinesRegisterComSite implements Site {
 	}
 	@Override
 	public String generateResultsPageUrl(int page) {
-//		String builtUrl = baseUrl;
-//        int pageRangeMax = page*20;
-//		int pageRangeMin = pageRangeMax-19;
-//		builtUrl += "/" + pageRangeMin + "-" + pageRangeMax;
-//		return builtUrl;
+
         return baseUrl;
 	}
 	@Override
 	public void setOnlyResultsPageDocuments(Map<String,Document> resultsPlusMiscDocumentsMap) {
-		Map<String,Document> resultsDocMap = new HashMap<>();
-		for(Entry<String, Document> entry : resultsPlusMiscDocumentsMap.entrySet()) {
-			if (isAResultsDoc(entry.getValue())) {
-				resultsDocMap.put(entry.getKey(), entry.getValue());
-			}
-		}
-		this.resultsPageDocuments = resultsDocMap;
+
 	}
 	@Override
 	public Map<String,Document> getResultsPageDocuments() {
@@ -61,14 +50,17 @@ public class DesMoinesRegisterComSite implements Site {
 	public String getBaseUrl(String[] args) {
 		if (baseUrl==null) {
             Url url = getUrl();
-            String builtUrl = url.getProtocol() + url.getDomain() + "?co=" + args[0];
+            String builtUrl = url.getProtocol() + url.getDomain();
+            if (args.length>0) {
+                builtUrl += "?co=" + args[0];
+            }
             baseUrl = builtUrl.toLowerCase();
 		}
 		return baseUrl;
 	}
 	@Override
 	public Elements getRecordElements(Document doc) {
-		return doc.select("#msdb-top #msdb-mugshots .mug-row a");
+		return null;
 	}
 	@Override
 	public String getRecordDetailDocUrl(Element record) {
@@ -81,36 +73,15 @@ public class DesMoinesRegisterComSite implements Site {
 	}
 	@Override
 	public Elements getRecordDetailElements(Document doc) {
-		return doc.select("#msdb-details-overlay #msdb-inmate-details");
+		return doc.select("h1, p");
 	}
 	@Override
 	public int getTotalPages(Document doc) {
-		if (pages==0) {
-			//Elements pageCountElements = doc.select(".msdb-tab-content .msdb-table-page-control");// li :nth-last-child(2)");
-            Elements pageCountElements = doc.select(".msdb-tab.noselect.active");
-			try {
-				pages = Integer.parseInt(pageCountElements.get(0).text());
-			} catch (NumberFormatException | NullPointerException e) {
-				pages = 0;
-			}
-		}
 		return pages;
 	}
 	@Override
 	public int getTotalRecordCount(Document doc) {
-//		if (totalRecordCount==0) {
-//			int recordsPerPage = 14;//default
-//			Elements recordsPerDropdown = doc.select(".content-box .pager-options  option[selected=\"selected\"]");
-//			for (Element recordsPer : recordsPerDropdown) {
-//				try {
-//					recordsPerPage = Integer.parseInt(recordsPer.text());//try to get actual
-//				} catch (NumberFormatException nfe) {
-//				}
-//			}
-//			int pages = getTotalPages(doc);
-//			totalRecordCount = recordsPerPage * pages;
-//		}
-//		return totalRecordCount;
+	    //count elements in json
         return 0;
 	}
 	@Override
@@ -153,7 +124,7 @@ public class DesMoinesRegisterComSite implements Site {
     @Override
     public boolean isARecordDetailDoc(Document doc) {
         if (doc!=null) {
-            return doc.baseUri().contains("index.php?co=") && doc.baseUri().contains("&id=");
+            return !doc.select("#msdb-mug-container").isEmpty() && doc.select("#permalink-url").hasText();
         } else {
             return false;
         }
@@ -161,7 +132,14 @@ public class DesMoinesRegisterComSite implements Site {
 
 	@Override
 	public String getRecordId(String url) {
-		return url.substring(url.indexOf("&id=")+4, url.length()-1);
+		return url.substring(url.indexOf("&id=")+4, url.length());
 	}
 
+	public Service getService() {
+	    return service;
+    }
+
+    public List<String> getCounties() {
+        return Arrays.asList("Polk", "Johnson", "Story");
+    }
 }

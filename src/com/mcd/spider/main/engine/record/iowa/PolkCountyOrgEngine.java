@@ -1,30 +1,22 @@
 package com.mcd.spider.main.engine.record.iowa;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
 import com.mcd.spider.main.engine.record.ArrestRecordEngine;
 import com.mcd.spider.main.entities.ArrestRecord;
 import com.mcd.spider.main.entities.Record;
 import com.mcd.spider.main.entities.State;
+import com.mcd.spider.main.entities.site.PolkCountyIowaGovSite;
 import com.mcd.spider.main.entities.site.Site;
 import com.mcd.spider.main.util.ConnectionUtil;
-import com.mcd.spider.main.util.EmailUtil;
 import com.mcd.spider.main.util.EngineUtil;
 import com.mcd.spider.main.util.ExcelWriter;
 import com.mcd.spider.main.util.SpiderUtil;
-
 import common.Logger;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * 
@@ -52,18 +44,19 @@ public class PolkCountyOrgEngine implements ArrestRecordEngine {
 
         long stateTime = System.currentTimeMillis();
         logger.info("----State: " + state.getName() + "----");
-        Site[] sites = state.getSites();
+        //Site[] sites = state.getSites();
         ExcelWriter excelWriter  = new ExcelWriter(state, new ArrestRecord());
         excelWriter.createSpreadhseet();
-        for(Site site : sites){
-            int sleepTimeAverage = (site.getPerRecordSleepRange()[0]+site.getPerRecordSleepRange()[1])/2;
-            sleepTimeSum += spiderUtil.offline()?0:sleepTimeAverage;
-            long time = System.currentTimeMillis();
-            recordsProcessed += scrapeSite(state, site, excelWriter);
-            sitesScraped++;
-            time = System.currentTimeMillis() - time;
-            logger.info(site.getBaseUrl(new String[]{state.getName()}) + " took " + time + " ms");
-        }
+//        for(Site site : sites){
+        PolkCountyIowaGovSite site = new PolkCountyIowaGovSite();
+        int sleepTimeAverage = (site.getPerRecordSleepRange()[0]+site.getPerRecordSleepRange()[1])/2;
+        sleepTimeSum += spiderUtil.offline()?0:sleepTimeAverage;
+        long time = System.currentTimeMillis();
+        recordsProcessed += scrapeSite(state, site, excelWriter);
+        sitesScraped++;
+        time = System.currentTimeMillis() - time;
+        logger.info(site.getBaseUrl(new String[]{state.getName()}) + " took " + time + " ms");
+//        }
 
         //remove ID column on final save?
         //or use for future processing? check for ID and start where left off
@@ -71,15 +64,16 @@ public class PolkCountyOrgEngine implements ArrestRecordEngine {
         stateTime = System.currentTimeMillis() - stateTime;
         logger.info(state.getName() + " took " + stateTime + " ms");
 
-        try {
-            EmailUtil.send("dejong.c.michael@gmail.com",
-                    "Pack##92", //need to encrypt
-                    "dejong.c.michael@gmail.com",
-                    "Arrest record parsing for " + state.getName(),
-                    "Michael's a stud, he just successfully parsed the interwebs for arrest records in the state of Iowa");
-        } catch (RuntimeException re) {
-            logger.error("An error occurred, email not sent");
-        }
+        //extract to Util class
+//        try {
+//            EmailUtil.send("dejong.c.michael@gmail.com",
+//                    "Pack##92", //need to encrypt
+//                    "dejong.c.michael@gmail.com",
+//                    "Arrest record parsing for " + state.getName(),
+//                    "Michael's a stud, he just successfully parsed the interwebs for arrest records in the state of Iowa");
+//        } catch (RuntimeException re) {
+//            logger.error("An error occurred, email not sent");
+//        }
         //}
         int perRecordSleepTimeAverage = sitesScraped!=0?(sleepTimeSum/sitesScraped):0;
         totalTime = System.currentTimeMillis() - totalTime;
@@ -168,9 +162,9 @@ public class PolkCountyOrgEngine implements ArrestRecordEngine {
     }
 
 	@Override
-    public Map<String,String> parseDocForUrls(Document doc, Site site) {
+    public Map<String,String> parseDocForUrls(Object doc, Site site) {
         Map<String,String> recordDetailUrlMap = new HashMap<>();
-        Elements recordDetailElements = site.getRecordElements(doc);
+        Elements recordDetailElements = site.getRecordElements((Document)doc);
         for(int e=0;e<recordDetailElements.size();e++) {
             String url = site.getRecordDetailDocUrl(recordDetailElements.get(e));
             String id = site.getRecordId(url);

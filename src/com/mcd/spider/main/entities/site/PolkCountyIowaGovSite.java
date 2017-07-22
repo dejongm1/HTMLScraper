@@ -1,5 +1,6 @@
 package com.mcd.spider.main.entities.site;
 
+import com.mcd.spider.main.entities.service.Service;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -12,12 +13,12 @@ import java.util.Map.Entry;
 
 public class PolkCountyIowaGovSite implements Site {
 
-	private static final Url url = new Url("http://", "apps2.polkcountyiowa.gov/inmatesontheweb", new String[]{});
+	private static final Url url = new Url("http://", "apps2.polkcountyiowa.gov/inmatesontheweb/", new String[]{});
 	private static final String name = "PolkCountyIowa.gov";
 	private String baseUrl;
 	private int pages;
 	private int totalRecordCount;
-	private static final int[] perRecordSleepRange = new int[]{3,8};
+	private static final int[] perRecordSleepRange = new int[]{1,2};
 	private Map<String,Document> resultsPageDocuments;
 
 	public PolkCountyIowaGovSite() {}
@@ -162,6 +163,11 @@ public class PolkCountyIowaGovSite implements Site {
     @Override
     public String getRecordId(String url) {
     	return url.substring(url.indexOf("bi=")+3, url.length());
+    }
+
+    @Override
+    public Service getService() {
+        return null;
     }
 
 }

@@ -2,10 +2,12 @@ package com.mcd.spider.main.engine.record.iowa;
 
 import com.mcd.spider.main.engine.record.ArrestRecordEngine;
 import com.mcd.spider.main.entities.ArrestRecord;
+import com.mcd.spider.main.entities.Record;
 import com.mcd.spider.main.entities.State;
 import com.mcd.spider.main.entities.service.DesMoinesRegisterComService;
 import com.mcd.spider.main.entities.site.DesMoinesRegisterComSite;
 import com.mcd.spider.main.entities.site.Site;
+import com.mcd.spider.main.util.ConnectionUtil;
 import com.mcd.spider.main.util.EngineUtil;
 import com.mcd.spider.main.util.ExcelWriter;
 import com.mcd.spider.main.util.SpiderUtil;
@@ -15,13 +17,17 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -34,6 +40,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     private static final Logger logger = Logger.getLogger(DesMoinesRegisterComEngine.class);
     private SpiderUtil spiderUtil = new SpiderUtil();
     private EngineUtil engineUtil = new EngineUtil();
+    DesMoinesRegisterComService service = new DesMoinesRegisterComService();
 
     @Override
     public void getArrestRecords(State state, long maxNumberOfResults) {
@@ -95,8 +102,6 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     public int scrapeSite(State state, Site site, ExcelWriter excelWriter) {
         int recordsProcessed = 0;
 
-        DesMoinesRegisterComService service = (DesMoinesRegisterComService) site.getService();
-
         Map<String, String> profileDetailUrlMap = new HashMap<>();
         for (String county : ((DesMoinesRegisterComSite)site).getCounties()) {
             site.getBaseUrl(new String[]{county});
@@ -123,35 +128,17 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
                 String urlParameters = service.getRequestBody(new String[]{county, "getmugs", "0", "10000"});
 
                 // Send post request
-                con.setDoOutput(true);
-                DataOutputStream wr = new DataOutputStream(con.getOutputStream());
-                wr.writeBytes(urlParameters);
-                wr.flush();
-                wr.close();
-
-                int responseCode = con.getResponseCode();
-                System.out.println("\nSending 'POST' request to URL : " + service.getUrl());
-                System.out.println("Post parameters : " + urlParameters);
-                System.out.println("Response Code : " + responseCode);
-
-                BufferedReader in = new BufferedReader(
-                        new InputStreamReader(con.getInputStream()));
-                String inputLine;
-                StringBuffer response = new StringBuffer();
-
-                while ((inputLine = in.readLine()) != null) {
-                    response.append(inputLine);
-                }
-                in.close();
-
+                logger.debug("\nSending 'POST' request to URL : " + service.getUrl());
+                StringBuffer response = sendRequest(con, urlParameters);
 
                 profileDetailUrlMap.putAll(parseDocForUrls(response, site));
 
+                scrapeRecords(profileDetailUrlMap, site, excelWriter);
+
             } catch (java.io.IOException e) {
-                e.printStackTrace();
+                logger.error("IOException caught sending http request to " + service.getUrl(), e);
             }
 
-            scrapeRecords(profileDetailUrlMap, site, excelWriter);
         }
         return 0;
     }
@@ -165,25 +152,73 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
             for(int m=0;m<mugShots.length();m++) {
                 //not sure if the url will work, might need to call service
                 JSONObject mugshot = (JSONObject) mugShots.get(m);
-                detailUrlMap.put(mugshot.getString("id"), site.getBaseUrl(null) + "id=" + mugshot.getString("id"));
+                detailUrlMap.put(mugshot.getString("id"), site.getBaseUrl(null) + "&id=" + mugshot.getString("id"));
                 //http://data.desmoinesregister.com/iowa-mugshots/index.php?co=Polk&id=113936
             }
         } catch (JSONException e) {
-            e.printStackTrace();
+            logger.error("JSONExecption caught", e);
         }
         return detailUrlMap;
     }
 
     @Override
-    public int scrapeRecords(Map<String, String> recordsDetailsUrlMap, Site site, ExcelWriter excelWriter) {
-        //made it this far
-        
-        return 0;
+    public int scrapeRecords(Map<String, String> recordsDetailsUrlMap, Site site, ExcelWriter excelWriter){
+        int recordsProcessed = 0;
+        List<Record> arrestRecords = new ArrayList<>();
+        Record arrestRecord = new ArrestRecord();
+//        List<String> keys = new ArrayList<>(recordsDetailsUrlMap.keySet());
+//        Collections.shuffle(keys);
+//        for (String k : keys) {
+        for (Map.Entry<String,String> entry : recordsDetailsUrlMap.entrySet()) {
+            String id = entry.getKey();
+            String url = recordsDetailsUrlMap.get(id);
+            try {
+                logger.debug("\nSending 'POST' request for : " + id);
+                Document profileDetailDoc = service.getDetailsDoc(url, this);
+
+                if (engineUtil.docWasRetrieved(profileDetailDoc)) {
+                    if (site.isARecordDetailDoc(profileDetailDoc)) {
+                        recordsProcessed++;
+                        //should we check for ID first or not bother unless we see duplicates??
+                        try {
+                            arrestRecords.add(populateArrestRecord(profileDetailDoc, site));
+                            //save each record in case of failures
+                            excelWriter.saveRecordToWorkbook(arrestRecord);
+                            int sleepTime = ConnectionUtil.getSleepTime(site);
+                            logger.debug("Sleeping for: " + sleepTime);
+                            Thread.sleep(sleepTime);//sleep at random interval
+                        } catch (InterruptedException ie) {
+                            logger.error(ie);
+                        }
+                    } else {
+                        logger.debug("This doc doesn't have any record details: " + id);
+                    }
+                } else {
+                    logger.error("Failed to load html doc from " + url);
+                }
+            } catch (IOException e) {
+                logger.error("IOException caught sending http request to " + url, e);
+            } catch (JSONException e) {
+                logger.error("JSONExecption caught on id " + id, e);
+            }
+        }
+        //save the whole thing at the end
+        //order?? and save to overwrite the spreadsheet
+        excelWriter.saveRecordsToWorkbook(arrestRecords);
+        return recordsProcessed;
     }
 
     @Override
     public ArrestRecord populateArrestRecord(Document profileDetailDoc, Site site) {
-        return null;
+        Elements profileDetails = site.getRecordDetailElements(profileDetailDoc);
+        ArrestRecord record = new ArrestRecord();
+        record.setId(site.getRecordId(profileDetailDoc.select("#permalink-url a").get(0).attr("href")));
+        //made it here
+        for (Element profileDetail : profileDetails) {
+            matchPropertyToField(record, profileDetail);
+            logger.info("\t" + profileDetail.text());
+        }
+        return record;
     }
 
     @Override
@@ -204,5 +239,27 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     @Override
     public void formatArrestTime(ArrestRecord record, Element profileDetail) {
 
+    }
+
+    public StringBuffer sendRequest(HttpURLConnection con, String urlParameters) throws IOException {
+        con.setDoOutput(true);
+        DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+        wr.writeBytes(urlParameters);
+        wr.flush();
+        wr.close();
+
+        logger.debug("Post parameters : " + urlParameters);
+        logger.debug("Response Code : " + con.getResponseCode());
+
+        BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+        String inputLine;
+        StringBuffer response = new StringBuffer();
+
+        while ((inputLine = in.readLine()) != null) {
+            response.append(inputLine);
+        }
+        in.close();
+
+        return response;
     }
 }

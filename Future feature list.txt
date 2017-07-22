@@ -15,6 +15,8 @@ getRecords()
 	On failed getHtmlAsDoc(recordDetail) retry once, keeping track of failed pages
 		- save to list or retry immediately?
 	After so many failed getHtmlAsDoc()s stop trying
+
+	Sleep even on failed connection
 	
 	Send e-mail when finished
 		- store addresses and details in props
@@ -34,7 +36,6 @@ getRecords()
 	Keep properties file separate from jar?
 		-use it to tweak things like site(s), columns to export/exclude, flags, etc
 	
-
 
 
 Constants class for messages

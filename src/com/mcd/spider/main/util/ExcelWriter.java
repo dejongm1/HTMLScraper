@@ -1,23 +1,20 @@
 package com.mcd.spider.main.util;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.util.Calendar;
-import java.util.List;
-
-import org.apache.log4j.Logger;
-
 import com.mcd.spider.main.entities.Record;
 import com.mcd.spider.main.entities.State;
-
-import jxl.Cell;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
 import jxl.write.Label;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
+import org.apache.log4j.Logger;
+
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.Calendar;
+import java.util.List;
 
 public class ExcelWriter {
 
@@ -137,6 +134,20 @@ public class ExcelWriter {
 			logger.error("Error trying to save data to workbook", e);
 		}
 	}
+
+    public void saveRecordToWorkbook(Record record) {
+        try {
+            createWorkbookCopy();
+
+            int rowNumber = getCopyWorkbook().getSheet(0).getRows();
+
+            record.addToExcelSheet(getCopyWorkbook(), rowNumber);
+
+            replaceOldBookWithNew();
+        } catch (IOException | WriteException | IllegalAccessException | BiffException  e) {
+            logger.error("Error trying to save record to workbook", e);
+        }
+    }
 	
 	public void findPossibleDuplicates() {
 		//use name

@@ -1,5 +1,6 @@
 package com.mcd.spider.main.entities.site;
 
+import com.mcd.spider.main.entities.service.Service;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -178,5 +179,10 @@ public class ArrestsDotOrgSite implements Site {
 	public String getRecordId(String url) {
 		return url.substring(url.indexOf("/Arrests/")+9, url.length()-1);
 	}
+
+    @Override
+    public Service getService() {
+        return null;
+    }
 
 }

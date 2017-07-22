@@ -1,27 +1,16 @@
 package com.mcd.spider.main.engine.record;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import com.mcd.spider.main.entities.ArrestRecord;
+import com.mcd.spider.main.entities.Record;
+import com.mcd.spider.main.entities.State;
+import com.mcd.spider.main.entities.site.Site;
+import com.mcd.spider.main.util.*;
 import org.apache.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.mcd.spider.main.entities.ArrestRecord;
-import com.mcd.spider.main.entities.Record;
-import com.mcd.spider.main.entities.State;
-import com.mcd.spider.main.entities.site.Site;
-import com.mcd.spider.main.util.ConnectionUtil;
-import com.mcd.spider.main.util.EmailUtil;
-import com.mcd.spider.main.util.EngineUtil;
-import com.mcd.spider.main.util.ExcelWriter;
-import com.mcd.spider.main.util.SpiderUtil;
+import java.util.*;
 
 /**
  *
@@ -71,7 +60,7 @@ public class ArrestOrgEngine implements ArrestRecordEngine {
 
         try {
             EmailUtil.send("dejong.c.michael@gmail.com",
-                    "Pack##92", //need to encrypt
+                    "", //need to encrypt
                     "dejong.c.michael@gmail.com",
                     "Arrest record parsing for " + state.getName(),
                     "Michael's a stud, he just successfully parsed the interwebs for arrest records in the state of Iowa");
@@ -156,6 +145,11 @@ public class ArrestOrgEngine implements ArrestRecordEngine {
             //****TODO
             //****use sorted map to check for already scraped records - should I used ID as map.key instead of a sequence?
 
+            try {
+                Thread.sleep(100000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             //****iterate over collection, scraping records and simply opening others
             recordsProcessed += scrapeRecords(recordDetailUrlMap, site, excelWriter);
 
@@ -167,9 +161,9 @@ public class ArrestOrgEngine implements ArrestRecordEngine {
         return recordsProcessed;
     }
     @Override
-    public Map<String,String> parseDocForUrls(Document doc, Site site) {
+    public Map<String,String> parseDocForUrls(Object doc, Site site) {
         Map<String,String> recordDetailUrlMap = new HashMap<>();
-        Elements recordDetailElements = site.getRecordElements(doc);
+        Elements recordDetailElements = site.getRecordElements((Document) doc);
         for(int e=0;e<recordDetailElements.size();e++) {
             String url = site.getRecordDetailDocUrl(recordDetailElements.get(e));
             String id = site.getRecordId(url);

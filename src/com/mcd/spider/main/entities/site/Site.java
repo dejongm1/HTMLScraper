@@ -1,5 +1,6 @@
 package com.mcd.spider.main.entities.site;
 
+import com.mcd.spider.main.entities.service.Service;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -29,4 +30,5 @@ public interface Site {
 	boolean isAResultsDoc(Document doc);
     boolean isARecordDetailDoc(Document doc);
 	String getRecordId(String url);
+	Service getService();
 }
