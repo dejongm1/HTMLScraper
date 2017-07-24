@@ -1,16 +1,17 @@
 package com.mcd.spider.main.engine.audit;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.apache.commons.collections4.map.CaseInsensitiveMap;
 import org.apache.log4j.Logger;
+import org.jsoup.Connection;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -18,6 +19,7 @@ import org.jsoup.select.Elements;
 import com.mcd.spider.main.entities.audit.AuditSpider;
 import com.mcd.spider.main.entities.audit.LinkResponse;
 import com.mcd.spider.main.entities.audit.Term;
+import com.mcd.spider.main.util.ConnectionUtil;
 import com.mcd.spider.main.util.EngineUtil;
 import com.mcd.spider.main.util.SpiderUtil;
 
@@ -82,17 +84,25 @@ public class AuditEngine {
 			String url = iterator.next();
 			boolean checked = urlsToCheck.get(url);
 			if (!checked) {
-				startTime = System.currentTimeMillis();
-				Document docToCheck = spiderUtil.getHtmlAsDoc(url);
-				timeSpent+=System.currentTimeMillis()-startTime;
-				
-				if (engineUtil.docWasRetrieved(docToCheck)) {
-					hrefs = docToCheck.getElementsByAttribute("href");
-					for (Element element : hrefs) {
-						urlsToCheck = addToUrlsToCheck(element, urlsToCheck, iterator, spider);
+				try {
+					startTime = System.currentTimeMillis();
+					Connection.Response response = ConnectionUtil.getConnection(url, "").execute();
+					Document docToCheck = response.parse();
+//					Document docToCheck = spiderUtil.getHtmlAsDoc(url);
+					timeSpent+=System.currentTimeMillis()-startTime;
+
+					if (engineUtil.docWasRetrieved(docToCheck)) {
+						hrefs = docToCheck.getElementsByAttribute("href");
+						for (Element element : hrefs) {
+							urlsToCheck = addToUrlsToCheck(element, urlsToCheck, iterator, spider);
+						}
+						urlsToCheck.put(url, true);
+						pagesAudited++;
 					}
-					urlsToCheck.put(url, true);
-					pagesAudited++;
+					spider.getLinkResponses().addResponse(new LinkResponse(response.statusCode(), url));
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					logger.error("Exception retrieving " + url, e);
 				}
 			}
 		}

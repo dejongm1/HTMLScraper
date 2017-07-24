@@ -17,6 +17,7 @@ public class LinkResponses {
 	private SortedSet<LinkResponse> fourHundredResponses;
 	private SortedSet<LinkResponse> fiveHundredResponses;
 	private SortedSet<LinkResponse> otherResponses;
+	private SortedSet<LinkResponse> allResponses;
 	
 	public LinkResponses() {
 		oneHundredResponses = new TreeSet<>();
@@ -25,6 +26,7 @@ public class LinkResponses {
 		fourHundredResponses = new TreeSet<>();
 		fiveHundredResponses = new TreeSet<>();
 		otherResponses = new TreeSet<>();
+		allResponses = new TreeSet<>();
 	}
 	
 	public void addResponse(LinkResponse response) {
@@ -41,6 +43,7 @@ public class LinkResponses {
 		} else {
 			otherResponses.add(response);
 		}
+		allResponses.add(response);
 	}
 	
 	public SortedSet<LinkResponse> getOneHundredResponses() {
@@ -61,6 +64,10 @@ public class LinkResponses {
 
 	public SortedSet<LinkResponse> getFiveHundredResponses() {
 		return fiveHundredResponses;
+	}
+	
+	public SortedSet<LinkResponse> getAllResponses() {
+		return allResponses;
 	}
 	
 	public long count() {
