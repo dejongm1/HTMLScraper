@@ -3,6 +3,8 @@ Future feature list
 SE Audit
 move adding links criteria into AuditSpider???
 inbound links count and list (hashmap<url, count>)
+	- logic for relative vs absolute links
+	- /#
 outbound links count and list (hashmap<url, count>)
 response codes for each link
 word frequency for each page
