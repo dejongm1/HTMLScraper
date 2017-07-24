@@ -135,7 +135,7 @@ public class ExcelWriter {
 		}
 	}
 
-    public void saveRecordToWorkbook(Record record) {
+    public void addRecordToWorkbook(Record record) {
         try {
             createWorkbookCopy();
 

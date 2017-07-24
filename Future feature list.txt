@@ -1,12 +1,6 @@
 Future feature list
 
 getRecords()
-            http://data.desmoinesregister.com/iowa-mugshots/?co=Polk
-            http://whotv.com/booked/
-            https://www.iowacourts.state.ia.us/ESAWebApp/DefaultFrame
-            http://apps2.polkcountyiowa.gov/inmatesontheweb/BookedPrev24Hrs.aspx
-            https://www.polkcountyiowa.gov/sheriff/divisions/detention/jail-and-arrest-information/
-
 	Read in spreadsheet at start of scrape to skip records
 
     sort in spreadsheet. That will make it easier to find already parsed records later on
@@ -37,11 +31,6 @@ getRecords()
 		-use it to tweak things like site(s), columns to export/exclude, flags, etc
 	
 
-
-Constants class for messages
-Search for specific word(s)
-	- variations of those words
-
 Exclude special characters (and numbers?)
 Add help documentation
 Result exclusion file for frequent words
@@ -50,10 +39,12 @@ Result exclusion file for frequent words
 	- add to/remove from list
 
 
-Traverse a sites pages
-	- specified level deep
-	- complete site (possible by domain?)
-	- find all <a href=>
+SE Audit
+inbound links count and list (hashmap<url, count>)
+outbound links count and list (hashmap<url, count>)
+response codes for each link
+word frequency for each page
+list robots.txt
+find tags (what tags?)
 
-If website can't be reached with http://, try https://
-
+search for words and varisations

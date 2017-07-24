@@ -25,10 +25,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  *
@@ -125,7 +122,8 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
 
                 //iterate over counties and add to list
                 //try something other than getmugs
-                String urlParameters = service.getRequestBody(new String[]{county, "getmugs", "0", "10000"});
+//                String urlParameters = service.getRequestBody(new String[]{county, "getmugs", "0", "10000"});
+                String urlParameters = service.getRequestBody(new String[]{county, "getmugs", "0", "5"});
 
                 // Send post request
                 logger.debug("\nSending 'POST' request to URL : " + service.getUrl());
@@ -133,14 +131,14 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
 
                 profileDetailUrlMap.putAll(parseDocForUrls(response, site));
 
-                scrapeRecords(profileDetailUrlMap, site, excelWriter);
+                recordsProcessed += scrapeRecords(profileDetailUrlMap, site, excelWriter);
 
             } catch (java.io.IOException e) {
                 logger.error("IOException caught sending http request to " + service.getUrl(), e);
             }
 
         }
-        return 0;
+        return recordsProcessed;
     }
 
     @Override
@@ -181,9 +179,10 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
                         recordsProcessed++;
                         //should we check for ID first or not bother unless we see duplicates??
                         try {
-                            arrestRecords.add(populateArrestRecord(profileDetailDoc, site));
+                            arrestRecord = populateArrestRecord(profileDetailDoc, site);
+                            arrestRecords.add(arrestRecord);
                             //save each record in case of failures
-                            excelWriter.saveRecordToWorkbook(arrestRecord);
+                            excelWriter.addRecordToWorkbook(arrestRecord);
                             int sleepTime = ConnectionUtil.getSleepTime(site);
                             logger.debug("Sleeping for: " + sleepTime);
                             Thread.sleep(sleepTime);//sleep at random interval
@@ -204,6 +203,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
         }
         //save the whole thing at the end
         //order?? and save to overwrite the spreadsheet
+        //this copies, not overwrites
         excelWriter.saveRecordsToWorkbook(arrestRecords);
         return recordsProcessed;
     }
@@ -223,7 +223,41 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
 
     @Override
     public void matchPropertyToField(ArrestRecord record, Element profileDetail) {
-
+        String label = profileDetail.select("strong").text().toLowerCase();
+        if (!label.equals("")) {
+            try {
+                if (label.contains("booked")) {
+                    formatArrestTime(record, profileDetail);
+                } else if (label.contains("age")) {
+                    record.setArrestAge(Integer.parseInt(extractValue(profileDetail)));
+                } else if (label.contains("charges")) {
+                    record.setCharges(extractValue(profileDetail).split(";"));
+                } else if (label.contains("sex")) {
+                    record.setGender(extractValue(profileDetail));
+                } else if (label.contains("city")) {
+//					record.setCity(city);
+					record.setState("IA");
+                } else if (label.contains("bond")) {
+                    String bondAmount = extractValue(profileDetail);
+                    int totalBond = Integer.parseInt(bondAmount.replace("$", "").replace(",", ""));
+                    record.setTotalBond(totalBond);
+                } else if (label.contains("height")) {
+                    record.setHeight(extractValue(profileDetail));
+                } else if (label.contains("weight")) {
+                    record.setWeight(extractValue(profileDetail));
+                } else if (label.contains("hair")) {
+                    record.setHairColor(extractValue(profileDetail));
+                } else if (label.contains("eye")) {
+                    record.setEyeColor(extractValue(profileDetail));
+                } else if (label.contains("county")) {
+                    record.setCounty(extractValue(profileDetail));
+                }
+            } catch (NumberFormatException nfe) {
+                logger.error("Couldn't parse a numeric value from " + profileDetail.text());
+            }
+        } else if (profileDetail.select("h1").hasText()) {
+            record.setFullName(profileDetail.select("h1").text().trim());
+        }
     }
 
     @Override
@@ -233,12 +267,32 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
 
     @Override
     public String extractValue(Element profileDetail) {
-        return null;
+        return profileDetail.text().substring(profileDetail.text().indexOf(':')+1).trim();
     }
 
     @Override
     public void formatArrestTime(ArrestRecord record, Element profileDetail) {
-
+        String arrestDate = extractValue(profileDetail).replace("at", "");
+        try {
+            //replace today
+            if (!arrestDate.toLowerCase().contains("today")) {
+                Date date = new Date(arrestDate);
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(date);
+                record.setArrestDate(calendar);
+            } else {
+                String hour = arrestDate.substring(arrestDate.toLowerCase().indexOf("today") + 5, arrestDate.indexOf(':')).trim();
+                String minutes = arrestDate.substring(arrestDate.indexOf(':')+1, arrestDate.length()-3).trim();
+                Date date = new Date();
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(date);
+                calendar.set(Calendar.HOUR, Integer.parseInt(hour));
+                calendar.set(Calendar.MINUTE, Integer.parseInt(minutes));
+                record.setArrestDate(calendar);
+            }
+        } catch (Exception iae) {
+            logger.error("Error converting " + arrestDate + " for record id " + record.getId());
+        }
     }
 
     public StringBuffer sendRequest(HttpURLConnection con, String urlParameters) throws IOException {
