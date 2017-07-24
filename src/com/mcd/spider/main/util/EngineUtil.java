@@ -9,7 +9,7 @@ public class EngineUtil {
 
 	public boolean docWasRetrieved(Document doc) {
 		if (doc!=null) {
-			if (doc.body().text().equals("")) {
+			if (doc.body()!= null && doc.body().text().equals("")) {
 				logger.error("You might be blocked. This doc retrieved was empty.");
 			} else {
 				return true;

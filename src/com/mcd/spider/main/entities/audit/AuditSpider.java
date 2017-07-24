@@ -1,16 +1,15 @@
 package com.mcd.spider.main.entities.audit;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-
+import com.mcd.spider.main.util.ConnectionUtil;
+import com.mcd.spider.main.util.SpiderUtil;
 import org.jsoup.Connection;
 import org.jsoup.nodes.Document;
 
-import com.mcd.spider.main.util.ConnectionUtil;
-import com.mcd.spider.main.util.SpiderUtil;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
 
 public class AuditSpider {
 	
@@ -18,14 +17,17 @@ public class AuditSpider {
 	private Connection.Response rootResponse;
 	private Document rootDocument;
 	private long inBoundLinksCount;
-	private List<String> inBoundLinks;
+	private Set<String> inBoundLinks;
 	private long outBoundLinksCount;
-	private List<String> outBoundLinks;
+	private Set<String> outBoundLinks;
 	private LinkResponses linkResponses;
 	private File robotsTxt;
 	private long averagePageLoadTime;
 	
 	public AuditSpider(String baseUrl, boolean offline) throws IOException {
+	    if (baseUrl.endsWith("/")) {
+	        baseUrl = baseUrl.substring(0, baseUrl.lastIndexOf("/"));
+        }
 		this.baseUrl = new URL(baseUrl);
 		if (offline) {
 			this.rootResponse = null;
@@ -35,8 +37,8 @@ public class AuditSpider {
 			this.rootDocument = this.rootResponse.parse();
 		}
 		this.linkResponses =  new LinkResponses();
-		this.inBoundLinks = new ArrayList<>();
-		this.outBoundLinks = new ArrayList<>();
+		this.inBoundLinks = new HashSet<>();
+		this.outBoundLinks = new HashSet<>();
 	}
 
 	public URL getBaseUrl() {
@@ -55,7 +57,7 @@ public class AuditSpider {
 		return inBoundLinksCount;
 	}
 
-	public List<String> getInBoundLinks() {
+	public Set<String> getInBoundLinks() {
 		return inBoundLinks;
 	}
 
@@ -68,7 +70,7 @@ public class AuditSpider {
 		return outBoundLinksCount;
 	}
 
-	public List<String> getOutBoundLinks() {
+	public Set<String> getOutBoundLinks() {
 		return outBoundLinks;
 	}
 

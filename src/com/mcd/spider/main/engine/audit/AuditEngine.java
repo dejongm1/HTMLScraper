@@ -1,27 +1,22 @@
 package com.mcd.spider.main.engine.audit;
 
-import java.io.IOException;
-import java.net.ConnectException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import org.apache.commons.collections4.map.CaseInsensitiveMap;
-import org.apache.log4j.Logger;
-import org.jsoup.Connection;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
 import com.mcd.spider.main.entities.audit.AuditSpider;
 import com.mcd.spider.main.entities.audit.LinkResponse;
 import com.mcd.spider.main.entities.audit.Term;
 import com.mcd.spider.main.util.ConnectionUtil;
 import com.mcd.spider.main.util.EngineUtil;
 import com.mcd.spider.main.util.SpiderUtil;
+import org.apache.commons.collections4.map.CaseInsensitiveMap;
+import org.apache.commons.validator.routines.UrlValidator;
+import org.apache.log4j.Logger;
+import org.jsoup.Connection;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * 
@@ -64,6 +59,10 @@ public class AuditEngine {
 			String url = element.attr("href");
 			if (element.attr("rel")==null || element.attr("rel").equals("")) {
 				if (url.startsWith("/") || url.contains(spider.getBaseUrl().getHost())) {
+                    UrlValidator urlValidator = new UrlValidator(new String[]{"http", "https"});
+                    if (!urlValidator.isValid(url)) {
+                        url = spider.getBaseUrl()+url;
+                    }
 					urlsToCheck.put(url, false);
 					spider.addInBoundLink(url);
 				} else {
@@ -86,11 +85,13 @@ public class AuditEngine {
 			if (!checked) {
 				try {
 					startTime = System.currentTimeMillis();
+					//need to catch response codes that don't return a page
 					Connection.Response response = ConnectionUtil.getConnection(url, "").execute();
 					Document docToCheck = response.parse();
 //					Document docToCheck = spiderUtil.getHtmlAsDoc(url);
 					timeSpent+=System.currentTimeMillis()-startTime;
 
+					logger.debug("Trying to get hrefs from " + url);
 					if (engineUtil.docWasRetrieved(docToCheck)) {
 						hrefs = docToCheck.getElementsByAttribute("href");
 						for (Element element : hrefs) {
@@ -121,18 +122,25 @@ public class AuditEngine {
 	}
 	
 	private Map<String,Boolean> addToUrlsToCheck(Element element, Map<String, Boolean> urlsToCheck, ListIterator<String> iterator, AuditSpider spider) {
-		//TODO if they're inbound, add to urlsToCheck and increment inboundLinks
-		//TODO if outbound increment outboundLinks
 		String url = element.attr("href");
-		if (!element.attr("rel").toLowerCase().equals("stylesheet") && urlsToCheck.get(url)==null) {
+		if (!element.attr("rel").toLowerCase().equals("stylesheet")) {
 			if (url.startsWith("/") || url.contains(spider.getBaseUrl().getHost())) {
-				urlsToCheck.put(url, false);
-				iterator.add(url);
-				spider.addInBoundLink(url);
+                UrlValidator urlValidator = new UrlValidator(new String[]{"http", "https"});
+                if (!urlValidator.isValid(url)) {
+                    url = spider.getBaseUrl()+url;
+                    if  (!urlValidator.isValid(url)) {
+                        return urlsToCheck;
+                    }
+                }
+                if (urlsToCheck.get(url)==null) {
+                    urlsToCheck.put(url, false);
+                    iterator.add(url);
+                    spider.addInBoundLink(url);
+                }
 			} else {
 				//filter out some other bogus links
 				urlsToCheck.put(url, true); //Adding to list so it doesn't get added again but not retrieving it to look for links
-				spider.addOutBoundLink(url);
+                spider.addOutBoundLink(url);
 			}
 		}
 		return urlsToCheck;

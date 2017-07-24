@@ -60,7 +60,7 @@ public class ConnectionUtil {
 	public static String getRandomUserAgent() { //to avoid getting blacklisted
 		String[] userAgentList = System.getProperty("user.agents").split(", ");
 		int r = getRandom(userAgentList.length-1, -1, false);
-		logger.debug("User-agent: " + userAgentList[r]);
+		logger.trace("User-agent: " + userAgentList[r]);
 		return userAgentList[r];
 	}
 	
