@@ -1,4 +1,4 @@
-package com.mcd.spider.main.entities;
+package com.mcd.spider.main.entities.record;
 
 import com.mcd.spider.main.entities.site.PolkCountyIowaGovSite;
 import com.mcd.spider.main.entities.site.Site;

@@ -13,6 +13,7 @@
     	     copy htmls files to jar destination for offline testing?
     	     package properties file
     	     package blacklist of common words
+    	     create empty files named as possible paremeters (url, search, depth)
     	     			-->
         <jar destfile="${dir.workspace}/HTMLSpider.jar" filesetmanifest="mergewithoutmain">
             <manifest>

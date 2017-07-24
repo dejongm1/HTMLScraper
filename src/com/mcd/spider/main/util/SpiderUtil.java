@@ -41,7 +41,7 @@ public class SpiderUtil {
 		}
 	}
 
-	public Document getOfflinePage(String url) throws IOException {
+	public static Document getOfflinePage(String url) throws IOException {
 		String htmlLocation = url.replace("/", "").replace(":", "").replace("?", "");
 		File input = new File("htmls/" + htmlLocation);
 		return Jsoup.parse(input, "UTF-8", url);
@@ -78,12 +78,16 @@ public class SpiderUtil {
     }
 
     public Document getHtmlAsDoc(String url) {
+    	return getHtmlAsDoc(url, null);
+    }
+    
+    public Document getHtmlAsDoc(String url, String refferer) {
         try {
 
             if (offline()) {
                 return getOfflinePage(url);
             } else {
-                return ConnectionUtil.getConnection(url).get();
+                return ConnectionUtil.getConnection(url, refferer).get();
             }
         } catch (FileNotFoundException fne) {
             SpiderEngine.logger.error("I couldn't find an html file for " + url);

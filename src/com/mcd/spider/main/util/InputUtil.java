@@ -8,7 +8,7 @@ import java.util.List;
 
 import org.apache.commons.validator.routines.UrlValidator;
 
-import com.mcd.spider.main.entities.State;
+import com.mcd.spider.main.entities.record.State;
 
 public class InputUtil {
 	

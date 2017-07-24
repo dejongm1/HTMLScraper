@@ -2,7 +2,8 @@ package com.mcd.spider.main.engine.router;
 
 import com.mcd.spider.main.engine.record.iowa.DesMoinesRegisterComEngine;
 import com.mcd.spider.main.engine.record.iowa.PolkCountyOrgEngine;
-import com.mcd.spider.main.entities.State;
+import com.mcd.spider.main.entities.record.State;
+
 import common.Logger;
 
 /**

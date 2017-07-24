@@ -6,7 +6,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import com.mcd.spider.main.engine.SpiderEngine;
-import com.mcd.spider.main.entities.State;
+import com.mcd.spider.main.entities.record.State;
 import com.mcd.spider.main.exception.StateNotReadyException;
 import com.mcd.spider.main.util.InputUtil;
 import com.mcd.spider.main.util.SpiderConstants;
@@ -16,6 +16,7 @@ import com.mcd.spider.main.util.SpiderConstants;
  * @author U569220
  *
  */
+
 public class SpiderMain {
 
 	private static final Logger logger = Logger.getLogger(SpiderMain.class);
@@ -62,7 +63,14 @@ public class SpiderMain {
 //                    || scrapeTypeChoice.toLowerCase().contains("test")
 //                    || scrapeTypeChoice.equals("5")) {
 //                testConnectionGetter(args);
-            } else if (inputUtil.quitting(scrapeTypeChoice)) {
+            } else if (scrapeTypeChoice.toLowerCase().contains("seo")
+					|| scrapeTypeChoice.toLowerCase().contains("audit")
+					|| scrapeTypeChoice.equals("5")) {
+            	if (args.length!=0) {
+            		args[0] = ""; //remove first scrapeTypechoice and continue
+            	}
+				getSEOAudit(String.join(" ", args));
+			} else if (inputUtil.quitting(scrapeTypeChoice)) {
 				System.exit(0);
 			} else {
 				prompt = SpiderConstants.UNKNOWN_COMMAND + SpiderConstants.PROMPT;
@@ -106,7 +114,38 @@ public class SpiderMain {
 	private static void getArrestRecords(String[] args) throws IOException, StateNotReadyException {
 		List<State> states = args.length>=2?inputUtil.convertToStates(args[1]):(List<State>) inputUtil.getInput("State(s) or \"All\": ", 3, SpiderConstants.STATE_VALIDATION);
 		long maxNumberOfResults = args.length>=3?inputUtil.convertToNumber(args[2]):999999;
-		engine.getArrestRecordByState(states, maxNumberOfResults);
+		engine.getArrestRecordsByState(states, maxNumberOfResults);
+	}
+
+	private static void getSEOAudit(String argString) throws IOException {
+		//look through args for options passed
+		//url
+		//levels deep
+		//search term(s)
+		//output type or location??
+		String url = null;
+		String terms = null;
+		Integer depth = null;
+		String[] newArgs = null;
+		if (!argString.equals("")) {
+			newArgs = argString.trim().toLowerCase().split("(?=-)");
+			for (String arg : newArgs){
+				String parameter = arg.trim().substring(arg.indexOf(' ')+1);
+				if (arg.startsWith("-url")) {
+					url = inputUtil.convertToUrl(parameter);
+				} else if (arg.startsWith("-depth")) {
+					depth = inputUtil.convertToNumber(parameter);
+				} else if (arg.startsWith("-search")) {
+					terms = parameter;
+				} else {
+					System.out.println("I didn't recognize argument \"" + arg + "\". Ignoring and proceeding...");
+				}
+			}
+		}
+		if (url==null) {
+			url = (String )inputUtil.getInput("URL: ", 3, SpiderConstants.URL_VALIDATION);
+		}
+		engine.performSEOAudit(url, terms, depth);
 	}
 
 //	private static void testConnectionGetter(String[] args) throws IOException {

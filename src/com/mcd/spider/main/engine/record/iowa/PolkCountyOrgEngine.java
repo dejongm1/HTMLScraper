@@ -1,9 +1,9 @@
 package com.mcd.spider.main.engine.record.iowa;
 
 import com.mcd.spider.main.engine.record.ArrestRecordEngine;
-import com.mcd.spider.main.entities.ArrestRecord;
-import com.mcd.spider.main.entities.Record;
-import com.mcd.spider.main.entities.State;
+import com.mcd.spider.main.entities.record.ArrestRecord;
+import com.mcd.spider.main.entities.record.Record;
+import com.mcd.spider.main.entities.record.State;
 import com.mcd.spider.main.entities.site.PolkCountyIowaGovSite;
 import com.mcd.spider.main.entities.site.Site;
 import com.mcd.spider.main.util.ConnectionUtil;

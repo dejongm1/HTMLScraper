@@ -1,6 +1,6 @@
 package com.mcd.spider.main.exception;
 
-import com.mcd.spider.main.entities.State;
+import com.mcd.spider.main.entities.record.State;
 
 /**
  * 

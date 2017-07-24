@@ -1,7 +1,5 @@
 package com.mcd.spider.main.util;
 
-import com.mcd.spider.main.entities.Record;
-import com.mcd.spider.main.entities.State;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
 import jxl.write.Label;
@@ -9,6 +7,9 @@ import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
 import org.apache.log4j.Logger;
+
+import com.mcd.spider.main.entities.record.Record;
+import com.mcd.spider.main.entities.record.State;
 
 import java.io.File;
 import java.io.IOException;

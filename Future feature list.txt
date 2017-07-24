@@ -1,5 +1,29 @@
 Future feature list
 
+SE Audit
+move adding links criteria into AuditSpider???
+inbound links count and list (hashmap<url, count>)
+outbound links count and list (hashmap<url, count>)
+response codes for each link
+word frequency for each page
+list robots.txt
+tags (what tags?)
+search for words and variations
+
+deployment
+
+place in a common location on computer
+	- jar
+	- output folder
+	- arg files
+	- script to accept simple run com and args and route to java -jar ....
+script to open cmd prompt and cd to jar location
+	-add jar location to PATH?
+shortcut to output on desktop
+scripts for pre-populated commands
+
+
+
 getRecords()
 	Read in spreadsheet at start of scrape to skip records
 
@@ -39,12 +63,4 @@ Result exclusion file for frequent words
 	- add to/remove from list
 
 
-SE Audit
-inbound links count and list (hashmap<url, count>)
-outbound links count and list (hashmap<url, count>)
-response codes for each link
-word frequency for each page
-list robots.txt
-find tags (what tags?)
 
-search for words and varisations

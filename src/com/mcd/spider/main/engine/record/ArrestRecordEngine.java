@@ -1,7 +1,7 @@
 package com.mcd.spider.main.engine.record;
 
-import com.mcd.spider.main.entities.ArrestRecord;
-import com.mcd.spider.main.entities.State;
+import com.mcd.spider.main.entities.record.ArrestRecord;
+import com.mcd.spider.main.entities.record.State;
 import com.mcd.spider.main.entities.site.Site;
 import com.mcd.spider.main.util.ExcelWriter;
 import org.jsoup.nodes.Document;

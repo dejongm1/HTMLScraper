@@ -1,4 +1,4 @@
-package com.mcd.spider.main.entities;
+package com.mcd.spider.main.entities.record;
 
 import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
@@ -9,7 +9,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import com.mcd.spider.main.entities.ArrestRecord.RecordColumnEnum;
+import com.mcd.spider.main.entities.record.ArrestRecord.RecordColumnEnum;
 
 import jxl.write.Label;
 import jxl.write.WritableSheet;

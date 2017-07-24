@@ -1,8 +1,8 @@
 package com.mcd.spider.main.engine.record;
 
-import com.mcd.spider.main.entities.ArrestRecord;
-import com.mcd.spider.main.entities.Record;
-import com.mcd.spider.main.entities.State;
+import com.mcd.spider.main.entities.record.ArrestRecord;
+import com.mcd.spider.main.entities.record.Record;
+import com.mcd.spider.main.entities.record.State;
 import com.mcd.spider.main.entities.site.Site;
 import com.mcd.spider.main.util.*;
 import org.apache.log4j.Logger;
@@ -106,8 +106,9 @@ public class ArrestOrgEngine implements ArrestRecordEngine {
             Map<String,Document> resultsDocPlusMiscMap = new HashMap<>();
             List<String> keys = new ArrayList<>(resultsUrlPlusMiscMap.keySet());
             Collections.shuffle(keys);
+            String previous = resultsUrlPlusMiscMap.get(keys.size()-1);
             for (String k : keys) {
-                resultsDocPlusMiscMap.put(String.valueOf(k), spiderUtil.getHtmlAsDoc(resultsUrlPlusMiscMap.get(k)));
+                resultsDocPlusMiscMap.put(String.valueOf(k), spiderUtil.getHtmlAsDoc(resultsUrlPlusMiscMap.get(k), resultsUrlPlusMiscMap.get(previous)));
                 try {
                     int sleepTime = ConnectionUtil.getSleepTime(site);
                     Thread.sleep(sleepTime);
@@ -115,6 +116,7 @@ public class ArrestOrgEngine implements ArrestRecordEngine {
                 } catch (InterruptedException e) {
                     logger.error("Failed to sleep after fetching " + resultsUrlPlusMiscMap.get(k), e);
                 }
+                previous = k;
             }
 
             //saving this for later?? should be able to get previous sorting by looking at page number in baseUri
