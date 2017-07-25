@@ -1,11 +1,14 @@
 package com.mcd.spider.main.engine.audit;
 
-import com.mcd.spider.main.entities.audit.AuditSpider;
-import com.mcd.spider.main.entities.audit.LinkResponse;
-import com.mcd.spider.main.entities.audit.Term;
-import com.mcd.spider.main.util.ConnectionUtil;
-import com.mcd.spider.main.util.EngineUtil;
-import com.mcd.spider.main.util.SpiderUtil;
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.apache.commons.collections4.map.CaseInsensitiveMap;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.log4j.Logger;
@@ -14,10 +17,14 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.IOException;
-import java.net.ConnectException;
-import java.util.*;
-import java.util.Map.Entry;
+import com.mcd.spider.main.entities.audit.AuditResults;
+import com.mcd.spider.main.entities.audit.AuditSpider;
+import com.mcd.spider.main.entities.audit.OfflineResponse;
+import com.mcd.spider.main.entities.audit.PageAuditResult;
+import com.mcd.spider.main.entities.audit.Term;
+import com.mcd.spider.main.util.ConnectionUtil;
+import com.mcd.spider.main.util.EngineUtil;
+import com.mcd.spider.main.util.SpiderUtil;
 
 /**
  * 
@@ -30,16 +37,16 @@ public class AuditEngine {
 	
 	private SpiderUtil spiderUtil = new SpiderUtil();
 	private EngineUtil engineUtil = new EngineUtil();
+	Map<String, Boolean> urlsToCrawl = new HashMap<>();
 	
 	
 	public void performSEOAudit(String baseUrl, String terms, Integer depth, boolean performanceTest, int sleepTime) {
+		urlsToCrawl = new HashMap<>();
 		long timeSpent = 0;
 		long startTime = 0;
-		int pagesAudited = 0;
 		//empty string checks because parameters are optional
 		AuditSpider spider = null;
 		//<url, checked>
-		Map<String, Boolean> urlsToCheck = new HashMap<>();
 		try {
 			startTime = System.currentTimeMillis();
 			spider = new AuditSpider(baseUrl, spiderUtil.offline());
@@ -52,101 +59,36 @@ public class AuditEngine {
 		} catch (InterruptedException e) {
 			logger.error("Error trying to sleep");
 		}
-		urlsToCheck.put(baseUrl,  true);
-		pagesAudited++;
-		
-		spider.getLinkResponses().addResponse(new LinkResponse(spiderUtil.offline()?200:spider.getRootResponse().statusCode(), baseUrl));
-		Elements hrefs = spider.getRootDocument().getElementsByAttribute("href");
-		//create initial list of urlsToCheck
-		for (Element element : hrefs) {
-			//TODO if they're inbound, add to urlsToCheck and increment inboundLinks
-			//TODO if outbound increment outboundLinks
-			String url = element.attr("href");
-			if (element.attr("rel")==null || element.attr("rel").equals("")) {
-				if (url.startsWith("/") || url.contains(spider.getBaseUrl().getHost())) {
-                    UrlValidator urlValidator = new UrlValidator(new String[]{"http", "https"});
-                    if (!urlValidator.isValid(url)) {
-                        url = spider.getBaseUrl()+url;
-                    }
-					urlsToCheck.put(url, false);
-					spider.addInBoundLink(url);
-				} else {
-					//filter out some other bogus links
-					urlsToCheck.put(url, true); //Adding to list so it doesn't get added again but not retrieving it to look for links
-					spider.addOutBoundLink(url);
-				}
-			}
-		}
-		
-		//STOP HERE if only checking first page
-		
+		urlsToCrawl.put(baseUrl,  false);
+
 		//int depthLevel = 0;
 		//while (depthLevel<=depth && allChecked(urlsToCheck)) { //allchecked() is inefficient for large sites
 			//logger.debug("Depth = " + depthLevel);
-		ListIterator<String> iterator = new ArrayList<>(urlsToCheck.keySet()).listIterator();
-		while (iterator.hasNext()) {
+		ListIterator<String> iterator = new ArrayList<>(urlsToCrawl.keySet()).listIterator();
+		AuditResults auditResults = new AuditResults();
+		while (iterator.hasNext()) {//not working after first doc
 			String url = iterator.next();
-			boolean checked = urlsToCheck.get(url);
+			boolean checked = urlsToCrawl.get(url);
 			if (!checked) {
-				//TODO extract logic to get connection, response, doc and store results
-				//TODO make it work offline
-				startTime = System.currentTimeMillis();
-				//need to catch response codes that don't return a page
-				Connection.Response response = null;
-				Document docToCheck = null;
-				try {
-					try {
-						Connection conn = ConnectionUtil.getConnection(url, "");
-						response = conn.execute();//create a dummy ResponseImpl for offline work
-					} catch (ConnectException e) { //need to make more specific to avoid nullpointer
-						logger.error("Exception caught getting response", e);
-						spider.getLinkResponses().addResponse(new LinkResponse(509, url));
-					}
-					docToCheck = ConnectionUtil.getDocFromConnectionResponse(response, url);
-					timeSpent+=System.currentTimeMillis()-startTime;
-				} catch (IOException e) {
-					logger.error("IOException caught getting document", e);
-					spider.getLinkResponses().addResponse(new LinkResponse(509, url));
-				}
-				logger.debug("Trying to get hrefs from " + url);
-				if (engineUtil.docWasRetrieved(docToCheck)) {
-					hrefs = docToCheck.getElementsByAttribute("href");
-					for (Element element : hrefs) {
-						urlsToCheck = addToUrlsToCheck(element, urlsToCheck, iterator, spider);
-					}
-					urlsToCheck.put(url, true);
-					pagesAudited++;
-					if (response!=null) {//create a dummy ResponseImpl for offline work 
-						spider.getLinkResponses().addResponse(new LinkResponse(response.statusCode(), url));
-					}
-				}
-				
+				auditResults.addResponse(auditPage(url, iterator, spider));
 			}
 		}
 		//}
-		spider.setAveragePageLoadTime(timeSpent/pagesAudited);
-		logger.info("Inbound links count: " + spider.getInBoundLinksCount());
-		for (String link : spider.getInBoundLinks()) {
-			logger.debug("Inbound link: " + link);
+		spider.setAuditResults(auditResults);
+		spider.setAveragePageLoadTime(timeSpent/urlsToCrawl.size());
+		for (PageAuditResult result : spider.getAuditResults().getAllResponses()) {
+			logger.info(result.prettyPrint());
 		}
-		logger.info("Outbound links count: " + spider.getOutBoundLinksCount());
-		for (String link : spider.getOutBoundLinks()) {
-			logger.debug("Outbound link: " + link);
-		}
-		logger.info("Number of responses: " + spider.getLinkResponses().count());
-		for (LinkResponse response : spider.getLinkResponses().getAllResponses()) {
-			logger.info("Response - " + response.getCode() + " - " + response.getUrl());
-		}
-		logger.info("Average load time per page: " + spider.getAveragePageLoadTime());
 	}
 	
-	private Map<String,Boolean> addToUrlsToCheck(Element element, Map<String, Boolean> urlsToCheck, ListIterator<String> iterator, AuditSpider spider) {
+	private Map<String,Boolean> addToUrlsToCheck(Element element, Map<String, Boolean> urlsToCheck, ListIterator<String> iterator, PageAuditResult result, URL baseUrl) {
+		//TODO needs a lot of refinement
 		String url = element.attr("href");
-		if (!element.attr("rel").toLowerCase().equals("stylesheet")) {
-			if (url.startsWith("/") || url.contains(spider.getBaseUrl().getHost())) {
+		if (!element.attr("rel").equalsIgnoreCase("stylesheet")) {
+			if (url.startsWith("/") || url.contains(baseUrl.getHost())) {
                 UrlValidator urlValidator = new UrlValidator(new String[]{"http", "https"});
                 if (!urlValidator.isValid(url)) {
-                    url = spider.getBaseUrl()+url;
+                    url = baseUrl+url;
                     if  (!urlValidator.isValid(url)) {
                         return urlsToCheck;
                     }
@@ -154,15 +96,48 @@ public class AuditEngine {
                 if (urlsToCheck.get(url)==null) {
                     urlsToCheck.put(url, false);
                     iterator.add(url);
-                    spider.addInBoundLink(url);
+                    result.addInBoundLink(url);
                 }
 			} else {
 				//filter out some other bogus links
 				urlsToCheck.put(url, true); //Adding to list so it doesn't get added again but not retrieving it to look for links
-                spider.addOutBoundLink(url);
+                result.addOutBoundLink(url);
 			}
 		}
 		return urlsToCheck;
+	}
+	
+	public PageAuditResult auditPage(String url, ListIterator<String> iterator, AuditSpider spider) {
+		Elements hrefs;
+		PageAuditResult result = new PageAuditResult(url);
+		//TODO make it work offline
+		long pageStartTime = System.currentTimeMillis();
+		//need to catch response codes that don't return a document
+		Connection.Response response = null;
+		Document docToCheck = null;
+		try {
+			Connection conn = ConnectionUtil.getConnection(url, "");
+			if (spiderUtil.offline()) {
+				response = new OfflineResponse(0, url);
+			} else {
+				response = conn.execute();//create a dummy ResponseImpl for offline work
+			}
+			docToCheck = response.parse();
+			result.setLoadTime(System.currentTimeMillis()-pageStartTime);
+			result.setCode(response.statusCode());
+		} catch (IOException e) {
+			logger.error("IOException caught getting document", e);
+			result.setCode(0);
+		}
+		logger.debug("Trying to get hrefs from " + url);
+		if (engineUtil.docWasRetrieved(docToCheck)) {
+			hrefs = docToCheck.getElementsByAttribute("href");
+			for (Element element : hrefs) {
+				urlsToCrawl = addToUrlsToCheck(element, urlsToCrawl, iterator, result, spider.getBaseUrl());
+			}
+			urlsToCrawl.put(url, true);
+		}
+		return result;
 	}
 	
 	public void getPopularWords(String url, int numberOfWords /*, int levelsDeep*/) {

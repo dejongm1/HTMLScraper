@@ -9,17 +9,17 @@ import java.util.TreeSet;
  *
  */
 
-public class LinkResponses {
+public class AuditResults {
 	
-	private SortedSet<LinkResponse> oneHundredResponses;
-	private SortedSet<LinkResponse> twoHundredResponses;
-	private SortedSet<LinkResponse> threeHundredResponses;
-	private SortedSet<LinkResponse> fourHundredResponses;
-	private SortedSet<LinkResponse> fiveHundredResponses;
-	private SortedSet<LinkResponse> otherResponses;
-	private SortedSet<LinkResponse> allResponses;
+	private SortedSet<PageAuditResult> oneHundredResponses;
+	private SortedSet<PageAuditResult> twoHundredResponses;
+	private SortedSet<PageAuditResult> threeHundredResponses;
+	private SortedSet<PageAuditResult> fourHundredResponses;
+	private SortedSet<PageAuditResult> fiveHundredResponses;
+	private SortedSet<PageAuditResult> otherResponses;
+	private SortedSet<PageAuditResult> allResponses;
 	
-	public LinkResponses() {
+	public AuditResults() {
 		oneHundredResponses = new TreeSet<>();
 		twoHundredResponses = new TreeSet<>();
 		threeHundredResponses = new TreeSet<>();
@@ -29,7 +29,7 @@ public class LinkResponses {
 		allResponses = new TreeSet<>();
 	}
 	
-	public void addResponse(LinkResponse response) {
+	public void addResponse(PageAuditResult response) {
 		if (response.getCode()>=100 && response.getCode()<200) {
 			oneHundredResponses.add(response);
 		} else if (response.getCode()>=200 && response.getCode()<300) {
@@ -46,27 +46,27 @@ public class LinkResponses {
 		allResponses.add(response);
 	}
 	
-	public SortedSet<LinkResponse> getOneHundredResponses() {
+	public SortedSet<PageAuditResult> getOneHundredResponses() {
 		return oneHundredResponses;
 	}
 
-	public SortedSet<LinkResponse> getTwoHundredResponses() {
+	public SortedSet<PageAuditResult> getTwoHundredResponses() {
 		return twoHundredResponses;
 	}
 
-	public SortedSet<LinkResponse> getThreeHundredResponses() {
+	public SortedSet<PageAuditResult> getThreeHundredResponses() {
 		return threeHundredResponses;
 	}
 
-	public SortedSet<LinkResponse> getFourHundredResponses() {
+	public SortedSet<PageAuditResult> getFourHundredResponses() {
 		return fourHundredResponses;
 	}
 
-	public SortedSet<LinkResponse> getFiveHundredResponses() {
+	public SortedSet<PageAuditResult> getFiveHundredResponses() {
 		return fiveHundredResponses;
 	}
 	
-	public SortedSet<LinkResponse> getAllResponses() {
+	public SortedSet<PageAuditResult> getAllResponses() {
 		return allResponses;
 	}
 	

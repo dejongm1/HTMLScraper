@@ -49,23 +49,6 @@ public class ConnectionUtil {
 				.maxBodySize(0)
 				.timeout(30000);
 	}
-	
-	public static Document getDocFromConnectionResponse(Connection.Response conn, String url) throws IOException {
-		if (!offline && conn !=null)  {
-			return conn.parse();
-		} else {
-			return SpiderUtil.getOfflinePage(url);
-		}
-	}
-	
-//
-//	public static Connection getConnection(String url) throws IOException {
-//		return Jsoup.connect(url)
-//				.userAgent(getRandomUserAgent())
-////				.userAgent("Mozilla/5.0 (Windows NT 10.0; WOW64; rv:54.0) Gecko/20100101 Firefox/54.0")
-//				.maxBodySize(0)
-//				.timeout(30000);
-//	}
 
 	public static String getRandomUserAgent() { //to avoid getting blacklisted
 		String[] userAgentList = System.getProperty("user.agents").split(", ");
