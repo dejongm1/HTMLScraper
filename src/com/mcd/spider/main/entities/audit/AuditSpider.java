@@ -16,13 +16,14 @@ public class AuditSpider {
 	private URL baseUrl;
 	private Connection.Response rootResponse;
 	private Document rootDocument;
-	private long inBoundLinksCount;
+	private long inBoundLinksCount; //remove after changing inboundlinks set to map for counting duplicates - unless I want to record the source of the link
 	private Set<String> inBoundLinks;
-	private long outBoundLinksCount;
+	private long outBoundLinksCount; //remove after changing outboundlinks set to map for counting duplicates - unless I want to record the source of the link
 	private Set<String> outBoundLinks;
 	private LinkResponses linkResponses;
 	private File robotsTxt;
-	private long averagePageLoadTime;
+	private long averagePageLoadTime; //this only measures html loading for now
+	private long sleepTime;
 	
 	public AuditSpider(String baseUrl, boolean offline) throws IOException {
 	    if (baseUrl.endsWith("/")) {
@@ -63,6 +64,7 @@ public class AuditSpider {
 
 	public void addInBoundLink(String link) {
 		this.inBoundLinks.add(link);
+		//only increment if not already included?
 		this.inBoundLinksCount++;
 	}
 	
@@ -76,6 +78,7 @@ public class AuditSpider {
 
 	public void addOutBoundLink(String link) {
 		this.outBoundLinks.add(link);
+		//only increment if not already included?
 		this.outBoundLinksCount++;
 	}
 	
@@ -101,5 +104,13 @@ public class AuditSpider {
 
 	public void setAveragePageLoadTime(long averagePageLoadTime) {
 		this.averagePageLoadTime = averagePageLoadTime;
+	}
+
+	public long getSleepTime() {
+		return sleepTime;
+	}
+
+	public void setSleepTime(long sleepTime) {
+		this.sleepTime = sleepTime;
 	}
 }

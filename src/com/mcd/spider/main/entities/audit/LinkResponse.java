@@ -1,5 +1,6 @@
 package com.mcd.spider.main.entities.audit;
 
+import java.util.Map;
 
 /**
  * 
@@ -11,10 +12,19 @@ public class LinkResponse implements Comparable<LinkResponse>{
 
 	private int code;
 	private String url;
+	private long loadTime;
+	private Map<String, Integer> frequentWords;
+	private SearchResults results;
 	
 	public LinkResponse(int code, String url) {
 		this.code = code;
 		this.url = url;
+	}
+	
+	public LinkResponse(int code, String url, long loadTime) {
+		this.code = code;
+		this.url = url;
+		this.loadTime = loadTime;
 	}
 	
 	public int getCode() {
@@ -29,7 +39,12 @@ public class LinkResponse implements Comparable<LinkResponse>{
 	public void setUrl(String url) {
 		this.url = url;
 	}
-	
+	public long getLoadTime() {
+		return loadTime;
+	}
+	public void setLoadTime(long loadTime) {
+		this.loadTime = loadTime;
+	}
 	@Override
 	public int compareTo(LinkResponse lr) {
 		// TODO compare code first, then url

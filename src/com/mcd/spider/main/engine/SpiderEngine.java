@@ -34,9 +34,9 @@ public class SpiderEngine {
 		
 	}
 	
-	public void performSEOAudit(String url, String terms, Integer depth) {
+	public void performSEOAudit(String url, String terms, Integer depth, boolean performanceTest, int sleepTime) {
 		AuditEngine engine = new AuditEngine();
-		engine.performSEOAudit(url, terms, depth);
+		engine.performSEOAudit(url, terms, depth, performanceTest, sleepTime);
 	}
 	
 	public void getPopularWords(String url, int numberOfWords /*, int levelsDeep*/) {

@@ -20,6 +20,7 @@ public class ConnectionUtil {
 	private static final Logger logger = Logger.getLogger(ConnectionUtil.class);
 	
 	private ConnectionUtil(){}
+	private static boolean offline = Boolean.parseBoolean(System.getProperty("offline"));
 	
 	public static Document getConnectionDocumentTest(String url) throws IOException {
         final URL website = new URL(url);
@@ -48,6 +49,15 @@ public class ConnectionUtil {
 				.maxBodySize(0)
 				.timeout(30000);
 	}
+	
+	public static Document getDocFromConnectionResponse(Connection.Response conn, String url) throws IOException {
+		if (!offline && conn !=null)  {
+			return conn.parse();
+		} else {
+			return SpiderUtil.getOfflinePage(url);
+		}
+	}
+	
 //
 //	public static Connection getConnection(String url) throws IOException {
 //		return Jsoup.connect(url)
@@ -65,7 +75,6 @@ public class ConnectionUtil {
 	}
 	
 	public static int getSleepTime(Site site) {
-		boolean offline = Boolean.parseBoolean(System.getProperty("offline"));
 		int[] sleepTimeRange = site.getPerRecordSleepRange();
 		return offline?0:getRandom(sleepTimeRange[0], sleepTimeRange[1], true);
 	}

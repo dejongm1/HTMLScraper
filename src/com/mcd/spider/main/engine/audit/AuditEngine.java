@@ -15,6 +15,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -31,21 +32,25 @@ public class AuditEngine {
 	private EngineUtil engineUtil = new EngineUtil();
 	
 	
-	public void performSEOAudit(String baseUrl, String terms, Integer depth) {
+	public void performSEOAudit(String baseUrl, String terms, Integer depth, boolean performanceTest, int sleepTime) {
 		long timeSpent = 0;
 		long startTime = 0;
 		int pagesAudited = 0;
-		//empty string checks because all parameters are optional
+		//empty string checks because parameters are optional
 		AuditSpider spider = null;
 		//<url, checked>
 		Map<String, Boolean> urlsToCheck = new HashMap<>();
 		try {
 			startTime = System.currentTimeMillis();
 			spider = new AuditSpider(baseUrl, spiderUtil.offline());
+			spider.setSleepTime(sleepTime==0?spiderUtil.offline()?0:2000:sleepTime*1000);
 			timeSpent+=System.currentTimeMillis()-startTime;
+			Thread.sleep(spider.getSleepTime());
 		} catch (IOException ioe) {
 			logger.error("Exception initializing audit spider for " + baseUrl, ioe);
 			System.exit(0);
+		} catch (InterruptedException e) {
+			logger.error("Error trying to sleep");
 		}
 		urlsToCheck.put(baseUrl,  true);
 		pagesAudited++;
@@ -83,42 +88,56 @@ public class AuditEngine {
 			String url = iterator.next();
 			boolean checked = urlsToCheck.get(url);
 			if (!checked) {
+				//TODO extract logic to get connection, response, doc and store results
+				//TODO make it work offline
+				startTime = System.currentTimeMillis();
+				//need to catch response codes that don't return a page
+				Connection.Response response = null;
+				Document docToCheck = null;
 				try {
-					startTime = System.currentTimeMillis();
-					//need to catch response codes that don't return a page
-					Connection.Response response = ConnectionUtil.getConnection(url, "").execute();
-					Document docToCheck = response.parse();
-//					Document docToCheck = spiderUtil.getHtmlAsDoc(url);
-					timeSpent+=System.currentTimeMillis()-startTime;
-
-					logger.debug("Trying to get hrefs from " + url);
-					if (engineUtil.docWasRetrieved(docToCheck)) {
-						hrefs = docToCheck.getElementsByAttribute("href");
-						for (Element element : hrefs) {
-							urlsToCheck = addToUrlsToCheck(element, urlsToCheck, iterator, spider);
-						}
-						urlsToCheck.put(url, true);
-						pagesAudited++;
+					try {
+						Connection conn = ConnectionUtil.getConnection(url, "");
+						response = conn.execute();//create a dummy ResponseImpl for offline work
+					} catch (ConnectException e) { //need to make more specific to avoid nullpointer
+						logger.error("Exception caught getting response", e);
+						spider.getLinkResponses().addResponse(new LinkResponse(509, url));
 					}
-					spider.getLinkResponses().addResponse(new LinkResponse(response.statusCode(), url));
+					docToCheck = ConnectionUtil.getDocFromConnectionResponse(response, url);
+					timeSpent+=System.currentTimeMillis()-startTime;
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					logger.error("Exception retrieving " + url, e);
+					logger.error("IOException caught getting document", e);
+					spider.getLinkResponses().addResponse(new LinkResponse(509, url));
 				}
+				logger.debug("Trying to get hrefs from " + url);
+				if (engineUtil.docWasRetrieved(docToCheck)) {
+					hrefs = docToCheck.getElementsByAttribute("href");
+					for (Element element : hrefs) {
+						urlsToCheck = addToUrlsToCheck(element, urlsToCheck, iterator, spider);
+					}
+					urlsToCheck.put(url, true);
+					pagesAudited++;
+					if (response!=null) {//create a dummy ResponseImpl for offline work 
+						spider.getLinkResponses().addResponse(new LinkResponse(response.statusCode(), url));
+					}
+				}
+				
 			}
 		}
 		//}
 		spider.setAveragePageLoadTime(timeSpent/pagesAudited);
 		logger.info("Inbound links count: " + spider.getInBoundLinksCount());
 		for (String link : spider.getInBoundLinks()) {
-			logger.info("Inbound link: " + link);
+			logger.debug("Inbound link: " + link);
 		}
 		logger.info("Outbound links count: " + spider.getOutBoundLinksCount());
 		for (String link : spider.getOutBoundLinks()) {
-			logger.info("Outbound link: " + link);
+			logger.debug("Outbound link: " + link);
+		}
+		logger.info("Number of responses: " + spider.getLinkResponses().count());
+		for (LinkResponse response : spider.getLinkResponses().getAllResponses()) {
+			logger.info("Response - " + response.getCode() + " - " + response.getUrl());
 		}
 		logger.info("Average load time per page: " + spider.getAveragePageLoadTime());
-		logger.info("Number of responses: " + spider.getLinkResponses().count());
 	}
 	
 	private Map<String,Boolean> addToUrlsToCheck(Element element, Map<String, Boolean> urlsToCheck, ListIterator<String> iterator, AuditSpider spider) {

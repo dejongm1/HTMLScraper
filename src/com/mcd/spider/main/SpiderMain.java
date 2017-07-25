@@ -126,7 +126,9 @@ public class SpiderMain {
 		String url = null;
 		String terms = null;
 		Integer depth = null;
-		String[] newArgs = null;
+		int sleepTime = 0;
+		boolean performanceTest = false;
+		String[] newArgs;
 		if (!argString.equals("")) {
 			newArgs = argString.trim().toLowerCase().split("(?=-)");
 			for (String arg : newArgs){
@@ -137,6 +139,10 @@ public class SpiderMain {
 					depth = inputUtil.convertToNumber(parameter);
 				} else if (arg.startsWith("-search")) {
 					terms = parameter;
+				} else if (arg.startsWith("-perform")) {
+					performanceTest = true;
+				} else if (arg.startsWith("-sleep")) {
+					sleepTime = inputUtil.convertToNumber(parameter);
 				} else {
 					System.out.println("I didn't recognize argument \"" + arg + "\". Ignoring and proceeding...");
 				}
@@ -145,7 +151,7 @@ public class SpiderMain {
 		if (url==null) {
 			url = (String )inputUtil.getInput("URL: ", 3, SpiderConstants.URL_VALIDATION);
 		}
-		engine.performSEOAudit(url, terms, depth);
+		engine.performSEOAudit(url, terms, depth, performanceTest, sleepTime);
 	}
 
 //	private static void testConnectionGetter(String[] args) throws IOException {

@@ -43,7 +43,7 @@ public class InputUtil {
 		if (urlValidator.isValid(url)) {
 			result = url;
 		} else {
-			System.out.println("That's not a valid url\n");
+			System.err.println("That's not a valid url\n");
 		}
 		return result;
 		
@@ -54,7 +54,7 @@ public class InputUtil {
 		try {
 			result = Integer.parseInt(input);
 		} catch (NumberFormatException nfe) {
-			System.out.println("That's not a number\n");
+			System.err.println("That's not a number\n");
 		}
 		return result;
 	}
@@ -68,7 +68,7 @@ public class InputUtil {
 				if (state!= null) {
 					result.add(state);
 				} else {
-					System.out.println(inputPiece + " is not an American state");
+					System.err.println(inputPiece + " is not an American state");
 				}
 			}
 		} else {
