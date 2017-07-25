@@ -12,7 +12,8 @@ list robots.txt
 tags (what tags?)
 search for words and variations
 
-deployment
+
+deployment package
 
 place in a common location on computer
 	- jar

@@ -1,6 +1,9 @@
 package com.mcd.spider.main.engine.audit;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -82,38 +85,13 @@ public class AuditEngine {
 		spider.setAuditResults(auditResults);
 		spider.setAveragePageLoadTime(timeSpent/urlsToCrawl.size());
 		for (PageAuditResult result : spider.getAuditResults().getAllResponses()) {
-			logger.info(result.prettyPrint());
+			logger.info(result.getCode()==0?result.getUrl() + " didn't have an html file":result.prettyPrint());
 		}
 	}
-	
-	private Map<String,Boolean> addToUrlsToCheck(Element element, Map<String, Boolean> urlsToCheck, ListIterator<String> iterator, PageAuditResult result, URL baseUrl) {
-		//TODO needs a lot of refinement
-		String url = element.attr("href");
-		if (!element.attr("rel").equalsIgnoreCase("stylesheet")) {
-			if (url.startsWith("/") || url.contains(baseUrl.getHost())) {
-                UrlValidator urlValidator = new UrlValidator(new String[]{"http", "https"});
-                if (!urlValidator.isValid(url)) {
-                    url = baseUrl+url;
-                    if  (!urlValidator.isValid(url)) {
-                        return urlsToCheck;
-                    }
-                }
-                if (urlsToCheck.get(url)==null) {
-                    urlsToCheck.put(url, false);
-                    iterator.add(url);
-                    result.addInBoundLink(url);
-                }
-			} else {
-				//filter out some other bogus links
-				urlsToCheck.put(url, true); //Adding to list so it doesn't get added again but not retrieving it to look for links
-                result.addOutBoundLink(url);
-			}
-		}
-		return urlsToCheck;
-	}
-	
+
 	public PageAuditResult auditPage(String url, ListIterator<String> iterator, AuditSpider spider) {
-		Elements hrefs;
+		Elements ahrefs;
+		Elements linkhrefs;
 		PageAuditResult result = new PageAuditResult(url);
 		//TODO make it work offline
 		long pageStartTime = System.currentTimeMillis();
@@ -123,27 +101,66 @@ public class AuditEngine {
 		try {
 			Connection conn = ConnectionUtil.getConnection(url, "");
 			if (spiderUtil.offline()) {
-				response = new OfflineResponse(0, url);
+				response = new OfflineResponse(200, url);
 			} else {
 				response = conn.execute();//create a dummy ResponseImpl for offline work
 			}
 			docToCheck = response.parse();
 			result.setLoadTime(System.currentTimeMillis()-pageStartTime);
 			result.setCode(response.statusCode());
+		} catch (FileNotFoundException fnfe) {
+			logger.error("FileNotFound exception");
+			result.setCode(0);
 		} catch (IOException e) {
 			logger.error("IOException caught getting document", e);
 			result.setCode(0);
 		}
 		logger.debug("Trying to get hrefs from " + url);
 		if (engineUtil.docWasRetrieved(docToCheck)) {
-			hrefs = docToCheck.getElementsByAttribute("href");
-			for (Element element : hrefs) {
+			ahrefs = docToCheck.select("a[href]");
+			for (Element element : ahrefs) {
 				urlsToCrawl = addToUrlsToCheck(element, urlsToCrawl, iterator, result, spider.getBaseUrl());
 			}
 			urlsToCrawl.put(url, true);
 		}
 		return result;
 	}
+	
+	private Map<String,Boolean> addToUrlsToCheck(Element element, Map<String, Boolean> urlsToCheck, ListIterator<String> iterator, PageAuditResult result, URL baseUrl) {
+		//TODO needs a lot of refinement
+		String url = element.attr("href");
+		//filter out bogus stuff
+		if (isInBound(url, baseUrl)) {
+			String absoluteUrl = url.startsWith("http")?url:baseUrl.toExternalForm() + url;
+			if (urlsToCheck.get(absoluteUrl)==null) {//make absolute before adding to urlsToCheck map to avoid checking same page twice
+                urlsToCheck.put(absoluteUrl, false);
+                iterator.add(absoluteUrl);
+                result.addInBoundLink(url);//adding original url for now to demonstrate variations
+            }
+		} else /*if (isOutBound(url))*/ {
+			urlsToCheck.put(url, true); //Adding to list so it doesn't get added again but not retrieving it to look for links
+            result.addOutBoundLink(url);
+		}
+		return urlsToCheck;
+	}
+	
+	private boolean isInBound(String url, URL baseUrl) {
+		if (url.startsWith("http://") || url.startsWith("https://")) { //isAbsolute
+			return url.contains(baseUrl.getHost());
+		} else {
+			return true;
+		}
+	}
+	
+	/*private boolean isOutBound(String url) {
+		URI uri = null;
+		try {
+			uri = new URI(url);
+		} catch (URISyntaxException e) {
+			logger.error("SyntaxException on " + url);
+		}
+		return uri!=null && uri.isAbsolute();
+	}*/
 	
 	public void getPopularWords(String url, int numberOfWords /*, int levelsDeep*/) {
 		long time = System.currentTimeMillis();
