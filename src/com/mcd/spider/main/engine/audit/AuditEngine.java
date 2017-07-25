@@ -37,8 +37,7 @@ public class AuditEngine {
 	
 	private SpiderUtil spiderUtil = new SpiderUtil();
 	private EngineUtil engineUtil = new EngineUtil();
-	Map<String, Boolean> urlsToCrawl = new HashMap<>();
-	
+	private Map<String, Boolean> urlsToCrawl = new HashMap<>();
 	
 	public void performSEOAudit(String baseUrl, String terms, Integer depth, boolean performanceTest, int sleepTime) {
 		urlsToCrawl = new HashMap<>();
@@ -66,9 +65,15 @@ public class AuditEngine {
 			//logger.debug("Depth = " + depthLevel);
 		ListIterator<String> iterator = new ArrayList<>(urlsToCrawl.keySet()).listIterator();
 		AuditResults auditResults = new AuditResults();
-		while (iterator.hasNext()) {//not working after first doc
-			String url = iterator.next();
-			boolean checked = urlsToCrawl.get(url);
+		String url = iterator.next();
+		boolean checked = urlsToCrawl.get(url);
+		if (!checked) {
+			auditResults.addResponse(auditPage(url, iterator, spider));
+		}
+		//previous because adding to a listIterator adds before current elements
+		while (iterator.hasPrevious()) {
+			url = iterator.previous();
+			checked = urlsToCrawl.get(url);
 			if (!checked) {
 				auditResults.addResponse(auditPage(url, iterator, spider));
 			}
