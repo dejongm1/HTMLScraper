@@ -113,29 +113,29 @@ public class AuditEngine {
             //get inbound and outbound links
 			ahrefs = docToCheck.select("a[href]");
 			for (Element element : ahrefs) {
-				urlsToCrawl = addToUrlsToCheck(element, urlsToCrawl, iterator, result, spider.getBaseUrl());
+				urlsToCrawl = addToUrlsToCheck(element, iterator, result, spider.getBaseUrl());
 			}
 			urlsToCrawl.put(url, true);
 		}
 		return result;
 	}
 	
-	private Map<String,Boolean> addToUrlsToCheck(Element element, Map<String, Boolean> urlsToCheck, ListIterator<String> iterator, PageAuditResult result, URL baseUrl) {
+	private Map<String,Boolean> addToUrlsToCheck(Element element, ListIterator<String> iterator, PageAuditResult result, URL baseUrl) {
 		//TODO needs a lot of refinement
 		String url = element.attr("href");
-		//filter out bogus stuff
+		//filter out bogus stuff - xmls, pdfs, txt, images, etc
 		if (isInBound(url, baseUrl)) {
 			String absoluteUrl = url.startsWith("http")?url:baseUrl.toExternalForm() + url;
-			if (urlsToCheck.get(absoluteUrl)==null) {//make absolute before adding to urlsToCheck map to avoid checking same page twice
-                urlsToCheck.put(absoluteUrl, false);
+			if (!urlAlreadyChecked(absoluteUrl)) {//make absolute before adding to urlsToCheck map to avoid checking same page twice
+                urlsToCrawl.put(absoluteUrl, false);
                 iterator.add(absoluteUrl);
                 result.addInBoundLink(url);//adding original url for now to demonstrate variations
             }
-		} else /*if (isOutBound(url))*/ {
-			urlsToCheck.put(url, true); //Adding to list so it doesn't get added again but not retrieving it to look for links
+		} else {
+			urlsToCrawl.put(url, true); //Adding to list so it doesn't get added again but not retrieving it to look for links
             result.addOutBoundLink(url);
 		}
-		return urlsToCheck;
+		return urlsToCrawl;
 	}
 	
 	private boolean isInBound(String url, URL baseUrl) {
@@ -143,6 +143,14 @@ public class AuditEngine {
 			return url.contains(baseUrl.getHost());
 		} else {
 			return true;
+		}
+	}
+	
+	private boolean urlAlreadyChecked(String absoluteUrl) {
+		if (absoluteUrl.endsWith("/")) {
+			return urlsToCrawl.get(absoluteUrl)!=null;
+		} else {
+			 return urlsToCrawl.get(absoluteUrl)!=null || urlsToCrawl.get(absoluteUrl+"/")!=null;
 		}
 	}
 
