@@ -179,7 +179,7 @@ public class AuditEngine {
         }
     }
 
-    public void getPopularWords(Document doc, int numberOfWords, PageAuditResult page) {
+    private void getPopularWords(Document doc, int numberOfWords, PageAuditResult page) {
         //give option to leave in numbers?
         Map<String, Term> termCountMap = new CaseInsensitiveMap<String, Term>();
         //TODO determine document type here before parsing - html, xml, etc
@@ -200,7 +200,7 @@ public class AuditEngine {
                 }
             }
             Map<String,Term> sortedMap = spiderUtil.sortByValue(termCountMap);
-            Iterator iter = sortedMap.entrySet().iterator();
+            Iterator<Entry<String, Term>> iter = sortedMap.entrySet().iterator();
             Map<String,Term> mostPopularTerms = new LinkedHashMap<>();
             int i = 0;
             while (iter.hasNext() && i < numberOfWords) {
@@ -213,7 +213,27 @@ public class AuditEngine {
         }
     }
 
-    public void getPopularWords(String url, int numberOfWords) {
+    private void search(Document doc, String word, PageAuditResult page, int levelOfGenerosity) {
+//    	String in = "i have a male cat. the color of male cat is Black";
+//    	int i = 0;
+//    	Pattern p = Pattern.compile("male cat");
+//    	Matcher m = p.matcher( in );
+//    	while (m.find()) {
+//    	    i++;
+//    	}
+    }
+    
+    public void search(String url, String word) {
+//    	String in = "i have a male cat. the color of male cat is Black";
+//    	int i = 0;
+//    	Pattern p = Pattern.compile("male cat");
+//    	Matcher m = p.matcher( in );
+//    	while (m.find()) {
+//    	    i++;
+//    	}
+    }
+    
+    public void getPopularWords(String url, int numberOfWords, int levelOfGenerosity) {
 		long time = System.currentTimeMillis();
 		Document doc = spiderUtil.getHtmlAsDoc(url);
 		if (engineUtil.docWasRetrieved(doc)) {
