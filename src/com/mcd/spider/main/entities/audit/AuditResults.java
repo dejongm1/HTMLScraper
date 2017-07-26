@@ -16,6 +16,7 @@ public class AuditResults {
 	private SortedSet<PageAuditResult> threeHundredResponses;
 	private SortedSet<PageAuditResult> fourHundredResponses;
 	private SortedSet<PageAuditResult> fiveHundredResponses;
+    private SortedSet<PageAuditResult> offlineResponses;
 	private SortedSet<PageAuditResult> otherResponses;
 	private SortedSet<PageAuditResult> allResponses;
 	
@@ -24,7 +25,8 @@ public class AuditResults {
 		twoHundredResponses = new TreeSet<>();
 		threeHundredResponses = new TreeSet<>();
 		fourHundredResponses = new TreeSet<>();
-		fiveHundredResponses = new TreeSet<>();
+        fiveHundredResponses = new TreeSet<>();
+        offlineResponses = new TreeSet<>();
 		otherResponses = new TreeSet<>();
 		allResponses = new TreeSet<>();
 	}
@@ -39,8 +41,10 @@ public class AuditResults {
 		} else if (response.getCode()>=400 && response.getCode()<500) {
 			fourHundredResponses.add(response);
 		}  else if (response.getCode()>=500 && response.getCode()<600) {
-			fiveHundredResponses.add(response);
-		} else {
+            fiveHundredResponses.add(response);
+        }  else if (response.getCode()==0) {
+            offlineResponses.add(response);
+        } else {
 			otherResponses.add(response);
 		}
 		allResponses.add(response);
@@ -65,18 +69,17 @@ public class AuditResults {
 	public SortedSet<PageAuditResult> getFiveHundredResponses() {
 		return fiveHundredResponses;
 	}
+
+    public SortedSet<PageAuditResult> getOfflineResponses() {
+        return offlineResponses;
+    }
 	
 	public SortedSet<PageAuditResult> getAllResponses() {
 		return allResponses;
 	}
 	
 	public long count() {
-		return (long) this.oneHundredResponses.size()
-					+ this.twoHundredResponses.size()
-					+ this.threeHundredResponses.size()
-					+ this.fourHundredResponses.size()
-					+ this.fiveHundredResponses.size()
-					+ this.otherResponses.size();
+		return (long) this.allResponses.size();
 	}
 
 }

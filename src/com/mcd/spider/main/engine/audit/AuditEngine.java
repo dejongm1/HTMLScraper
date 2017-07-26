@@ -1,33 +1,22 @@
 package com.mcd.spider.main.engine.audit;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Map.Entry;
-
+import com.mcd.spider.main.entities.audit.*;
+import com.mcd.spider.main.util.ConnectionUtil;
+import com.mcd.spider.main.util.EngineUtil;
+import com.mcd.spider.main.util.SpiderUtil;
 import org.apache.commons.collections4.map.CaseInsensitiveMap;
-import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.log4j.Logger;
 import org.jsoup.Connection;
+import org.jsoup.HttpStatusException;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.mcd.spider.main.entities.audit.AuditResults;
-import com.mcd.spider.main.entities.audit.AuditSpider;
-import com.mcd.spider.main.entities.audit.OfflineResponse;
-import com.mcd.spider.main.entities.audit.PageAuditResult;
-import com.mcd.spider.main.entities.audit.Term;
-import com.mcd.spider.main.util.ConnectionUtil;
-import com.mcd.spider.main.util.EngineUtil;
-import com.mcd.spider.main.util.SpiderUtil;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URL;
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * 
@@ -41,25 +30,23 @@ public class AuditEngine {
 	private SpiderUtil spiderUtil = new SpiderUtil();
 	private EngineUtil engineUtil = new EngineUtil();
 	private Map<String, Boolean> urlsToCrawl = new HashMap<>();
+    AuditSpider spider;
 	
 	public void performSEOAudit(String baseUrl, String terms, Integer depth, boolean performanceTest, int sleepTime) {
 		urlsToCrawl = new HashMap<>();
 		long timeSpent = 0;
 		long startTime = 0;
 		//empty string checks because parameters are optional
-		AuditSpider spider = null;
 		//<url, checked>
 		try {
 			startTime = System.currentTimeMillis();
 			spider = new AuditSpider(baseUrl, spiderUtil.offline());
 			spider.setSleepTime(sleepTime==0?spiderUtil.offline()?0:2000:sleepTime*1000);
 			timeSpent+=System.currentTimeMillis()-startTime;
-			Thread.sleep(spider.getSleepTime());
+            sleep(spider.getSleepTime());
 		} catch (IOException ioe) {
 			logger.error("Exception initializing audit spider for " + baseUrl, ioe);
 			System.exit(0);
-		} catch (InterruptedException e) {
-			logger.error("Error trying to sleep");
 		}
 		urlsToCrawl.put(baseUrl,  false);
 
@@ -79,6 +66,7 @@ public class AuditEngine {
 			checked = urlsToCrawl.get(url);
 			if (!checked) {
 				auditResults.addResponse(auditPage(url, iterator, spider));
+                sleep(spider.getSleepTime());
 			}
 		}
 		//}
@@ -87,6 +75,7 @@ public class AuditEngine {
 		for (PageAuditResult result : spider.getAuditResults().getAllResponses()) {
 			logger.info(result.getCode()==0?result.getUrl() + " didn't have an html file":result.prettyPrint());
 		}
+		//TODO spit out more data
 	}
 
 	public PageAuditResult auditPage(String url, ListIterator<String> iterator, AuditSpider spider) {
@@ -109,14 +98,19 @@ public class AuditEngine {
 			result.setLoadTime(System.currentTimeMillis()-pageStartTime);
 			result.setCode(response.statusCode());
 		} catch (FileNotFoundException fnfe) {
-			logger.error("FileNotFound exception");
-			result.setCode(0);
+            logger.error("FileNotFound exception (offline))");
+            result.setCode(0);
+        } catch (HttpStatusException hse) {
+            result.setCode(hse.getStatusCode());
 		} catch (IOException e) {
+            result.setCode(999);
 			logger.error("IOException caught getting document", e);
-			result.setCode(0);
 		}
 		logger.debug("Trying to get hrefs from " + url);
 		if (engineUtil.docWasRetrieved(docToCheck)) {
+		    //get frequent words
+            getPopularWords(docToCheck, 5, result);
+            //get inbound and outbound links
 			ahrefs = docToCheck.select("a[href]");
 			for (Element element : ahrefs) {
 				urlsToCrawl = addToUrlsToCheck(element, urlsToCrawl, iterator, result, spider.getBaseUrl());
@@ -151,18 +145,50 @@ public class AuditEngine {
 			return true;
 		}
 	}
-	
-	/*private boolean isOutBound(String url) {
-		URI uri = null;
-		try {
-			uri = new URI(url);
-		} catch (URISyntaxException e) {
-			logger.error("SyntaxException on " + url);
-		}
-		return uri!=null && uri.isAbsolute();
-	}*/
-	
-	public void getPopularWords(String url, int numberOfWords /*, int levelsDeep*/) {
+
+	private void sleep(long milliSecondsToSleep) {
+        try {
+            Thread.sleep(milliSecondsToSleep);
+        } catch (InterruptedException e) {
+            logger.error("Error trying to sleep");
+        }
+    }
+
+    public void getPopularWords(Document doc, int numberOfWords, PageAuditResult page) {
+        //give option to leave in numbers?
+        Map<String, Term> termCountMap = new CaseInsensitiveMap<String, Term>();
+        //TODO determine document type here before parsing - html, xml, etc
+        //TODO look in other areas besides body?
+        if (doc.body()!=null) {
+            String bodyText = doc.body().text();
+            String[] termsInBody = bodyText.split("\\s+");
+            for (String term : termsInBody) {
+                term = term.replaceAll("[[^\\p{L}\\p{Nd}]+]", "");
+                if (!term.equals("")) {
+                    Term termObj = termCountMap.get(term);
+                    if (termObj == null) {
+                        termObj = new Term(term, 1);
+                        termCountMap.put(term, termObj);
+                    } else {
+                        termObj.increment();
+                    }
+                }
+            }
+            Map<String,Term> sortedMap = spiderUtil.sortByValue(termCountMap);
+            Iterator iter = sortedMap.entrySet().iterator();
+            Map<String,Term> mostPopularTerms = new LinkedHashMap<>();
+            int i = 0;
+            while (iter.hasNext() && i < numberOfWords) {
+                Entry<String,Term> entry = (Entry<String,Term>) iter.next();
+                mostPopularTerms.put(entry.getKey(), entry.getValue());
+                i++;
+            }
+
+            page.setFrequentWords(mostPopularTerms);
+        }
+    }
+
+    public void getPopularWords(String url, int numberOfWords) {
 		long time = System.currentTimeMillis();
 		Document doc = spiderUtil.getHtmlAsDoc(url);
 		if (engineUtil.docWasRetrieved(doc)) {
@@ -183,7 +209,6 @@ public class AuditEngine {
 					}
 				}
 			}
-			
 			Map<String, Term> sortedWords = spiderUtil.sortByValue(termCountMap);
 			int i = 0;
 			Iterator<Entry<String, Term>> iter = sortedWords.entrySet().iterator();

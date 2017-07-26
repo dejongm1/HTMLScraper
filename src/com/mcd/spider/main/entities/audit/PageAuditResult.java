@@ -16,7 +16,7 @@ public class PageAuditResult implements Comparable<PageAuditResult>{
 	private int code;
 	private String url;
 	private long loadTime;
-	private Map<String, Integer> frequentWords;
+	private Map<String, Term> frequentWords;
 	private SearchResults results;
 	private SortedSet<Link> inBoundLinks = new TreeSet<>();
 	private SortedSet<Link> outBoundLinks = new TreeSet<>(); 
@@ -37,6 +37,12 @@ public class PageAuditResult implements Comparable<PageAuditResult>{
 		sb.append("\n\tLoad Time: " + this.loadTime);
 		sb.append("\n\tInbound Links: " + this.inBoundLinks.size());
 		sb.append("\n\tOutbound Links: " + this.outBoundLinks.size());
+		if (frequentWords!=null) {
+            sb.append("\n\tFrequent words: ");
+            for (Map.Entry<String,Term> entry : this.frequentWords.entrySet())  {
+                sb.append(entry.getValue().getWord() + "- " + entry.getValue().getCount() + ", ");
+            }
+            sb.delete(sb.lastIndexOf(","), sb.length());}
 		return sb.toString();
 	}
 	
@@ -70,6 +76,12 @@ public class PageAuditResult implements Comparable<PageAuditResult>{
 	public void addOutBoundLink(String toUrl) {
 		this.outBoundLinks.add(new Link(this.url, toUrl));	
 	}
+	public Map<String,Term> getFrequentWords() {
+	    return this.frequentWords;
+    }
+    public void setFrequentWords(Map<String,Term> frequentWords) {
+	    this.frequentWords = frequentWords;
+    }
 	@Override
 	public int compareTo(PageAuditResult lr) {
 		// compare code first, then url
