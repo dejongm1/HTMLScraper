@@ -1,9 +1,16 @@
 package com.mcd.spider.main.engine.audit;
 
-import com.mcd.spider.main.entities.audit.*;
-import com.mcd.spider.main.util.ConnectionUtil;
-import com.mcd.spider.main.util.EngineUtil;
-import com.mcd.spider.main.util.SpiderUtil;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.apache.commons.collections4.map.CaseInsensitiveMap;
 import org.apache.log4j.Logger;
 import org.jsoup.Connection;
@@ -12,11 +19,14 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.URL;
-import java.util.*;
-import java.util.Map.Entry;
+import com.mcd.spider.main.entities.audit.AuditResults;
+import com.mcd.spider.main.entities.audit.AuditSpider;
+import com.mcd.spider.main.entities.audit.OfflineResponse;
+import com.mcd.spider.main.entities.audit.PageAuditResult;
+import com.mcd.spider.main.entities.audit.Term;
+import com.mcd.spider.main.util.ConnectionUtil;
+import com.mcd.spider.main.util.EngineUtil;
+import com.mcd.spider.main.util.SpiderUtil;
 
 /**
  * 
@@ -73,40 +83,47 @@ public class AuditEngine {
 		spider.setAuditResults(auditResults);
 		spider.setAveragePageLoadTime(timeSpent/urlsToCrawl.size());
 		for (PageAuditResult result : spider.getAuditResults().getAllResponses()) {
-			logger.info(result.getCode()==0?result.getUrl() + " didn't have an html file":result.prettyPrint());
+			//logger.info(result.getCode()==0?result.getUrl() + " didn't have an html file":result.prettyPrint());
+			logger.info(result.prettyPrint());
 		}
 		//TODO spit out more data
 	}
 
-	public PageAuditResult auditPage(String url, ListIterator<String> iterator, AuditSpider spider) {
+	public PageAuditResult auditPage(String urlString, ListIterator<String> iterator, AuditSpider spider) {
 		Elements ahrefs;
 		Elements linkhrefs;
-		PageAuditResult result = new PageAuditResult(url);
+		PageAuditResult result = new PageAuditResult(urlString);
 		//TODO make it work offline
 		long pageStartTime = System.currentTimeMillis();
 		//need to catch response codes that don't return a document
 		Connection.Response response = null;
 		Document docToCheck = null;
 		try {
-			Connection conn = ConnectionUtil.getConnection(url, "");
+			Connection conn = ConnectionUtil.getConnection(urlString, "");
 			if (spiderUtil.offline()) {
-				response = new OfflineResponse(200, url);
+				response = new OfflineResponse(200, urlString);
 			} else {
 				response = conn.execute();//create a dummy ResponseImpl for offline work
 			}
 			docToCheck = response.parse();
 			result.setLoadTime(System.currentTimeMillis()-pageStartTime);
+			Map<String,String> responseHeaders = response.headers();
+			for (Entry<String,String> headerEntry : responseHeaders.entrySet()) {
+				logger.debug("Header=Value: " + headerEntry.getKey() + "=" + headerEntry.getValue());
+			}
+			result.setFullResponseCode(response.headers().get(null));
 			result.setCode(response.statusCode());
 		} catch (FileNotFoundException fnfe) {
-            logger.error("FileNotFound exception (offline))");
             result.setCode(0);
+            result.setFullResponseCode("HTTP/1.1 0 FileNotFound (offline)");
         } catch (HttpStatusException hse) {
             result.setCode(hse.getStatusCode());
 		} catch (IOException e) {
             result.setCode(999);
+            result.setFullResponseCode("HTTP/1.1 999 IOException");
 			logger.error("IOException caught getting document", e);
 		}
-		logger.debug("Trying to get hrefs from " + url);
+		logger.debug("Trying to get hrefs from " + urlString);
 		if (engineUtil.docWasRetrieved(docToCheck)) {
 		    //get frequent words
             getPopularWords(docToCheck, 5, result);
@@ -115,7 +132,7 @@ public class AuditEngine {
 			for (Element element : ahrefs) {
 				urlsToCrawl = addToUrlsToCheck(element, iterator, result, spider.getBaseUrl());
 			}
-			urlsToCrawl.put(url, true);
+			urlsToCrawl.put(urlString, true);
 		}
 		return result;
 	}

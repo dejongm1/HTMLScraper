@@ -14,6 +14,7 @@ import java.util.TreeSet;
 public class PageAuditResult implements Comparable<PageAuditResult>{
 
 	private int code;
+	private String fullResponseCode;
 	private String url;
 	private long loadTime;
 	private Map<String, Term> frequentWords;
@@ -25,15 +26,17 @@ public class PageAuditResult implements Comparable<PageAuditResult>{
 		this.url = url;
 	}
 	
-	public PageAuditResult(int code, String url) {
+	public PageAuditResult(int code, String url, String fullResponseCode) {
 		this.code = code;
 		this.url = url;
+		this.fullResponseCode = fullResponseCode;
 	}
 
 	public String prettyPrint() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("\nPage: " + this.url);
 		sb.append("\n\tStatus Code: " + this.code);
+		sb.append("\n\tFull Response Code: " + this.fullResponseCode);
 		sb.append("\n\tLoad Time: " + this.loadTime);
 		sb.append("\n\tInbound Links: " + this.inBoundLinks.size());
 		sb.append("\n\tOutbound Links: " + this.outBoundLinks.size());
@@ -51,6 +54,12 @@ public class PageAuditResult implements Comparable<PageAuditResult>{
 	}
 	public void setCode(int code) {
 		this.code = code;
+	}
+	public String getFullResponseCode() {
+		return fullResponseCode;
+	}
+	public void setFullResponseCode(String fullResponseCode) {
+		this.fullResponseCode = fullResponseCode;
 	}
 	public String getUrl() {
 		return url;
