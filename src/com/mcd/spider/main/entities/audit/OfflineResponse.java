@@ -3,6 +3,7 @@ package com.mcd.spider.main.entities.audit;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.jsoup.Connection.Method;
@@ -15,10 +16,12 @@ public class OfflineResponse implements Response {
 
 	private int statusCode;
 	private String url;
+	private Map<String, String> headers = new HashMap<>();
 	
 	public OfflineResponse(int statusCode, String url) {
 		this.statusCode = statusCode;
 		this.url = url;
+		this.headers.put(null, "HTTP/1.1 " + statusCode + " OK");
 	}
 	
 
@@ -35,6 +38,11 @@ public class OfflineResponse implements Response {
 	@Override
 	public String statusMessage() {
 		return "Dummy reponse status for offline testing";
+	}
+	
+	@Override
+	public Map<String,String> headers() {
+		return this.headers;
 	}
 	
 	@Override
@@ -92,12 +100,6 @@ public class OfflineResponse implements Response {
 
 	@Override
 	public Response header(String arg0, String arg1) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Map<String, String> headers() {
 		// TODO Auto-generated method stub
 		return null;
 	}

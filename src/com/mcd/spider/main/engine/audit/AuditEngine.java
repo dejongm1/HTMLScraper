@@ -1,9 +1,16 @@
 package com.mcd.spider.main.engine.audit;
 
-import com.mcd.spider.main.entities.audit.*;
-import com.mcd.spider.main.util.ConnectionUtil;
-import com.mcd.spider.main.util.EngineUtil;
-import com.mcd.spider.main.util.SpiderUtil;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.apache.commons.collections4.map.CaseInsensitiveMap;
 import org.apache.log4j.Logger;
 import org.jsoup.Connection;
@@ -12,11 +19,14 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.URL;
-import java.util.*;
-import java.util.Map.Entry;
+import com.mcd.spider.main.entities.audit.AuditResults;
+import com.mcd.spider.main.entities.audit.AuditSpider;
+import com.mcd.spider.main.entities.audit.OfflineResponse;
+import com.mcd.spider.main.entities.audit.PageAuditResult;
+import com.mcd.spider.main.entities.audit.Term;
+import com.mcd.spider.main.util.ConnectionUtil;
+import com.mcd.spider.main.util.EngineUtil;
+import com.mcd.spider.main.util.SpiderUtil;
 
 /**
  * 
@@ -73,69 +83,76 @@ public class AuditEngine {
 		spider.setAuditResults(auditResults);
 		spider.setAveragePageLoadTime(timeSpent/urlsToCrawl.size());
 		for (PageAuditResult result : spider.getAuditResults().getAllResponses()) {
-			logger.info(result.getCode()==0?result.getUrl() + " didn't have an html file":result.prettyPrint());
+			//logger.info(result.getCode()==0?result.getUrl() + " didn't have an html file":result.prettyPrint());
+			logger.info(result.prettyPrint());
 		}
 		//TODO spit out more data
 	}
 
-	public PageAuditResult auditPage(String url, ListIterator<String> iterator, AuditSpider spider) {
+	public PageAuditResult auditPage(String urlString, ListIterator<String> iterator, AuditSpider spider) {
 		Elements ahrefs;
 		Elements linkhrefs;
-		PageAuditResult result = new PageAuditResult(url);
+		PageAuditResult result = new PageAuditResult(urlString);
 		//TODO make it work offline
 		long pageStartTime = System.currentTimeMillis();
 		//need to catch response codes that don't return a document
 		Connection.Response response = null;
 		Document docToCheck = null;
 		try {
-			Connection conn = ConnectionUtil.getConnection(url, "");
+			Connection conn = ConnectionUtil.getConnection(urlString, "");
 			if (spiderUtil.offline()) {
-				response = new OfflineResponse(200, url);
+				response = new OfflineResponse(200, urlString);
 			} else {
 				response = conn.execute();//create a dummy ResponseImpl for offline work
 			}
 			docToCheck = response.parse();
 			result.setLoadTime(System.currentTimeMillis()-pageStartTime);
+			Map<String,String> responseHeaders = response.headers();
+			for (Entry<String,String> headerEntry : responseHeaders.entrySet()) {
+				logger.debug("Header=Value: " + headerEntry.getKey() + "=" + headerEntry.getValue());
+			}
+			result.setFullResponseCode(response.headers().get(null));
 			result.setCode(response.statusCode());
 		} catch (FileNotFoundException fnfe) {
-            logger.error("FileNotFound exception (offline))");
             result.setCode(0);
+            result.setFullResponseCode("HTTP/1.1 0 FileNotFound (offline)");
         } catch (HttpStatusException hse) {
             result.setCode(hse.getStatusCode());
 		} catch (IOException e) {
             result.setCode(999);
+            result.setFullResponseCode("HTTP/1.1 999 IOException");
 			logger.error("IOException caught getting document", e);
 		}
-		logger.debug("Trying to get hrefs from " + url);
+		logger.debug("Trying to get hrefs from " + urlString);
 		if (engineUtil.docWasRetrieved(docToCheck)) {
 		    //get frequent words
             getPopularWords(docToCheck, 5, result);
             //get inbound and outbound links
 			ahrefs = docToCheck.select("a[href]");
 			for (Element element : ahrefs) {
-				urlsToCrawl = addToUrlsToCheck(element, urlsToCrawl, iterator, result, spider.getBaseUrl());
+				urlsToCrawl = addToUrlsToCheck(element, iterator, result, spider.getBaseUrl());
 			}
-			urlsToCrawl.put(url, true);
+			urlsToCrawl.put(urlString, true);
 		}
 		return result;
 	}
 	
-	private Map<String,Boolean> addToUrlsToCheck(Element element, Map<String, Boolean> urlsToCheck, ListIterator<String> iterator, PageAuditResult result, URL baseUrl) {
+	private Map<String,Boolean> addToUrlsToCheck(Element element, ListIterator<String> iterator, PageAuditResult result, URL baseUrl) {
 		//TODO needs a lot of refinement
 		String url = element.attr("href");
-		//filter out bogus stuff
+		//filter out bogus stuff - xmls, pdfs, txt, images, etc
 		if (isInBound(url, baseUrl)) {
 			String absoluteUrl = url.startsWith("http")?url:baseUrl.toExternalForm() + url;
-			if (urlsToCheck.get(absoluteUrl)==null) {//make absolute before adding to urlsToCheck map to avoid checking same page twice
-                urlsToCheck.put(absoluteUrl, false);
+			if (!urlAlreadyChecked(absoluteUrl)) {//make absolute before adding to urlsToCheck map to avoid checking same page twice
+                urlsToCrawl.put(absoluteUrl, false);
                 iterator.add(absoluteUrl);
                 result.addInBoundLink(url);//adding original url for now to demonstrate variations
             }
-		} else /*if (isOutBound(url))*/ {
-			urlsToCheck.put(url, true); //Adding to list so it doesn't get added again but not retrieving it to look for links
+		} else {
+			urlsToCrawl.put(url, true); //Adding to list so it doesn't get added again but not retrieving it to look for links
             result.addOutBoundLink(url);
 		}
-		return urlsToCheck;
+		return urlsToCrawl;
 	}
 	
 	private boolean isInBound(String url, URL baseUrl) {
@@ -143,6 +160,14 @@ public class AuditEngine {
 			return url.contains(baseUrl.getHost());
 		} else {
 			return true;
+		}
+	}
+	
+	private boolean urlAlreadyChecked(String absoluteUrl) {
+		if (absoluteUrl.endsWith("/")) {
+			return urlsToCrawl.get(absoluteUrl)!=null;
+		} else {
+			 return urlsToCrawl.get(absoluteUrl)!=null || urlsToCrawl.get(absoluteUrl+"/")!=null;
 		}
 	}
 
@@ -154,7 +179,7 @@ public class AuditEngine {
         }
     }
 
-    public void getPopularWords(Document doc, int numberOfWords, PageAuditResult page) {
+    private void getPopularWords(Document doc, int numberOfWords, PageAuditResult page) {
         //give option to leave in numbers?
         Map<String, Term> termCountMap = new CaseInsensitiveMap<String, Term>();
         //TODO determine document type here before parsing - html, xml, etc
@@ -175,7 +200,7 @@ public class AuditEngine {
                 }
             }
             Map<String,Term> sortedMap = spiderUtil.sortByValue(termCountMap);
-            Iterator iter = sortedMap.entrySet().iterator();
+            Iterator<Entry<String, Term>> iter = sortedMap.entrySet().iterator();
             Map<String,Term> mostPopularTerms = new LinkedHashMap<>();
             int i = 0;
             while (iter.hasNext() && i < numberOfWords) {
@@ -188,7 +213,27 @@ public class AuditEngine {
         }
     }
 
-    public void getPopularWords(String url, int numberOfWords) {
+    private void search(Document doc, String word, PageAuditResult page, int levelOfGenerosity) {
+//    	String in = "i have a male cat. the color of male cat is Black";
+//    	int i = 0;
+//    	Pattern p = Pattern.compile("male cat");
+//    	Matcher m = p.matcher( in );
+//    	while (m.find()) {
+//    	    i++;
+//    	}
+    }
+    
+    public void search(String url, String word) {
+//    	String in = "i have a male cat. the color of male cat is Black";
+//    	int i = 0;
+//    	Pattern p = Pattern.compile("male cat");
+//    	Matcher m = p.matcher( in );
+//    	while (m.find()) {
+//    	    i++;
+//    	}
+    }
+    
+    public void getPopularWords(String url, int numberOfWords, int levelOfGenerosity) {
 		long time = System.currentTimeMillis();
 		Document doc = spiderUtil.getHtmlAsDoc(url);
 		if (engineUtil.docWasRetrieved(doc)) {
