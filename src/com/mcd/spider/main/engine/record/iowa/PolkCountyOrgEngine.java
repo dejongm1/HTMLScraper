@@ -45,10 +45,10 @@ public class PolkCountyOrgEngine implements ArrestRecordEngine {
         long stateTime = System.currentTimeMillis();
         logger.info("----State: " + state.getName() + "----");
         //Site[] sites = state.getSites();
-        ExcelWriter excelWriter  = new ExcelWriter(state, new ArrestRecord());
-        excelWriter.createSpreadhseet();
 //        for(Site site : sites){
         PolkCountyIowaGovSite site = new PolkCountyIowaGovSite();
+        ExcelWriter excelWriter  = new ExcelWriter(state, new ArrestRecord(), site);
+        excelWriter.createSpreadhseet();
         int sleepTimeAverage = (site.getPerRecordSleepRange()[0]+site.getPerRecordSleepRange()[1])/2;
         sleepTimeSum += spiderUtil.offline()?0:sleepTimeAverage;
         long time = System.currentTimeMillis();

@@ -42,6 +42,9 @@ public class ConnectionUtil {
 
 
 	public static Connection getConnection(String url, String refferer) throws IOException {
+	    if (refferer==null) {
+            refferer = "https://google.com";
+        }
 		return Jsoup.connect(url)
 				.userAgent(getRandomUserAgent())
 //				.userAgent("Mozilla/5.0 (Windows NT 10.0; WOW64; rv:54.0) Gecko/20100101 Firefox/54.0")

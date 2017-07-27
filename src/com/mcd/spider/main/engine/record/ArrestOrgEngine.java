@@ -40,9 +40,9 @@ public class ArrestOrgEngine implements ArrestRecordEngine {
         long stateTime = System.currentTimeMillis();
         logger.info("----State: " + state.getName() + "----");
         Site[] sites = state.getSites();
-        ExcelWriter excelWriter  = new ExcelWriter(state, new ArrestRecord());
-        excelWriter.createSpreadhseet();
         for(Site site : sites){
+            ExcelWriter excelWriter  = new ExcelWriter(state, new ArrestRecord(), site);
+            excelWriter.createSpreadhseet();
             int sleepTimeAverage = (site.getPerRecordSleepRange()[0]+site.getPerRecordSleepRange()[1])/2;
             sleepTimeSum += spiderUtil.offline()?0:sleepTimeAverage;
             long time = System.currentTimeMillis();
@@ -192,7 +192,7 @@ public class ArrestOrgEngine implements ArrestRecordEngine {
                         arrestRecords.add(arrestRecord);
                         populateArrestRecord(profileDetailDoc, site);
                         //save each record in case of failures
-                        //excelWriter.saveRecordsToWorkbook(arrestRecord);
+                        //excelWriter.saveRecordToWorkbook(arrestRecord);
                         int sleepTime = ConnectionUtil.getSleepTime(site);
                         logger.debug("Sleeping for: " + sleepTime);
                         Thread.sleep(sleepTime);//sleep at random interval

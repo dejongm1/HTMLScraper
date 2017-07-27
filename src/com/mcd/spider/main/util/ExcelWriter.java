@@ -1,5 +1,8 @@
 package com.mcd.spider.main.util;
 
+import com.mcd.spider.main.entities.record.Record;
+import com.mcd.spider.main.entities.record.State;
+import com.mcd.spider.main.entities.site.Site;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
 import jxl.write.Label;
@@ -7,9 +10,6 @@ import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
 import org.apache.log4j.Logger;
-
-import com.mcd.spider.main.entities.record.Record;
-import com.mcd.spider.main.entities.record.State;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,13 +31,14 @@ public class ExcelWriter {
 	private Workbook currentWorkbook;
 	private WritableWorkbook copyWorkbook;
 
-	public ExcelWriter(State state, Record record) {
+	public ExcelWriter(State state, Record record, Site site) {
 		Calendar date = Calendar.getInstance();
 		this.docName = state.getName() 
 		+ "_" + (date.get(Calendar.MONTH)+1) 
 		+ "-" + date.get(Calendar.DAY_OF_MONTH) 
 		+ "-" + date.get(Calendar.YEAR) + "_" 
-		+ record.getClass().getSimpleName() + ".xls";
+		+ record.getClass().getSimpleName() + "_"
+        + site.getName() + ".xls";
 		this.state = state;
 		this.record = record;
 	}
