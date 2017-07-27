@@ -36,7 +36,7 @@ public class SpiderEngine {
 		
 	}
 	
-	public void performSEOAudit(String url, String termString, Integer depth, boolean performanceTest, int sleepTime) {
+	public void performSEOAudit(String url, String termString, Integer depth, boolean performanceTest, int sleepTime, boolean fullReport) {
 		AuditEngine engine = new AuditEngine();
 		List<Term> terms = new ArrayList<>();
 		if (termString!=null) {
@@ -44,7 +44,7 @@ public class SpiderEngine {
 				terms.add(new Term(term.trim(), 0));
 			}
 		}
-		engine.performSEOAudit(url, terms, depth, performanceTest, sleepTime);
+		engine.performSEOAudit(url, terms, depth, performanceTest, sleepTime, fullReport);
 	}
 	
 	public void getPopularWords(String url, int numberOfWords) {

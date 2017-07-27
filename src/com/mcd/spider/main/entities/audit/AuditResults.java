@@ -1,5 +1,6 @@
 package com.mcd.spider.main.entities.audit;
 
+import java.io.File;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -19,6 +20,7 @@ public class AuditResults {
     private SortedSet<PageAuditResult> offlineResponses;
 	private SortedSet<PageAuditResult> otherResponses;
 	private SortedSet<PageAuditResult> allResponses;
+	private File siteMap;
 	
 	public AuditResults() {
 		oneHundredResponses = new TreeSet<>();
@@ -29,6 +31,18 @@ public class AuditResults {
         offlineResponses = new TreeSet<>();
 		otherResponses = new TreeSet<>();
 		allResponses = new TreeSet<>();
+	}
+	
+	public String prettyPrint(boolean fullReport) {
+		StringBuilder sb = new StringBuilder();
+		if (fullReport) {
+			for (PageAuditResult auditResult : allResponses) {
+				//logger.info(result.getCode()==0?result.getUrl() + " didn't have an html file":result.prettyPrint()));
+				sb.append(auditResult.prettyPrint());
+			}
+		}
+		sb.append("\n\nSitemap generated and located at " + this.siteMap.getAbsolutePath());
+		return sb.toString();
 	}
 	
 	public void addResponse(PageAuditResult response) {
@@ -82,4 +96,12 @@ public class AuditResults {
 		return (long) this.allResponses.size();
 	}
 
+	public File getSiteMap() {
+		return siteMap;
+	}
+
+	public void setSiteMap(File siteMap) {
+		this.siteMap = siteMap;
+	}
+	
 }

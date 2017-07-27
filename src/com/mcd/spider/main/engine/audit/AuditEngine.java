@@ -1,7 +1,9 @@
 package com.mcd.spider.main.engine.audit;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,6 +13,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,6 +34,7 @@ import com.mcd.spider.main.entities.audit.Term;
 import com.mcd.spider.main.util.ConnectionUtil;
 import com.mcd.spider.main.util.EngineUtil;
 import com.mcd.spider.main.util.SpiderUtil;
+import com.redfin.sitemapgenerator.WebSitemapGenerator;
 
 /**
  * 
@@ -44,9 +48,10 @@ public class AuditEngine {
 	private SpiderUtil spiderUtil = new SpiderUtil();
 	private EngineUtil engineUtil = new EngineUtil();
 	private Map<String, Boolean> urlsToCrawl = new HashMap<>();
-    AuditSpider spider;
+    private AuditSpider spider;
+    
 	
-	public void performSEOAudit(String baseUrl, List<Term> terms, Integer depth, boolean performanceTest, int sleepTime) {
+	public void performSEOAudit(String baseUrl, List<Term> terms, Integer depth, boolean performanceTest, int sleepTime, boolean fullReport) {
 		urlsToCrawl = new HashMap<>();
 		long timeSpent = 0;
 		long startTime = 0;
@@ -85,20 +90,18 @@ public class AuditEngine {
 			}
 		}
 		//}
+		auditResults.setSiteMap(generateSiteMap(spider.getBaseUrl().toString(), auditResults.getAllResponses()));
+		
 		spider.setAuditResults(auditResults);
 		spider.setAveragePageLoadTime(timeSpent/urlsToCrawl.size());
-		for (PageAuditResult result : spider.getAuditResults().getAllResponses()) {
-			//logger.info(result.getCode()==0?result.getUrl() + " didn't have an html file":result.prettyPrint()));
-			logger.info(result.prettyPrint());
-		}
-		//TODO spit out more data
+		logger.info("\n\n\t\t\t****YOUR AUDIT RESULTS****\n\n" + spider.getAuditResults().prettyPrint(fullReport));
+		
 	}
 
 	public PageAuditResult auditPage(String urlString, ListIterator<String> iterator, AuditSpider spider) {
 		Elements ahrefs;
 		Elements linkhrefs;
 		PageAuditResult result = new PageAuditResult(urlString);
-		//TODO make it work offline
 		long pageStartTime = System.currentTimeMillis();
 		//need to catch response codes that don't return a document
 		Connection.Response response = null;
@@ -108,7 +111,7 @@ public class AuditEngine {
 			if (spiderUtil.offline()) {
 				response = new OfflineResponse(200, urlString);
 			} else {
-				response = conn.execute();//create a dummy ResponseImpl for offline work
+				response = conn.execute();
 			}
 			docToCheck = response.parse();
 			result.setLoadTime(System.currentTimeMillis()-pageStartTime);
@@ -291,6 +294,33 @@ public class AuditEngine {
     		logger.debug(term.getWord() + " was found " + term.getCount() + " times");
         	results.add(term);
     	}
+    }
+    
+    private File generateSiteMap(String baseUrl, Set<PageAuditResult> resultPages) {
+    	WebSitemapGenerator sitemapGenerator;
+    	File sitemapDirectory = new File("output");
+		try {
+			sitemapGenerator = WebSitemapGenerator
+			        .builder(baseUrl, sitemapDirectory)
+			        .gzip(false).build();
+		
+
+    	    //WebSitemapUrl sitemapUrl = new WebSitemapUrl.Options("").build();
+    	    //sitemapGenerator.addUrl(sitemapUrl);
+    	    
+			for (PageAuditResult resultPage : resultPages) {
+				if (resultPage.getUrl().startsWith(baseUrl)) {
+					sitemapGenerator.addUrl(resultPage.getUrl());
+				} else {
+					
+				}
+			}
+				
+    	    sitemapGenerator.write();
+	    } catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+		return new File(sitemapDirectory + "\\sitemap.xml");
     }
     
     public void search(String url, String word) {

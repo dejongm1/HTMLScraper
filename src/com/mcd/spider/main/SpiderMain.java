@@ -129,6 +129,7 @@ public class SpiderMain {
 		Integer depth = null;
 		int sleepTime = 0;
 		boolean performanceTest = false;
+		boolean fullReport = false;
 		String[] newArgs;
 		if (!argString.equals("")) {
 			newArgs = argString.trim().toLowerCase().split("(?=-)");
@@ -144,6 +145,8 @@ public class SpiderMain {
 					performanceTest = true;
 				} else if (arg.startsWith("-sleep")) {
 					sleepTime = inputUtil.convertToNumber(parameter);
+				} else if (arg.startsWith("-full")) {
+					fullReport = true;
 				} else {
 					System.out.println("I didn't recognize argument \"" + arg + "\". Ignoring and proceeding...");
 				}
@@ -152,7 +155,7 @@ public class SpiderMain {
 		if (url==null) {
 			url = (String )inputUtil.getInput("URL: ", 3, SpiderConstants.URL_VALIDATION);
 		}
-		engine.performSEOAudit(url, termString, depth, performanceTest, sleepTime);
+		engine.performSEOAudit(url, termString, depth, performanceTest, sleepTime, fullReport);
 	}
 
 //	private static void testConnectionGetter(String[] args) throws IOException {
