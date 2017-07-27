@@ -27,7 +27,6 @@ public class ArrestOrgEngine implements ArrestRecordEngine {
 
     @Override
     public void getArrestRecords(State state, long maxNumberOfResults) {
-        logger.debug("Sending spider " + (System.getProperty("offline").equals("true")?"offline":"online" ));
         //split into more specific methods
         long totalTime = System.currentTimeMillis();
         long recordsProcessed = 0;
@@ -39,6 +38,7 @@ public class ArrestOrgEngine implements ArrestRecordEngine {
         //while(recordsProcessed <= maxNumberOfResults) {
         long stateTime = System.currentTimeMillis();
         logger.info("----State: " + state.getName() + "----");
+        logger.debug("Sending spider " + (System.getProperty("offline").equals("true")?"offline":"online" ));
         Site[] sites = state.getSites();
         for(Site site : sites){
             ExcelWriter excelWriter  = new ExcelWriter(state, new ArrestRecord(), site);

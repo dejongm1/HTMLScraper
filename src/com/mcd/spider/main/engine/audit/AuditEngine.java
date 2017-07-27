@@ -7,9 +7,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.collections4.map.CaseInsensitiveMap;
 import org.apache.log4j.Logger;
@@ -23,6 +26,7 @@ import com.mcd.spider.main.entities.audit.AuditResults;
 import com.mcd.spider.main.entities.audit.AuditSpider;
 import com.mcd.spider.main.entities.audit.OfflineResponse;
 import com.mcd.spider.main.entities.audit.PageAuditResult;
+import com.mcd.spider.main.entities.audit.SearchResults;
 import com.mcd.spider.main.entities.audit.Term;
 import com.mcd.spider.main.util.ConnectionUtil;
 import com.mcd.spider.main.util.EngineUtil;
@@ -42,7 +46,7 @@ public class AuditEngine {
 	private Map<String, Boolean> urlsToCrawl = new HashMap<>();
     AuditSpider spider;
 	
-	public void performSEOAudit(String baseUrl, String terms, Integer depth, boolean performanceTest, int sleepTime) {
+	public void performSEOAudit(String baseUrl, List<Term> terms, Integer depth, boolean performanceTest, int sleepTime) {
 		urlsToCrawl = new HashMap<>();
 		long timeSpent = 0;
 		long startTime = 0;
@@ -59,7 +63,8 @@ public class AuditEngine {
 			System.exit(0);
 		}
 		urlsToCrawl.put(baseUrl,  false);
-
+		spider.setTermsToSearch(terms);
+		
 		//int depthLevel = 0;
 		//while (depthLevel<=depth && allChecked(urlsToCheck)) { //allchecked() is inefficient for large sites
 			//logger.debug("Depth = " + depthLevel);
@@ -83,7 +88,7 @@ public class AuditEngine {
 		spider.setAuditResults(auditResults);
 		spider.setAveragePageLoadTime(timeSpent/urlsToCrawl.size());
 		for (PageAuditResult result : spider.getAuditResults().getAllResponses()) {
-			//logger.info(result.getCode()==0?result.getUrl() + " didn't have an html file":result.prettyPrint());
+			//logger.info(result.getCode()==0?result.getUrl() + " didn't have an html file":result.prettyPrint()));
 			logger.info(result.prettyPrint());
 		}
 		//TODO spit out more data
@@ -127,6 +132,10 @@ public class AuditEngine {
 		if (engineUtil.docWasRetrieved(docToCheck)) {
 		    //get frequent words
             getPopularWords(docToCheck, 5, result);
+            //search for given word
+            if (spider.getTermsToSearch()!=null) {
+            	search(docToCheck, spider.getTermsToSearch(), result, 0, false);
+            }
             //get inbound and outbound links
 			ahrefs = docToCheck.select("a[href]");
 			for (Element element : ahrefs) {
@@ -213,27 +222,7 @@ public class AuditEngine {
         }
     }
 
-    private void search(Document doc, String word, PageAuditResult page, int levelOfGenerosity) {
-//    	String in = "i have a male cat. the color of male cat is Black";
-//    	int i = 0;
-//    	Pattern p = Pattern.compile("male cat");
-//    	Matcher m = p.matcher( in );
-//    	while (m.find()) {
-//    	    i++;
-//    	}
-    }
-    
-    public void search(String url, String word) {
-//    	String in = "i have a male cat. the color of male cat is Black";
-//    	int i = 0;
-//    	Pattern p = Pattern.compile("male cat");
-//    	Matcher m = p.matcher( in );
-//    	while (m.find()) {
-//    	    i++;
-//    	}
-    }
-    
-    public void getPopularWords(String url, int numberOfWords, int levelOfGenerosity) {
+    public void getPopularWords(String url, int numberOfWords) {
 		long time = System.currentTimeMillis();
 		Document doc = spiderUtil.getHtmlAsDoc(url);
 		if (engineUtil.docWasRetrieved(doc)) {
@@ -271,6 +260,49 @@ public class AuditEngine {
 		}
 	}
 	
+    private void search(Document doc, List<Term> terms, PageAuditResult page, int levelOfGenerosity, boolean tagsAndText) { //TODO add tags to textToSearch
+    	SearchResults results = page.getSearchResults();
+    	for (Term termToSearch : terms) {
+    		Term term = new Term(termToSearch.getWord(), 0);
+    		String textToSearch;
+    		Pattern p;
+    		Matcher m = null;
+    		if (levelOfGenerosity == 0) { //not generous at all, strict word matching
+    			textToSearch = doc.text().toLowerCase();
+    			p = Pattern.compile(term.getWord().toLowerCase());//TODO put these into Term
+    			m = p.matcher( textToSearch );//TODO put these into Term
+    			
+    			
+    			
+    		} else if (levelOfGenerosity == 1) { //semi-generous, words and possible variations
+    			//    		textToSearch = doc.text().toLowerCase();
+    			//    		p = Pattern.compile(word.toLowerCase());
+    			//        	m = p.matcher( textToSearch );
+    		} else if (levelOfGenerosity == 2) { //very generous, words and context in case of phrasing
+    			//    		textToSearch = doc.text().toLowerCase();
+    			//    		p = Pattern.compile(word.toLowerCase());
+    			//        	m = p.matcher( textToSearch );
+    		}
+    		if (m!=null){
+    			while (m.find()) {
+    				term.increment();
+    			}
+    		}
+    		logger.debug(term.getWord() + " was found " + term.getCount() + " times");
+        	results.add(term);
+    	}
+    }
+    
+    public void search(String url, String word) {
+//    	String in = "i have a male cat. the color of male cat is Black";
+//    	int i = 0;
+//    	Pattern p = Pattern.compile("male cat");
+//    	Matcher m = p.matcher( in );
+//    	while (m.find()) {
+//    	    i++;
+//    	}
+    }
+    
 	public void getTextBySelector(String url, String selector) {
 		long time = System.currentTimeMillis();
 		Document doc = spiderUtil.getHtmlAsDoc(url);

@@ -41,58 +41,62 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
 
     @Override
     public void getArrestRecords(State state, long maxNumberOfResults) {
-        logger.debug("Sending spider " + (System.getProperty("offline").equals("true")?"offline":"online" ));
-        //split into more specific methods
-        long totalTime = System.currentTimeMillis();
-        long recordsProcessed = 0;
-        int sleepTimeSum = 0;
-        int sitesScraped = 0;
-
-        //use maxNumberOfResults to stop processing once this method has been broken up
-        //this currently won't stop a single site from processing more than the max number of records
-        //while(recordsProcessed <= maxNumberOfResults) {
-
-        long stateTime = System.currentTimeMillis();
-        logger.info("----State: " + state.getName() + "----");
-        //Site[] sites = state.getSites();
-//        for(Site site : sites){
-        DesMoinesRegisterComSite site = new DesMoinesRegisterComSite();
-        ExcelWriter excelWriter  = new ExcelWriter(state, new ArrestRecord(), site);
-        excelWriter.createSpreadhseet();
-        int sleepTimeAverage = (site.getPerRecordSleepRange()[0]+site.getPerRecordSleepRange()[1])/2;
-        sleepTimeSum += spiderUtil.offline()?0:sleepTimeAverage;
-        long time = System.currentTimeMillis();
-        recordsProcessed += scrapeSite(state, site, excelWriter);
-        sitesScraped++;
-        time = System.currentTimeMillis() - time;
-        logger.info(site.getBaseUrl(new String[]{state.getName()}) + " took " + time + " ms");
-//        }
-
-        //remove ID column on final save?
-        //or use for future processing? check for ID and start where left off
-        //excelWriter.removeColumnsFromSpreadsheet(new int[]{ArrestRecord.RecordColumnEnum.ID_COLUMN.index()});
-        stateTime = System.currentTimeMillis() - stateTime;
-        logger.info(state.getName() + " took " + stateTime + " ms");
-
-        //extract to util class
-//        try {
-//            EmailUtil.send("dejong.c.michael@gmail.com",
-//                    "Pack##92", //need to encrypt
-//                    "dejong.c.michael@gmail.com",
-//                    "Arrest record parsing for " + state.getName(),
-//                    "Michael's a stud, he just successfully parsed the interwebs for arrest records in the state of Iowa");
-//        } catch (RuntimeException re) {
-//            logger.error("An error occurred, email not sent");
-//        }
-        //}
-        int perRecordSleepTimeAverage = sitesScraped!=0?(sleepTimeSum/sitesScraped):0;
-        totalTime = System.currentTimeMillis() - totalTime;
-        if (!spiderUtil.offline()) {
-            logger.info("Sleep time was approximately " + (recordsProcessed*perRecordSleepTimeAverage) + " ms");
-            logger.info("Processing time was approximately " + (totalTime-(recordsProcessed*perRecordSleepTimeAverage)) + " ms");
-        } else {
-            logger.info("Total time taken was " + totalTime + " ms");
-        }
+    	if ((System.getProperty("offline").equals("true"))) {
+    		logger.debug("Offline - can't scrape this php site");
+    	} else {
+	        //split into more specific methods
+	        long totalTime = System.currentTimeMillis();
+	        long recordsProcessed = 0;
+	        int sleepTimeSum = 0;
+	        int sitesScraped = 0;
+	
+	        //use maxNumberOfResults to stop processing once this method has been broken up
+	        //this currently won't stop a single site from processing more than the max number of records
+	        //while(recordsProcessed <= maxNumberOfResults) {
+	
+	        long stateTime = System.currentTimeMillis();
+	        logger.info("----State: " + state.getName() + "----");
+	        logger.debug("Sending spider " + (System.getProperty("offline").equals("true")?"offline":"online" ));
+	        //Site[] sites = state.getSites();
+	//        for(Site site : sites){
+	        DesMoinesRegisterComSite site = new DesMoinesRegisterComSite();
+	        ExcelWriter excelWriter  = new ExcelWriter(state, new ArrestRecord(), site);
+	        excelWriter.createSpreadhseet();
+	        int sleepTimeAverage = (site.getPerRecordSleepRange()[0]+site.getPerRecordSleepRange()[1])/2;
+	        sleepTimeSum += spiderUtil.offline()?0:sleepTimeAverage;
+	        long time = System.currentTimeMillis();
+	        recordsProcessed += scrapeSite(state, site, excelWriter);
+	        sitesScraped++;
+	        time = System.currentTimeMillis() - time;
+	        logger.info(site.getBaseUrl(new String[]{state.getName()}) + " took " + time + " ms");
+	//        }
+	
+	        //remove ID column on final save?
+	        //or use for future processing? check for ID and start where left off
+	        //excelWriter.removeColumnsFromSpreadsheet(new int[]{ArrestRecord.RecordColumnEnum.ID_COLUMN.index()});
+	        stateTime = System.currentTimeMillis() - stateTime;
+	        logger.info(state.getName() + " took " + stateTime + " ms");
+	
+	        //extract to util class
+	//        try {
+	//            EmailUtil.send("dejong.c.michael@gmail.com",
+	//                    "Pack##92", //need to encrypt
+	//                    "dejong.c.michael@gmail.com",
+	//                    "Arrest record parsing for " + state.getName(),
+	//                    "Michael's a stud, he just successfully parsed the interwebs for arrest records in the state of Iowa");
+	//        } catch (RuntimeException re) {
+	//            logger.error("An error occurred, email not sent");
+	//        }
+	        //}
+	        int perRecordSleepTimeAverage = sitesScraped!=0?(sleepTimeSum/sitesScraped):0;
+	        totalTime = System.currentTimeMillis() - totalTime;
+	        if (!spiderUtil.offline()) {
+	            logger.info("Sleep time was approximately " + (recordsProcessed*perRecordSleepTimeAverage) + " ms");
+	            logger.info("Processing time was approximately " + (totalTime-(recordsProcessed*perRecordSleepTimeAverage)) + " ms");
+	        } else {
+	            logger.info("Total time taken was " + totalTime + " ms");
+	        }
+    	}
     }
 
     @Override

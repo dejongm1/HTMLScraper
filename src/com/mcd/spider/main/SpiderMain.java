@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import com.mcd.spider.main.engine.SpiderEngine;
+import com.mcd.spider.main.entities.audit.Term;
 import com.mcd.spider.main.entities.record.State;
 import com.mcd.spider.main.exception.StateNotReadyException;
 import com.mcd.spider.main.util.InputUtil;
@@ -124,7 +125,7 @@ public class SpiderMain {
 		//search term(s)
 		//output type or location??
 		String url = null;
-		String terms = null;
+		String termString = null;
 		Integer depth = null;
 		int sleepTime = 0;
 		boolean performanceTest = false;
@@ -137,8 +138,8 @@ public class SpiderMain {
 					url = inputUtil.convertToUrl(parameter);
 				} else if (arg.startsWith("-depth")) {
 					depth = inputUtil.convertToNumber(parameter);
-				} else if (arg.startsWith("-search")) {
-					terms = parameter;
+				} else if (arg.startsWith("-search") || arg.startsWith("-term")) {
+					termString = parameter;
 				} else if (arg.startsWith("-perform")) {
 					performanceTest = true;
 				} else if (arg.startsWith("-sleep")) {
@@ -151,7 +152,7 @@ public class SpiderMain {
 		if (url==null) {
 			url = (String )inputUtil.getInput("URL: ", 3, SpiderConstants.URL_VALIDATION);
 		}
-		engine.performSEOAudit(url, terms, depth, performanceTest, sleepTime);
+		engine.performSEOAudit(url, termString, depth, performanceTest, sleepTime);
 	}
 
 //	private static void testConnectionGetter(String[] args) throws IOException {

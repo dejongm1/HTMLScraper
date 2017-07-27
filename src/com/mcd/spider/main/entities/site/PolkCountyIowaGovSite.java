@@ -83,7 +83,7 @@ public class PolkCountyIowaGovSite implements Site {
 	}
 	@Override
 	public Elements getRecordDetailElements(Document doc) {
-		return doc.select("#inmateDetails tr, #chargesSpace .inmateCharges tr");
+		return doc.select("#inmateDetails tr, table.inmateCharges");
 	}
 	@Override
 	public int getTotalPages(Document doc) {

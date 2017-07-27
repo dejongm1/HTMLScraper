@@ -123,16 +123,12 @@ public class ExcelWriter {
 
 	public void saveRecordsToWorkbook(List<Record> records) {
 		try {
-			createWorkbookCopy();
-			
-			int rowNumber = getCopyWorkbook().getSheet(0).getRows();
+			int rowNumber = getWorkbook().getSheet(0).getRows();
 			for (Record currentRecord : records) {
-				currentRecord.addToExcelSheet(getCopyWorkbook(), rowNumber);
+				currentRecord.addToExcelSheet(getWorkbook(), rowNumber);
 				rowNumber++;
 			}
-			
-			replaceOldBookWithNew();
-		} catch (IOException | WriteException | IllegalAccessException | BiffException  e) {
+		} catch (IllegalAccessException e) {
 			logger.error("Error trying to save data to workbook", e);
 		}
 	}

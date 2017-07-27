@@ -28,6 +28,9 @@ scripts for pre-populated commands
 
 
 getRecords()
+	Add parameter to choose county
+
+	mugshots.com
 	Read in spreadsheet at start of scrape to skip records
 
     sort in spreadsheet. That will make it easier to find already parsed records later on

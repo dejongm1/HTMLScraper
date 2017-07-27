@@ -66,7 +66,7 @@ public class ArrestRecord implements Record {
 	private String middleName;			
 	private String lastName;			
 	private Calendar arrestDate;		
-	private int totalBond;				
+	private long totalBond;				
 	private int arrestAge;				
 	private String gender;				
 	private String city;				
@@ -121,10 +121,10 @@ public class ArrestRecord implements Record {
 	public void setArrestDate(Calendar arrestDate) {
 		this.arrestDate = arrestDate;
 	}
-	public int getTotalBond() {
+	public long getTotalBond() {
 		return totalBond;
 	}
-	public void setTotalBond(int totalBond) {
+	public void setTotalBond(long totalBond) {
 		this.totalBond = totalBond;
 	}
 	public int getArrestAge() {
@@ -251,7 +251,7 @@ public class ArrestRecord implements Record {
 						//fieldValueString.append(stringItem + "\n" );
 					}
 				} else if (fieldValue instanceof Calendar) {
-					SimpleDateFormat formatter=new SimpleDateFormat("DD-MMM-yyyy hh:mm a"); 
+					SimpleDateFormat formatter=new SimpleDateFormat("MMM-dd-yyyy hh:mm a"); 
 					fieldValueString.append(formatter.format(((Calendar)field.get(this)).getTime()));
 				} else if (fieldValue instanceof Integer) {
 					fieldValueString.append(String.valueOf(field.get(this)));

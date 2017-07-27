@@ -1,11 +1,12 @@
 package com.mcd.spider.main.entities.audit;
 
-import org.jsoup.Connection;
-import org.jsoup.nodes.Document;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
+
+import org.jsoup.Connection;
+import org.jsoup.nodes.Document;
 
 public class AuditSpider {
 	
@@ -16,6 +17,7 @@ public class AuditSpider {
 	private File robotsTxt;
 	private long averagePageLoadTime; //this only measures html loading for now
 	private long sleepTime;
+	private List<Term> termsToSearch;
 	
 	public AuditSpider(String baseUrl, boolean offline) throws IOException {
 	    if (baseUrl.endsWith("/")) {
@@ -74,5 +76,13 @@ public class AuditSpider {
 
 	public void setSleepTime(long sleepTime) {
 		this.sleepTime = sleepTime;
+	}
+
+	public List<Term> getTermsToSearch() {
+		return termsToSearch;
+	}
+
+	public void setTermsToSearch(List<Term> termsToSearch) {
+		this.termsToSearch = termsToSearch;
 	}
 }

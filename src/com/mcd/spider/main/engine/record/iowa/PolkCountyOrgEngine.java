@@ -31,7 +31,6 @@ public class PolkCountyOrgEngine implements ArrestRecordEngine {
 
 	@Override
     public void getArrestRecords(State state, long maxNumberOfResults) {
-        logger.debug("Sending spider " + (System.getProperty("offline").equals("true")?"offline":"online" ));
         //split into more specific methods
         long totalTime = System.currentTimeMillis();
         long recordsProcessed = 0;
@@ -44,6 +43,7 @@ public class PolkCountyOrgEngine implements ArrestRecordEngine {
 
         long stateTime = System.currentTimeMillis();
         logger.info("----State: " + state.getName() + "----");
+        logger.debug("Sending spider " + (System.getProperty("offline").equals("true")?"offline":"online" ));
         //Site[] sites = state.getSites();
 //        for(Site site : sites){
         PolkCountyIowaGovSite site = new PolkCountyIowaGovSite();
@@ -139,7 +139,6 @@ public class PolkCountyOrgEngine implements ArrestRecordEngine {
 
                     //recordsProcessed += scrapePage(doc, site, excelWriter);
                 } else {
-                    //log something
                     logger.info("Nothing was retrieved for " + doc.baseUri());
                 }
             }
@@ -191,9 +190,10 @@ public class PolkCountyOrgEngine implements ArrestRecordEngine {
                     recordsProcessed++;
                     //should we check for ID first or not bother unless we see duplicates??
                     try {
-                        arrestRecords.add(populateArrestRecord(profileDetailDoc, site));
+                    	arrestRecord = populateArrestRecord(profileDetailDoc, site);
+                        arrestRecords.add(arrestRecord);
                         //save each record in case of failures
-                        //excelWriter.saveRecordsToWorkbook(arrestRecord);
+                        excelWriter.addRecordToWorkbook(arrestRecord);
                         int sleepTime = ConnectionUtil.getSleepTime(site);
                         logger.debug("Sleeping for: " + sleepTime);
                         Thread.sleep(sleepTime);//sleep at random interval
@@ -226,14 +226,20 @@ public class PolkCountyOrgEngine implements ArrestRecordEngine {
 	@Override
 	public void matchPropertyToField(ArrestRecord record, Element profileDetail) {
 		String label = profileDetail.select("th").text().toLowerCase();
-		Elements charges = profileDetail.select(".charges li");
+		Elements charges = profileDetail.select("table.inmateCharges tr");
 		if (!charges.isEmpty()) {
+			int bond = 0;
 			//should I try to categorize charge types here???
-			String[] chargeStrings = new String[charges.size()];
-			for (int c = 0; c < charges.size(); c++) {
-				chargeStrings[c] = charges.get(c).text();
+			String[] chargeStrings = new String[charges.size()-1]; 
+			//extract bond  and charges from here
+			for (int c=1;c<charges.size();c++) {
+				Element charge = charges.get(c);
+				Elements chargeDetails = charge.select("td");
+				chargeStrings[c-1] = (!chargeDetails.get(0).text().equals("")?"Case: " + chargeDetails.get(0).text():"") + " " + chargeDetails.get(1).text();
+				bond += Long.parseLong(chargeDetails.get(2).text().replace("$", "").replace(",", "").trim());
 			}
 			record.setCharges(chargeStrings);
+			record.setTotalBond(bond);
 		} else if (!label.equals("")) {
 			try {
 				if (label.equals("name")) {
@@ -249,10 +255,6 @@ public class PolkCountyOrgEngine implements ArrestRecordEngine {
 				} else if (label.contains("city")) {
 //					record.setCity(city);
 //					record.setState(state);
-				} else if (label.contains("bond")) {
-					String bondAmount = extractValue(profileDetail);
-					int totalBond = Integer.parseInt(bondAmount.replace("$", "").replace(",", ""));
-					record.setTotalBond(totalBond);
 				} else if (label.contains("height")) {
 					record.setHeight(extractValue(profileDetail));
 				} else if (label.contains("weight")) {
@@ -291,6 +293,4 @@ public class PolkCountyOrgEngine implements ArrestRecordEngine {
 		calendar.setTime(date);
 		record.setArrestDate(calendar);
 	}
-	
-	
 }
