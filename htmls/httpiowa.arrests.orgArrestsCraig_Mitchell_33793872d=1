@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Craig Mitchell Mugshot | 07/27/17 Iowa Arrest</title>
+<link rel='canonical' href='http://Iowa.Arrests.Org/Arrests/Craig_Mitchell_33793872/'/>
+<meta name="description" content="Mug Shot for Craig Mitchell booked into the Woodbury county jail.  Arrested on 07/27/17 for an alleged alcohol violation."/>
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-5662101-3']);
+  _gaq.push(['_setDomainName', 'arrests.org']);
+  _gaq.push(['_trackPageview']);
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+</head>
+<body>
+<script>
+	var __uzdbm_a = "9f2d1608-bbb7-8539-5cd4-15c22420fa9e";
+	</script>
+<div id="ss_098786_234239_238479_190541"></div>
+<script async="true" type="text/javascript" src="https://cdn.perfdrive.com/static/jscall_min.js"></script>
+<div class="profile profile-preview">
+<div class="header">
+<h1>Craig Mitchell</h1>
+<a class="button" href="/Arrests/Craig_Mitchell_33793872/">More Information</a>
+</div>
+ 
+<div itemscope itemtype="http://schema.org/Person">
+<div class="picture" align="center">
+<a href="/Arrests/Craig_Mitchell_33793872/" itemprop="url"><img src="/mugs/Woodbury/2017-07-27_MITCHELL-CRAIG-DAVID.jpg" width='384' height='480' itemprop="image"></a>
+</div>
+<div class="info">
+<div class="section">Arrest Information</div>
+<div class="section-content">
+<div><b>Full Name:</b> <span itemprop="name"><span itemprop="givenName">Craig</span><span itemprop="additionalName"> David</span><span itemprop="familyName"> Mitchell</span></span></div>
+<div class="date col1-2"><b>Date:</b><time datetime="2017-07-27">07/27/2017</time></div>
+<div class="time col2-2"><b>Time:</b> 7:00 PM</div>
+<div><b>Total Bond:</b> $300</div>
+</div>
+<div class="section">Personal Information</div>
+<div class="section-content personal-information">
+<div><b class="property">Arrest Age:</b><span itemprop="age">29</span></div>
+<div><b class="property">Gender:</b> <span itemprop="gender">Male</span></div>
+<div><b class="property">Height:</b> 6&#39;00&quot;</div>
+<div><b class="property">Weight:</b> 250 lbs</div>
+<div><b class="property">Hair Color:</b> BLACK</div>
+<div><b class="property">Eye Color:</b> BROWN</div>
+<div><b class="property">Place of Birth:</b> SIOUX CITY IA</div>
+ 
+</div>
+</div>
+<div class="section">Tag this Mug Shot</div>
+<div class="section-content tag-this-mugshot">
+<script type="text/javascript">
+							function trimAll (str) {
+								str = str.replace(/^\s+/, '');
+								for (var i = str.length - 1; i >= 0; i--) {
+									if (/\S/.test(str.charAt(i))) {
+										str = str.substring(0, i + 1);
+										break;
+									}
+								}
+								return str;
+							}
+
+							 function tagIt(notes,id)
+							 {
+							  $("#waitDiv")   
+								.load("/tag.php?Notes="+notes+"&ID="+id, {},function(responseText){  
+									if(trimAll(responseText)=="1")
+									{
+									  alert("Successfully tagged as "+notes);
+									} else {
+									  alert("Already Tagged");
+									}
+								});  
+							
+							 }
+							</script>
+<ul class="ordered-list five-cols">
+<li><a onClick="tagIt('BeatUp','33793872')" href="javascript:void(0)">Beat Up</a></li>
+<li><a onClick="tagIt('Celebrity','33793872')" href="javascript:void(0)">Celebrity</a></li>
+<li><a onClick="tagIt('Handicap','33793872')" href="javascript:void(0)">Handicap</a></li>
+<li><a onClick="tagIt('Grills','33793872')" href="javascript:void(0)">Grills</a></li>
+<li><a onClick="tagIt('Hair','33793872')" href="javascript:void(0)">Hair</a></li>
+<li><a onClick="tagIt('Hunks','33793872')" href="javascript:void(0)">Hunks</a></li>
+<li><a onClick="tagIt('Hottie','33793872')" href="javascript:void(0)">Hotties</a></li>
+<li><a onClick="tagIt('Scary','33793872')" href="javascript:void(0)">Scary</a></li>
+<li><a onClick="tagIt('TattedUp','33793872')" href="javascript:void(0)">Tatted up</a></li>
+<li><a onClick="tagIt('Transgender','33793872')" href="javascript:void(0)">Transgender</a></li>
+<li><a onClick="tagIt('Wino','33793872')" href="javascript:void(0)">Wino</a></li>
+<li><a onClick="tagIt('WTF','33793872')" href="javascript:void(0)">WTF</a></li>
+</ul>
+<div id="waitDiv" style="display:none;"></div>
+</div>
+ 
+</div>
+<div class="clear"></div>
+<div>
+<div class="section">Charges</div>
+<div class="section-content charges">
+<ul><li><div class="charge-title"><span>#1</span> PUBLIC INTOXICATION</div><div class="charge-description"><p><b>BOND: </b>$300</p></div></li> </ul>
+</div>
+</div>
+</div>
+<div class="clear"></div>
+</body>
+</html>

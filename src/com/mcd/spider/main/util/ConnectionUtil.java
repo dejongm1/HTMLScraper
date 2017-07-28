@@ -41,14 +41,14 @@ public class ConnectionUtil {
     }
 
 
-	public static Connection getConnection(String url, String refferer) throws IOException {
-	    if (refferer==null) {
-            refferer = "https://google.com";
+	public static Connection getConnection(String url, String referrer) throws IOException {
+	    if (referrer==null) {
+            referrer = "https://google.com";
         }
 		return Jsoup.connect(url)
 				.userAgent(getRandomUserAgent())
 //				.userAgent("Mozilla/5.0 (Windows NT 10.0; WOW64; rv:54.0) Gecko/20100101 Firefox/54.0")
-				.referrer(refferer)
+				.referrer(referrer)
 				.maxBodySize(0)
 				.timeout(30000);
 	}

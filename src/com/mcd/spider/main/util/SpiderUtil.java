@@ -81,12 +81,12 @@ public class SpiderUtil {
     	return getHtmlAsDoc(url, null);
     }
     
-    public Document getHtmlAsDoc(String url, String refferer) {
+    public Document getHtmlAsDoc(String url, String referrer) {
         try {
             if (offline()) {
                 return getOfflinePage(url);
             } else {
-                return ConnectionUtil.getConnection(url, refferer).get();
+                return ConnectionUtil.getConnection(url, referrer).get();
             }
         } catch (FileNotFoundException fne) {
             SpiderEngine.logger.error("I couldn't find an html file for " + url);
