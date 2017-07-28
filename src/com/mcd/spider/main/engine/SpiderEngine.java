@@ -40,6 +40,11 @@ public class SpiderEngine {
 		engine.performSEOAudit(auditParams);
 	}
 	
+	public void search(String url, String words) {
+		AuditEngine engine = new AuditEngine();
+		engine.search(url, words, 0);//TODO allow for levelOfGenerosity
+	}
+	
 	public void getPopularWords(String url, int numberOfWords) {
 		AuditEngine engine = new AuditEngine();
 		engine.getPopularWords(url, numberOfWords);

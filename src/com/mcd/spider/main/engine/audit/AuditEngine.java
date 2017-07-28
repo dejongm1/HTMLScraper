@@ -233,44 +233,6 @@ public class AuditEngine {
         }
     }
 
-    public void getPopularWords(String url, int numberOfWords) {
-		long time = System.currentTimeMillis();
-		Document doc = spiderUtil.getHtmlAsDoc(url);
-		if (engineUtil.docWasRetrieved(doc)) {
-			//give option to leave in numbers? 
-			Map<String, Term> termCountMap = new CaseInsensitiveMap<String, Term>();
-			String bodyText = doc.body().text();
-			String[] termsInBody = bodyText.split("\\s+");
-			for (String term : termsInBody) {
-				term = term.replaceAll("[[^\\p{L}\\p{Nd}]+]", "");
-				//instead of get, can this be a generous match?
-				if (!term.equals("")) {
-					Term termObj = termCountMap.get(term);
-					if (termObj == null) {
-						termObj = new Term(term, 1);
-						termCountMap.put(term, termObj);
-					} else {
-						termObj.increment();
-					}
-				}
-			}
-			Map<String, Term> sortedWords = spiderUtil.sortByValue(termCountMap);
-			int i = 0;
-			Iterator<Entry<String, Term>> iter = sortedWords.entrySet().iterator();
-			while (iter.hasNext()) {
-				Term term =  iter.next().getValue();
-				if (i < numberOfWords && !term.getWord().equals("")) {
-					logger.info(term.getCount() + "\t" + term.getWord());
-					i++;
-				}
-			}
-			time = System.currentTimeMillis() - time;
-			logger.info("Took " + time + " ms");
-		} else {
-			logger.error("Failed to load html doc from " + url);
-		}
-	}
-	
     private void search(Document doc, List<Term> terms, PageAuditResult page, int levelOfGenerosity, boolean tagsAndText) { //TODO add tags to textToSearch
     	SearchResults results = page.getSearchResults();
     	for (Term termToSearch : terms) {
@@ -330,18 +292,79 @@ public class AuditEngine {
 		}
 		return new File(sitemapDirectory + "\\sitemap.xml");
     }
-    
-    public void search(String url, String word) {
-//    	String in = "i have a male cat. the color of male cat is Black";
-//    	int i = 0;
-//    	Pattern p = Pattern.compile("male cat");
-//    	Matcher m = p.matcher( in );
-//    	while (m.find()) {
-//    	    i++;
-//    	}
+
+    public void getPopularWords(String url, int numberOfWords) {
+		//TODO redirect to private method?
+		long time = System.currentTimeMillis();
+		Document doc = spiderUtil.getHtmlAsDoc(url);
+		if (engineUtil.docWasRetrieved(doc)) {
+			//give option to leave in numbers? 
+			Map<String, Term> termCountMap = new CaseInsensitiveMap<String, Term>();
+			String bodyText = doc.body().text();
+			String[] termsInBody = bodyText.split("\\s+");
+			for (String term : termsInBody) {
+				term = term.replaceAll("[[^\\p{L}\\p{Nd}]+]", "");
+				//instead of get, can this be a generous match?
+				if (!term.equals("")) {
+					Term termObj = termCountMap.get(term);
+					if (termObj == null) {
+						termObj = new Term(term, 1);
+						termCountMap.put(term, termObj);
+					} else {
+						termObj.increment();
+					}
+				}
+			}
+			Map<String, Term> sortedWords = spiderUtil.sortByValue(termCountMap);
+			int i = 0;
+			Iterator<Entry<String, Term>> iter = sortedWords.entrySet().iterator();
+			while (iter.hasNext()) {
+				Term term =  iter.next().getValue();
+				if (i < numberOfWords && !term.getWord().equals("")) {
+					logger.info(term.getCount() + "\t" + term.getWord());
+					i++;
+				}
+			}
+			time = System.currentTimeMillis() - time;
+			logger.info("Took " + time + " ms");
+		} else {
+			logger.error("Failed to load html doc from " + url);
+		}
+	}
+	
+    public void search(String url, String word, int levelOfGenerosity) {
+    	//TODO redirect to private method?
+    	Term term = new Term(word, 0);
+    	String textToSearch;
+    	Pattern p;
+    	Matcher m = null;
+    	Document doc = spiderUtil.getHtmlAsDoc(url);
+		if (engineUtil.docWasRetrieved(doc)) {
+	    	if (levelOfGenerosity == 0) { //not generous at all, strict word matching
+	    		textToSearch = doc.text().toLowerCase();
+	    		p = Pattern.compile(term.getWord().toLowerCase());//TODO put these into Term
+	    		m = p.matcher( textToSearch );//TODO put these into Term
+	
+	    	} else if (levelOfGenerosity == 1) { //semi-generous, words and possible variations
+	    		//    		textToSearch = doc.text().toLowerCase();
+	    		//    		p = Pattern.compile(word.toLowerCase());
+	    		//        	m = p.matcher( textToSearch );
+	    	} else if (levelOfGenerosity == 2) { //very generous, words and context in case of phrasing
+	    		//    		textToSearch = doc.text().toLowerCase();
+	    		//    		p = Pattern.compile(word.toLowerCase());
+	    		//        	m = p.matcher( textToSearch );
+	    	}
+		}
+    	if (m!=null){
+    		while (m.find()) {
+    			term.increment();
+    		}
+    	}
+    	logger.debug(term.getWord() + " was found " + term.getCount() + " times");
     }
     
 	public void getTextBySelector(String url, String selector) {
+		//TODO redirect to private method?
 		long time = System.currentTimeMillis();
 		Document doc = spiderUtil.getHtmlAsDoc(url);
 		if (engineUtil.docWasRetrieved(doc)) {

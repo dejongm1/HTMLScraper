@@ -107,9 +107,9 @@ public class SpiderMain {
 	}
 	
 	private static void getSearchTerms(String[] args) throws IOException {
-//		String url = (String) inputUtil.getInput("URL: ", 3, SpiderConstants.URL_VALIDATION);
-//		String term = (String) inputUtil.getInput("Term: ", 1, SpiderConstants.NO_VALIDATION);
-//		engine.getSearchTerms(url, term);
+		String url = (String) inputUtil.getInput("URL: ", 3, SpiderConstants.URL_VALIDATION);
+		String words = (String) inputUtil.getInput("Words: ", 1, SpiderConstants.NO_VALIDATION);
+		engine.search(url, words);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -120,10 +120,7 @@ public class SpiderMain {
 	}
 
 	private static void getSEOAudit(String argString) throws IOException {
-		//look through args for options passed
-		//url
 		//levels deep
-		//search term(s)
 		//output type or location??
 		AuditParameters parameters = new AuditParameters(argString);
 		engine.performSEOAudit(parameters);
