@@ -1,13 +1,13 @@
 Future feature list
 
 SE Audit
-move adding links criteria into AuditSpider???
 inbound links count and list (hashmap<url, count>)
 	- logic for relative vs absolute links
 	- /#
+	- move adding links criteria into AuditSpider???
 outbound links count and list (hashmap<url, count>)
 response codes for each link
-word frequency for each page
+	- compare broken links with https://www.xml-sitemaps.com.html results (23 found for plazalanes)
 list robots.txt
 tags (what tags?)
 search for words and variations

@@ -1,13 +1,12 @@
 package com.mcd.spider.main.engine;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 
 import com.mcd.spider.main.engine.audit.AuditEngine;
 import com.mcd.spider.main.engine.router.IowaRouter;
-import com.mcd.spider.main.entities.audit.Term;
+import com.mcd.spider.main.entities.audit.AuditParameters;
 import com.mcd.spider.main.entities.record.State;
 import com.mcd.spider.main.exception.StateNotReadyException;
 
@@ -36,15 +35,9 @@ public class SpiderEngine {
 		
 	}
 	
-	public void performSEOAudit(String url, String termString, Integer depth, boolean performanceTest, int sleepTime, boolean fullReport) {
+	public void performSEOAudit(AuditParameters auditParams) {
 		AuditEngine engine = new AuditEngine();
-		List<Term> terms = new ArrayList<>();
-		if (termString!=null) {
-			for (String term : termString.split(",")) {
-				terms.add(new Term(term.trim(), 0));
-			}
-		}
-		engine.performSEOAudit(url, terms, depth, performanceTest, sleepTime, fullReport);
+		engine.performSEOAudit(auditParams);
 	}
 	
 	public void getPopularWords(String url, int numberOfWords) {

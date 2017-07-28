@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import com.mcd.spider.main.engine.SpiderEngine;
+import com.mcd.spider.main.entities.audit.AuditParameters;
 import com.mcd.spider.main.entities.audit.Term;
 import com.mcd.spider.main.entities.record.State;
 import com.mcd.spider.main.exception.StateNotReadyException;
@@ -124,38 +125,8 @@ public class SpiderMain {
 		//levels deep
 		//search term(s)
 		//output type or location??
-		String url = null;
-		String termString = null;
-		Integer depth = null;
-		int sleepTime = 0;
-		boolean performanceTest = false;
-		boolean fullReport = false;
-		String[] newArgs;
-		if (!argString.equals("")) {
-			newArgs = argString.trim().toLowerCase().split("(?=-)");
-			for (String arg : newArgs){
-				String parameter = arg.trim().substring(arg.indexOf(' ')+1);
-				if (arg.startsWith("-url")) {
-					url = inputUtil.convertToUrl(parameter);
-				} else if (arg.startsWith("-depth")) {
-					depth = inputUtil.convertToNumber(parameter);
-				} else if (arg.startsWith("-search") || arg.startsWith("-term")) {
-					termString = parameter;
-				} else if (arg.startsWith("-perform")) {
-					performanceTest = true;
-				} else if (arg.startsWith("-sleep")) {
-					sleepTime = inputUtil.convertToNumber(parameter);
-				} else if (arg.startsWith("-full")) {
-					fullReport = true;
-				} else {
-					System.out.println("I didn't recognize argument \"" + arg + "\". Ignoring and proceeding...");
-				}
-			}
-		}
-		if (url==null) {
-			url = (String )inputUtil.getInput("URL: ", 3, SpiderConstants.URL_VALIDATION);
-		}
-		engine.performSEOAudit(url, termString, depth, performanceTest, sleepTime, fullReport);
+		AuditParameters parameters = new AuditParameters(argString);
+		engine.performSEOAudit(parameters);
 	}
 
 //	private static void testConnectionGetter(String[] args) throws IOException {

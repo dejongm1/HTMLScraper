@@ -25,6 +25,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import com.mcd.spider.main.entities.audit.AuditParameters;
 import com.mcd.spider.main.entities.audit.AuditResults;
 import com.mcd.spider.main.entities.audit.AuditSpider;
 import com.mcd.spider.main.entities.audit.OfflineResponse;
@@ -51,7 +52,7 @@ public class AuditEngine {
     private AuditSpider spider;
     
 	
-	public void performSEOAudit(String baseUrl, List<Term> terms, Integer depth, boolean performanceTest, int sleepTime, boolean fullReport) {
+	public void performSEOAudit(AuditParameters auditParams) {
 		urlsToCrawl = new HashMap<>();
 		long timeSpent = 0;
 		long startTime = 0;
@@ -59,16 +60,18 @@ public class AuditEngine {
 		//<url, checked>
 		try {
 			startTime = System.currentTimeMillis();
-			spider = new AuditSpider(baseUrl, spiderUtil.offline());
-			spider.setSleepTime(sleepTime==0?spiderUtil.offline()?0:2000:sleepTime*1000);
+			spider = new AuditSpider(auditParams.getUrlToAudit(), spiderUtil.offline());
+			spider.setSleepTime(auditParams.getSleepTime()==0?spiderUtil.offline()?0:2000:auditParams.getSleepTime()*1000);
 			timeSpent+=System.currentTimeMillis()-startTime;
             sleep(spider.getSleepTime());
 		} catch (IOException ioe) {
-			logger.error("Exception initializing audit spider for " + baseUrl, ioe);
+			logger.error("Exception initializing audit spider for " + auditParams.getUrlToAudit(), ioe);
 			System.exit(0);
 		}
-		urlsToCrawl.put(baseUrl,  false);
-		spider.setTermsToSearch(terms);
+		urlsToCrawl.put(auditParams.getUrlToAudit(),  false);
+		spider.setTermsToSearch(auditParams.getTerms());
+		
+		//TODO check for sitemap at base page and set
 		
 		//int depthLevel = 0;
 		//while (depthLevel<=depth && allChecked(urlsToCheck)) { //allchecked() is inefficient for large sites
@@ -90,11 +93,15 @@ public class AuditEngine {
 			}
 		}
 		//}
-		auditResults.setSiteMap(generateSiteMap(spider.getBaseUrl().toString(), auditResults.getAllResponses()));
+		
+		//TODO only do this if no siteMap exists already
+		if (auditResults.getSiteMap()==null) {
+			auditResults.setSiteMap(generateSiteMap(spider.getBaseUrl().toString(), auditResults.getAllResponses()));
+		}
 		
 		spider.setAuditResults(auditResults);
 		spider.setAveragePageLoadTime(timeSpent/urlsToCrawl.size());
-		logger.info("\n\n\t\t\t****YOUR AUDIT RESULTS****\n\n" + spider.getAuditResults().prettyPrint(fullReport));
+		logger.info("\n\n\t\t\t****YOUR AUDIT RESULTS****\n\n" + spider.getAuditResults().prettyPrint(auditParams.isFullReportFlag()));
 		
 	}
 
@@ -155,6 +162,7 @@ public class AuditEngine {
 		//filter out bogus stuff - xmls, pdfs, txt, images, etc
 		if (isInBound(url, baseUrl)) {
 			String absoluteUrl = url.startsWith("http")?url:baseUrl.toExternalForm() + url;
+			//TODO if the link is a sitemap and sitemap is not already set, set it here
 			if (!urlAlreadyChecked(absoluteUrl)) {//make absolute before adding to urlsToCheck map to avoid checking same page twice
                 urlsToCrawl.put(absoluteUrl, false);
                 iterator.add(absoluteUrl);
