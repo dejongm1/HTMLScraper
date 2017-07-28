@@ -72,6 +72,10 @@ public class SpiderMain {
             		args[0] = ""; //remove first scrapeTypechoice and continue
             	}
 				getSEOAudit(String.join(" ", args));
+            } else if (scrapeTypeChoice.toLowerCase().contains("nemesis")
+					|| scrapeTypeChoice.toLowerCase().contains("enemy")
+					|| scrapeTypeChoice.equals("99")) {
+				crackArrestSite(args);
 			} else if (inputUtil.quitting(scrapeTypeChoice)) {
 				System.exit(0);
 			} else {
@@ -109,7 +113,8 @@ public class SpiderMain {
 	private static void getSearchTerms(String[] args) throws IOException {
 		String url = (String) inputUtil.getInput("URL: ", 3, SpiderConstants.URL_VALIDATION);
 		String words = (String) inputUtil.getInput("Words: ", 1, SpiderConstants.NO_VALIDATION);
-		engine.search(url, words);
+		int flexibility = 0; //(int) inputUtil.getInput("Flexibility of search (1-3): ", 1, SpiderConstants.NUMBER_VALIDATION);
+		engine.search(url, words, flexibility);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -117,6 +122,13 @@ public class SpiderMain {
 		List<State> states = args.length>=2?inputUtil.convertToStates(args[1]):(List<State>) inputUtil.getInput("State(s) or \"All\": ", 3, SpiderConstants.STATE_VALIDATION);
 		long maxNumberOfResults = args.length>=3?inputUtil.convertToNumber(args[2]):999999;
 		engine.getArrestRecordsByState(states, maxNumberOfResults);
+	}
+
+	@SuppressWarnings("unchecked")
+	private static void crackArrestSite(String[] args) throws IOException, StateNotReadyException {
+		List<State> states = args.length>=2?inputUtil.convertToStates(args[1]):(List<State>) inputUtil.getInput("State(s) or \"All\": ", 3, SpiderConstants.STATE_VALIDATION);
+		long maxNumberOfResults = args.length>=3?inputUtil.convertToNumber(args[1]):5;
+		engine.getArrestRecordsByStateCrack(states, maxNumberOfResults);
 	}
 
 	private static void getSEOAudit(String argString) throws IOException {

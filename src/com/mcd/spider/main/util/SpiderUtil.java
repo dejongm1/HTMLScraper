@@ -83,7 +83,6 @@ public class SpiderUtil {
     
     public Document getHtmlAsDoc(String url, String refferer) {
         try {
-
             if (offline()) {
                 return getOfflinePage(url);
             } else {
@@ -137,4 +136,16 @@ public class SpiderUtil {
 		}
 //		return tempProperties;
 	}
+    
+	public void sleep(long milliSecondsToSleep, boolean logGenericStatement) {
+        try {
+            if (logGenericStatement) {
+            	logger.debug("Sleeping for " + milliSecondsToSleep/1000 + " seconds");
+            }
+            Thread.sleep(milliSecondsToSleep);
+        } catch (InterruptedException e) {
+            logger.error("Error trying to sleep");
+        }
+    }
+
 }

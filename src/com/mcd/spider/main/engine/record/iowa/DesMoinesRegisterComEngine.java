@@ -5,6 +5,7 @@ import com.mcd.spider.main.entities.record.ArrestRecord;
 import com.mcd.spider.main.entities.record.Record;
 import com.mcd.spider.main.entities.record.State;
 import com.mcd.spider.main.entities.service.DesMoinesRegisterComService;
+import com.mcd.spider.main.entities.site.ArrestsDotOrgSite;
 import com.mcd.spider.main.entities.site.DesMoinesRegisterComSite;
 import com.mcd.spider.main.entities.site.Site;
 import com.mcd.spider.main.util.ConnectionUtil;
@@ -39,6 +40,10 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     private EngineUtil engineUtil = new EngineUtil();
     DesMoinesRegisterComService service = new DesMoinesRegisterComService();
 
+    public Site getSite() {
+    	return new DesMoinesRegisterComSite();
+    }
+    
     @Override
     public void getArrestRecords(State state, long maxNumberOfResults) {
     	if ((System.getProperty("offline").equals("true"))) {
@@ -182,17 +187,12 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
                     if (site.isARecordDetailDoc(profileDetailDoc)) {
                         recordsProcessed++;
                         //should we check for ID first or not bother unless we see duplicates??
-                        try {
-                            arrestRecord = populateArrestRecord(profileDetailDoc, site);
-                            arrestRecords.add(arrestRecord);
-                            //save each record in case of failures
-                            excelWriter.addRecordToWorkbook(arrestRecord);
-                            int sleepTime = ConnectionUtil.getSleepTime(site);
-                            logger.debug("Sleeping for: " + sleepTime);
-                            Thread.sleep(sleepTime);//sleep at random interval
-                        } catch (InterruptedException ie) {
-                            logger.error(ie);
-                        }
+                        arrestRecord = populateArrestRecord(profileDetailDoc, site);
+                        arrestRecords.add(arrestRecord);
+                        //save each record in case of failures
+                        excelWriter.addRecordToWorkbook(arrestRecord);
+                        spiderUtil.sleep(ConnectionUtil.getSleepTime(site), true);//sleep at random interval
+                        
                     } else {
                         logger.debug("This doc doesn't have any record details: " + id);
                     }

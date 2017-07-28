@@ -85,7 +85,7 @@ public class ArrestsDotOrgSite implements Site {
 	@Override
 	public String getRecordDetailDocUrl(Element record) {
 		String pdLink = record.attr("href");
-		pdLink = pdLink.replace("?d=1", "");
+//		pdLink = pdLink.replace("?d=1", "");
 		return getBaseUrl(new String[]{})+pdLink;
 	}
 	@Override
@@ -141,7 +141,7 @@ public class ArrestsDotOrgSite implements Site {
 			for (int u=pagesToMatch+1;u<pagesToMatch*2;u++) {
 				Element link = links.get(u);
 				//(ignore rel=stylesheet, include /ABC.php, '/ABC/', '/', '#', '/Arrests/ABC')
-				if (!link.hasAttr("rel")
+				if (!link.hasAttr("rel") &&  !link.attr("href").contains("?d=1")
 						&& (link.attr("href").endsWith(".php")
 							|| link.attr("href").startsWith("/Arrests/")
 							//|| link.attr("href").equals("#")

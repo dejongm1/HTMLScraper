@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Michael Blahut Mugshot | 07/26/17 Iowa Arrest</title>
+<link rel='canonical' href='http://Iowa.Arrests.Org/Arrests/Michael_Blahut_33791491/'/>
+<meta name="description" content="Mug Shot for Michael Blahut booked into the Cerro Gordo county jail.  Arrested on 07/26/17 for an alleged marijuana offense."/>
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-5662101-3']);
+  _gaq.push(['_setDomainName', 'arrests.org']);
+  _gaq.push(['_trackPageview']);
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+</head>
+<body>
+<script>
+	var __uzdbm_a = "9f2d1608-bbb7-68c5-b51d-5188c98d4723";
+	</script>
+<div id="ss_098786_234239_238479_190541"></div>
+<script async="true" type="text/javascript" src="https://cdn.perfdrive.com/static/jscall_min.js"></script>
+<div class="profile profile-preview">
+<div class="header">
+<h1>Michael Blahut</h1>
+<a class="button" href="/Arrests/Michael_Blahut_33791491/">More Information</a>
+</div>
+ 
+<div itemscope itemtype="http://schema.org/Person">
+<div class="picture" align="center">
+<a href="/Arrests/Michael_Blahut_33791491/" itemprop="url"><img src="/mugs/Cerrogordo/28131.jpg" itemprop="image"></a>
+</div>
+<div class="info">
+<div class="section">Arrest Information</div>
+<div class="section-content">
+<div><b>Full Name:</b> <span itemprop="name"><span itemprop="givenName">Michael</span><span itemprop="additionalName"> Edward</span><span itemprop="familyName"> Blahut</span></span></div>
+<div class="date col1-2"><b>Date:</b><time datetime="2017-07-26">07/26/2017</time></div>
+<div class="time col2-2"><b>Time:</b> 5:54 PM</div>
+<div><b>Total Bond:</b> $1000</div>
+</div>
+<div class="section">Personal Information</div>
+<div class="section-content personal-information">
+<div><b class="property">Arrest Age:</b><span itemprop="age">44</span></div>
+<div><b class="property">Gender:</b> <span itemprop="gender">Male</span></div>
+ 
+</div>
+</div>
+<div class="section">Tag this Mug Shot</div>
+<div class="section-content tag-this-mugshot">
+<script type="text/javascript">
+							function trimAll (str) {
+								str = str.replace(/^\s+/, '');
+								for (var i = str.length - 1; i >= 0; i--) {
+									if (/\S/.test(str.charAt(i))) {
+										str = str.substring(0, i + 1);
+										break;
+									}
+								}
+								return str;
+							}
+
+							 function tagIt(notes,id)
+							 {
+							  $("#waitDiv")   
+								.load("/tag.php?Notes="+notes+"&ID="+id, {},function(responseText){  
+									if(trimAll(responseText)=="1")
+									{
+									  alert("Successfully tagged as "+notes);
+									} else {
+									  alert("Already Tagged");
+									}
+								});  
+							
+							 }
+							</script>
+<ul class="ordered-list five-cols">
+<li><a onClick="tagIt('BeatUp','33791491')" href="javascript:void(0)">Beat Up</a></li>
+<li><a onClick="tagIt('Celebrity','33791491')" href="javascript:void(0)">Celebrity</a></li>
+<li><a onClick="tagIt('Handicap','33791491')" href="javascript:void(0)">Handicap</a></li>
+<li><a onClick="tagIt('Grills','33791491')" href="javascript:void(0)">Grills</a></li>
+<li><a onClick="tagIt('Hair','33791491')" href="javascript:void(0)">Hair</a></li>
+<li><a onClick="tagIt('Hunks','33791491')" href="javascript:void(0)">Hunks</a></li>
+<li><a onClick="tagIt('Hottie','33791491')" href="javascript:void(0)">Hotties</a></li>
+<li><a onClick="tagIt('Scary','33791491')" href="javascript:void(0)">Scary</a></li>
+<li><a onClick="tagIt('TattedUp','33791491')" href="javascript:void(0)">Tatted up</a></li>
+<li><a onClick="tagIt('Transgender','33791491')" href="javascript:void(0)">Transgender</a></li>
+<li><a onClick="tagIt('Wino','33791491')" href="javascript:void(0)">Wino</a></li>
+<li><a onClick="tagIt('WTF','33791491')" href="javascript:void(0)">WTF</a></li>
+</ul>
+<div id="waitDiv" style="display:none;"></div>
+</div>
+ 
+</div>
+<div class="clear"></div>
+<div>
+<div class="section">Charges</div>
+<div class="section-content charges">
+<ul><li><div class="charge-title"><span>#1</span> Possession of Marijuana</div><div class="charge-description"><p><b>STATUTE: </b>124.401 </p><p><b>BOND: </b>$1000</p><p><B>NOTES: </b>Cash or Surety</p></div></li><li><div class="charge-title"><span>#2</span> Possession of Drug Paraphernalia</div><div class="charge-description"><p><b>STATUTE: </b>124.414 </p></div></li> </ul>
+</div>
+</div>
+</div>
+<div class="clear"></div>
+</body>
+</html>

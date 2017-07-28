@@ -4,6 +4,7 @@ import com.mcd.spider.main.engine.record.ArrestRecordEngine;
 import com.mcd.spider.main.entities.record.ArrestRecord;
 import com.mcd.spider.main.entities.record.Record;
 import com.mcd.spider.main.entities.record.State;
+import com.mcd.spider.main.entities.site.ArrestsDotOrgSite;
 import com.mcd.spider.main.entities.site.PolkCountyIowaGovSite;
 import com.mcd.spider.main.entities.site.Site;
 import com.mcd.spider.main.util.ConnectionUtil;
@@ -29,6 +30,10 @@ public class PolkCountyOrgEngine implements ArrestRecordEngine {
 	private SpiderUtil spiderUtil = new SpiderUtil();
 	private EngineUtil engineUtil = new EngineUtil();
 
+    public Site getSite() {
+    	return new PolkCountyIowaGovSite();
+    }
+    
 	@Override
     public void getArrestRecords(State state, long maxNumberOfResults) {
         //split into more specific methods
@@ -113,13 +118,10 @@ public class PolkCountyOrgEngine implements ArrestRecordEngine {
             Collections.shuffle(keys);
             for (String k : keys) {
                 resultsDocPlusMiscMap.put(String.valueOf(k), spiderUtil.getHtmlAsDoc(resultsUrlPlusMiscMap.get(k)));
-                try {
-                    int sleepTime = ConnectionUtil.getSleepTime(site);
-                    Thread.sleep(sleepTime);
-                    logger.debug("Sleeping for " + sleepTime + " after fetching " + resultsUrlPlusMiscMap.get(k));
-                } catch (InterruptedException e) {
-                    logger.error("Failed to sleep after fetching " + resultsUrlPlusMiscMap.get(k), e);
-                }
+                long sleepTime = ConnectionUtil.getSleepTime(site);
+                spiderUtil.sleep(sleepTime, false);
+                logger.debug("Sleeping for " + sleepTime + " after fetching " + resultsUrlPlusMiscMap.get(k));
+                
             }
 
             //saving this for later?? should be able to get previous sorting by looking at page number in baseUri
@@ -189,17 +191,11 @@ public class PolkCountyOrgEngine implements ArrestRecordEngine {
                 if (engineUtil.docWasRetrieved(profileDetailDoc)) {
                     recordsProcessed++;
                     //should we check for ID first or not bother unless we see duplicates??
-                    try {
-                    	arrestRecord = populateArrestRecord(profileDetailDoc, site);
-                        arrestRecords.add(arrestRecord);
-                        //save each record in case of failures
-                        excelWriter.addRecordToWorkbook(arrestRecord);
-                        int sleepTime = ConnectionUtil.getSleepTime(site);
-                        logger.debug("Sleeping for: " + sleepTime);
-                        Thread.sleep(sleepTime);//sleep at random interval
-                    } catch (InterruptedException ie) {
-                        logger.error(ie);
-                    }
+                	arrestRecord = populateArrestRecord(profileDetailDoc, site);
+                    arrestRecords.add(arrestRecord);
+                    //save each record in case of failures
+                    excelWriter.addRecordToWorkbook(arrestRecord);
+                    spiderUtil.sleep(ConnectionUtil.getSleepTime(site), true);//sleep at random interval
                 } else {
                     logger.error("Failed to load html doc from " + url);
                 }

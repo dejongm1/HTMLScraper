@@ -11,6 +11,7 @@ import java.util.Map;
 
 public interface ArrestRecordEngine {
 
+	Site getSite();
 	void getArrestRecords(State state, long maxNumberOfResults);
 	int scrapeSite(State state, Site site, ExcelWriter excelWriter);
 	Map<String,String> parseDocForUrls(Object objectToParse, Site site);

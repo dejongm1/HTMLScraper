@@ -1,16 +1,32 @@
 package com.mcd.spider.main.engine.record;
 
-import com.mcd.spider.main.entities.record.ArrestRecord;
-import com.mcd.spider.main.entities.record.Record;
-import com.mcd.spider.main.entities.record.State;
-import com.mcd.spider.main.entities.site.Site;
-import com.mcd.spider.main.util.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.log4j.Logger;
+import org.jsoup.Connection;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.util.*;
+import com.mcd.spider.main.entities.audit.OfflineResponse;
+import com.mcd.spider.main.entities.record.ArrestRecord;
+import com.mcd.spider.main.entities.record.Record;
+import com.mcd.spider.main.entities.record.State;
+import com.mcd.spider.main.entities.site.ArrestsDotOrgSite;
+import com.mcd.spider.main.entities.site.Site;
+import com.mcd.spider.main.util.ConnectionUtil;
+import com.mcd.spider.main.util.EmailUtil;
+import com.mcd.spider.main.util.EngineUtil;
+import com.mcd.spider.main.util.ExcelWriter;
+import com.mcd.spider.main.util.SpiderUtil;
 
 /**
  *
@@ -18,13 +34,18 @@ import java.util.*;
  *
  */
 
-public class ArrestOrgEngine implements ArrestRecordEngine {
+public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 
-    public static final Logger logger = Logger.getLogger(ArrestOrgEngine.class);
+    public static final Logger logger = Logger.getLogger(ArrestsDotOrgEngine.class);
+    
 
     SpiderUtil spiderUtil = new SpiderUtil();
     EngineUtil engineUtil = new EngineUtil();
 
+    public Site getSite() {
+    	return new ArrestsDotOrgSite();
+    }
+    
     @Override
     public void getArrestRecords(State state, long maxNumberOfResults) {
         //split into more specific methods
@@ -38,19 +59,18 @@ public class ArrestOrgEngine implements ArrestRecordEngine {
         //while(recordsProcessed <= maxNumberOfResults) {
         long stateTime = System.currentTimeMillis();
         logger.info("----State: " + state.getName() + "----");
+        ArrestsDotOrgSite site = new ArrestsDotOrgSite();
         logger.debug("Sending spider " + (System.getProperty("offline").equals("true")?"offline":"online" ));
-        Site[] sites = state.getSites();
-        for(Site site : sites){
-            ExcelWriter excelWriter  = new ExcelWriter(state, new ArrestRecord(), site);
-            excelWriter.createSpreadhseet();
-            int sleepTimeAverage = (site.getPerRecordSleepRange()[0]+site.getPerRecordSleepRange()[1])/2;
-            sleepTimeSum += spiderUtil.offline()?0:sleepTimeAverage;
-            long time = System.currentTimeMillis();
-            recordsProcessed += scrapeSite(state, site, excelWriter);
-            sitesScraped++;
-            time = System.currentTimeMillis() - time;
-            logger.info(site.getBaseUrl(new String[]{state.getName()}) + " took " + time + " ms");
-        }
+        ExcelWriter excelWriter  = new ExcelWriter(state, new ArrestRecord(), site);
+        excelWriter.createSpreadhseet();
+        int sleepTimeAverage = (site.getPerRecordSleepRange()[0]+site.getPerRecordSleepRange()[1])/2;
+        sleepTimeSum += spiderUtil.offline()?0:sleepTimeAverage;
+        long time = System.currentTimeMillis();
+        recordsProcessed += scrapeSite(state, site, excelWriter);
+        sitesScraped++;
+        time = System.currentTimeMillis() - time;
+        logger.info(site.getBaseUrl(new String[]{state.getName()}) + " took " + time + " ms");
+
 
         //remove ID column on final save?
         //or use for future processing? check for ID and start where left off
@@ -88,7 +108,9 @@ public class ArrestOrgEngine implements ArrestRecordEngine {
         //Add some retries if first connection to state site fails?
         Document mainPageDoc = spiderUtil.getHtmlAsDoc(firstPageResults);
         if (engineUtil.docWasRetrieved(mainPageDoc)) {
-            int numberOfPages = site.getTotalPages(mainPageDoc);
+            //restricting to 2 pages for now
+        	//int numberOfPages = site.getTotalPages(mainPageDoc);
+        	int numberOfPages = 2;
             if (numberOfPages==0) {
                 numberOfPages = 1;
             }
@@ -106,17 +128,30 @@ public class ArrestOrgEngine implements ArrestRecordEngine {
             Map<String,Document> resultsDocPlusMiscMap = new HashMap<>();
             List<String> keys = new ArrayList<>(resultsUrlPlusMiscMap.keySet());
             Collections.shuffle(keys);
-            String previous = resultsUrlPlusMiscMap.get(keys.size()-1);
+            String previousKey = keys.get(keys.size()-1);
             for (String k : keys) {
-                resultsDocPlusMiscMap.put(String.valueOf(k), spiderUtil.getHtmlAsDoc(resultsUrlPlusMiscMap.get(k), resultsUrlPlusMiscMap.get(previous)));
-                try {
-                    int sleepTime = ConnectionUtil.getSleepTime(site);
-                    Thread.sleep(sleepTime);
-                    logger.debug("Sleeping for " + sleepTime + " after fetching " + resultsUrlPlusMiscMap.get(k));
-                } catch (InterruptedException e) {
-                    logger.error("Failed to sleep after fetching " + resultsUrlPlusMiscMap.get(k), e);
-                }
-                previous = k;
+            	try {
+            		//can we guarantee previous is a page that has access to the current?
+	        		Connection.Response response = null;
+	        		Document docToCheck = null;
+	            	Connection conn = ConnectionUtil.getConnection(resultsUrlPlusMiscMap.get(k), resultsUrlPlusMiscMap.get(previousKey));
+	    			if (spiderUtil.offline()) {
+	    				response = new OfflineResponse(200, resultsUrlPlusMiscMap.get(k));
+	    			} else {
+	    				response = conn.execute();
+	    			}
+					//TODO depending on response status code, take action
+	    			docToCheck = response.parse();
+	    			resultsDocPlusMiscMap.put(k, docToCheck);
+            	} catch (IOException ioe) {
+            		logger.error(ioe);
+            	}
+                
+                int sleepTime = ConnectionUtil.getSleepTime(site);
+                spiderUtil.sleep(sleepTime, false);
+                logger.debug("Sleeping for " + sleepTime + " after fetching " + resultsUrlPlusMiscMap.get(k));
+                
+                previousKey = k;
             }
 
             //saving this for later?? should be able to get previous sorting by looking at page number in baseUri
@@ -133,10 +168,7 @@ public class ArrestOrgEngine implements ArrestRecordEngine {
                     recordDetailUrlMap.putAll(parseDocForUrls(doc, site));
                     //including some non-detail page links then randomize
                     recordDetailUrlMap.putAll(site.getMiscSafeUrlsFromDoc(mainPageDoc, 56)); //TODO change from a static value
-
-                    //recordsProcessed += scrapePage(doc, site, excelWriter);
                 } else {
-                    //log something
                     logger.info("Nothing was retrieved for " + doc.baseUri());
                 }
             }
@@ -147,11 +179,7 @@ public class ArrestOrgEngine implements ArrestRecordEngine {
             //****TODO
             //****use sorted map to check for already scraped records - should I used ID as map.key instead of a sequence?
 
-            try {
-                Thread.sleep(100000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            spiderUtil.sleep(100000, true);
             //****iterate over collection, scraping records and simply opening others
             recordsProcessed += scrapeRecords(recordDetailUrlMap, site, excelWriter);
 
@@ -180,29 +208,42 @@ public class ArrestOrgEngine implements ArrestRecordEngine {
         Record arrestRecord = new ArrestRecord();
         List<String> keys = new ArrayList<>(recordsDetailsUrlMap.keySet());
         Collections.shuffle(keys);
+        String previousKey = keys.get(keys.size()-1);
         for (String k : keys) {
-            String id = k;
             String url = recordsDetailsUrlMap.get(k);
-            Document profileDetailDoc = spiderUtil.getHtmlAsDoc(url);
+            Connection.Response response = null;
+    		Document profileDetailDoc = null;
+            try {
+	            //can we guarantee previous is a page that has access to the current?
+	        	Connection conn = ConnectionUtil.getConnection(url, recordsDetailsUrlMap.get(previousKey));
+				if (spiderUtil.offline()) {
+					response = new OfflineResponse(200, recordsDetailsUrlMap.get(k));
+				} else {
+					response = conn.execute();
+				}
+				//TODO depending on response status code, take action
+				profileDetailDoc = response.parse();
+            } catch (FileNotFoundException fnfe) {
+            	logger.error("No html doc found for " + url);
+            } catch (IOException ioe) {
+            	logger.error("Error trying to connect and retrieve " + url, ioe);
+            }
             if (site.isARecordDetailDoc(profileDetailDoc)) {
                 if (engineUtil.docWasRetrieved(profileDetailDoc)) {
                     recordsProcessed++;
                     //should we check for ID first or not bother unless we see duplicates??
-                    try {
-                        arrestRecords.add(arrestRecord);
-                        populateArrestRecord(profileDetailDoc, site);
-                        //save each record in case of failures
-                        //excelWriter.saveRecordToWorkbook(arrestRecord);
-                        int sleepTime = ConnectionUtil.getSleepTime(site);
-                        logger.debug("Sleeping for: " + sleepTime);
-                        Thread.sleep(sleepTime);//sleep at random interval
-                    } catch (InterruptedException ie) {
-                        logger.error(ie);
-                    }
+                
+                    arrestRecords.add(arrestRecord);
+                    populateArrestRecord(profileDetailDoc, site);
+                    //save each record in case of failures
+                    excelWriter.addRecordToWorkbook(arrestRecord);
+                    spiderUtil.sleep(ConnectionUtil.getSleepTime(site), true);//sleep at random interval
+                    
                 } else {
                     logger.error("Failed to load html doc from " + url);
                 }
             }
+            previousKey = k;
         }
         //save the whole thing at the end
         //order and save the overwrite the spreadsheet
