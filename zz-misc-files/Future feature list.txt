@@ -1,36 +1,50 @@
 Future feature list
 
 SE Audit
-inbound links count and list (hashmap<url, count>)
-	- logic for relative vs absolute links
-	- /#
-	- move adding links criteria into AuditSpider???
-outbound links count and list (hashmap<url, count>)
-response codes for each link
-	- compare broken links with https://www.xml-sitemaps.com.html results (23 found for plazalanes)
-list robots.txt
-tags (what tags?)
-search for words and variations
+	inbound links count and list (hashmap<url, count>)
+		- logic for relative vs absolute links
+		- /#
+		- move adding links criteria into AuditSpider???
+	outbound links count and list (hashmap<url, count>)
+	response codes for each link
+		- compare broken links with https://www.xml-sitemaps.com.html results (23 found for plazalanes)
+	list robots.txt
+	tags (what tags?)
+	search for words and variations
 
 
 deployment package
-
-place in a common location on computer
-	- jar
-	- output folder
-	- arg files
-	- script to accept simple run com and args and route to java -jar ....
-script to open cmd prompt and cd to jar location
-	-add jar location to PATH?
-shortcut to output on desktop
-scripts for pre-populated commands
+	place in a common location on computer
+		- jar
+		- output folder
+		- arg files
+		- script to accept simple run com and args and route to java -jar ....
+	script to open cmd prompt and cd to jar location
+		-add jar location to PATH?
+	shortcut to output on desktop
+	scripts for pre-populated commands
 
 
 
 getRecords()
+	mugshots.com
+		domain - http://mugshots.com
+		baseUrl - https://mugshots.com/US-Counties//US-Counties
+		counties - https://mugshots.com/US-Counties/{state}/{county}-County-{state abbreviation}/
+		
+		profile-details-link - #container #middle .gallery-listing td a[href]
+		paging - #container #middle .pagination a[href]
+						?from=2015-06-21+06%3A44%3A15.819010&from=105896283 (None means last page)
+						?from=2015-03-15+02%3A18%3A43.462779&from=93962588
+						?from=2014-11-22+10%3A59%3A17.265412&from=84809507
+	
+	
+	
+
 	Add parameter to choose county
 
-	mugshots.com
+	
+	arrests.org - compare html doc to saved html page
 	Read in spreadsheet at start of scrape to skip records
 
     sort in spreadsheet. That will make it easier to find already parsed records later on
@@ -61,12 +75,14 @@ getRecords()
 		-use it to tweak things like site(s), columns to export/exclude, flags, etc
 	
 
-Exclude special characters (and numbers?)
-Add help documentation
-Result exclusion file for frequent words
-	- flag for excluding common words (the, a, and, of, in, etc)
-	- flag for including numbers
-	- add to/remove from list
+
+Misc
+	Exclude special characters (and numbers?)
+	Add help documentation
+	Result exclusion file for frequent words
+		- flag for excluding common words (the, a, and, of, in, etc)
+		- flag for including numbers
+		- add to/remove from list
 
 
 
