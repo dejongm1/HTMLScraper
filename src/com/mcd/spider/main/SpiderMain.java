@@ -1,17 +1,16 @@
 package com.mcd.spider.main;
 
-import java.io.IOException;
-import java.util.List;
-
-import org.apache.log4j.Logger;
-
 import com.mcd.spider.main.engine.SpiderEngine;
 import com.mcd.spider.main.entities.audit.AuditParameters;
-import com.mcd.spider.main.entities.audit.Term;
 import com.mcd.spider.main.entities.record.State;
+import com.mcd.spider.main.exception.ExcelOutputException;
 import com.mcd.spider.main.exception.StateNotReadyException;
 import com.mcd.spider.main.util.InputUtil;
 import com.mcd.spider.main.util.SpiderConstants;
+import org.apache.log4j.Logger;
+
+import java.io.IOException;
+import java.util.List;
 
 /**
  * 
@@ -83,14 +82,16 @@ public class SpiderMain {
 				main(new String[] {});
 			}
 		} catch (IOException ioe) {
-			System.err.println("Dunno what you did but I don't like it. I quit.");
-			System.exit(0);
-		} catch (NullPointerException npe) {
+            System.err.println("Dunno what you did but I don't like it. I quit.");
+            System.exit(0);
+        } catch (ExcelOutputException ebe) {
+            System.err.println("Error creating an excel backup. Please ensure it's not open and try again");
+            System.exit(0);
+        } catch (NullPointerException npe) {
 			prompt = "I didn't understand this parameter, please try again. Type \"quit\" if you changed your mind. \n" + prompt;
 			main(new String[] {});
 		} catch (StateNotReadyException snre) {
-		    //Can i start over here when i catch exceptions? just pass something to start where it left off? Maybe count number of failures before giving up
-			logger.error(snre.getState().getName() + " has not been set up \n" );
+		    logger.error(snre.getState().getName() + " has not been set up \n" );
 			prompt = snre.getState().getName() + " is not ready for scraping yet. Please try another\n" + prompt;
 			main(new String[] {"4"});
 		} catch (Exception e) {
@@ -118,14 +119,14 @@ public class SpiderMain {
 	}
 
 	@SuppressWarnings("unchecked")
-	private static void getArrestRecords(String[] args) throws IOException, StateNotReadyException {
+	private static void getArrestRecords(String[] args) throws IOException, StateNotReadyException, ExcelOutputException {
 		List<State> states = args.length>=2?inputUtil.convertToStates(args[1]):(List<State>) inputUtil.getInput("State(s) or \"All\": ", 3, SpiderConstants.STATE_VALIDATION);
 		long maxNumberOfResults = args.length>=3?inputUtil.convertToNumber(args[2]):999999;
 		engine.getArrestRecordsByState(states, maxNumberOfResults);
 	}
 
 	@SuppressWarnings("unchecked")
-	private static void crackArrestSite(String[] args) throws IOException, StateNotReadyException {
+	private static void crackArrestSite(String[] args) throws IOException, StateNotReadyException, ExcelOutputException {
 		List<State> states = args.length>=2?inputUtil.convertToStates(args[1]):(List<State>) inputUtil.getInput("State(s) or \"All\": ", 3, SpiderConstants.STATE_VALIDATION);
 		long maxNumberOfResults = args.length>=3?inputUtil.convertToNumber(args[1]):5;
 		engine.getArrestRecordsByStateCrack(states, maxNumberOfResults);

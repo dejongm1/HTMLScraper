@@ -5,9 +5,9 @@ import com.mcd.spider.main.entities.record.ArrestRecord;
 import com.mcd.spider.main.entities.record.Record;
 import com.mcd.spider.main.entities.record.State;
 import com.mcd.spider.main.entities.service.DesMoinesRegisterComService;
-import com.mcd.spider.main.entities.site.ArrestsDotOrgSite;
 import com.mcd.spider.main.entities.site.DesMoinesRegisterComSite;
 import com.mcd.spider.main.entities.site.Site;
+import com.mcd.spider.main.exception.ExcelOutputException;
 import com.mcd.spider.main.util.ConnectionUtil;
 import com.mcd.spider.main.util.EngineUtil;
 import com.mcd.spider.main.util.ExcelWriter;
@@ -39,13 +39,14 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     private SpiderUtil spiderUtil = new SpiderUtil();
     private EngineUtil engineUtil = new EngineUtil();
     DesMoinesRegisterComService service = new DesMoinesRegisterComService();
+    private Set<String> scrapedIds;
 
     public Site getSite() {
     	return new DesMoinesRegisterComSite();
     }
     
     @Override
-    public void getArrestRecords(State state, long maxNumberOfResults) {
+    public void getArrestRecords(State state, long maxNumberOfResults) throws ExcelOutputException {
     	if ((System.getProperty("offline").equals("true"))) {
     		logger.debug("Offline - can't scrape this php site");
     	} else {
@@ -66,7 +67,15 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
 	//        for(Site site : sites){
 	        DesMoinesRegisterComSite site = new DesMoinesRegisterComSite();
 	        ExcelWriter excelWriter  = new ExcelWriter(state, new ArrestRecord(), site);
-	        excelWriter.createSpreadhseet();
+            try {
+                //this will get previously written IDs but then overwrite the spreadsheet
+                scrapedIds = excelWriter.getPreviousIds();
+                //stop the program here if unable to create backup
+                excelWriter.backupWorkbook();
+                excelWriter.createSpreadhseet();
+            } catch (ExcelOutputException e) {
+                throw e;
+            }
 	        int sleepTimeAverage = (site.getPerRecordSleepRange()[0]+site.getPerRecordSleepRange()[1])/2;
 	        sleepTimeSum += spiderUtil.offline()?0:sleepTimeAverage;
 	        long time = System.currentTimeMillis();
@@ -159,7 +168,10 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
             for(int m=0;m<mugShots.length();m++) {
                 //not sure if the url will work, might need to call service
                 JSONObject mugshot = (JSONObject) mugShots.get(m);
-                detailUrlMap.put(mugshot.getString("id"), site.getBaseUrl(null) + "&id=" + mugshot.getString("id"));
+                //only add it if we haven't already scraped it
+                if (!scrapedIds.contains(mugshot.getString("id"))) {
+                    detailUrlMap.put(mugshot.getString("id"), site.getBaseUrl(null) + "&id=" + mugshot.getString("id"));
+                }
                 //http://data.desmoinesregister.com/iowa-mugshots/index.php?co=Polk&id=113936
             }
         } catch (JSONException e) {
