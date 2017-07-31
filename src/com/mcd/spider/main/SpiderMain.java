@@ -85,8 +85,8 @@ public class SpiderMain {
             System.err.println("Dunno what you did but I don't like it. I quit.");
             System.exit(0);
         } catch (ExcelOutputException ebe) {
-            System.err.println("Error creating an excel backup. Please ensure it's not open and try again");
-            System.exit(0);
+            prompt = "Error with excel output: " + ebe.getMethodName() + ". Please ensure it's not open and try again. \n" + prompt;
+            main(new String[] {});
         } catch (NullPointerException npe) {
 			prompt = "I didn't understand this parameter, please try again. Type \"quit\" if you changed your mind. \n" + prompt;
 			main(new String[] {});

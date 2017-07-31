@@ -19,7 +19,7 @@ public class ExcelOutputException extends Exception {
         return excelWriter;
     }
 
-    public void setExcelWriter(ExcelWriter excelWriter) {
-        this.excelWriter = excelWriter;
+    public String getMethodName() {
+        return methodName;
     }
 }

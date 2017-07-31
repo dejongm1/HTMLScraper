@@ -29,6 +29,7 @@ public class ExcelWriter {
 	private State state;
 	private Record record;
 	private static final String OUTPUT_DIR = "output/";
+    private static final String BACKUP_DIR = "backup/";
 	private File oldBook;
 	private File newBook;
 	private Workbook currentWorkbook;
@@ -194,10 +195,9 @@ public class ExcelWriter {
 
     public void backupWorkbook() throws ExcelOutputException {
 	    try {
-	        //not copying data to backup
-            oldBook = new File(OUTPUT_DIR + docName);
+            oldBook = findMostRecentWorkbook();
             //newBook = new File(OUTPUT_DIR + docName + "_" + workbookCreateDate.get(Calendar.HOUR_OF_DAY) + ":" + workbookCreateDate.get(Calendar.MINUTE) + ".xls");
-            newBook = new File(OUTPUT_DIR + docName + "_backup.xls");
+            newBook = new File(OUTPUT_DIR + BACKUP_DIR + docName.substring(0, docName.length()-4) + "_backup.xls");
             currentWorkbook = Workbook.getWorkbook(oldBook);
             backupWorkbook = Workbook.createWorkbook(newBook, currentWorkbook);
             backupWorkbook.write();
@@ -228,8 +228,11 @@ public class ExcelWriter {
 	}
 
 	private File findMostRecentWorkbook() {
-    File[] files = new File(OUTPUT_DIR).listFiles();
-        if (files.length == 0) return null;
+	    //TODO need to ignore directories
+        File[] files = new File(OUTPUT_DIR).listFiles();
+        if (files.length == 0) {
+            return null;
+        }
         Arrays.sort(files, new Comparator<File>() {
             public int compare(File o1, File o2) {
                 return new Long(o2.lastModified()).compareTo(o1.lastModified());
