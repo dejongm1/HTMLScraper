@@ -169,7 +169,7 @@ public class ArrestsDotOrgSite implements Site {
     @Override
     public boolean isARecordDetailDoc(Document doc) {
         if (doc!=null) {
-            return doc.baseUri().matches("[A-Za-z]+_[0-9]");
+            return doc.baseUri().matches(".*[A-Za-z]+_[0-9]/?.+");
         } else {
             return false;
         }
