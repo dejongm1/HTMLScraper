@@ -60,7 +60,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
 	        //this currently won't stop a single site from processing more than the max number of records
 	        //while(recordsProcessed <= maxNumberOfResults) {
 	
-	        long stateTime = System.currentTimeMillis();
+	        long siteTime = System.currentTimeMillis();
 	        logger.info("----State: " + state.getName() + "----");
 	        logger.debug("Sending spider " + (System.getProperty("offline").equals("true")?"offline":"online" ));
 	        //Site[] sites = state.getSites();
@@ -88,8 +88,8 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
 	        //remove ID column on final save?
 	        //or use for future processing? check for ID and start where left off
 	        //excelWriter.removeColumnsFromSpreadsheet(new int[]{ArrestRecord.RecordColumnEnum.ID_COLUMN.index()});
-	        stateTime = System.currentTimeMillis() - stateTime;
-	        logger.info(state.getName() + " took " + stateTime + " ms");
+	        siteTime = System.currentTimeMillis() - siteTime;
+	        logger.info(site.getName() + " took " + siteTime + " ms");
 	
 	        //extract to util class
 	//        try {

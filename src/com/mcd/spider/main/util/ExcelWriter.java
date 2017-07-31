@@ -146,7 +146,7 @@ public class ExcelWriter {
 	public void saveRecordsToWorkbook(List<Record> records) {
 	    //TODO this is adding to excel, not overwriting
 		try {
-			int rowNumber = workbook.getSheet(0).getRows();
+			int rowNumber = 0;
 			for (Record currentRecord : records) {
 				currentRecord.addToExcelSheet(workbook, rowNumber);
 				rowNumber++;
