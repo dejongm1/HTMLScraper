@@ -64,8 +64,6 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
 	        long siteTime = System.currentTimeMillis();
 	        logger.info("----State: " + state.getName() + "----");
 	        logger.debug("Sending spider " + (System.getProperty("offline").equals("true")?"offline":"online" ));
-	        //Site[] sites = state.getSites();
-	//        for(Site site : sites){
 	        DesMoinesRegisterComSite site = new DesMoinesRegisterComSite();
 	        ExcelWriter excelWriter  = new ExcelWriter(state, new ArrestRecord(), site);
             try {
@@ -82,8 +80,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
 	        sitesScraped++;
 	        time = System.currentTimeMillis() - time;
 	        logger.info(site.getBaseUrl(new String[]{state.getName()}) + " took " + time + " ms");
-	//        }
-	
+
 	        //remove ID column on final save?
 	        //or use for future processing? check for ID and start where left off
 	        //excelWriter.removeColumnsFromSpreadsheet(new int[]{ArrestRecord.RecordColumnEnum.ID_COLUMN.index()});
@@ -135,8 +132,6 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
                 //con.setRequestProperty("Referer", service.getReferer());
                 con.setRequestProperty("XRequested-With", service.getXRequestedWith());
                 con.setRequestProperty("Host", service.getHost());
-
-                //iterate over counties and add to list
 //                String urlParameters = service.getRequestBody(new String[]{county, "getmugs", "0", "10000"});
                 String urlParameters = service.getRequestBody(new String[]{county, "getmugs", "0", "12"});
 
@@ -164,9 +159,8 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
             JSONObject json = new JSONObject(response.toString());
             JSONArray mugShots = json.getJSONArray("mugs");
             for(int m=0;m<mugShots.length();m++) {
-                //not sure if the url will work, might need to call service
                 JSONObject mugshot = (JSONObject) mugShots.get(m);
-                //only add it if we haven't already scraped it
+                //only add if we haven't already crawled it
                 if (!scrapedIds.contains(mugshot.getString("id"))) {
                     detailUrlMap.put(mugshot.getString("id"), site.getBaseUrl(null) + "&id=" + mugshot.getString("id"));
                 }
@@ -216,8 +210,6 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
             }
         }
         //save the whole thing at the end
-        //order?? and save to overwrite the spreadsheet
-        //this copies, not overwrites
         //excelWriter.saveRecordsToWorkbook(arrestRecords);
         return recordsProcessed;
     }

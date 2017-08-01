@@ -34,15 +34,13 @@ getRecords()
 		
 		profile-details-link - #container #middle .gallery-listing td a[href]
 		paging - #container #middle .pagination a[href]
-						?from=2015-06-21+06%3A44%3A15.819010&from=105896283 (None means last page)
+						?from=2015-06-21+06%3A44%3A15.819010&from=105896283 (None = last page)
 						?from=2015-03-15+02%3A18%3A43.462779&from=93962588
 						?from=2014-11-22+10%3A59%3A17.265412&from=84809507
 	
-	
-	
+	Save IDs separately and use that for duplicate record avoidance	
 
 	Add parameter to choose county
-
 	
 	arrests.org - compare html doc to saved html page
 	Read in spreadsheet at start of scrape to skip records

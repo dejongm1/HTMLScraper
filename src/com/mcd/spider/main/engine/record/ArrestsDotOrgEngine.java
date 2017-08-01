@@ -168,7 +168,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             //****TODO
             //****use sorted map to check for already scraped records - should I used ID as map.key instead of a sequence?
 
-            spiderUtil.sleep(100000, true);
+            spiderUtil.sleep(1000, true);
             //****iterate over collection, scraping records and simply opening others
             recordsProcessed += scrapeRecords(recordDetailUrlMap, site, excelWriter);
 
@@ -221,9 +221,8 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
                 if (engineUtil.docWasRetrieved(profileDetailDoc)) {
                     recordsProcessed++;
                     //should we check for ID first or not bother unless we see duplicates??
-                
+                    arrestRecord = populateArrestRecord(profileDetailDoc, site);
                     arrestRecords.add(arrestRecord);
-                    populateArrestRecord(profileDetailDoc, site);
                     //save each record in case of failures
                     excelWriter.addRecordToWorkbook(arrestRecord);
                     spiderUtil.sleep(ConnectionUtil.getSleepTime(site), true);//sleep at random interval
@@ -243,7 +242,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     public ArrestRecord populateArrestRecord(Document profileDetailDoc, Site site) {
         Elements profileDetails = site.getRecordDetailElements(profileDetailDoc);
         ArrestRecord record = new ArrestRecord();
-        record.setId(site.getRecordId(profileDetailDoc.baseUri()));
+        record.setId(site.getRecordId(profileDetailDoc.baseUri().replace("/?d=", "")));
         for (Element profileDetail : profileDetails) {
             matchPropertyToField(record, profileDetail);
             logger.info("\t" + profileDetail.text());
