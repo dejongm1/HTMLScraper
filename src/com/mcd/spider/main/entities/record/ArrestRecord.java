@@ -1,20 +1,17 @@
 package com.mcd.spider.main.entities.record;
 
+import jxl.write.Label;
+import jxl.write.WritableSheet;
+import jxl.write.WritableWorkbook;
+import jxl.write.WriteException;
+import org.apache.log4j.Logger;
+
 import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
-
-import org.apache.log4j.Logger;
-
-import com.mcd.spider.main.entities.record.ArrestRecord.RecordColumnEnum;
-
-import jxl.write.Label;
-import jxl.write.WritableSheet;
-import jxl.write.WritableWorkbook;
-import jxl.write.WriteException;
 
 
 public class ArrestRecord implements Record {
@@ -260,10 +257,8 @@ public class ArrestRecord implements Record {
 					Label label = new Label(columnNumber, rowNumber, fieldValueString.toString());
 					worksheet.addCell(label);
 
-				} catch (WriteException we) {
-					logger.error("Trouble writing info from " + this.getFullName() + " into row " + rowNumber + ", column " + columnNumber, we);
-				} catch (NullPointerException npe) {
-					logger.error("Trouble writing info from " + this.getFullName() + " into row " + rowNumber + ", column " + columnNumber, npe);
+				} catch (WriteException | NullPointerException e) {
+					logger.error("Trouble writing info from " + this.getFullName() + " into row " + rowNumber + ", column " + columnNumber, e);
 				}
 				columnNumber++;
 		}

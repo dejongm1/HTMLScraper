@@ -4,7 +4,6 @@ import com.mcd.spider.main.engine.record.ArrestRecordEngine;
 import com.mcd.spider.main.entities.record.ArrestRecord;
 import com.mcd.spider.main.entities.record.Record;
 import com.mcd.spider.main.entities.record.State;
-import com.mcd.spider.main.entities.site.ArrestsDotOrgSite;
 import com.mcd.spider.main.entities.site.PolkCountyIowaGovSite;
 import com.mcd.spider.main.entities.site.Site;
 import com.mcd.spider.main.util.ConnectionUtil;
@@ -53,7 +52,7 @@ public class PolkCountyOrgEngine implements ArrestRecordEngine {
 //        for(Site site : sites){
         PolkCountyIowaGovSite site = new PolkCountyIowaGovSite();
         ExcelWriter excelWriter  = new ExcelWriter(state, new ArrestRecord(), site);
-        excelWriter.createSpreadhseet();
+        excelWriter.createSpreadsheet();
         int sleepTimeAverage = (site.getPerRecordSleepRange()[0]+site.getPerRecordSleepRange()[1])/2;
         sleepTimeSum += spiderUtil.offline()?0:sleepTimeAverage;
         long time = System.currentTimeMillis();

@@ -8,6 +8,7 @@ import com.mcd.spider.main.entities.service.DesMoinesRegisterComService;
 import com.mcd.spider.main.entities.site.DesMoinesRegisterComSite;
 import com.mcd.spider.main.entities.site.Site;
 import com.mcd.spider.main.exception.ExcelOutputException;
+import com.mcd.spider.main.exception.IDCheckException;
 import com.mcd.spider.main.util.ConnectionUtil;
 import com.mcd.spider.main.util.EngineUtil;
 import com.mcd.spider.main.util.ExcelWriter;
@@ -46,7 +47,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     }
     
     @Override
-    public void getArrestRecords(State state, long maxNumberOfResults) throws ExcelOutputException {
+    public void getArrestRecords(State state, long maxNumberOfResults) throws ExcelOutputException, IDCheckException {
     	if ((System.getProperty("offline").equals("true"))) {
     		logger.debug("Offline - can't scrape this php site");
     	} else {
@@ -70,10 +71,8 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
             try {
                 //this will get previously written IDs but then overwrite the spreadsheet
                 scrapedIds = excelWriter.getPreviousIds();
-                //stop the program here if unable to create backup
-                excelWriter.backupWorkbook();
-                excelWriter.createSpreadhseet();
-            } catch (ExcelOutputException e) {
+                excelWriter.createSpreadsheet();
+            } catch (ExcelOutputException | IDCheckException e) {
                 throw e;
             }
 	        int sleepTimeAverage = (site.getPerRecordSleepRange()[0]+site.getPerRecordSleepRange()[1])/2;
@@ -117,7 +116,6 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     public int scrapeSite(State state, Site site, ExcelWriter excelWriter) {
         int recordsProcessed = 0;
 
-        Map<String, String> profileDetailUrlMap = new HashMap<>();
         for (String county : ((DesMoinesRegisterComSite)site).getCounties()) {
             site.getBaseUrl(new String[]{county});
             try {
@@ -139,14 +137,14 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
                 con.setRequestProperty("Host", service.getHost());
 
                 //iterate over counties and add to list
-                //try something other than getmugs
 //                String urlParameters = service.getRequestBody(new String[]{county, "getmugs", "0", "10000"});
-                String urlParameters = service.getRequestBody(new String[]{county, "getmugs", "0", "5"});
+                String urlParameters = service.getRequestBody(new String[]{county, "getmugs", "0", "12"});
 
                 // Send post request
                 logger.debug("\nSending 'POST' request to URL : " + service.getUrl());
                 StringBuffer response = sendRequest(con, urlParameters);
 
+                Map<String, String> profileDetailUrlMap = new HashMap<>();
                 profileDetailUrlMap.putAll(parseDocForUrls(response, site));
 
                 recordsProcessed += scrapeRecords(profileDetailUrlMap, site, excelWriter);
@@ -220,7 +218,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
         //save the whole thing at the end
         //order?? and save to overwrite the spreadsheet
         //this copies, not overwrites
-        excelWriter.saveRecordsToWorkbook(arrestRecords);
+        //excelWriter.saveRecordsToWorkbook(arrestRecords);
         return recordsProcessed;
     }
 

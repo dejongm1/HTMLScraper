@@ -1,32 +1,21 @@
 package com.mcd.spider.main.engine.record;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.log4j.Logger;
-import org.jsoup.Connection;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
 import com.mcd.spider.main.entities.audit.OfflineResponse;
 import com.mcd.spider.main.entities.record.ArrestRecord;
 import com.mcd.spider.main.entities.record.Record;
 import com.mcd.spider.main.entities.record.State;
 import com.mcd.spider.main.entities.site.ArrestsDotOrgSite;
 import com.mcd.spider.main.entities.site.Site;
-import com.mcd.spider.main.util.ConnectionUtil;
-import com.mcd.spider.main.util.EmailUtil;
-import com.mcd.spider.main.util.EngineUtil;
-import com.mcd.spider.main.util.ExcelWriter;
-import com.mcd.spider.main.util.SpiderUtil;
+import com.mcd.spider.main.util.*;
+import org.apache.log4j.Logger;
+import org.jsoup.Connection;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.*;
 
 /**
  *
@@ -62,7 +51,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         ArrestsDotOrgSite site = new ArrestsDotOrgSite();
         logger.debug("Sending spider " + (System.getProperty("offline").equals("true")?"offline":"online" ));
         ExcelWriter excelWriter  = new ExcelWriter(state, new ArrestRecord(), site);
-        excelWriter.createSpreadhseet();
+        excelWriter.createSpreadsheet();
         int sleepTimeAverage = (site.getPerRecordSleepRange()[0]+site.getPerRecordSleepRange()[1])/2;
         sleepTimeSum += spiderUtil.offline()?0:sleepTimeAverage;
         long time = System.currentTimeMillis();

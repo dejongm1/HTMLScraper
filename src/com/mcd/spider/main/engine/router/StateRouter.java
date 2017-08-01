@@ -3,6 +3,7 @@ package com.mcd.spider.main.engine.router;
 import com.mcd.spider.main.engine.record.ArrestRecordEngine;
 import com.mcd.spider.main.entities.record.State;
 import com.mcd.spider.main.exception.ExcelOutputException;
+import com.mcd.spider.main.exception.IDCheckException;
 import common.Logger;
 
 /**
@@ -22,7 +23,7 @@ public class StateRouter implements EngineRouter {
 	private static final Logger logger = Logger.getLogger(StateRouter.class);
 	
 	@Override
-	public void collectRecords(long maxNumberOfResults) throws ExcelOutputException {
+	public void collectRecords(long maxNumberOfResults) throws ExcelOutputException, IDCheckException {
         logger.info("Routing record collection to " + this.state.getName() + " engines");
 
         for (ArrestRecordEngine engine : state.getEngines()) {
