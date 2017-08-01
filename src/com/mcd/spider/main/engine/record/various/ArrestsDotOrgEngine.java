@@ -74,7 +74,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         sleepTimeSum += offline?0:sleepTimeAverage;
         long time = System.currentTimeMillis();
         
-        recordsProcessed += scrapeSite(state, site, excelWriter);
+        recordsProcessed += scrapeSite(state, site, excelWriter, 1);
         
         time = System.currentTimeMillis() - time;
         logger.info(site.getBaseUrl() + " took " + time + " ms");
@@ -97,14 +97,15 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     }
 
     @Override
-    public int scrapeSite(State state, Site site, ExcelWriter excelWriter) {
+    public int scrapeSite(State state, Site site, ExcelWriter excelWriter, int attemptCount) {
         //refactor to split out randomizing functionality, maybe reuse??
+    	int maxAttempts = site.getMaxAttempts();
         int recordsProcessed = 0;
         site.getBaseUrl();
         String firstPageResults = site.generateResultsPageUrl(1);
         //Add some retries if first connection to state site fails?
         Document mainPageDoc = spiderUtil.getHtmlAsDoc(firstPageResults);
-        if (engineUtil.docWasRetrieved(mainPageDoc)) {
+        if (engineUtil.docWasRetrieved(mainPageDoc) && attemptCount<=maxAttempts) {
             //restricting to 2 pages for now
         	//int numberOfPages = site.getTotalPages(mainPageDoc);
         	int numberOfPages = 2;
@@ -127,22 +128,19 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             Collections.shuffle(keys);
             String previousKey = keys.get(keys.size()-1);
             for (String k : keys) {
+            	Document docToCheck = null;
+            	String url = resultsUrlPlusMiscMap.get(k);
             	try {
-            		//can we guarantee previous is a page that has access to the current?
-	        		Connection.Response response = null;
-	        		Document docToCheck = null;
-	            	Connection conn = ConnectionUtil.getConnection(resultsUrlPlusMiscMap.get(k), resultsUrlPlusMiscMap.get(previousKey));
-	    			if (offline) {
-	    				response = new OfflineResponse(200, resultsUrlPlusMiscMap.get(k));
-	    			} else {
-	    				response = conn.execute();
-	    			}
-					//TODO depending on response status code, take action
-	    			docToCheck = response.parse();
-	    			resultsDocPlusMiscMap.put(k, docToCheck);
-            	} catch (IOException ioe) {
-            		logger.error(ioe);
+	        		//can we guarantee previous is a page that has access to the current?
+	    			Connection.Response response = spiderUtil.retrieveConnectionResponse(url, resultsUrlPlusMiscMap.get(previousKey));
+	        		docToCheck = response.parse();
+	        		//TODO depending on response status code, take action
+            	} catch (FileNotFoundException fnfe) {
+                	logger.error("No html doc found for " + url);
+                } catch (IOException e) {
+            		logger.error("Failed to get a connection to " + url, e);
             	}
+    			resultsDocPlusMiscMap.put(k, docToCheck);
                 
                 int sleepTime = ConnectionUtil.getSleepTime(site);
                 spiderUtil.sleep(sleepTime, false);
@@ -184,6 +182,8 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 
         } else {
             logger.error("Failed to load html doc from " + site.getBaseUrl());
+            attemptCount++;
+            scrapeSite(state, site, excelWriter, attemptCount);
         }
         return recordsProcessed;
     }
@@ -214,22 +214,16 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         String previousKey = keys.get(keys.size()-1);
         for (String k : keys) {
             String url = recordsDetailsUrlMap.get(k);
-            Connection.Response response = null;
     		Document profileDetailDoc = null;
-            try {
-	            //can we guarantee previous is a page that has access to the current?
-	        	Connection conn = ConnectionUtil.getConnection(url, recordsDetailsUrlMap.get(previousKey));
-				if (offline) {
-					response = new OfflineResponse(200, recordsDetailsUrlMap.get(k));
-				} else {
-					response = conn.execute();
-				}
-				//TODO depending on response status code, take action
-				profileDetailDoc = response.parse();
-            } catch (FileNotFoundException fnfe) {
+        	try {
+        		//can we guarantee previous is a page that has access to the current?
+    			Connection.Response response = spiderUtil.retrieveConnectionResponse(url, recordsDetailsUrlMap.get(previousKey));
+    			profileDetailDoc = response.parse();
+        		//TODO depending on response status code, take action
+        	} catch (FileNotFoundException fnfe) {
             	logger.error("No html doc found for " + url);
-            } catch (IOException ioe) {
-            	logger.error("Error trying to connect and retrieve " + url, ioe);
+            } catch (IOException e) {
+        		logger.error("Failed to get a connection to " + recordsDetailsUrlMap.get(k), e);
             }
             if (site.isARecordDetailDoc(profileDetailDoc)) {
                 if (engineUtil.docWasRetrieved(profileDetailDoc)) {

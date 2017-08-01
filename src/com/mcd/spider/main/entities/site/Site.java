@@ -32,4 +32,5 @@ public interface Site {
     boolean isARecordDetailDoc(Document doc);
 	String getRecordId(String url);
 	Service getService();
+	int getMaxAttempts();
 }

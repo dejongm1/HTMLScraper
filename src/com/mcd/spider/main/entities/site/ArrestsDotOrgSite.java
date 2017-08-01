@@ -20,6 +20,7 @@ public class ArrestsDotOrgSite implements Site {
 	private int totalRecordCount;
 	private static final int[] perRecordSleepRange = new int[]{30,31};
 	private Map<String,Document> resultsPageDocuments;
+	private static final int MAX_ATTEMPTS = 3;
 
 	public ArrestsDotOrgSite (String[] args) {
 		setBaseUrl(args);
@@ -188,6 +189,11 @@ public class ArrestsDotOrgSite implements Site {
     @Override
     public Service getService() {
         return null;
+    }
+    
+    @Override
+    public int getMaxAttempts() {
+    	return MAX_ATTEMPTS;
     }
 
 }

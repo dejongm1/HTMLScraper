@@ -15,10 +15,12 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import com.mcd.spider.main.engine.SpiderEngine;
+import com.mcd.spider.main.entities.audit.OfflineResponse;
 import com.mcd.spider.main.entities.record.State;
 
 public class SpiderUtil {
@@ -143,6 +145,17 @@ public class SpiderUtil {
 		}
 //		return tempProperties;
 	}
+    
+    public Connection.Response retrieveConnectionResponse(String url, String refferer) throws IOException {
+    	Connection.Response response;
+    	Connection conn = ConnectionUtil.getConnection(url, refferer);
+		if (offline()) {
+			response = new OfflineResponse(200, url);
+		} else {
+			response = conn.execute();
+		}
+		return response;
+    }
     
 	public void sleep(long milliSecondsToSleep, boolean logGenericStatement) {
         try {

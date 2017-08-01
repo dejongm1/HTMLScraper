@@ -15,7 +15,7 @@
     	     package blacklist of common words
     	     create empty files named as possible paremeters (url, search, depth)
     	     			-->
-        <jar destfile="${dir.workspace}/HTMLSpider.jar" filesetmanifest="mergewithoutmain">
+        <jar destfile="${dir.workspace}/Spider.jar" filesetmanifest="mergewithoutmain">
             <manifest>
                 <attribute name="Main-Class" value="com.mcd.spider.main.SpiderMain"/>
                 <attribute name="Class-Path" value="."/>
@@ -28,6 +28,7 @@
         	<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/mail.jar"/>
         	<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/activation.jar"/>
         	<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/java-json.jar"/>
+        	<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/sitemapgen4j-1.0.1.jar"/>
             <fileset dir="${dir.buildfile}/bin"/>
         	<!--<zipfileset dir="${dir.buildfile}/htmls" includes="*.htm*" prefix="htmls"/> -->
             <zipfileset dir="${dir.buildfile}/resources" includes="*.*" prefix="resources"/>
