@@ -1,5 +1,6 @@
-package com.mcd.spider.main.engine.record;
+package com.mcd.spider.main.engine.record.various;
 
+import com.mcd.spider.main.engine.record.ArrestRecordEngine;
 import com.mcd.spider.main.entities.audit.OfflineResponse;
 import com.mcd.spider.main.entities.record.ArrestRecord;
 import com.mcd.spider.main.entities.record.Record;

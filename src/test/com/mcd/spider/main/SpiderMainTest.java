@@ -1,18 +1,16 @@
-package test.com.mcd.spider;
+package test.com.mcd.spider.main;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-
+import com.mcd.spider.main.SpiderMain;
+import com.mcd.spider.main.util.SpiderUtil;
 import org.mockito.Mock;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import com.mcd.spider.main.SpiderMain;
-import com.mcd.spider.main.util.SpiderConstants;
-import com.mcd.spider.main.util.SpiderUtil;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
 
 public class SpiderMainTest {
 	
