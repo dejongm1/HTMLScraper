@@ -37,8 +37,6 @@ getRecords()
 						?from=2015-06-21+06%3A44%3A15.819010&from=105896283 (None = last page)
 						?from=2015-03-15+02%3A18%3A43.462779&from=93962588
 						?from=2014-11-22+10%3A59%3A17.265412&from=84809507
-	
-	Save IDs separately and use that for duplicate record avoidance	
 
 	Add parameter to choose county
 	
@@ -47,7 +45,7 @@ getRecords()
 
     sort in spreadsheet. That will make it easier to find already parsed records later on
 
-	On failed getHtmlAsDoc(baseDoc) getHtmlAsDoc(resultsPage), retry 3 times with different user-agent
+	On failed getHtmlAsDoc(baseDoc) getHtmlAsDoc(resultsPage), retry 2 times with different user-agent
 	On failed getHtmlAsDoc(recordDetail) retry once, keeping track of failed pages
 		- save to list or retry immediately?
 	After so many failed getHtmlAsDoc()s stop trying
@@ -58,17 +56,8 @@ getRecords()
 		- store addresses and details in props
 		- maybe separate e-mail.properties
 	
-	Don't override spreadsheet each run
 	One sheet per state, one book per app execution
-	
-	Only save to spreadsheet if it's not found already
-		- running every week will stop if we reach previous records
-		- need to save spreadsheet if we do it this way
-	
-	Start where we left off? Not sure how I would do that
-		- keep track of the page we're on? we would only retry a certain number of records
-		- output more info per record to spreadsheet. Read the spreadsheet in first, then start there
-		
+
 	Keep properties file separate from jar?
 		-use it to tweak things like site(s), columns to export/exclude, flags, etc
 	

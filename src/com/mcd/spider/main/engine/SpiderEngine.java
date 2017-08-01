@@ -1,16 +1,16 @@
 package com.mcd.spider.main.engine;
 
+import java.util.List;
+
+import org.apache.log4j.Logger;
+
 import com.mcd.spider.main.engine.audit.AuditEngine;
 import com.mcd.spider.main.engine.record.various.ArrestsDotOrgEngine;
 import com.mcd.spider.main.engine.router.StateRouter;
 import com.mcd.spider.main.entities.audit.AuditParameters;
 import com.mcd.spider.main.entities.record.State;
-import com.mcd.spider.main.exception.ExcelOutputException;
-import com.mcd.spider.main.exception.IDCheckException;
+import com.mcd.spider.main.exception.SpiderException;
 import com.mcd.spider.main.exception.StateNotReadyException;
-import org.apache.log4j.Logger;
-
-import java.util.List;
 
 /**
  * 
@@ -23,7 +23,7 @@ public class SpiderEngine {
 	public static final Logger logger = Logger.getLogger(SpiderEngine.class);
 
 	//redirect to Appropriate engine from here
-	public void getArrestRecordsByState(List<State> states, long maxNumberOfResults) throws StateNotReadyException, ExcelOutputException, IDCheckException {
+	public void getArrestRecordsByState(List<State> states, long maxNumberOfResults) throws SpiderException {
 		//TODO use threading here for multiple states, maybe even within states
 		for (State state : states) {
 			if (state.getEngines().size()!=0) {
@@ -36,7 +36,7 @@ public class SpiderEngine {
 		
 	}
 	
-	public void getArrestRecordsByStateCrack(List<State> states, long maxNumberOfResults) throws StateNotReadyException, ExcelOutputException, IDCheckException {
+	public void getArrestRecordsByStateCrack(List<State> states, long maxNumberOfResults) throws SpiderException {
 		for (State state : states) {
 			state.getEngines().removeAll(state.getEngines());
 			state.addEngine(new ArrestsDotOrgEngine());

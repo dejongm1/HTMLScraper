@@ -21,7 +21,9 @@ public class ArrestsDotOrgSite implements Site {
 	private static final int[] perRecordSleepRange = new int[]{30,31};
 	private Map<String,Document> resultsPageDocuments;
 
-	public ArrestsDotOrgSite () {}
+	public ArrestsDotOrgSite (String[] args) {
+		setBaseUrl(args);
+	}
 	
 	@Override
 	public Url getUrl() {
@@ -61,7 +63,7 @@ public class ArrestsDotOrgSite implements Site {
 		return this.resultsPageDocuments;
 	}
 	@Override
-	public String getBaseUrl(String[] args) {
+	public void setBaseUrl(String[] args) {
 		if (baseUrl==null) {
 			Url url = getUrl();
 //			String resultsPerPage = args.length>1?args[1]:null;
@@ -71,7 +73,10 @@ public class ArrestsDotOrgSite implements Site {
 //			builtUrl += "&results="+(resultsPerPage!=null?resultsPerPage:"56");
 			baseUrl =  builtUrl.toLowerCase();
 		}
-		return baseUrl;
+	}
+	@Override
+	public String getBaseUrl() {
+		return this.baseUrl;
 	}
 //	@Override
 //	public Element getRecordElement(Document doc) {
@@ -86,7 +91,7 @@ public class ArrestsDotOrgSite implements Site {
 	public String getRecordDetailDocUrl(Element record) {
 		String pdLink = record.attr("href");
 //		pdLink = pdLink.replace("?d=1", "");
-		return getBaseUrl(new String[]{})+pdLink;
+		return baseUrl+pdLink;
 	}
 	@Override
 	public Map<String,String> getRecordDetailDocUrls(List<Document> resultsPageDocs) {
@@ -147,7 +152,7 @@ public class ArrestsDotOrgSite implements Site {
 							//|| link.attr("href").equals("#")
 							|| link.attr("href").matches("/[a-zA-Z]+/")
 							|| link.attr("href").equals("/"))) {
-					safeUrls.put(String.valueOf(u),getBaseUrl(null) + link.attr("href"));
+					safeUrls.put(String.valueOf(u),baseUrl + link.attr("href"));
 				}
 			}
 		} catch (IndexOutOfBoundsException aiobe) {
@@ -177,7 +182,7 @@ public class ArrestsDotOrgSite implements Site {
 
 	@Override
 	public String getRecordId(String url) {
-		return url.substring(url.indexOf("/Arrests/")+9, url.length()-1);
+		return url.substring(url.indexOf("/Arrests/")+9, url.indexOf("/?d=1"));
 	}
 
     @Override

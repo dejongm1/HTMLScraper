@@ -2,7 +2,7 @@ package com.mcd.spider.main.exception;
 
 import com.mcd.spider.main.util.ExcelWriter;
 
-public class ExcelOutputException extends Exception {
+public class ExcelOutputException extends SpiderException {
 
 
     private static final long serialVersionUID = 1L;

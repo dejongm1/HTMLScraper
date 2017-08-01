@@ -76,7 +76,7 @@ public class DesMoinesRegisterComService implements Service {
     }
     @Override
     public Site getSite() {
-        return new DesMoinesRegisterComSite();
+        return new DesMoinesRegisterComSite(null);
     }
 
     public Document getDetailsDoc(String url, DesMoinesRegisterComEngine engine) throws IOException, JSONException {

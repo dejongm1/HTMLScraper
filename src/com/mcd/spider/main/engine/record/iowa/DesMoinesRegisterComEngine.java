@@ -1,19 +1,19 @@
 package com.mcd.spider.main.engine.record.iowa;
 
-import com.mcd.spider.main.engine.record.ArrestRecordEngine;
-import com.mcd.spider.main.entities.record.ArrestRecord;
-import com.mcd.spider.main.entities.record.Record;
-import com.mcd.spider.main.entities.record.State;
-import com.mcd.spider.main.entities.service.DesMoinesRegisterComService;
-import com.mcd.spider.main.entities.site.DesMoinesRegisterComSite;
-import com.mcd.spider.main.entities.site.Site;
-import com.mcd.spider.main.exception.ExcelOutputException;
-import com.mcd.spider.main.exception.IDCheckException;
-import com.mcd.spider.main.util.ConnectionUtil;
-import com.mcd.spider.main.util.EngineUtil;
-import com.mcd.spider.main.util.ExcelWriter;
-import com.mcd.spider.main.util.SpiderUtil;
-import common.Logger;
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -21,13 +21,22 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.*;
+import com.mcd.spider.main.engine.record.ArrestRecordEngine;
+import com.mcd.spider.main.entities.record.ArrestRecord;
+import com.mcd.spider.main.entities.record.Record;
+import com.mcd.spider.main.entities.record.State;
+import com.mcd.spider.main.entities.service.DesMoinesRegisterComService;
+import com.mcd.spider.main.entities.site.DesMoinesRegisterComSite;
+import com.mcd.spider.main.entities.site.Site;
+import com.mcd.spider.main.exception.SpiderException;
+import com.mcd.spider.main.exception.ExcelOutputException;
+import com.mcd.spider.main.exception.IDCheckException;
+import com.mcd.spider.main.util.ConnectionUtil;
+import com.mcd.spider.main.util.EngineUtil;
+import com.mcd.spider.main.util.ExcelWriter;
+import com.mcd.spider.main.util.SpiderUtil;
+
+import common.Logger;
 
 /**
  *
@@ -42,12 +51,13 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     DesMoinesRegisterComService service = new DesMoinesRegisterComService();
     private Set<String> scrapedIds;
 
-    public Site getSite() {
-    	return new DesMoinesRegisterComSite();
+    @Override
+    public Site getSite(String[] args) {
+    	return new DesMoinesRegisterComSite(args);
     }
     
     @Override
-    public void getArrestRecords(State state, long maxNumberOfResults) throws ExcelOutputException, IDCheckException {
+    public void getArrestRecords(State state, long maxNumberOfResults) throws SpiderException {
     	if ((System.getProperty("offline").equals("true"))) {
     		logger.debug("Offline - can't scrape this php site");
     	} else {
@@ -55,57 +65,35 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
 	        long totalTime = System.currentTimeMillis();
 	        long recordsProcessed = 0;
 	        int sleepTimeSum = 0;
-	        int sitesScraped = 0;
 	
-	        //use maxNumberOfResults to stop processing once this method has been broken up
-	        //this currently won't stop a single site from processing more than the max number of records
 	        //while(recordsProcessed <= maxNumberOfResults) {
-	
-	        long siteTime = System.currentTimeMillis();
-	        logger.info("----State: " + state.getName() + "----");
+	        DesMoinesRegisterComSite site = (DesMoinesRegisterComSite) getSite(null);
+            ExcelWriter excelWriter = initializeOutputter(state, site);
+            
+	        logger.info("----Site: " + site.getName() + "----");
 	        logger.debug("Sending spider " + (System.getProperty("offline").equals("true")?"offline":"online" ));
-	        DesMoinesRegisterComSite site = new DesMoinesRegisterComSite();
-	        ExcelWriter excelWriter  = new ExcelWriter(state, new ArrestRecord(), site);
-            try {
-                //this will get previously written IDs but then overwrite the spreadsheet
-                scrapedIds = excelWriter.getPreviousIds();
-                excelWriter.createSpreadsheet();
-            } catch (ExcelOutputException | IDCheckException e) {
-                throw e;
-            }
+	        
 	        int sleepTimeAverage = (site.getPerRecordSleepRange()[0]+site.getPerRecordSleepRange()[1])/2;
 	        sleepTimeSum += spiderUtil.offline()?0:sleepTimeAverage;
 	        long time = System.currentTimeMillis();
+	        
 	        recordsProcessed += scrapeSite(state, site, excelWriter);
-	        sitesScraped++;
+	        
 	        time = System.currentTimeMillis() - time;
-	        logger.info(site.getBaseUrl(new String[]{state.getName()}) + " took " + time + " ms");
+	        logger.info(site.getBaseUrl() + " took " + time + " ms");
 
-	        //remove ID column on final save?
-	        //or use for future processing? check for ID and start where left off
 	        //excelWriter.removeColumnsFromSpreadsheet(new int[]{ArrestRecord.RecordColumnEnum.ID_COLUMN.index()});
-	        siteTime = System.currentTimeMillis() - siteTime;
-	        logger.info(site.getName() + " took " + siteTime + " ms");
 	
-	        //extract to util class
-	//        try {
-	//            EmailUtil.send("dejong.c.michael@gmail.com",
-	//                    "Pack##92", //need to encrypt
-	//                    "dejong.c.michael@gmail.com",
-	//                    "Arrest record parsing for " + state.getName(),
-	//                    "Michael's a stud, he just successfully parsed the interwebs for arrest records in the state of Iowa");
-	//        } catch (RuntimeException re) {
-	//            logger.error("An error occurred, email not sent");
-	//        }
-	        //}
-	        int perRecordSleepTimeAverage = sitesScraped!=0?(sleepTimeSum/sitesScraped):0;
+	        spiderUtil.sendEmail(state);
+	        
 	        totalTime = System.currentTimeMillis() - totalTime;
 	        if (!spiderUtil.offline()) {
-	            logger.info("Sleep time was approximately " + (recordsProcessed*perRecordSleepTimeAverage) + " ms");
-	            logger.info("Processing time was approximately " + (totalTime-(recordsProcessed*perRecordSleepTimeAverage)) + " ms");
+	            logger.info("Sleep time was approximately " + sleepTimeSum + " ms");
+	            logger.info("Processing time was approximately " + (totalTime-sleepTimeSum) + " ms");
 	        } else {
 	            logger.info("Total time taken was " + totalTime + " ms");
 	        }
+            logger.info(recordsProcessed + " records were processed");
     	}
     }
 
@@ -114,7 +102,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
         int recordsProcessed = 0;
 
         for (String county : ((DesMoinesRegisterComSite)site).getCounties()) {
-            site.getBaseUrl(new String[]{county});
+            site.setBaseUrl(new String[]{county});
             try {
                 //build http post request
                 URL obj = new URL(service.getUrl());
@@ -162,9 +150,8 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
                 JSONObject mugshot = (JSONObject) mugShots.get(m);
                 //only add if we haven't already crawled it
                 if (!scrapedIds.contains(mugshot.getString("id"))) {
-                    detailUrlMap.put(mugshot.getString("id"), site.getBaseUrl(null) + "&id=" + mugshot.getString("id"));
+                    detailUrlMap.put(mugshot.getString("id"), site.getBaseUrl() + "&id=" + mugshot.getString("id"));
                 }
-                //http://data.desmoinesregister.com/iowa-mugshots/index.php?co=Polk&id=113936
             }
         } catch (JSONException e) {
             logger.error("JSONExecption caught", e);
@@ -176,10 +163,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     public int scrapeRecords(Map<String, String> recordsDetailsUrlMap, Site site, ExcelWriter excelWriter){
         int recordsProcessed = 0;
         List<Record> arrestRecords = new ArrayList<>();
-        Record arrestRecord = new ArrestRecord();
-//        List<String> keys = new ArrayList<>(recordsDetailsUrlMap.keySet());
-//        Collections.shuffle(keys);
-//        for (String k : keys) {
+        Record arrestRecord;
         for (Map.Entry<String,String> entry : recordsDetailsUrlMap.entrySet()) {
             String id = entry.getKey();
             String url = recordsDetailsUrlMap.get(id);
@@ -190,10 +174,9 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
                 if (engineUtil.docWasRetrieved(profileDetailDoc)) {
                     if (site.isARecordDetailDoc(profileDetailDoc)) {
                         recordsProcessed++;
-                        //should we check for ID first or not bother unless we see duplicates??
                         arrestRecord = populateArrestRecord(profileDetailDoc, site);
                         arrestRecords.add(arrestRecord);
-                        //save each record in case of failures
+                        //save each record in case of application failures
                         excelWriter.addRecordToWorkbook(arrestRecord);
                         spiderUtil.sleep(ConnectionUtil.getSleepTime(site), true);//sleep at random interval
                         
@@ -209,7 +192,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
                 logger.error("JSONExecption caught on id " + id, e);
             }
         }
-        //save the whole thing at the end
+        //save the whole thing at the end?? use if changing sorting
         //excelWriter.saveRecordsToWorkbook(arrestRecords);
         return recordsProcessed;
     }
@@ -227,6 +210,18 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
         return record;
     }
 
+    @Override
+    public ExcelWriter initializeOutputter(State state, Site site) throws SpiderException {
+    	ExcelWriter excelWriter  = new ExcelWriter(state, new ArrestRecord(), site);
+        try {
+            scrapedIds = excelWriter.getPreviousIds();
+            excelWriter.createSpreadsheet();
+        } catch (ExcelOutputException | IDCheckException e) {
+            throw e;
+        }
+        return excelWriter;
+    }
+    
     @Override
     public void matchPropertyToField(ArrestRecord record, Element profileDetail) {
         String label = profileDetail.select("strong").text().toLowerCase();

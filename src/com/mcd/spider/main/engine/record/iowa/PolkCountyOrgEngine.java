@@ -6,6 +6,7 @@ import com.mcd.spider.main.entities.record.Record;
 import com.mcd.spider.main.entities.record.State;
 import com.mcd.spider.main.entities.site.PolkCountyIowaGovSite;
 import com.mcd.spider.main.entities.site.Site;
+import com.mcd.spider.main.exception.SpiderException;
 import com.mcd.spider.main.util.ConnectionUtil;
 import com.mcd.spider.main.util.EngineUtil;
 import com.mcd.spider.main.util.ExcelWriter;
@@ -29,8 +30,8 @@ public class PolkCountyOrgEngine implements ArrestRecordEngine {
 	private SpiderUtil spiderUtil = new SpiderUtil();
 	private EngineUtil engineUtil = new EngineUtil();
 
-    public Site getSite() {
-    	return new PolkCountyIowaGovSite();
+    public Site getSite(String[] args) {
+    	return new PolkCountyIowaGovSite(args);
     }
     
 	@Override
@@ -50,7 +51,7 @@ public class PolkCountyOrgEngine implements ArrestRecordEngine {
         logger.debug("Sending spider " + (System.getProperty("offline").equals("true")?"offline":"online" ));
         //Site[] sites = state.getSites();
 //        for(Site site : sites){
-        PolkCountyIowaGovSite site = new PolkCountyIowaGovSite();
+        PolkCountyIowaGovSite site = new PolkCountyIowaGovSite(new String[]{state.getName()});
         ExcelWriter excelWriter  = new ExcelWriter(state, new ArrestRecord(), site);
         excelWriter.createSpreadsheet();
         int sleepTimeAverage = (site.getPerRecordSleepRange()[0]+site.getPerRecordSleepRange()[1])/2;
@@ -59,7 +60,7 @@ public class PolkCountyOrgEngine implements ArrestRecordEngine {
         recordsProcessed += scrapeSite(state, site, excelWriter);
         sitesScraped++;
         time = System.currentTimeMillis() - time;
-        logger.info(site.getBaseUrl(new String[]{state.getName()}) + " took " + time + " ms");
+        logger.info(site.getBaseUrl() + " took " + time + " ms");
 //        }
 
         //remove ID column on final save?
@@ -93,7 +94,7 @@ public class PolkCountyOrgEngine implements ArrestRecordEngine {
 	public int scrapeSite(State state, Site site, ExcelWriter excelWriter) {
         //refactor to split out randomizing functionality, maybe reuse??
         int recordsProcessed = 0;
-        String firstPageResults = site.getBaseUrl(null);
+        String firstPageResults = site.getBaseUrl();
         //Add some retries if first connection to state site fails?
         Document mainPageDoc = spiderUtil.getHtmlAsDoc(firstPageResults);
         if (engineUtil.docWasRetrieved(mainPageDoc)) {
@@ -156,7 +157,7 @@ public class PolkCountyOrgEngine implements ArrestRecordEngine {
             //****sort by arrest date (or something else) once everything has been gathered? can I sort spreadsheet after creation?
 
         } else {
-            logger.error("Failed to load html doc from " + site.getBaseUrl(new String[]{state.getName()}));
+            logger.error("Failed to load html doc from " + site.getBaseUrl());
         }
         return recordsProcessed;
     }
@@ -287,5 +288,11 @@ public class PolkCountyOrgEngine implements ArrestRecordEngine {
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(date);
 		record.setArrestDate(calendar);
+	}
+
+	@Override
+	public ExcelWriter initializeOutputter(State state, Site site) throws SpiderException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

@@ -1,24 +1,31 @@
 package com.mcd.spider.main.util;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.Calendar;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.apache.log4j.Logger;
+
 import com.mcd.spider.main.entities.record.Record;
 import com.mcd.spider.main.entities.record.State;
 import com.mcd.spider.main.entities.site.Site;
-import com.mcd.spider.main.exception.ExcelOutputException;
 import com.mcd.spider.main.exception.IDCheckException;
+import com.mcd.spider.main.exception.SpiderException;
+
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
 import jxl.write.Label;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
-import org.apache.log4j.Logger;
-
-import java.io.*;
-import java.lang.reflect.Field;
-import java.util.Calendar;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 public class ExcelWriter {
 
@@ -95,7 +102,7 @@ public class ExcelWriter {
 		this.copyWorkbook = copyWorkbook;
 	}
 
-    public Set<String> getPreviousIds() throws ExcelOutputException, IDCheckException {
+    public Set<String> getPreviousIds() throws SpiderException {
         Set<String> ids = new HashSet<>();
         //check name as well to make sure it's the right state/site
         BufferedReader br = null;
@@ -125,9 +132,13 @@ public class ExcelWriter {
     public void createSpreadsheet() {
         WritableWorkbook newWorkbook = null;
         try {
-            createWorkbookCopy();
-            workbook = copyWorkbook;
-            replaceOldBookWithNew();
+			createWorkbookCopy();
+	        workbook = copyWorkbook;
+	        replaceOldBookWithNew();
+        } catch (BiffException | IOException | WriteException e) {
+        	logger.error(e.getMessage());
+		}
+        try {
             if (workbook==null) {
                 newWorkbook = Workbook.createWorkbook(new File(OUTPUT_DIR + docName));
 
@@ -144,7 +155,7 @@ public class ExcelWriter {
                 newWorkbook.write();
                 workbook = newWorkbook;//this only works if I create one spreadsheet per ExcelWriter
             }
-        } catch (IOException | WriteException | BiffException e) {
+        } catch (IOException | WriteException e) {
             logger.error(e.getMessage());
         } finally {
             if (newWorkbook != null) {

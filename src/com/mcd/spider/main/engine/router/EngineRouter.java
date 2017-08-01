@@ -1,7 +1,6 @@
 package com.mcd.spider.main.engine.router;
 
-import com.mcd.spider.main.exception.ExcelOutputException;
-import com.mcd.spider.main.exception.IDCheckException;
+import com.mcd.spider.main.exception.SpiderException;
 
 /**
  * 
@@ -11,6 +10,6 @@ import com.mcd.spider.main.exception.IDCheckException;
 
 public interface EngineRouter {
 	
-	void collectRecords(long maxNumberOfRecords) throws ExcelOutputException, IDCheckException;
+	void collectRecords(long maxNumberOfRecords) throws SpiderException;
 
 }

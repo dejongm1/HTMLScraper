@@ -11,7 +11,8 @@ import java.util.Map;
 public interface Site {
 	
 	
-	String getBaseUrl(String[] arg);
+	String getBaseUrl();
+	void setBaseUrl(String[] arg);
 	String getName();
 	Url getUrl();
 //	Element getRecordElement(Document doc);

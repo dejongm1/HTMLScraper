@@ -14,12 +14,13 @@ public class DesMoinesRegisterComSite implements Site {
 	private static final String name = "DesMoinesRegister.com";
 	private String baseUrl;
 	private int pages;
-	private int totalRecordCount;
 	private static final int[] perRecordSleepRange = new int[]{1,2};
 	private Map<String,Document> resultsPageDocuments;
 	private Service service = new DesMoinesRegisterComService();
 
-	public DesMoinesRegisterComSite() {}
+	public DesMoinesRegisterComSite(String[] args) {
+		setBaseUrl(args);
+	}
 	
 	@Override
 	public Url getUrl() {
@@ -47,7 +48,7 @@ public class DesMoinesRegisterComSite implements Site {
 		return this.resultsPageDocuments;
 	}
 	@Override
-	public String getBaseUrl(String[] args) {
+	public void setBaseUrl(String[] args) {
 		if (baseUrl==null) {
             Url url = getUrl();
             String builtUrl = url.getProtocol() + url.getDomain();
@@ -56,7 +57,10 @@ public class DesMoinesRegisterComSite implements Site {
             }
             baseUrl = builtUrl.toLowerCase();
 		}
-		return baseUrl;
+	}
+	@Override
+	public String getBaseUrl() {
+		return this.baseUrl;
 	}
 	@Override
 	public Elements getRecordElements(Document doc) {
@@ -101,7 +105,7 @@ public class DesMoinesRegisterComSite implements Site {
 			for (int u=pagesToMatch+1;u<pagesToMatch*2;u++) {
 				Element link = links.get(u);
 				//if () {
-					safeUrls.put(String.valueOf(u),getBaseUrl(null) + link.attr("href"));
+					safeUrls.put(String.valueOf(u),baseUrl + link.attr("href"));
 				//}
 			}
 		} catch (IndexOutOfBoundsException aiobe) {

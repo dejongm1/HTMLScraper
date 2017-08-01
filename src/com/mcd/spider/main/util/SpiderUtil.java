@@ -1,18 +1,25 @@
 package com.mcd.spider.main.util;
 
-import org.apache.log4j.Logger;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-
-import com.mcd.spider.main.engine.SpiderEngine;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.ConnectException;
 import java.net.InetAddress;
-import java.util.*;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import org.apache.log4j.Logger;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+
+import com.mcd.spider.main.engine.SpiderEngine;
+import com.mcd.spider.main.entities.record.State;
 
 public class SpiderUtil {
 	
@@ -147,5 +154,18 @@ public class SpiderUtil {
             logger.error("Error trying to sleep");
         }
     }
-
+	
+	public boolean sendEmail(State state) {
+		try {
+			EmailUtil.send("dejong.c.michael@gmail.com",
+					"Pack##92", //need to encrypt
+					"dejong.c.michael@gmail.com",
+					"Arrest record parsing for " + state.getName(),
+					"Michael's a stud, he just successfully parsed the interwebs for arrest records in the state of Iowa");
+			return true;
+		} catch (RuntimeException re) {
+			logger.error("An error occurred, email not sent");
+			return false;
+		}
+	}
 }

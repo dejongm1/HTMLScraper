@@ -8,7 +8,7 @@ import com.mcd.spider.main.entities.record.State;
  *
  */
 
-public class StateNotReadyException extends Exception {
+public class StateNotReadyException extends SpiderException {
 	
 	private static final long serialVersionUID = 1L;
 	

@@ -7,6 +7,9 @@ import com.mcd.spider.main.entities.record.Record;
 import com.mcd.spider.main.entities.record.State;
 import com.mcd.spider.main.entities.site.ArrestsDotOrgSite;
 import com.mcd.spider.main.entities.site.Site;
+import com.mcd.spider.main.exception.ExcelOutputException;
+import com.mcd.spider.main.exception.IDCheckException;
+import com.mcd.spider.main.exception.SpiderException;
 import com.mcd.spider.main.util.*;
 import org.apache.log4j.Logger;
 import org.jsoup.Connection;
@@ -31,69 +34,58 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 
     SpiderUtil spiderUtil = new SpiderUtil();
     EngineUtil engineUtil = new EngineUtil();
+    private Set<String> scrapedIds;
 
-    public Site getSite() {
-    	return new ArrestsDotOrgSite();
+    @Override
+    public Site getSite(String[] args) {
+    	return new ArrestsDotOrgSite(args);
     }
     
     @Override
-    public void getArrestRecords(State state, long maxNumberOfResults) {
-        //split into more specific methods
+    public void getArrestRecords(State state, long maxNumberOfResults) throws SpiderException {
         long totalTime = System.currentTimeMillis();
         long recordsProcessed = 0;
         int sleepTimeSum = 0;
-        int sitesScraped = 0;
 
-        //use maxNumberOfResults to stop processing once this method has been broken up
-        //this currently won't stop a single site from processing more than the max number of records
         //while(recordsProcessed <= maxNumberOfResults) {
-        long stateTime = System.currentTimeMillis();
-        logger.info("----State: " + state.getName() + "----");
-        ArrestsDotOrgSite site = new ArrestsDotOrgSite();
+        ArrestsDotOrgSite site = (ArrestsDotOrgSite) getSite(new String[]{state.getName()});
+        ExcelWriter excelWriter = initializeOutputter(state, site);
+        
+        long siteTime = System.currentTimeMillis();
+        logger.info("----Site: " + site.getName() + "-" + state.getName() + "----");
         logger.debug("Sending spider " + (System.getProperty("offline").equals("true")?"offline":"online" ));
-        ExcelWriter excelWriter  = new ExcelWriter(state, new ArrestRecord(), site);
-        excelWriter.createSpreadsheet();
+        
         int sleepTimeAverage = (site.getPerRecordSleepRange()[0]+site.getPerRecordSleepRange()[1])/2;
         sleepTimeSum += spiderUtil.offline()?0:sleepTimeAverage;
         long time = System.currentTimeMillis();
+        
         recordsProcessed += scrapeSite(state, site, excelWriter);
-        sitesScraped++;
+        
         time = System.currentTimeMillis() - time;
-        logger.info(site.getBaseUrl(new String[]{state.getName()}) + " took " + time + " ms");
+        logger.info(site.getBaseUrl() + " took " + time + " ms");
 
-
-        //remove ID column on final save?
-        //or use for future processing? check for ID and start where left off
         //excelWriter.removeColumnsFromSpreadsheet(new int[]{ArrestRecord.RecordColumnEnum.ID_COLUMN.index()});
-        stateTime = System.currentTimeMillis() - stateTime;
-        logger.info(state.getName() + " took " + stateTime + " ms");
+        siteTime = System.currentTimeMillis() - siteTime;
+        logger.info(state.getName() + " took " + siteTime + " ms");
 
-        try {
-            EmailUtil.send("dejong.c.michael@gmail.com",
-                    "", //need to encrypt
-                    "dejong.c.michael@gmail.com",
-                    "Arrest record parsing for " + state.getName(),
-                    "Michael's a stud, he just successfully parsed the interwebs for arrest records in the state of Iowa");
-        } catch (RuntimeException re) {
-            logger.error("An error occurred, email not sent");
-        }
+        spiderUtil.sendEmail(state);
         
         //}
-        int perRecordSleepTimeAverage = sitesScraped!=0?(sleepTimeSum/sitesScraped):0;
         totalTime = System.currentTimeMillis() - totalTime;
         if (!spiderUtil.offline()) {
-            logger.info("Sleep time was approximately " + (recordsProcessed*perRecordSleepTimeAverage) + " ms");
-            logger.info("Processing time was approximately " + (totalTime-(recordsProcessed*perRecordSleepTimeAverage)) + " ms");
+            logger.info("Sleep time was approximately " + sleepTimeSum + " ms");
+            logger.info("Processing time was approximately " + (totalTime-sleepTimeSum) + " ms");
         } else {
             logger.info("Total time taken was " + totalTime + " ms");
         }
+        logger.info(recordsProcessed + " records were processed");
     }
 
     @Override
     public int scrapeSite(State state, Site site, ExcelWriter excelWriter) {
         //refactor to split out randomizing functionality, maybe reuse??
         int recordsProcessed = 0;
-        site.getBaseUrl(new String[]{state.getName()});
+        site.getBaseUrl();
         String firstPageResults = site.generateResultsPageUrl(1);
         //Add some retries if first connection to state site fails?
         Document mainPageDoc = spiderUtil.getHtmlAsDoc(firstPageResults);
@@ -157,7 +149,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
                     logger.debug("Gather complete list of records to scrape from " + doc.baseUri());
                     recordDetailUrlMap.putAll(parseDocForUrls(doc, site));
                     //including some non-detail page links then randomize
-                    recordDetailUrlMap.putAll(site.getMiscSafeUrlsFromDoc(mainPageDoc, 56)); //TODO change from a static value
+                    recordDetailUrlMap.putAll(site.getMiscSafeUrlsFromDoc(mainPageDoc, recordDetailUrlMap.size())); 
                 } else {
                     logger.info("Nothing was retrieved for " + doc.baseUri());
                 }
@@ -176,10 +168,11 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             //****sort by arrest date (or something else) once everything has been gathered? can I sort spreadsheet after creation?
 
         } else {
-            logger.error("Failed to load html doc from " + site.getBaseUrl(new String[]{state.getName()}));
+            logger.error("Failed to load html doc from " + site.getBaseUrl());
         }
         return recordsProcessed;
     }
+    
     @Override
     public Map<String,String> parseDocForUrls(Object doc, Site site) {
         Map<String,String> recordDetailUrlMap = new HashMap<>();
@@ -187,10 +180,15 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         for(int e=0;e<recordDetailElements.size();e++) {
             String url = site.getRecordDetailDocUrl(recordDetailElements.get(e));
             String id = site.getRecordId(url);
-            recordDetailUrlMap.put(id, url);
+            //TODO try this earlier to avoid opening crawled results pages?
+            //only add if we haven't already crawled it
+            if (!scrapedIds.contains(id)) {
+            	recordDetailUrlMap.put(id, url);
+            }
         }
         return recordDetailUrlMap;
     }
+    
     @Override
     public int scrapeRecords(Map<String,String> recordsDetailsUrlMap, Site site, ExcelWriter excelWriter) {
         int recordsProcessed = 0;
@@ -239,11 +237,12 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         excelWriter.saveRecordsToWorkbook(arrestRecords);
         return recordsProcessed;
     }
+    
     @Override
     public ArrestRecord populateArrestRecord(Document profileDetailDoc, Site site) {
         Elements profileDetails = site.getRecordDetailElements(profileDetailDoc);
         ArrestRecord record = new ArrestRecord();
-        record.setId(site.getRecordId(profileDetailDoc.baseUri().replace("/?d=", "")));
+        record.setId(site.getRecordId(profileDetailDoc.baseUri()));
         for (Element profileDetail : profileDetails) {
             matchPropertyToField(record, profileDetail);
             logger.info("\t" + profileDetail.text());
@@ -251,6 +250,19 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         return record;
     }
 
+    @Override
+    public ExcelWriter initializeOutputter(State state, Site site) throws SpiderException {
+    	ExcelWriter excelWriter  = new ExcelWriter(state, new ArrestRecord(), site);
+        try {
+            //this will get previously written IDs but then overwrite the spreadsheet
+            scrapedIds = excelWriter.getPreviousIds();
+            excelWriter.createSpreadsheet();
+        } catch (ExcelOutputException | IDCheckException e) {
+            throw e;
+        }
+        return excelWriter;
+    }
+    
     @Override
     @SuppressWarnings("deprecation")
     public void matchPropertyToField(ArrestRecord record, Element profileDetail) {
