@@ -27,6 +27,16 @@ deployment package
 
 
 getRecords()
+Filter by alcohol related offense
+	alcohol
+	oui
+	dui
+	owi
+	dwi
+	bui
+	open container
+	intox
+	
 	mugshots.com
 		domain - http://mugshots.com
 		baseUrl - https://mugshots.com/US-Counties//US-Counties
