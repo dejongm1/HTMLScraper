@@ -25,12 +25,14 @@ import com.mcd.spider.main.engine.record.ArrestRecordEngine;
 import com.mcd.spider.main.entities.record.ArrestRecord;
 import com.mcd.spider.main.entities.record.Record;
 import com.mcd.spider.main.entities.record.State;
+import com.mcd.spider.main.entities.record.filter.ArrestRecordFilter;
+import com.mcd.spider.main.entities.record.filter.ArrestRecordFilter.ArrestRecordFilterEnum;
 import com.mcd.spider.main.entities.service.DesMoinesRegisterComService;
 import com.mcd.spider.main.entities.site.DesMoinesRegisterComSite;
 import com.mcd.spider.main.entities.site.Site;
-import com.mcd.spider.main.exception.SpiderException;
 import com.mcd.spider.main.exception.ExcelOutputException;
 import com.mcd.spider.main.exception.IDCheckException;
+import com.mcd.spider.main.exception.SpiderException;
 import com.mcd.spider.main.util.ConnectionUtil;
 import com.mcd.spider.main.util.EngineUtil;
 import com.mcd.spider.main.util.ExcelWriter;
@@ -50,6 +52,8 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     private EngineUtil engineUtil = new EngineUtil();
     DesMoinesRegisterComService service = new DesMoinesRegisterComService();
     private Set<String> scrapedIds;
+    private ArrestRecordFilterEnum filter;
+    private boolean offline;
 
     @Override
     public Site getSite(String[] args) {
@@ -57,8 +61,10 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     }
     
     @Override
-    public void getArrestRecords(State state, long maxNumberOfResults) throws SpiderException {
-    	if ((System.getProperty("offline").equals("true"))) {
+    public void getArrestRecords(State state, long maxNumberOfResults, ArrestRecordFilter.ArrestRecordFilterEnum filter) throws SpiderException {
+        offline = System.getProperty("offline").equals("true");
+    	this.filter = filter;
+    	if (offline) {
     		logger.debug("Offline - can't scrape this php site");
     	} else {
 	        //split into more specific methods
@@ -71,10 +77,10 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
             ExcelWriter excelWriter = initializeOutputter(state, site);
             
 	        logger.info("----Site: " + site.getName() + "----");
-	        logger.debug("Sending spider " + (System.getProperty("offline").equals("true")?"offline":"online" ));
+	        logger.debug("Sending spider " + (offline?"offline":"online" ));
 	        
 	        int sleepTimeAverage = (site.getPerRecordSleepRange()[0]+site.getPerRecordSleepRange()[1])/2;
-	        sleepTimeSum += spiderUtil.offline()?0:sleepTimeAverage;
+	        sleepTimeSum += offline?0:sleepTimeAverage;
 	        long time = System.currentTimeMillis();
 	        
 	        recordsProcessed += scrapeSite(state, site, excelWriter);
@@ -87,13 +93,13 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
 	        spiderUtil.sendEmail(state);
 	        
 	        totalTime = System.currentTimeMillis() - totalTime;
-	        if (!spiderUtil.offline()) {
+	        if (!offline) {
 	            logger.info("Sleep time was approximately " + sleepTimeSum + " ms");
 	            logger.info("Processing time was approximately " + (totalTime-sleepTimeSum) + " ms");
 	        } else {
 	            logger.info("Total time taken was " + totalTime + " ms");
 	        }
-            logger.info(recordsProcessed + " records were processed");
+            logger.info(recordsProcessed + " total records were processed");
     	}
     }
 
@@ -162,8 +168,8 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     @Override
     public int scrapeRecords(Map<String, String> recordsDetailsUrlMap, Site site, ExcelWriter excelWriter){
         int recordsProcessed = 0;
-        List<Record> arrestRecords = new ArrayList<>();
-        Record arrestRecord;
+        List<ArrestRecord> arrestRecords = new ArrayList<>();
+        ArrestRecord arrestRecord;
         for (Map.Entry<String,String> entry : recordsDetailsUrlMap.entrySet()) {
             String id = entry.getKey();
             String url = recordsDetailsUrlMap.get(id);
@@ -192,8 +198,12 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
                 logger.error("JSONExecption caught on id " + id, e);
             }
         }
-        //save the whole thing at the end?? use if changing sorting
-        //excelWriter.saveRecordsToWorkbook(arrestRecords);
+        
+        if (filter!=null) {
+	        List<ArrestRecord> filteredRecords = filterRecords(arrestRecords);
+	        //create a separate sheet with filtered results
+	        logger.info(filteredRecords.size() + " " + filter.filterName() + " " + "records were crawled");
+        }
         return recordsProcessed;
     }
 
@@ -316,5 +326,23 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
         in.close();
 
         return response;
+    }
+    
+    @Override
+    public List<ArrestRecord> filterRecords(List<ArrestRecord> fullArrestRecords) {
+    	List<ArrestRecord> filteredArrestRecords = new ArrayList<>();
+    	for (ArrestRecord record : fullArrestRecords) {
+    		boolean recordMatches = false;
+    		String[] charges = record.getCharges();
+    		for (String charge : charges) {
+    			if (!recordMatches) {
+    				recordMatches = ArrestRecordFilter.filter(charge, filter);
+    			}
+    		}
+    		if (recordMatches) {
+    			filteredArrestRecords.add(record);
+    		}
+    	}
+    	return filteredArrestRecords;
     }
 }

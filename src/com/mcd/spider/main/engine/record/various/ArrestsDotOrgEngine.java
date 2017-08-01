@@ -1,25 +1,37 @@
 package com.mcd.spider.main.engine.record.various;
 
-import com.mcd.spider.main.engine.record.ArrestRecordEngine;
-import com.mcd.spider.main.entities.audit.OfflineResponse;
-import com.mcd.spider.main.entities.record.ArrestRecord;
-import com.mcd.spider.main.entities.record.Record;
-import com.mcd.spider.main.entities.record.State;
-import com.mcd.spider.main.entities.site.ArrestsDotOrgSite;
-import com.mcd.spider.main.entities.site.Site;
-import com.mcd.spider.main.exception.ExcelOutputException;
-import com.mcd.spider.main.exception.IDCheckException;
-import com.mcd.spider.main.exception.SpiderException;
-import com.mcd.spider.main.util.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.log4j.Logger;
 import org.jsoup.Connection;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.*;
+import com.mcd.spider.main.engine.record.ArrestRecordEngine;
+import com.mcd.spider.main.entities.audit.OfflineResponse;
+import com.mcd.spider.main.entities.record.ArrestRecord;
+import com.mcd.spider.main.entities.record.State;
+import com.mcd.spider.main.entities.record.filter.ArrestRecordFilter;
+import com.mcd.spider.main.entities.record.filter.ArrestRecordFilter.ArrestRecordFilterEnum;
+import com.mcd.spider.main.entities.site.ArrestsDotOrgSite;
+import com.mcd.spider.main.entities.site.Site;
+import com.mcd.spider.main.exception.ExcelOutputException;
+import com.mcd.spider.main.exception.IDCheckException;
+import com.mcd.spider.main.exception.SpiderException;
+import com.mcd.spider.main.util.ConnectionUtil;
+import com.mcd.spider.main.util.EngineUtil;
+import com.mcd.spider.main.util.ExcelWriter;
+import com.mcd.spider.main.util.SpiderUtil;
 
 /**
  *
@@ -31,10 +43,11 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 
     public static final Logger logger = Logger.getLogger(ArrestsDotOrgEngine.class);
     
-
     SpiderUtil spiderUtil = new SpiderUtil();
     EngineUtil engineUtil = new EngineUtil();
     private Set<String> scrapedIds;
+    private ArrestRecordFilterEnum filter;
+    private boolean offline;
 
     @Override
     public Site getSite(String[] args) {
@@ -42,10 +55,12 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     }
     
     @Override
-    public void getArrestRecords(State state, long maxNumberOfResults) throws SpiderException {
+    public void getArrestRecords(State state, long maxNumberOfResults, ArrestRecordFilter.ArrestRecordFilterEnum filter) throws SpiderException {
         long totalTime = System.currentTimeMillis();
         long recordsProcessed = 0;
         int sleepTimeSum = 0;
+        this.filter = filter;
+	    offline = System.getProperty("offline").equals("true");
 
         //while(recordsProcessed <= maxNumberOfResults) {
         ArrestsDotOrgSite site = (ArrestsDotOrgSite) getSite(new String[]{state.getName()});
@@ -53,10 +68,10 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         
         long siteTime = System.currentTimeMillis();
         logger.info("----Site: " + site.getName() + "-" + state.getName() + "----");
-        logger.debug("Sending spider " + (System.getProperty("offline").equals("true")?"offline":"online" ));
+        logger.debug("Sending spider " + (offline?"offline":"online" ));
         
         int sleepTimeAverage = (site.getPerRecordSleepRange()[0]+site.getPerRecordSleepRange()[1])/2;
-        sleepTimeSum += spiderUtil.offline()?0:sleepTimeAverage;
+        sleepTimeSum += offline?0:sleepTimeAverage;
         long time = System.currentTimeMillis();
         
         recordsProcessed += scrapeSite(state, site, excelWriter);
@@ -72,13 +87,13 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         
         //}
         totalTime = System.currentTimeMillis() - totalTime;
-        if (!spiderUtil.offline()) {
+        if (!offline) {
             logger.info("Sleep time was approximately " + sleepTimeSum + " ms");
             logger.info("Processing time was approximately " + (totalTime-sleepTimeSum) + " ms");
         } else {
             logger.info("Total time taken was " + totalTime + " ms");
         }
-        logger.info(recordsProcessed + " records were processed");
+        logger.info(recordsProcessed + " total records were processed");
     }
 
     @Override
@@ -117,7 +132,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 	        		Connection.Response response = null;
 	        		Document docToCheck = null;
 	            	Connection conn = ConnectionUtil.getConnection(resultsUrlPlusMiscMap.get(k), resultsUrlPlusMiscMap.get(previousKey));
-	    			if (spiderUtil.offline()) {
+	    			if (offline) {
 	    				response = new OfflineResponse(200, resultsUrlPlusMiscMap.get(k));
 	    			} else {
 	    				response = conn.execute();
@@ -192,8 +207,8 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     @Override
     public int scrapeRecords(Map<String,String> recordsDetailsUrlMap, Site site, ExcelWriter excelWriter) {
         int recordsProcessed = 0;
-        List<Record> arrestRecords = new ArrayList<>();
-        Record arrestRecord = new ArrestRecord();
+        List<ArrestRecord> arrestRecords = new ArrayList<>();
+        ArrestRecord arrestRecord;
         List<String> keys = new ArrayList<>(recordsDetailsUrlMap.keySet());
         Collections.shuffle(keys);
         String previousKey = keys.get(keys.size()-1);
@@ -204,7 +219,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             try {
 	            //can we guarantee previous is a page that has access to the current?
 	        	Connection conn = ConnectionUtil.getConnection(url, recordsDetailsUrlMap.get(previousKey));
-				if (spiderUtil.offline()) {
+				if (offline) {
 					response = new OfflineResponse(200, recordsDetailsUrlMap.get(k));
 				} else {
 					response = conn.execute();
@@ -232,9 +247,12 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             }
             previousKey = k;
         }
-        //save the whole thing at the end
-        //order and save the overwrite the spreadsheet
-        excelWriter.saveRecordsToWorkbook(arrestRecords);
+        
+        if (filter!=null) {
+	        List<ArrestRecord> filteredRecords = filterRecords(arrestRecords);
+	        //create a separate sheet with filtered results
+	        logger.info(filteredRecords.size() + " " + filter.filterName() + " " + "records were crawled");
+        }
         return recordsProcessed;
     }
     
@@ -341,5 +359,23 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     @Override
     public String extractValue(Element profileDetail) {
         return profileDetail.text().substring(profileDetail.text().indexOf(':')+1).trim();
+    }
+    
+    @Override
+    public List<ArrestRecord> filterRecords(List<ArrestRecord> fullArrestRecords) {
+    	List<ArrestRecord> filteredArrestRecords = new ArrayList<>();
+    	for (ArrestRecord record : fullArrestRecords) {
+    		boolean recordMatches = false;
+    		String[] charges = record.getCharges();
+    		for (String charge : charges) {
+    			if (!recordMatches) {
+    				recordMatches = ArrestRecordFilter.filter(charge, filter);
+    			}
+    		}
+    		if (recordMatches) {
+    			filteredArrestRecords.add(record);
+    		}
+    	}
+    	return filteredArrestRecords;
     }
 }

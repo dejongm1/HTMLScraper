@@ -27,15 +27,7 @@ deployment package
 
 
 getRecords()
-Filter by alcohol related offense
-	alcohol
-	oui
-	dui
-	owi
-	dwi
-	bui
-	open container
-	intox
+	Filter by alcohol related offense
 	
 	mugshots.com
 		domain - http://mugshots.com

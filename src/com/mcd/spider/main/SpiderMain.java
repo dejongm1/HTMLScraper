@@ -8,8 +8,8 @@ import org.apache.log4j.Logger;
 import com.mcd.spider.main.engine.SpiderEngine;
 import com.mcd.spider.main.entities.audit.AuditParameters;
 import com.mcd.spider.main.entities.record.State;
+import com.mcd.spider.main.entities.record.filter.ArrestRecordFilter.ArrestRecordFilterEnum;
 import com.mcd.spider.main.exception.ExcelOutputException;
-import com.mcd.spider.main.exception.IDCheckException;
 import com.mcd.spider.main.exception.SpiderException;
 import com.mcd.spider.main.exception.StateNotReadyException;
 import com.mcd.spider.main.util.InputUtil;
@@ -124,15 +124,17 @@ public class SpiderMain {
 	@SuppressWarnings("unchecked")
 	private static void getArrestRecords(String[] args) throws IOException, SpiderException {
 		List<State> states = args.length>=2?inputUtil.convertToStates(args[1]):(List<State>) inputUtil.getInput("State(s) or \"All\": ", 3, SpiderConstants.STATE_VALIDATION);
-		long maxNumberOfResults = args.length>=3?inputUtil.convertToNumber(args[2]):999999;
-		engine.getArrestRecordsByState(states, maxNumberOfResults);
+		ArrestRecordFilterEnum filter = args.length>=3?inputUtil.convertToFilter(args[2]):null;
+		long maxNumberOfResults = args.length>=4?inputUtil.convertToNumber(args[3]):999999;
+		engine.getArrestRecordsByState(states, maxNumberOfResults, filter);
 	}
 
 	@SuppressWarnings("unchecked")
 	private static void crackArrestSite(String[] args) throws IOException, SpiderException {
 		List<State> states = args.length>=2?inputUtil.convertToStates(args[1]):(List<State>) inputUtil.getInput("State(s) or \"All\": ", 3, SpiderConstants.STATE_VALIDATION);
-		long maxNumberOfResults = args.length>=3?inputUtil.convertToNumber(args[1]):5;
-		engine.getArrestRecordsByStateCrack(states, maxNumberOfResults);
+		ArrestRecordFilterEnum filter = args.length>=3?inputUtil.convertToFilter(args[2]):null;
+		long maxNumberOfResults = args.length>=4?inputUtil.convertToNumber(args[3]):5;
+		engine.getArrestRecordsByStateCrack(states, maxNumberOfResults, filter);
 	}
 
 	private static void getSEOAudit(String argString) throws IOException {

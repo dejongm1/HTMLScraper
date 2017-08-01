@@ -1,9 +1,23 @@
 package com.mcd.spider.main.engine.record.iowa;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import com.mcd.spider.main.engine.record.ArrestRecordEngine;
 import com.mcd.spider.main.entities.record.ArrestRecord;
 import com.mcd.spider.main.entities.record.Record;
 import com.mcd.spider.main.entities.record.State;
+import com.mcd.spider.main.entities.record.filter.ArrestRecordFilter;
 import com.mcd.spider.main.entities.site.PolkCountyIowaGovSite;
 import com.mcd.spider.main.entities.site.Site;
 import com.mcd.spider.main.exception.SpiderException;
@@ -11,13 +25,8 @@ import com.mcd.spider.main.util.ConnectionUtil;
 import com.mcd.spider.main.util.EngineUtil;
 import com.mcd.spider.main.util.ExcelWriter;
 import com.mcd.spider.main.util.SpiderUtil;
-import common.Logger;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
-import java.util.*;
-import java.util.Map.Entry;
+import common.Logger;
 
 /**
  * 
@@ -35,7 +44,7 @@ public class PolkCountyOrgEngine implements ArrestRecordEngine {
     }
     
 	@Override
-    public void getArrestRecords(State state, long maxNumberOfResults) {
+    public void getArrestRecords(State state, long maxNumberOfResults, ArrestRecordFilter.ArrestRecordFilterEnum filter) {
         //split into more specific methods
         long totalTime = System.currentTimeMillis();
         long recordsProcessed = 0;
@@ -293,6 +302,11 @@ public class PolkCountyOrgEngine implements ArrestRecordEngine {
 	@Override
 	public ExcelWriter initializeOutputter(State state, Site site) throws SpiderException {
 		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<ArrestRecord> filterRecords(List<ArrestRecord> fullArrestRecords) {
 		return null;
 	}
 }

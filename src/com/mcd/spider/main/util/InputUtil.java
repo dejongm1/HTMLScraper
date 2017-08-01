@@ -9,6 +9,7 @@ import java.util.List;
 import org.apache.commons.validator.routines.UrlValidator;
 
 import com.mcd.spider.main.entities.record.State;
+import com.mcd.spider.main.entities.record.filter.ArrestRecordFilter.ArrestRecordFilterEnum;
 
 public class InputUtil {
 	
@@ -78,6 +79,16 @@ public class InputUtil {
 			return result;
 		} else {
 			System.out.println("That's not an American state\n");
+			return null;
+		}
+	}
+	
+	public ArrestRecordFilterEnum convertToFilter(String input) {
+		ArrestRecordFilterEnum filter = ArrestRecordFilterEnum.findFilter(input);
+		if (filter!=null) {
+			return filter;
+		} else {
+			System.out.println("That's not one of the possible filters\n");
 			return null;
 		}
 	}

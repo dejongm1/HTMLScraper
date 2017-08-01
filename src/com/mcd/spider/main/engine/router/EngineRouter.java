@@ -1,5 +1,6 @@
 package com.mcd.spider.main.engine.router;
 
+import com.mcd.spider.main.entities.record.filter.ArrestRecordFilter;
 import com.mcd.spider.main.exception.SpiderException;
 
 /**
@@ -10,6 +11,6 @@ import com.mcd.spider.main.exception.SpiderException;
 
 public interface EngineRouter {
 	
-	void collectRecords(long maxNumberOfRecords) throws SpiderException;
+	void collectRecords(long maxNumberOfResults, ArrestRecordFilter.ArrestRecordFilterEnum filter) throws SpiderException;
 
 }

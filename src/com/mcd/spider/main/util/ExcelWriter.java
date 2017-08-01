@@ -45,6 +45,7 @@ public class ExcelWriter {
 	private WritableWorkbook copyWorkbook;
 	private WritableWorkbook backupWorkbook;
 	private Calendar workbookCreateDate;
+	private boolean offline;
 
 	public ExcelWriter(State state, Record record, Site site) {
 	    Calendar date = Calendar.getInstance();
@@ -59,6 +60,7 @@ public class ExcelWriter {
 		this.state = state;
 		this.record = record;
 		this.idFile = new File(OUTPUT_DIR + TRACKING_DIR + site.getName() + "_Archive.txt");
+	    this.offline = System.getProperty("offline").equals("true");
 	}
 
 	public String getDocName() {
@@ -106,25 +108,27 @@ public class ExcelWriter {
         Set<String> ids = new HashSet<>();
         //check name as well to make sure it's the right state/site
         BufferedReader br = null;
-        try {
-            if (!idFile.exists()) {
-                idFile.createNewFile();
-            }
-            br = new BufferedReader(new FileReader(idFile));
-            String sCurrentLine;
-            while ((sCurrentLine = br.readLine()) != null) {
-                ids.add(sCurrentLine);
-            }
-        } catch (IOException e) {
-            throw new IDCheckException();
-        } finally {
-            try {
-                if (br != null) {
-                    br.close();
-                }
-            } catch (IOException ioe) {
-                throw new IDCheckException();
-            }
+        if (!offline) {
+	        try {
+	            if (!idFile.exists()) {
+	                idFile.createNewFile();
+	            }
+	            br = new BufferedReader(new FileReader(idFile));
+	            String sCurrentLine;
+	            while ((sCurrentLine = br.readLine()) != null) {
+	                ids.add(sCurrentLine);
+	            }
+	        } catch (IOException e) {
+	            throw new IDCheckException();
+	        } finally {
+	            try {
+	                if (br != null) {
+	                    br.close();
+	                }
+	            } catch (IOException ioe) {
+	                throw new IDCheckException();
+	            }
+	        }
         }
         return ids;
     }
