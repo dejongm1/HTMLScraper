@@ -27,6 +27,11 @@ deployment package
 
 
 getRecords()
+mugshot-publication.com
+
+http://www.hcdistrictclerk.com/Common/e-services/PublicDatasets.aspx
+	- txt file published daily at 5:00AM
+
 	mugshots.com
 		domain - http://mugshots.com
 		baseUrl - https://mugshots.com/US-Counties//US-Counties

@@ -18,7 +18,8 @@ public class PolkCountyIowaGovSite implements Site {
 	private String baseUrl;
 	private int pages;
 	private static final int[] perRecordSleepRange = new int[]{1,2};
-	private Map<String,Document> resultsPageDocuments;
+	private Map<String,Object> resultsPageDocuments;
+	private int maxAttempts;
 
 	public PolkCountyIowaGovSite(String[] args) {
 		setBaseUrl(args);
@@ -44,18 +45,17 @@ public class PolkCountyIowaGovSite implements Site {
 
         return builtUrl;
 	}
-	@Override
-	public void setOnlyResultsPageDocuments(Map<String,Document> resultsPlusMiscDocumentsMap) {
-		Map<String,Document> resultsDocMap = new HashMap<>();
-		for(Entry<String, Document> entry : resultsPlusMiscDocumentsMap.entrySet()) {
-			if (isAResultsDoc(entry.getValue())) {
+	public void setOnlyResultsPageDocuments(Map<String,Object> resultsPlusMiscDocumentsMap) {
+		Map<String,Object> resultsDocMap = new HashMap<>();
+		for(Entry<String, Object> entry : resultsPlusMiscDocumentsMap.entrySet()) {
+			if (isAResultsDoc((Document) entry.getValue())) {
 				resultsDocMap.put(entry.getKey(), entry.getValue());
 			}
 		}
 		this.resultsPageDocuments = resultsDocMap;
 	}
 	@Override
-	public Map<String,Document> getResultsPageDocuments() {
+	public Map<String, Object> getResultsPageDocuments() {
 		return this.resultsPageDocuments;
 	}
 	@Override
@@ -173,5 +173,10 @@ public class PolkCountyIowaGovSite implements Site {
     public Service getService() {
         return null;
     }
+
+	@Override
+	public int getMaxAttempts() {
+		return maxAttempts;
+	}
 
 }

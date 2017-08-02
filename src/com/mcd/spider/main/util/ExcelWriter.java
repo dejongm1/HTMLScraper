@@ -16,6 +16,8 @@ import org.apache.log4j.Logger;
 
 import com.mcd.spider.main.entities.record.Record;
 import com.mcd.spider.main.entities.record.State;
+import com.mcd.spider.main.entities.record.filter.ArrestRecordFilter;
+import com.mcd.spider.main.entities.record.filter.ArrestRecordFilter.ArrestRecordFilterEnum;
 import com.mcd.spider.main.entities.site.Site;
 import com.mcd.spider.main.exception.IDCheckException;
 import com.mcd.spider.main.exception.SpiderException;
@@ -174,7 +176,55 @@ public class ExcelWriter {
         }
     }
 
-    public void saveRecordsToWorkbook(List<Record> records) {
+    public void createFilteredSpreadsheet(ArrestRecordFilterEnum filter, List<Record> records) {
+    	WritableWorkbook newWorkbook = null;
+    	try {
+    		newWorkbook = Workbook.createWorkbook(new File(OUTPUT_DIR + getFilteredDocName(filter)));
+
+    		WritableSheet excelSheet = newWorkbook.createSheet(state.getName(), 0);
+
+    		//create columns based on Record.getFieldsToOutput()
+    		int columnNumber = 0;
+    		for (Field recordField : record.getFieldsToOutput()) {
+    			//********extract to createLabelMethod????
+    			Label columnLabel = new Label(columnNumber, 0, recordField.getName().toUpperCase());
+    			excelSheet.addCell(columnLabel);
+    			columnNumber++;
+    		}
+    		saveRecordsToWorkbook(records, newWorkbook);
+    		newWorkbook.write();
+    	} catch (IOException | WriteException e) {
+    		logger.error(e.getMessage());
+    	} finally {
+    		if (newWorkbook != null) {
+    			try {
+    				newWorkbook.close();
+    			} catch (IOException e) {
+    				logger.error(e.getMessage());
+    			} catch (WriteException e) {
+    				logger.error(e.getMessage());
+    			}
+    		}
+    	}
+    }
+
+    private String getFilteredDocName(ArrestRecordFilterEnum filter) {
+		return docName.substring(0, docName.indexOf(".xls")) + filter.filterName() + ".xls";
+	}
+
+	public void saveRecordsToWorkbook(List<Record> records, WritableWorkbook workbook) {
+        try {
+            int rowNumber = workbook.getSheet(0).getRows();
+            for (Record currentRecord : records) {
+                currentRecord.addToExcelSheet(workbook, rowNumber);
+                rowNumber++;
+            }
+        } catch (IllegalAccessException e) {
+            logger.error("Error trying to save data to workbook", e);
+        }
+    }
+
+	public void saveRecordsToMainWorkbook(List<Record> records) {
         try {
             int rowNumber = 0;
             for (Record currentRecord : records) {
@@ -186,7 +236,7 @@ public class ExcelWriter {
         }
     }
 
-    public void addRecordToWorkbook(Record record) {
+    public void addRecordToMainWorkbook(Record record) {
         FileWriter fw = null;
         BufferedWriter bw = null;
         try {

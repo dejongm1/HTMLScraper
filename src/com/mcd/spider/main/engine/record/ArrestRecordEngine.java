@@ -7,6 +7,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import com.mcd.spider.main.entities.record.ArrestRecord;
+import com.mcd.spider.main.entities.record.Record;
 import com.mcd.spider.main.entities.record.State;
 import com.mcd.spider.main.entities.record.filter.ArrestRecordFilter;
 import com.mcd.spider.main.entities.site.Site;
@@ -26,6 +27,6 @@ public interface ArrestRecordEngine {
 	String extractValue(Element profileDetail);
 	void formatArrestTime(ArrestRecord record, Element profileDetail);
 	ExcelWriter initializeOutputter(State state, Site site) throws SpiderException;
-	List<ArrestRecord> filterRecords(List<ArrestRecord> fullArrestRecords);
+	List<Record> filterRecords(List<ArrestRecord> fullArrestRecords);
 	
 }

@@ -183,7 +183,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
                         arrestRecord = populateArrestRecord(profileDetailDoc, site);
                         arrestRecords.add(arrestRecord);
                         //save each record in case of application failures
-                        excelWriter.addRecordToWorkbook(arrestRecord);
+                        excelWriter.addRecordToMainWorkbook(arrestRecord);
                         spiderUtil.sleep(ConnectionUtil.getSleepTime(site), true);//sleep at random interval
                         
                     } else {
@@ -200,7 +200,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
         }
         
         if (filter!=null) {
-	        List<ArrestRecord> filteredRecords = filterRecords(arrestRecords);
+	        List<Record> filteredRecords = filterRecords(arrestRecords);
 	        //create a separate sheet with filtered results
 	        logger.info(filteredRecords.size() + " " + filter.filterName() + " " + "records were crawled");
         }
@@ -329,11 +329,11 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     }
     
     @Override
-    public List<ArrestRecord> filterRecords(List<ArrestRecord> fullArrestRecords) {
-    	List<ArrestRecord> filteredArrestRecords = new ArrayList<>();
-    	for (ArrestRecord record : fullArrestRecords) {
+    public List<Record> filterRecords(List<ArrestRecord> fullArrestRecords) {
+    	List<Record> filteredArrestRecords = new ArrayList<>();
+    	for (Record record : fullArrestRecords) {
     		boolean recordMatches = false;
-    		String[] charges = record.getCharges();
+    		String[] charges = ((ArrestRecord) record).getCharges();
     		for (String charge : charges) {
     			if (!recordMatches) {
     				recordMatches = ArrestRecordFilter.filter(charge, filter);

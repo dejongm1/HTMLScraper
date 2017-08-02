@@ -20,6 +20,7 @@ import org.jsoup.select.Elements;
 import com.mcd.spider.main.engine.record.ArrestRecordEngine;
 import com.mcd.spider.main.entities.audit.OfflineResponse;
 import com.mcd.spider.main.entities.record.ArrestRecord;
+import com.mcd.spider.main.entities.record.Record;
 import com.mcd.spider.main.entities.record.State;
 import com.mcd.spider.main.entities.record.filter.ArrestRecordFilter;
 import com.mcd.spider.main.entities.record.filter.ArrestRecordFilter.ArrestRecordFilterEnum;
@@ -123,7 +124,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             resultsUrlPlusMiscMap.putAll(miscUrls);
 
             //shuffle urls before retrieving docs
-            Map<String,Document> resultsDocPlusMiscMap = new HashMap<>();
+            Map<String,Object> resultsDocPlusMiscMap = new HashMap<>();
             List<String> keys = new ArrayList<>(resultsUrlPlusMiscMap.keySet());
             Collections.shuffle(keys);
             String previousKey = keys.get(keys.size()-1);
@@ -150,13 +151,13 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             }
 
             //saving this for later?? should be able to get previous sorting by looking at page number in baseUri
-            site.setOnlyResultsPageDocuments(resultsDocPlusMiscMap);
+            ((ArrestsDotOrgSite) site).setOnlyResultsPageDocuments(resultsDocPlusMiscMap);
 
             //build a list of details page urls by parsing only results page docs in order
-            Map<String,Document> resultsPageDocsMap = site.getResultsPageDocuments();
+            Map<String,Object> resultsPageDocsMap = site.getResultsPageDocuments();
             Map<String,String> recordDetailUrlMap = new HashMap<>();
-            for (Map.Entry<String, Document> entry : resultsPageDocsMap.entrySet()) {
-                Document doc = entry.getValue();
+            for (Map.Entry<String, Object> entry : resultsPageDocsMap.entrySet()) {
+                Document doc = (Document) entry.getValue();
                 //only proceed if document was retrieved
                 if (engineUtil.docWasRetrieved(doc)){
                     logger.debug("Gather complete list of records to scrape from " + doc.baseUri());
@@ -232,7 +233,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
                     arrestRecord = populateArrestRecord(profileDetailDoc, site);
                     arrestRecords.add(arrestRecord);
                     //save each record in case of failures
-                    excelWriter.addRecordToWorkbook(arrestRecord);
+                    excelWriter.addRecordToMainWorkbook(arrestRecord);
                     spiderUtil.sleep(ConnectionUtil.getSleepTime(site), true);//sleep at random interval
                     
                 } else {
@@ -243,9 +244,10 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         }
         
         if (filter!=null) {
-	        List<ArrestRecord> filteredRecords = filterRecords(arrestRecords);
+	        List<Record> filteredRecords = filterRecords(arrestRecords);
 	        //create a separate sheet with filtered results
 	        logger.info(filteredRecords.size() + " " + filter.filterName() + " " + "records were crawled");
+	        excelWriter.createFilteredSpreadsheet(filter, filteredRecords);
         }
         return recordsProcessed;
     }
@@ -356,11 +358,11 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     }
     
     @Override
-    public List<ArrestRecord> filterRecords(List<ArrestRecord> fullArrestRecords) {
-    	List<ArrestRecord> filteredArrestRecords = new ArrayList<>();
-    	for (ArrestRecord record : fullArrestRecords) {
+    public List<Record> filterRecords(List<ArrestRecord> fullArrestRecords) {
+    	List<Record> filteredArrestRecords = new ArrayList<>();
+    	for (Record record : fullArrestRecords) {
     		boolean recordMatches = false;
-    		String[] charges = record.getCharges();
+    		String[] charges = ((ArrestRecord) record).getCharges();
     		for (String charge : charges) {
     			if (!recordMatches) {
     				recordMatches = ArrestRecordFilter.filter(charge, filter);

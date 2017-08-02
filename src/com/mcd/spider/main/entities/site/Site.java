@@ -23,8 +23,7 @@ public interface Site {
 	int getTotalPages(Document doc);
 	int getTotalRecordCount(Document doc);
 	String generateResultsPageUrl(int page/*, int resultsPerPage*/);
-	Map<String, Document> getResultsPageDocuments();
-	void setOnlyResultsPageDocuments(Map<String,Document> resultsPlusMiscDocuments);
+	Map<String, Object> getResultsPageDocuments();
 	int[] getPerRecordSleepRange();
 	int getPageNumberFromDoc(Document doc);
 	Map<String, String> getMiscSafeUrlsFromDoc(Document doc, int pagesToMatch);

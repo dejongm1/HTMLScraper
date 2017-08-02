@@ -66,7 +66,7 @@ public class PolkCountyOrgEngine implements ArrestRecordEngine {
         int sleepTimeAverage = (site.getPerRecordSleepRange()[0]+site.getPerRecordSleepRange()[1])/2;
         sleepTimeSum += spiderUtil.offline()?0:sleepTimeAverage;
         long time = System.currentTimeMillis();
-        recordsProcessed += scrapeSite(state, site, excelWriter);
+        recordsProcessed += scrapeSite(state, site, excelWriter, 1);
         sitesScraped++;
         time = System.currentTimeMillis() - time;
         logger.info(site.getBaseUrl() + " took " + time + " ms");
@@ -100,7 +100,7 @@ public class PolkCountyOrgEngine implements ArrestRecordEngine {
     }
 
 	@Override
-	public int scrapeSite(State state, Site site, ExcelWriter excelWriter) {
+	public int scrapeSite(State state, Site site, ExcelWriter excelWriter, int attemptCount) {
         //refactor to split out randomizing functionality, maybe reuse??
         int recordsProcessed = 0;
         String firstPageResults = site.getBaseUrl();
@@ -122,7 +122,7 @@ public class PolkCountyOrgEngine implements ArrestRecordEngine {
             //resultsUrlPlusMiscMap.putAll(miscUrls);
 
             //shuffle urls before retrieving docs
-            Map<String,Document> resultsDocPlusMiscMap = new HashMap<>();
+            Map<String,Object> resultsDocPlusMiscMap = new HashMap<>();
             List<String> keys = new ArrayList<>(resultsUrlPlusMiscMap.keySet());
             Collections.shuffle(keys);
             for (String k : keys) {
@@ -134,13 +134,13 @@ public class PolkCountyOrgEngine implements ArrestRecordEngine {
             }
 
             //saving this for later?? should be able to get previous sorting by looking at page number in baseUri
-            site.setOnlyResultsPageDocuments(resultsDocPlusMiscMap);
+            ((PolkCountyIowaGovSite) site).setOnlyResultsPageDocuments(resultsDocPlusMiscMap);
 
             //build a list of details page urls by parsing only results page docs in order
-            Map<String,Document> resultsPageDocsMap = site.getResultsPageDocuments();
+            Map<String,Object> resultsPageDocsMap = site.getResultsPageDocuments();
             Map<String,String> recordDetailUrlMap = new HashMap<>();
-            for (Entry<String, Document> entry : resultsPageDocsMap.entrySet()) {
-                Document doc = entry.getValue();
+            for (Entry<String, Object> entry : resultsPageDocsMap.entrySet()) {
+                Document doc = (Document) entry.getValue();
                 //only proceed if document was retrieved
                 if (engineUtil.docWasRetrieved(doc)){
                     logger.debug("Gather complete list of records to scrape from " + doc.baseUri());
@@ -203,7 +203,7 @@ public class PolkCountyOrgEngine implements ArrestRecordEngine {
                 	arrestRecord = populateArrestRecord(profileDetailDoc, site);
                     arrestRecords.add(arrestRecord);
                     //save each record in case of failures
-                    excelWriter.addRecordToWorkbook(arrestRecord);
+                    excelWriter.addRecordToMainWorkbook(arrestRecord);
                     spiderUtil.sleep(ConnectionUtil.getSleepTime(site), true);//sleep at random interval
                 } else {
                     logger.error("Failed to load html doc from " + url);
@@ -212,7 +212,7 @@ public class PolkCountyOrgEngine implements ArrestRecordEngine {
         }
         //save the whole thing at the end
         //order and save the overwrite the spreadsheet
-        excelWriter.saveRecordsToWorkbook(arrestRecords);
+        excelWriter.saveRecordsToMainWorkbook(arrestRecords);
         return recordsProcessed;
     }
 
@@ -306,7 +306,7 @@ public class PolkCountyOrgEngine implements ArrestRecordEngine {
 	}
 
 	@Override
-	public List<ArrestRecord> filterRecords(List<ArrestRecord> fullArrestRecords) {
+	public List<Record> filterRecords(List<ArrestRecord> fullArrestRecords) {
 		return null;
 	}
 }

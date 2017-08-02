@@ -19,8 +19,8 @@ public class ArrestsDotOrgSite implements Site {
 	private int pages;
 	private int totalRecordCount;
 	private static final int[] perRecordSleepRange = new int[]{30,31};
-	private Map<String,Document> resultsPageDocuments;
-	private static final int MAX_ATTEMPTS = 3;
+	private Map<String,Object> resultsPageDocuments;
+	private final int maxAttempts = 3;
 
 	public ArrestsDotOrgSite (String[] args) {
 		setBaseUrl(args);
@@ -49,18 +49,18 @@ public class ArrestsDotOrgSite implements Site {
 		/*}*/
 		return builtUrl;
 	}
-	@Override
-	public void setOnlyResultsPageDocuments(Map<String,Document> resultsPlusMiscDocumentsMap) {
-		Map<String,Document> resultsDocMap = new HashMap<>();
-		for(Entry<String, Document> entry : resultsPlusMiscDocumentsMap.entrySet()) {
-			if (isAResultsDoc(entry.getValue())) {
+
+	public void setOnlyResultsPageDocuments(Map<String,Object> resultsPlusMiscDocumentsMap) {
+		Map<String,Object> resultsDocMap = new HashMap<>();
+		for(Entry<String, Object> entry : resultsPlusMiscDocumentsMap.entrySet()) {
+			if (isAResultsDoc((Document) entry.getValue())) {
 				resultsDocMap.put(entry.getKey(), entry.getValue());
 			}
 		}
 		this.resultsPageDocuments = resultsDocMap;
 	}
 	@Override
-	public Map<String,Document> getResultsPageDocuments() {
+	public Map<String, Object> getResultsPageDocuments() {
 		return this.resultsPageDocuments;
 	}
 	@Override
@@ -193,7 +193,6 @@ public class ArrestsDotOrgSite implements Site {
     
     @Override
     public int getMaxAttempts() {
-    	return MAX_ATTEMPTS;
+    	return maxAttempts;
     }
-
 }

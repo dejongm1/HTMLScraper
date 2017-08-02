@@ -15,8 +15,9 @@ public class DesMoinesRegisterComSite implements Site {
 	private String baseUrl;
 	private int pages;
 	private static final int[] perRecordSleepRange = new int[]{1,2};
-	private Map<String,Document> resultsPageDocuments;
+	private Map<String,Object> resultsPageDocuments;
 	private Service service = new DesMoinesRegisterComService();
+	private final int maxAttempts = 3;
 
 	public DesMoinesRegisterComSite(String[] args) {
 		setBaseUrl(args);
@@ -40,11 +41,7 @@ public class DesMoinesRegisterComSite implements Site {
         return baseUrl;
 	}
 	@Override
-	public void setOnlyResultsPageDocuments(Map<String,Document> resultsPlusMiscDocumentsMap) {
-
-	}
-	@Override
-	public Map<String,Document> getResultsPageDocuments() {
+	public Map<String, Object> getResultsPageDocuments() {
 		return this.resultsPageDocuments;
 	}
 	@Override
@@ -146,4 +143,9 @@ public class DesMoinesRegisterComSite implements Site {
     public List<String> getCounties() {
         return Arrays.asList("Polk", "Johnson", "Story");
     }
+
+	@Override
+	public int getMaxAttempts() {
+		return maxAttempts;
+	}
 }
