@@ -1,8 +1,8 @@
-package com.mcd.spider.main.entities.service;
+package com.mcd.spider.main.entities.site.service;
 
 import com.mcd.spider.main.entities.site.Site;
 
-public interface Service {
+public interface SiteService extends Site {
 
     String getHost();
     String getUserAgent();
@@ -11,14 +11,10 @@ public interface Service {
     String getAcceptEncoding();
     String getReferer();
     String getContentType();
-    String getXRequestedWith();
     String getContentLength();
     String getCookie();
     String getRequestBody(String[] args);
     String getRequestType();
-    String getUrl();
-
-    String getConnection();
-
-    Site getSite();
+    String getServiceUrl();
+    String getProxyConnection();
 }

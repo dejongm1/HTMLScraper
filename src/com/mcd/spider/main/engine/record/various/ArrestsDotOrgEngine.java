@@ -15,17 +15,18 @@ import org.apache.log4j.Logger;
 import org.jsoup.Connection;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
 
 import com.mcd.spider.main.engine.record.ArrestRecordEngine;
-import com.mcd.spider.main.entities.audit.OfflineResponse;
 import com.mcd.spider.main.entities.record.ArrestRecord;
 import com.mcd.spider.main.entities.record.Record;
 import com.mcd.spider.main.entities.record.State;
 import com.mcd.spider.main.entities.record.filter.ArrestRecordFilter;
 import com.mcd.spider.main.entities.record.filter.ArrestRecordFilter.ArrestRecordFilterEnum;
-import com.mcd.spider.main.entities.site.ArrestsDotOrgSite;
 import com.mcd.spider.main.entities.site.Site;
+import com.mcd.spider.main.entities.site.html.ArrestsDotOrgSite;
+import com.mcd.spider.main.entities.site.html.SiteHTML;
 import com.mcd.spider.main.exception.ExcelOutputException;
 import com.mcd.spider.main.exception.IDCheckException;
 import com.mcd.spider.main.exception.SpiderException;
@@ -46,7 +47,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     
     SpiderUtil spiderUtil = new SpiderUtil();
     EngineUtil engineUtil = new EngineUtil();
-    private Set<String> scrapedIds;
+    private Set<String> crawledIds;
     private ArrestRecordFilterEnum filter;
     private boolean offline;
 
@@ -102,8 +103,9 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         //refactor to split out randomizing functionality, maybe reuse??
     	int maxAttempts = site.getMaxAttempts();
         int recordsProcessed = 0;
-        site.getBaseUrl();
-        String firstPageResults = site.generateResultsPageUrl(1);
+        SiteHTML htmlSite = (ArrestsDotOrgSite)site;
+        htmlSite.getBaseUrl();
+        String firstPageResults = htmlSite.generateResultsPageUrl(1);
         //Add some retries if first connection to state site fails?
         Document mainPageDoc = spiderUtil.getHtmlAsDoc(firstPageResults);
         if (engineUtil.docWasRetrieved(mainPageDoc) && attemptCount<=maxAttempts) {
@@ -114,17 +116,17 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
                 numberOfPages = 1;
             }
             Map<String, String> resultsUrlPlusMiscMap = new HashMap<>();
-            logger.debug("Generating list of results pages for : " + site.getName() + " - " + state.getName());
+            logger.debug("Generating list of results pages for : " + htmlSite.getName() + " - " + state.getName());
             //also get misc urls
-            Map<String,String> miscUrls = site.getMiscSafeUrlsFromDoc(mainPageDoc, numberOfPages);
+            Map<String,String> miscUrls = htmlSite.getMiscSafeUrlsFromDoc(mainPageDoc, numberOfPages);
             for (int p=1; p<=numberOfPages;p++) {
-                resultsUrlPlusMiscMap.put(String.valueOf(p), site.generateResultsPageUrl(p));
+                resultsUrlPlusMiscMap.put(String.valueOf(p), htmlSite.generateResultsPageUrl(p));
             }
 
             resultsUrlPlusMiscMap.putAll(miscUrls);
 
             //shuffle urls before retrieving docs
-            Map<String,Object> resultsDocPlusMiscMap = new HashMap<>();
+            Map<String,Document> resultsDocPlusMiscMap = new HashMap<>();
             List<String> keys = new ArrayList<>(resultsUrlPlusMiscMap.keySet());
             Collections.shuffle(keys);
             String previousKey = keys.get(keys.size()-1);
@@ -143,7 +145,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             	}
     			resultsDocPlusMiscMap.put(k, docToCheck);
                 
-                int sleepTime = ConnectionUtil.getSleepTime(site);
+                int sleepTime = ConnectionUtil.getSleepTime(htmlSite);
                 spiderUtil.sleep(sleepTime, false);
                 logger.debug("Sleeping for " + sleepTime + " after fetching " + resultsUrlPlusMiscMap.get(k));
                 
@@ -151,19 +153,19 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             }
 
             //saving this for later?? should be able to get previous sorting by looking at page number in baseUri
-            ((ArrestsDotOrgSite) site).setOnlyResultsPageDocuments(resultsDocPlusMiscMap);
+            htmlSite.setOnlyResultsPageDocuments(resultsDocPlusMiscMap);
 
             //build a list of details page urls by parsing only results page docs in order
-            Map<String,Object> resultsPageDocsMap = site.getResultsPageDocuments();
+            Map<String,Document> resultsPageDocsMap = htmlSite.getResultsPageDocuments();
             Map<String,String> recordDetailUrlMap = new HashMap<>();
-            for (Map.Entry<String, Object> entry : resultsPageDocsMap.entrySet()) {
-                Document doc = (Document) entry.getValue();
+            for (Map.Entry<String, Document> entry : resultsPageDocsMap.entrySet()) {
+                Document doc = entry.getValue();
                 //only proceed if document was retrieved
                 if (engineUtil.docWasRetrieved(doc)){
                     logger.debug("Gather complete list of records to scrape from " + doc.baseUri());
-                    recordDetailUrlMap.putAll(parseDocForUrls(doc, site));
+                    recordDetailUrlMap.putAll(parseDocForUrls(doc, htmlSite));
                     //including some non-detail page links then randomize
-                    recordDetailUrlMap.putAll(site.getMiscSafeUrlsFromDoc(mainPageDoc, recordDetailUrlMap.size())); 
+                    recordDetailUrlMap.putAll(htmlSite.getMiscSafeUrlsFromDoc(mainPageDoc, recordDetailUrlMap.size())); 
                 } else {
                     logger.info("Nothing was retrieved for " + doc.baseUri());
                 }
@@ -191,14 +193,15 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     
     @Override
     public Map<String,String> parseDocForUrls(Object doc, Site site) {
+    	SiteHTML htmlSite = (ArrestsDotOrgSite) site;
         Map<String,String> recordDetailUrlMap = new HashMap<>();
-        Elements recordDetailElements = site.getRecordElements((Document) doc);
+        Elements recordDetailElements = htmlSite.getRecordElements((Document) doc);
         for(int e=0;e<recordDetailElements.size();e++) {
-            String url = site.getRecordDetailDocUrl(recordDetailElements.get(e));
-            String id = site.getRecordId(url);
+            String url = htmlSite.getRecordDetailDocUrl(recordDetailElements.get(e));
+            String id = htmlSite.generateRecordId(url);
             //TODO try this earlier to avoid opening crawled results pages?
             //only add if we haven't already crawled it
-            if (!scrapedIds.contains(id)) {
+            if (!crawledIds.contains(id)) {
             	recordDetailUrlMap.put(id, url);
             }
         }
@@ -207,6 +210,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     
     @Override
     public int scrapeRecords(Map<String,String> recordsDetailsUrlMap, Site site, ExcelWriter excelWriter) {
+    	SiteHTML htmlSite = (ArrestsDotOrgSite) site;
         int recordsProcessed = 0;
         List<ArrestRecord> arrestRecords = new ArrayList<>();
         ArrestRecord arrestRecord;
@@ -226,15 +230,15 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             } catch (IOException e) {
         		logger.error("Failed to get a connection to " + recordsDetailsUrlMap.get(k), e);
             }
-            if (site.isARecordDetailDoc(profileDetailDoc)) {
+            if (htmlSite.isARecordDetailDoc(profileDetailDoc)) {
                 if (engineUtil.docWasRetrieved(profileDetailDoc)) {
                     recordsProcessed++;
                     //should we check for ID first or not bother unless we see duplicates??
-                    arrestRecord = populateArrestRecord(profileDetailDoc, site);
+                    arrestRecord = populateArrestRecord(profileDetailDoc, htmlSite);
                     arrestRecords.add(arrestRecord);
                     //save each record in case of failures
                     excelWriter.addRecordToMainWorkbook(arrestRecord);
-                    spiderUtil.sleep(ConnectionUtil.getSleepTime(site), true);//sleep at random interval
+                    spiderUtil.sleep(ConnectionUtil.getSleepTime(htmlSite), true);//sleep at random interval
                     
                 } else {
                     logger.error("Failed to load html doc from " + url);
@@ -253,10 +257,11 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     }
     
     @Override
-    public ArrestRecord populateArrestRecord(Document profileDetailDoc, Site site) {
-        Elements profileDetails = site.getRecordDetailElements(profileDetailDoc);
+    public ArrestRecord populateArrestRecord(Object profileDetailObj, Site site) {
+    	SiteHTML htmlSite = (ArrestsDotOrgSite) site;
+        Elements profileDetails = htmlSite.getRecordDetailElements((Document) profileDetailObj);
         ArrestRecord record = new ArrestRecord();
-        record.setId(site.getRecordId(profileDetailDoc.baseUri()));
+        record.setId(site.generateRecordId(((Node) profileDetailObj).baseUri()));
         for (Element profileDetail : profileDetails) {
             matchPropertyToField(record, profileDetail);
             logger.info("\t" + profileDetail.text());
@@ -269,7 +274,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     	ExcelWriter excelWriter  = new ExcelWriter(state, new ArrestRecord(), site);
         try {
             //this will get previously written IDs but then overwrite the spreadsheet
-            scrapedIds = excelWriter.getPreviousIds();
+            crawledIds = excelWriter.getPreviousIds();
             excelWriter.createSpreadsheet();
         } catch (ExcelOutputException | IDCheckException e) {
             throw e;
@@ -279,9 +284,10 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     
     @Override
     @SuppressWarnings("deprecation")
-    public void matchPropertyToField(ArrestRecord record, Element profileDetail) {
-        String label = profileDetail.select("b").text().toLowerCase();
-        Elements charges = profileDetail.select(".charges li");
+    public void matchPropertyToField(ArrestRecord record, Object profileDetail) {
+    	Element profileDetailElement = (Element) profileDetail;
+        String label = profileDetailElement.select("b").text().toLowerCase();
+        Elements charges = profileDetailElement.select(".charges li");
         if (!charges.isEmpty()) {
             //should I try to categorize charge types here???
             String[] chargeStrings = new String[charges.size()];
@@ -292,43 +298,43 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         } else if (!label.equals("")) {
             try {
                 if (label.contains("full name")) {
-                    formatName(record, profileDetail);
+                    formatName(record, profileDetailElement);
                 } else if (label.contains("date")) {
-                    Date date = new Date(extractValue(profileDetail));
+                    Date date = new Date(extractValue(profileDetailElement));
                     Calendar calendar = Calendar.getInstance();
                     calendar.setTime(date);
                     record.setArrestDate(calendar);
                 } else if (label.contains("time")) {
-                    formatArrestTime(record, profileDetail);
+                    formatArrestTime(record, profileDetailElement);
                 } else if (label.contains("arrest age")) {
-                    record.setArrestAge(Integer.parseInt(extractValue(profileDetail)));
+                    record.setArrestAge(Integer.parseInt(extractValue(profileDetailElement)));
                 } else if (label.contains("gender")) {
-                    record.setGender(extractValue(profileDetail));
+                    record.setGender(extractValue(profileDetailElement));
                 } else if (label.contains("city")) {
-                    String city = profileDetail.select("span[itemProp=\"addressLocality\"]").text();
-                    String state = profileDetail.select("span[itemprop=\"addressRegion\"]").text();
+                    String city = profileDetailElement.select("span[itemProp=\"addressLocality\"]").text();
+                    String state = profileDetailElement.select("span[itemprop=\"addressRegion\"]").text();
                     record.setCity(city);
                     record.setState(state);
                 } else if (label.contains("total bond")) {
-                    String bondAmount = extractValue(profileDetail);
+                    String bondAmount = extractValue(profileDetailElement);
                     int totalBond = Integer.parseInt(bondAmount.replace("$", ""));
                     record.setTotalBond(totalBond);
                 } else if (label.contains("height")) {
-                    record.setHeight(extractValue(profileDetail));
+                    record.setHeight(extractValue(profileDetailElement));
                 } else if (label.contains("weight")) {
-                    record.setWeight(extractValue(profileDetail));
+                    record.setWeight(extractValue(profileDetailElement));
                 } else if (label.contains("hair color")) {
-                    record.setHairColor(extractValue(profileDetail));
+                    record.setHairColor(extractValue(profileDetailElement));
                 } else if (label.contains("eye color")) {
-                    record.setEyeColor(extractValue(profileDetail));
+                    record.setEyeColor(extractValue(profileDetailElement));
                 } else if (label.contains("birth")) {
-                    record.setBirthPlace(extractValue(profileDetail));
+                    record.setBirthPlace(extractValue(profileDetailElement));
                 }
             } catch (NumberFormatException nfe) {
-                logger.error("Couldn't parse a numeric value from " + profileDetail.text());
+                logger.error("Couldn't parse a numeric value from " + profileDetailElement.text());
             }
-        } else if (profileDetail.select("h3").hasText()) {
-            record.setCounty(profileDetail.select("h3").text().replaceAll("(?i)county", "").trim());
+        } else if (profileDetailElement.select("h3").hasText()) {
+            record.setCounty(profileDetailElement.select("h3").text().replaceAll("(?i)county", "").trim());
         }
     }
     @Override

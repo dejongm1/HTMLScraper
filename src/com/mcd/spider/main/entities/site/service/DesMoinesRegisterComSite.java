@@ -1,20 +1,59 @@
-package com.mcd.spider.main.entities.service;
+package com.mcd.spider.main.entities.site.service;
 
-import com.mcd.spider.main.engine.record.iowa.DesMoinesRegisterComEngine;
-import com.mcd.spider.main.entities.site.DesMoinesRegisterComSite;
-import com.mcd.spider.main.entities.site.Site;
-import com.mcd.spider.main.util.ConnectionUtil;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import com.mcd.spider.main.engine.record.iowa.DesMoinesRegisterComEngine;
+import com.mcd.spider.main.entities.site.Site;
+import com.mcd.spider.main.entities.site.Url;
+import com.mcd.spider.main.util.ConnectionUtil;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.*;
 
-public class DesMoinesRegisterComService implements Service {
-    @Override
+public class DesMoinesRegisterComSite implements SiteService {
+
+	private static final Url url = new Url("http://", "data.desmoinesregister.com/iowa-mugshots/index.php", new String[]{});
+	private static final String name = "DesMoinesRegister.com";
+	private String baseUrl;
+	private static final int[] perRecordSleepRange = new int[]{1,2};
+	private final int maxAttempts = 3;
+
+	public DesMoinesRegisterComSite(String[] args) {
+		setBaseUrl(args);
+	}
+	
+	@Override
+	public Url getUrl() {
+		return url;
+	}
+	@Override
+	public String getName() {
+		return name;
+	}
+
+	@Override
+	public void setBaseUrl(String[] args) {
+		if (baseUrl==null) {
+            Url url = getUrl();
+            String builtUrl = url.getProtocol() + url.getDomain();
+            if (args.length>0) {
+                builtUrl += "?co=" + args[0];
+            }
+            baseUrl = builtUrl.toLowerCase();
+		}
+	}
+	@Override
+	public String getBaseUrl() {
+		return this.baseUrl;
+	}
+	@Override
     public String getHost() {
         return "data.desmoinesregister.com";
     }
@@ -42,7 +81,6 @@ public class DesMoinesRegisterComService implements Service {
     public String getContentType() {
         return "application/x-www-form-urlencoded; charset=UTF-8";
     }
-    @Override
     public String getXRequestedWith() {
         return "XMLHttpRequest";
     }
@@ -67,21 +105,17 @@ public class DesMoinesRegisterComService implements Service {
         return "POST";
     }
     @Override
-    public String getUrl() {
+    public String getServiceUrl() {
         return "http://data.desmoinesregister.com/iowa-mugshots/includes/lib/MugshotsDB.php";
     }
     @Override
-    public String getConnection() {
+    public String getProxyConnection() {
         return "keep-alive";
-    }
-    @Override
-    public Site getSite() {
-        return new DesMoinesRegisterComSite(null);
     }
 
     public Document getDetailsDoc(String url, DesMoinesRegisterComEngine engine) throws IOException, JSONException {
         //build http post request
-        URL obj = new URL(getUrl());
+        URL obj = new URL(getServiceUrl());
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
         //add request header
@@ -99,7 +133,7 @@ public class DesMoinesRegisterComService implements Service {
 
         //iterate over counties and add to list
         //try something other than getmugs
-        String urlParameters = "action=getdetails&id=" + getSite().getRecordId(url);
+        String urlParameters = "action=getdetails&id=" + this.generateRecordId(url);
 
         // Send post request
         StringBuffer response = engine.sendRequest(con, urlParameters);
@@ -110,4 +144,36 @@ public class DesMoinesRegisterComService implements Service {
         return detailsDoc;
         //return Jsoup.parse(response.toString());
     }
+	public String getRecordDetailDocUrl(Element record) {
+		String pdId = record.attr("id");
+		return baseUrl+ "&id=" + pdId;
+	}
+	public Map<String,String> getRecordDetailDocUrls(List<Document> resultsPageDocs) {
+		return null;
+	}
+	public Elements getRecordDetailElements(Document doc) {
+		return doc.select("h1, p");
+	}
+    public boolean isARecordDetailDoc(Document doc) {
+        if (doc!=null) {
+            return !doc.select("#msdb-mug-container").isEmpty() && doc.select("#permalink-url").hasText();
+        } else {
+            return false;
+        }
+    }
+    @Override
+	public String generateRecordId(String url) {
+		return url.substring(url.indexOf("&id=")+4, url.length());
+	}
+	public int[] getPerRecordSleepRange() {
+		return perRecordSleepRange;
+	}
+    public List<String> getCounties() {
+        return Arrays.asList("Polk", "Johnson", "Story");
+    }
+
+	@Override
+	public int getMaxAttempts() {
+		return maxAttempts;
+	}
 }

@@ -27,9 +27,9 @@ import com.mcd.spider.main.entities.record.Record;
 import com.mcd.spider.main.entities.record.State;
 import com.mcd.spider.main.entities.record.filter.ArrestRecordFilter;
 import com.mcd.spider.main.entities.record.filter.ArrestRecordFilter.ArrestRecordFilterEnum;
-import com.mcd.spider.main.entities.service.DesMoinesRegisterComService;
-import com.mcd.spider.main.entities.site.DesMoinesRegisterComSite;
 import com.mcd.spider.main.entities.site.Site;
+import com.mcd.spider.main.entities.site.service.DesMoinesRegisterComSite;
+import com.mcd.spider.main.entities.site.service.SiteService;
 import com.mcd.spider.main.exception.ExcelOutputException;
 import com.mcd.spider.main.exception.IDCheckException;
 import com.mcd.spider.main.exception.SpiderException;
@@ -50,8 +50,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     private static final Logger logger = Logger.getLogger(DesMoinesRegisterComEngine.class);
     private SpiderUtil spiderUtil = new SpiderUtil();
     private EngineUtil engineUtil = new EngineUtil();
-    DesMoinesRegisterComService service = new DesMoinesRegisterComService();
-    private Set<String> scrapedIds;
+    private Set<String> crawledIds;
     private ArrestRecordFilterEnum filter;
     private boolean offline;
 
@@ -65,7 +64,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
         offline = System.getProperty("offline").equals("true");
     	this.filter = filter;
     	if (offline) {
-    		logger.debug("Offline - can't scrape this php site");
+    		logger.debug("Offline - can't scrape this php site. Try making an offline version");
     	} else {
 	        //split into more specific methods
 	        long totalTime = System.currentTimeMillis();
@@ -106,40 +105,41 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     @Override
     public int scrapeSite(State state, Site site, ExcelWriter excelWriter, int attemptCount) {
         int recordsProcessed = 0;
-
-        for (String county : ((DesMoinesRegisterComSite)site).getCounties()) {
+        SiteService serviceSite = (DesMoinesRegisterComSite) site;
+        for (String county : ((DesMoinesRegisterComSite) site).getCounties()) {
             site.setBaseUrl(new String[]{county});
             try {
                 //build http post request
-                URL obj = new URL(service.getUrl());
+                URL obj = new URL(((DesMoinesRegisterComSite) serviceSite).getServiceUrl());
                 HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
                 //add request header
-                con.setRequestMethod(service.getRequestType());
-                con.setRequestProperty("User-Agent", service.getUserAgent());
-                con.setRequestProperty("Accept-Language", service.getAcceptLanguage());
-                con.setRequestProperty("Accept-Encoding", service.getAcceptEncoding());
-                con.setRequestProperty("Accept", service.getAcceptType());
-                con.setRequestProperty("Content-Length", service.getContentLength());
-                con.setRequestProperty("Content-Type", service.getContentType());
-                con.setRequestProperty("Cookie", service.getCookie());
-                //con.setRequestProperty("Referer", service.getReferer());
-                con.setRequestProperty("XRequested-With", service.getXRequestedWith());
-                con.setRequestProperty("Host", service.getHost());
-//                String urlParameters = service.getRequestBody(new String[]{county, "getmugs", "0", "10000"});
-                String urlParameters = service.getRequestBody(new String[]{county, "getmugs", "0", "12"});
+                con.setRequestMethod(serviceSite.getRequestType());
+                con.setRequestProperty("User-Agent", serviceSite.getUserAgent());
+                con.setRequestProperty("Accept-Language", serviceSite.getAcceptLanguage());
+                con.setRequestProperty("Accept-Encoding", serviceSite.getAcceptEncoding());
+                con.setRequestProperty("Accept", serviceSite.getAcceptType());
+                con.setRequestProperty("Content-Length", serviceSite.getContentLength());
+                con.setRequestProperty("Content-Type", serviceSite.getContentType());
+                con.setRequestProperty("Cookie", serviceSite.getCookie());
+                //con.setRequestProperty("Referer", serviceSite.getReferer());
+                con.setRequestProperty("XRequested-With", ((DesMoinesRegisterComSite) serviceSite).getXRequestedWith());
+                con.setRequestProperty("Proxy-Connection", serviceSite.getProxyConnection());
+                con.setRequestProperty("Host", serviceSite.getHost());
+//                String urlParameters = serviceSite.getRequestBody(new String[]{county, "getmugs", "0", "10000"});
+                String urlParameters = serviceSite.getRequestBody(new String[]{county, "getmugs", "0", "12"});
 
                 // Send post request
-                logger.debug("\nSending 'POST' request to URL : " + service.getUrl());
+                logger.debug("\nSending 'POST' request to URL : " + site.getUrl());
                 StringBuffer response = sendRequest(con, urlParameters);
 
-                Map<String, String> profileDetailUrlMap = new HashMap<>();
-                profileDetailUrlMap.putAll(parseDocForUrls(response, site));
+                Map<String, String> profileDetailUrlMap;
+                profileDetailUrlMap = parseDocForUrls(response, site);
 
                 recordsProcessed += scrapeRecords(profileDetailUrlMap, site, excelWriter);
 
             } catch (java.io.IOException e) {
-                logger.error("IOException caught sending http request to " + service.getUrl(), e);
+                logger.error("IOException caught sending http request to " + site.getUrl(), e);
             }
 
         }
@@ -155,7 +155,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
             for(int m=0;m<mugShots.length();m++) {
                 JSONObject mugshot = (JSONObject) mugShots.get(m);
                 //only add if we haven't already crawled it
-                if (!scrapedIds.contains(mugshot.getString("id"))) {
+                if (!crawledIds.contains(mugshot.getString("id"))) {
                     detailUrlMap.put(mugshot.getString("id"), site.getBaseUrl() + "&id=" + mugshot.getString("id"));
                 }
             }
@@ -175,10 +175,10 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
             String url = recordsDetailsUrlMap.get(id);
             try {
                 logger.debug("\nSending 'POST' request for : " + id);
-                Document profileDetailDoc = service.getDetailsDoc(url, this);
+                Document profileDetailDoc = ((DesMoinesRegisterComSite) site).getDetailsDoc(url, this);
 
                 if (engineUtil.docWasRetrieved(profileDetailDoc)) {
-                    if (site.isARecordDetailDoc(profileDetailDoc)) {
+                    if (((DesMoinesRegisterComSite) site).isARecordDetailDoc(profileDetailDoc)) {
                         recordsProcessed++;
                         arrestRecord = populateArrestRecord(profileDetailDoc, site);
                         arrestRecords.add(arrestRecord);
@@ -208,10 +208,10 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     }
 
     @Override
-    public ArrestRecord populateArrestRecord(Document profileDetailDoc, Site site) {
-        Elements profileDetails = site.getRecordDetailElements(profileDetailDoc);
+    public ArrestRecord populateArrestRecord(Object profileDetailObj, Site site) {
+        Elements profileDetails = ((DesMoinesRegisterComSite) site).getRecordDetailElements((Document) profileDetailObj);
         ArrestRecord record = new ArrestRecord();
-        record.setId(site.getRecordId(profileDetailDoc.select("#permalink-url a").get(0).attr("href")));
+        record.setId(site.generateRecordId(((Element) profileDetailObj).select("#permalink-url a").get(0).attr("href")));
         //made it here
         for (Element profileDetail : profileDetails) {
             matchPropertyToField(record, profileDetail);
@@ -224,7 +224,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     public ExcelWriter initializeOutputter(State state, Site site) throws SpiderException {
     	ExcelWriter excelWriter  = new ExcelWriter(state, new ArrestRecord(), site);
         try {
-            scrapedIds = excelWriter.getPreviousIds();
+            crawledIds = excelWriter.getPreviousIds();
             excelWriter.createSpreadsheet();
         } catch (ExcelOutputException | IDCheckException e) {
             throw e;
@@ -233,41 +233,42 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     }
     
     @Override
-    public void matchPropertyToField(ArrestRecord record, Element profileDetail) {
-        String label = profileDetail.select("strong").text().toLowerCase();
+    public void matchPropertyToField(ArrestRecord record, Object profileDetail) {
+    	Element profileDetailElement = (Element) profileDetail;
+        String label = profileDetailElement.select("strong").text().toLowerCase();
         if (!label.equals("")) {
             try {
                 if (label.contains("booked")) {
-                    formatArrestTime(record, profileDetail);
+                    formatArrestTime(record, profileDetailElement);
                 } else if (label.contains("age")) {
-                    record.setArrestAge(Integer.parseInt(extractValue(profileDetail)));
+                    record.setArrestAge(Integer.parseInt(extractValue(profileDetailElement)));
                 } else if (label.contains("charges")) {
-                    record.setCharges(extractValue(profileDetail).split(";"));
+                    record.setCharges(extractValue(profileDetailElement).split(";"));
                 } else if (label.contains("sex")) {
-                    record.setGender(extractValue(profileDetail));
+                    record.setGender(extractValue(profileDetailElement));
                 } else if (label.contains("city")) {
 //					record.setCity(city);
 					record.setState("IA");
                 } else if (label.contains("bond")) {
-                    String bondAmount = extractValue(profileDetail);
+                    String bondAmount = extractValue(profileDetailElement);
                     int totalBond = Integer.parseInt(bondAmount.replace("$", "").replace(",", ""));
                     record.setTotalBond(totalBond);
                 } else if (label.contains("height")) {
-                    record.setHeight(extractValue(profileDetail));
+                    record.setHeight(extractValue(profileDetailElement));
                 } else if (label.contains("weight")) {
-                    record.setWeight(extractValue(profileDetail));
+                    record.setWeight(extractValue(profileDetailElement));
                 } else if (label.contains("hair")) {
-                    record.setHairColor(extractValue(profileDetail));
+                    record.setHairColor(extractValue(profileDetailElement));
                 } else if (label.contains("eye")) {
-                    record.setEyeColor(extractValue(profileDetail));
+                    record.setEyeColor(extractValue(profileDetailElement));
                 } else if (label.contains("county")) {
-                    record.setCounty(extractValue(profileDetail));
+                    record.setCounty(extractValue(profileDetailElement));
                 }
             } catch (NumberFormatException nfe) {
-                logger.error("Couldn't parse a numeric value from " + profileDetail.text());
+                logger.error("Couldn't parse a numeric value from " + profileDetailElement.text());
             }
-        } else if (profileDetail.select("h1").hasText()) {
-            record.setFullName(profileDetail.select("h1").text().trim());
+        } else if (profileDetailElement.select("h1").hasText()) {
+            record.setFullName(profileDetailElement.select("h1").text().trim());
         }
     }
 
@@ -307,6 +308,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     }
 
     public StringBuffer sendRequest(HttpURLConnection con, String urlParameters) throws IOException {
+    	//make an offline version?
         con.setDoOutput(true);
         DataOutputStream wr = new DataOutputStream(con.getOutputStream());
         wr.writeBytes(urlParameters);

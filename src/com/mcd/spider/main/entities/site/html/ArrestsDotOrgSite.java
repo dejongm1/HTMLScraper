@@ -1,9 +1,4 @@
-package com.mcd.spider.main.entities.site;
-
-import com.mcd.spider.main.entities.service.Service;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
+package com.mcd.spider.main.entities.site.html;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -11,7 +6,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-public class ArrestsDotOrgSite implements Site {
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import com.mcd.spider.main.entities.site.Url;
+import com.mcd.spider.main.entities.site.service.SiteService;
+
+public class ArrestsDotOrgSite implements SiteHTML {
 
 	private static final Url url = new Url("http://", "arrests.org", new String[]{});
 	private static final String name = "Arrests.org";
@@ -19,7 +21,7 @@ public class ArrestsDotOrgSite implements Site {
 	private int pages;
 	private int totalRecordCount;
 	private static final int[] perRecordSleepRange = new int[]{30,31};
-	private Map<String,Object> resultsPageDocuments;
+	private Map<String,Document> resultsPageDocuments;
 	private final int maxAttempts = 3;
 
 	public ArrestsDotOrgSite (String[] args) {
@@ -50,17 +52,17 @@ public class ArrestsDotOrgSite implements Site {
 		return builtUrl;
 	}
 
-	public void setOnlyResultsPageDocuments(Map<String,Object> resultsPlusMiscDocumentsMap) {
-		Map<String,Object> resultsDocMap = new HashMap<>();
-		for(Entry<String, Object> entry : resultsPlusMiscDocumentsMap.entrySet()) {
-			if (isAResultsDoc((Document) entry.getValue())) {
+	public void setOnlyResultsPageDocuments(Map<String,Document> resultsPlusMiscDocumentsMap) {
+		Map<String,Document> resultsDocMap = new HashMap<>();
+		for(Entry<String, Document> entry : resultsPlusMiscDocumentsMap.entrySet()) {
+			if (isAResultsDoc( entry.getValue())) {
 				resultsDocMap.put(entry.getKey(), entry.getValue());
 			}
 		}
 		this.resultsPageDocuments = resultsDocMap;
 	}
 	@Override
-	public Map<String, Object> getResultsPageDocuments() {
+	public Map<String, Document> getResultsPageDocuments() {
 		return this.resultsPageDocuments;
 	}
 	@Override
@@ -182,15 +184,10 @@ public class ArrestsDotOrgSite implements Site {
     }
 
 	@Override
-	public String getRecordId(String url) {
+	public String generateRecordId(String url) {
 		return url.substring(url.indexOf("/Arrests/")+9, url.indexOf("/?d=1"));
 	}
 
-    @Override
-    public Service getService() {
-        return null;
-    }
-    
     @Override
     public int getMaxAttempts() {
     	return maxAttempts;

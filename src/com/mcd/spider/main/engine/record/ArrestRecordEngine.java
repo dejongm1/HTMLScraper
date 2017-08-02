@@ -3,7 +3,6 @@ package com.mcd.spider.main.engine.record;
 import java.util.List;
 import java.util.Map;
 
-import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import com.mcd.spider.main.entities.record.ArrestRecord;
@@ -21,8 +20,8 @@ public interface ArrestRecordEngine {
 	int scrapeSite(State state, Site site, ExcelWriter excelWriter, int attemptCount);
 	Map<String,String> parseDocForUrls(Object objectToParse, Site site);
 	int scrapeRecords(Map<String, String> recordsDetailsUrlMap, Site site, ExcelWriter excelWriter);
-	ArrestRecord populateArrestRecord(Document profileDetailDoc, Site site);
-	void matchPropertyToField(ArrestRecord record, Element profileDetail);
+	ArrestRecord populateArrestRecord(Object profileDetailObj, Site site);
+	void matchPropertyToField(ArrestRecord record, Object profileDetail);
 	void formatName(ArrestRecord record, Element profileDetail);
 	String extractValue(Element profileDetail);
 	void formatArrestTime(ArrestRecord record, Element profileDetail);
