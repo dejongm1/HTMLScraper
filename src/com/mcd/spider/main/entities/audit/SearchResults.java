@@ -17,7 +17,7 @@ public class SearchResults {
 	}
 	public String prettyPrint() {
 		StringBuilder sb = new StringBuilder();
-		if (results!=null) {
+		if (!results.isEmpty()) {
             sb.append("\n\tSearch Results: ");
             for (Term term : this.results)  {
                 sb.append("\n\t\t" + term.getWord() + " was found " + term.getCount() + " times");

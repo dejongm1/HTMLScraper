@@ -126,6 +126,7 @@ public class AuditEngine {
 			}
 			result.setFullResponseCode(response.headers().get(null));
 			result.setCode(response.statusCode());
+			result.setContentType(response.contentType());
 		} catch (FileNotFoundException fnfe) {
             result.setCode(0);
             result.setFullResponseCode("HTTP/1.1 0 FileNotFound (offline)");
@@ -137,7 +138,9 @@ public class AuditEngine {
 			logger.error("IOException caught getting document", e);
 		}
 		logger.debug("Trying to get hrefs from " + urlString);
-		if (spiderUtil.docWasRetrieved(docToCheck)) {
+		
+		//any other content-types to throughly scrape?
+		if (spiderUtil.docWasRetrieved(docToCheck) && result.getContentType().startsWith("text/html")) {
 		    //get frequent words
             getPopularWords(docToCheck, 5, result);
             //search for given word

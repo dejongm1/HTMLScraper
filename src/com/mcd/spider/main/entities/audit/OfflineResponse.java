@@ -16,12 +16,14 @@ public class OfflineResponse implements Response {
 
 	private int statusCode;
 	private String url;
+	private String contentType;
 	private Map<String, String> headers = new HashMap<>();
 	
 	public OfflineResponse(int statusCode, String url) {
 		this.statusCode = statusCode;
 		this.url = url;
 		this.headers.put(null, "HTTP/1.1 " + statusCode + " OK");
+		this.contentType = determineContentType();
 	}
 	
 
@@ -43,6 +45,20 @@ public class OfflineResponse implements Response {
 	@Override
 	public Map<String,String> headers() {
 		return this.headers;
+	}
+	
+	private String determineContentType() {
+		if (url.endsWith("pdf")) {
+			return "application/pdf";
+		} else if (url.endsWith("xml")) {
+			return "text/xml";
+		} else if (url.endsWith("css")) {
+			return "text/css";
+		} else if (url.endsWith("js")) {
+			return "application/javascript";
+		} else {
+			return "text/html";
+		}
 	}
 	
 	@Override
@@ -160,8 +176,7 @@ public class OfflineResponse implements Response {
 
 	@Override
 	public String contentType() {
-		// TODO Auto-generated method stub
-		return null;
+		return contentType;
 	}
 
 }

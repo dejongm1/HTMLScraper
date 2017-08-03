@@ -1,9 +1,13 @@
 package com.mcd.spider.main.entities.audit;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
+import com.mcd.spider.main.entities.record.filter.RecordFilter.RecordFilterEnum;
 
 /**
  * 
@@ -13,6 +17,37 @@ import java.util.TreeSet;
 
 public class PageAuditResult implements Comparable<PageAuditResult>{
 
+//	public enum PageTypeEnum {
+//		//too many to try to map
+//		PDF("PDF", ""),
+//		HTML("HTML", "text/html"),
+//		JAVASCRIPT("Javascript", "text/javascript");
+//	
+//		private String simpleName;
+//		private String contentType;
+//		
+//		PageTypeEnum(String simpleName, String contentType) {
+//			this.simpleName = simpleName;
+//			this.contentType = contentType;
+//		}
+//		public String simpleName() {
+//			return simpleName;
+//		}
+//		public String contentType() {
+//			return contentType;
+//		}
+//		
+//		public static PageTypeEnum findPageType(String contentType) {
+//			for (PageTypeEnum typeEnum : PageTypeEnum.values()) {
+//				if (contentType.startsWith(typeEnum.name())) {
+//					return typeEnum;
+//				}
+//			}
+//			return null;
+//		}
+//	}
+	
+	private String contentType;
 	private int code;
 	private String fullResponseCode;
 	private String url;
@@ -38,12 +73,13 @@ public class PageAuditResult implements Comparable<PageAuditResult>{
 	public String prettyPrint() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("\nPage: " + this.url);
-		sb.append("\n\tStatus Code: " + this.code);
-		sb.append("\n\tFull Response Code: " + this.fullResponseCode);
-		sb.append("\n\tLoad Time: " + this.loadTime);
-		sb.append("\n\tNo. of Images: " + this.numberOfImages);
-		sb.append("\n\tInbound Links: " + this.inBoundLinks.size());
-		sb.append("\n\tOutbound Links: " + this.outBoundLinks.size());
+		sb.append(this.contentType!=null?"\n\tContent-type: " + this.contentType:"");
+		sb.append(this.code!=0?"\n\tStatus Code: " + this.code:"");
+		sb.append(this.fullResponseCode!=null?"\n\tFull Response Code: " + this.fullResponseCode:"");
+		sb.append(this.loadTime!=0?"\n\tLoad Time: " + this.loadTime:"");
+		sb.append(this.numberOfImages!=0?"\n\tNo. of Images: " + this.numberOfImages:"");
+		sb.append(!this.inBoundLinks.isEmpty()?"\n\tInbound Links: " + this.inBoundLinks.size():"");
+		sb.append(!this.outBoundLinks.isEmpty()?"\n\tOutbound Links: " + this.outBoundLinks.size():"");
 		if (frequentWords!=null) {
             sb.append("\n\tFrequent words: ");
             for (Map.Entry<String,Term> entry : this.frequentWords.entrySet())  {
@@ -54,6 +90,13 @@ public class PageAuditResult implements Comparable<PageAuditResult>{
 		return sb.toString();
 	}
 	
+	public String getContentType() {
+		return contentType;
+	}
+	public void setContentType(String contentType) {
+		//this.contentType = PageTypeEnum.findPageType(contentType);
+		this.contentType = contentType;
+	}
 	public int getCode() {
 		return code;
 	}
