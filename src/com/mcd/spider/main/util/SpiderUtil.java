@@ -150,6 +150,21 @@ public class SpiderUtil {
 		return response;
     }
     
+
+	public boolean docWasRetrieved(Document doc) {
+		if (doc!=null) {
+			if (doc.body()!= null && doc.body().text().equals("")) {
+				logger.error("You might be blocked. This doc retrieved was empty.");
+			} else {
+				return true;
+			}
+		} else {
+			logger.error("No document was retrieved");
+			return false;
+		}
+		return false;
+	}
+    
 	public void sleep(long milliSecondsToSleep, boolean logGenericStatement) {
         try {
             if (logGenericStatement) {

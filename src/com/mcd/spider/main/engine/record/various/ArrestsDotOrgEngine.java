@@ -1,5 +1,23 @@
 package com.mcd.spider.main.engine.record.various;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.log4j.Logger;
+import org.jsoup.Connection;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
+import org.jsoup.select.Elements;
+
 import com.mcd.spider.main.engine.record.ArrestRecordEngine;
 import com.mcd.spider.main.entities.record.ArrestRecord;
 import com.mcd.spider.main.entities.record.Record;
@@ -13,19 +31,8 @@ import com.mcd.spider.main.exception.ExcelOutputException;
 import com.mcd.spider.main.exception.IDCheckException;
 import com.mcd.spider.main.exception.SpiderException;
 import com.mcd.spider.main.util.ConnectionUtil;
-import com.mcd.spider.main.util.EngineUtil;
 import com.mcd.spider.main.util.OutputUtil;
 import com.mcd.spider.main.util.SpiderUtil;
-import org.apache.log4j.Logger;
-import org.jsoup.Connection;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
-import org.jsoup.select.Elements;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.*;
 
 /**
  *
@@ -38,7 +45,6 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     public static final Logger logger = Logger.getLogger(ArrestsDotOrgEngine.class);
     
     SpiderUtil spiderUtil = new SpiderUtil();
-    EngineUtil engineUtil = new EngineUtil();
     private Set<String> crawledIds;
     private RecordFilterEnum filter;
     private boolean offline;
@@ -100,7 +106,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         String firstPageResults = htmlSite.generateResultsPageUrl(1);
         //Add some retries if first connection to state site fails?
         Document mainPageDoc = spiderUtil.getHtmlAsDoc(firstPageResults);
-        if (engineUtil.docWasRetrieved(mainPageDoc) && attemptCount<=maxAttempts) {
+        if (spiderUtil.docWasRetrieved(mainPageDoc) && attemptCount<=maxAttempts) {
             //restricting to 2 pages for now
         	//int numberOfPages = site.getTotalPages(mainPageDoc);
         	int numberOfPages = 2;
@@ -153,7 +159,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             for (Map.Entry<String, Document> entry : resultsPageDocsMap.entrySet()) {
                 Document doc = entry.getValue();
                 //only proceed if document was retrieved
-                if (engineUtil.docWasRetrieved(doc)){
+                if (spiderUtil.docWasRetrieved(doc)){
                     logger.debug("Gather complete list of records to scrape from " + doc.baseUri());
                     recordDetailUrlMap.putAll(parseDocForUrls(doc, htmlSite));
                     //including some non-detail page links then randomize
@@ -223,7 +229,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         		logger.error("Failed to get a connection to " + recordsDetailsUrlMap.get(k), e);
             }
             if (htmlSite.isARecordDetailDoc(profileDetailDoc)) {
-                if (engineUtil.docWasRetrieved(profileDetailDoc)) {
+                if (spiderUtil.docWasRetrieved(profileDetailDoc)) {
                     recordsProcessed++;
                     //should we check for ID first or not bother unless we see duplicates??
                     arrestRecord = populateArrestRecord(profileDetailDoc, htmlSite);

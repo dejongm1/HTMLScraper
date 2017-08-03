@@ -1,5 +1,21 @@
 package com.mcd.spider.main.engine.record.texas;
 
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import com.mcd.spider.main.engine.record.CourtRecordEngine;
 import com.mcd.spider.main.entities.record.CourtRecord;
 import com.mcd.spider.main.entities.record.Record;
@@ -12,21 +28,10 @@ import com.mcd.spider.main.exception.ExcelOutputException;
 import com.mcd.spider.main.exception.IDCheckException;
 import com.mcd.spider.main.exception.SpiderException;
 import com.mcd.spider.main.util.ConnectionUtil;
-import com.mcd.spider.main.util.EngineUtil;
 import com.mcd.spider.main.util.OutputUtil;
 import com.mcd.spider.main.util.SpiderUtil;
-import common.Logger;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.*;
+import common.Logger;
 
 /**
  *
@@ -37,7 +42,6 @@ public class HarrisCountyDistrictClerkComEngine implements CourtRecordEngine {
 
     private static final Logger logger = Logger.getLogger(HarrisCountyDistrictClerkComEngine.class);
     private SpiderUtil spiderUtil = new SpiderUtil();
-    private EngineUtil engineUtil = new EngineUtil();
     private Set<String> crawledIds;
     private RecordFilter.RecordFilterEnum filter;
     private boolean offline;
@@ -95,7 +99,7 @@ public class HarrisCountyDistrictClerkComEngine implements CourtRecordEngine {
         String firstPageResults = siteService.getBaseUrl();
         //Add some retries if first connection to state site fails?
         Document mainPageDoc = spiderUtil.getHtmlAsDoc(firstPageResults);
-        if (engineUtil.docWasRetrieved(mainPageDoc) && attemptCount<=maxAttempts) {
+        if (spiderUtil.docWasRetrieved(mainPageDoc) && attemptCount<=maxAttempts) {
         	String hiddenDownloadFile = "";
         	Elements tags = mainPageDoc.select("#hiddenDownloadFile");
         	for (Element tag : tags) {

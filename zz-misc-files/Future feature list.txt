@@ -11,6 +11,9 @@ SE Audit
 	list robots.txt
 	tags (what tags?)
 	search for words and variations
+	obtaining actual sitemap
+		-getting truncated?? or only offline??
+		-remove <!--?xml and xmlns stuff
 
 
 deployment package
@@ -29,8 +32,10 @@ deployment package
 
 getRecords()
 mugshot-publication.com
+
 http://publicsearch1.chicagopolice.org/Help/Api/
 http://publicsearch1.chicagopolice.org/
+
 https://www.dallasopendata.com/Public-Safety/Police-Arrests/r4wm-ig9m
 http://www3.dallascityhall.com/publicdata/offense-search.html
 

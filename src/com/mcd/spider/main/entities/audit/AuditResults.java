@@ -4,6 +4,8 @@ import java.io.File;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.jsoup.nodes.Document;
+
 /**
  * 
  * @author u569220
@@ -20,7 +22,8 @@ public class AuditResults {
     private SortedSet<PageAuditResult> offlineResponses;
 	private SortedSet<PageAuditResult> otherResponses;
 	private SortedSet<PageAuditResult> allResponses;
-	private File siteMap;
+	private Document actualSiteMap;
+	private File generatedSiteMap;
 	
 	public AuditResults() {
 		oneHundredResponses = new TreeSet<>();
@@ -41,7 +44,7 @@ public class AuditResults {
 				sb.append(auditResult.prettyPrint());
 			}
 		}
-		sb.append("\n\nSitemap generated and located at " + this.siteMap.getAbsolutePath());
+		sb.append("\n\nSitemap generated and located at " + this.generatedSiteMap.getAbsolutePath());
 		return sb.toString();
 	}
 	
@@ -96,12 +99,20 @@ public class AuditResults {
 		return (long) this.allResponses.size();
 	}
 
-	public File getSiteMap() {
-		return siteMap;
+	public Document getActualSiteMap() {
+		return actualSiteMap;
 	}
 
-	public void setSiteMap(File siteMap) {
-		this.siteMap = siteMap;
+	public void setActualSiteMap(Document actualSiteMap) {
+		this.actualSiteMap = actualSiteMap;
+	}
+
+	public File getGeneratedSiteMap() {
+		return generatedSiteMap;
+	}
+
+	public void setGeneratedSiteMap(File siteMap) {
+		this.generatedSiteMap = siteMap;
 	}
 	
 }

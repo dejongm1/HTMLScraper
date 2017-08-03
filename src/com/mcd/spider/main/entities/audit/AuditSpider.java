@@ -20,9 +20,6 @@ public class AuditSpider {
 	private List<Term> termsToSearch;
 	
 	public AuditSpider(String baseUrl, boolean offline) throws IOException {
-	    if (baseUrl.endsWith("/")) {
-	        baseUrl = baseUrl.substring(0, baseUrl.lastIndexOf("/"));
-        }
 		this.baseUrl = new URL(baseUrl);
 		if (offline) {
 			//this.rootResponse = null;

@@ -21,6 +21,7 @@ public class AuditParameters {
 	private int sleepTime;
 	private boolean performanceTest;
 	private boolean fullReportFlag;
+	private boolean includeCommonWordsFlag;
 	private InputUtil inputUtil = new InputUtil();
 	
 	public AuditParameters(String argString) throws IOException {
@@ -37,7 +38,9 @@ public class AuditParameters {
 					String url = inputUtil.convertToUrl(parameter);
 					if (url==null) {
 						url = (String )inputUtil.getInput("URL: ", 3, SpiderConstants.URL_VALIDATION);
-					}
+					} else if (url.endsWith("/")) {
+				        url = url.substring(0, url.lastIndexOf("/"));
+			        } 
 					setUrlToAudit(url);
 				} else if (arg.startsWith("-depth")) {
 					setDepth(inputUtil.convertToNumber(parameter));
@@ -54,6 +57,8 @@ public class AuditParameters {
 					setSleepTime(inputUtil.convertToNumber(parameter));
 				} else if (arg.startsWith("-full")) {
 					setFullReportFlag(true);
+				} else if (arg.startsWith("-common")) {
+					setIncludeCommonWordsFlag(true);
 				} else {
 					System.out.println("I didn't recognize argument \"" + arg + "\". Ignoring and proceeding...");
 				}
@@ -108,6 +113,13 @@ public class AuditParameters {
 	public void setFullReportFlag(boolean fullReportFlag) {
 		this.fullReportFlag = fullReportFlag;
 	}
-	
+
+	public boolean isIncludeCommonWordsFlag() {
+		return includeCommonWordsFlag;
+	}
+
+	public void setIncludeCommonWordsFlag(boolean includeCommonWordsFlag) {
+		this.includeCommonWordsFlag = includeCommonWordsFlag;
+	}
 	
 }

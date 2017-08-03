@@ -1,7 +1,9 @@
 package com.mcd.spider.main.engine.audit;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -33,7 +35,6 @@ import com.mcd.spider.main.entities.audit.PageAuditResult;
 import com.mcd.spider.main.entities.audit.SearchResults;
 import com.mcd.spider.main.entities.audit.Term;
 import com.mcd.spider.main.util.ConnectionUtil;
-import com.mcd.spider.main.util.EngineUtil;
 import com.mcd.spider.main.util.SpiderUtil;
 import com.redfin.sitemapgenerator.WebSitemapGenerator;
 
@@ -47,7 +48,6 @@ public class AuditEngine {
 	public static final Logger logger = Logger.getLogger(AuditEngine.class);
 	
 	private SpiderUtil spiderUtil = new SpiderUtil();
-	private EngineUtil engineUtil = new EngineUtil();
 	private Map<String, Boolean> urlsToCrawl = new HashMap<>();
     private AuditSpider spider;
     
@@ -71,8 +71,6 @@ public class AuditEngine {
 		urlsToCrawl.put(auditParams.getUrlToAudit(),  false);
 		spider.setTermsToSearch(auditParams.getTerms());
 		
-		//TODO check for sitemap at base page and set
-		
 		//int depthLevel = 0;
 		//while (depthLevel<=depth && allChecked(urlsToCheck)) { //allchecked() is inefficient for large sites
 			//logger.debug("Depth = " + depthLevel);
@@ -83,21 +81,21 @@ public class AuditEngine {
 		if (!checked) {
 			auditResults.addResponse(auditPage(url, iterator, spider));
 		}
+		retrieveSiteMap(auditParams.getUrlToAudit(), auditResults);
 		//previous because adding to a listIterator adds before current elements
 		while (iterator.hasPrevious()) {
 			url = iterator.previous();
 			checked = urlsToCrawl.get(url);
-			if (!checked) {
+			if (url.contains("sitemap") && auditResults.getActualSiteMap()==null) {
+	    		retrieveSiteMap(url, auditResults);
+			} else if (!checked) {
 				auditResults.addResponse(auditPage(url, iterator, spider));
                 sleep(spider.getSleepTime());
 			}
 		}
 		//}
 		
-		//TODO only do this if no siteMap exists already
-		if (auditResults.getSiteMap()==null) {
-			auditResults.setSiteMap(generateSiteMap(spider.getBaseUrl().toString(), auditResults.getAllResponses()));
-		}
+		auditResults.setGeneratedSiteMap(generateSiteMap(spider.getBaseUrl().toString(), auditResults.getAllResponses()));
 		
 		spider.setAuditResults(auditResults);
 		spider.setAveragePageLoadTime(timeSpent/urlsToCrawl.size());
@@ -139,7 +137,7 @@ public class AuditEngine {
 			logger.error("IOException caught getting document", e);
 		}
 		logger.debug("Trying to get hrefs from " + urlString);
-		if (engineUtil.docWasRetrieved(docToCheck)) {
+		if (spiderUtil.docWasRetrieved(docToCheck)) {
 		    //get frequent words
             getPopularWords(docToCheck, 5, result);
             //search for given word
@@ -266,6 +264,35 @@ public class AuditEngine {
     	}
     }
     
+    private void retrieveSiteMap(String url, AuditResults auditResults) {
+    	Document actualSitemap = null;
+		if (spider.getBaseUrl().toString().equals(url)) {
+			//try to get from root domain first
+			logger.debug("Checking for sitemap.xml at root");
+	    	//try with either protocol
+			Document sitemapDoc = spiderUtil.getHtmlAsDoc(url+"/sitemap.xml");
+			if (!spiderUtil.docWasRetrieved(sitemapDoc)) {
+				sitemapDoc = spiderUtil.getHtmlAsDoc(url.replace("https", "http")+"/sitemap.xml");
+			}
+			if (spiderUtil.docWasRetrieved(sitemapDoc) && (!sitemapDoc.select("sitemapindex").isEmpty() || !sitemapDoc.select("sitemap").isEmpty())) {
+				actualSitemap = sitemapDoc;
+				Elements sitemapTags = actualSitemap.select("sitemap");
+				for (Element tag : sitemapTags) {
+					Document specificSitemap = spiderUtil.getHtmlAsDoc(tag.getElementsByTag("loc").text());
+					if (spiderUtil.docWasRetrieved(specificSitemap)) {
+						tag.appendElement("sitemap").html(specificSitemap.html());
+					}
+				}
+			} else if (spiderUtil.docWasRetrieved(sitemapDoc) && (!sitemapDoc.select("urlset").isEmpty() || !sitemapDoc.select("url").isEmpty())) {
+				actualSitemap = sitemapDoc;
+			}
+		} else {
+			//url contains sitemap
+			
+		}
+		auditResults.setActualSiteMap(outputActualSitemap(actualSitemap));
+    }
+    
     private File generateSiteMap(String baseUrl, Set<PageAuditResult> resultPages) {
     	WebSitemapGenerator sitemapGenerator;
     	File sitemapDirectory = new File("output");
@@ -292,12 +319,23 @@ public class AuditEngine {
 		}
 		return new File(sitemapDirectory + "\\sitemap.xml");
     }
+    
+    private Document outputActualSitemap(Document actualSitemap) {
+	    BufferedWriter  writer = null;
+	    try {
+	        writer = new BufferedWriter( new FileWriter("output//actualSitemap.xml"));
+	        writer.write(actualSitemap.toString());
+	    } catch ( IOException e) {
+	    	logger.error("Error trying to save actual site map", e);
+	    }
+	    return actualSitemap;
+    }
 
     public void getPopularWords(String url, int numberOfWords) {
 		//TODO redirect to private method?
 		long time = System.currentTimeMillis();
 		Document doc = spiderUtil.getHtmlAsDoc(url);
-		if (engineUtil.docWasRetrieved(doc)) {
+		if (spiderUtil.docWasRetrieved(doc)) {
 			//give option to leave in numbers? 
 			Map<String, Term> termCountMap = new CaseInsensitiveMap<String, Term>();
 			String bodyText = doc.body().text();
@@ -339,7 +377,7 @@ public class AuditEngine {
     	Pattern p;
     	Matcher m = null;
     	Document doc = spiderUtil.getHtmlAsDoc(url);
-		if (engineUtil.docWasRetrieved(doc)) {
+		if (spiderUtil.docWasRetrieved(doc)) {
 	    	if (levelOfGenerosity == 0) { //not generous at all, strict word matching
 	    		textToSearch = doc.text().toLowerCase();
 	    		p = Pattern.compile(term.getWord().toLowerCase());//TODO put these into Term
@@ -367,7 +405,7 @@ public class AuditEngine {
 		//TODO redirect to private method?
 		long time = System.currentTimeMillis();
 		Document doc = spiderUtil.getHtmlAsDoc(url);
-		if (engineUtil.docWasRetrieved(doc)) {
+		if (spiderUtil.docWasRetrieved(doc)) {
 			Elements tags = doc.select(selector);
 			for (Element tag : tags) {
 				logger.info(tag.text());
