@@ -1,34 +1,11 @@
 package com.mcd.spider.main.engine.record.texas;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import com.mcd.spider.main.engine.record.ArrestRecordEngine;
-import com.mcd.spider.main.entities.record.ArrestRecord;
+import com.mcd.spider.main.engine.record.CourtRecordEngine;
+import com.mcd.spider.main.entities.record.CourtRecord;
 import com.mcd.spider.main.entities.record.Record;
 import com.mcd.spider.main.entities.record.State;
-import com.mcd.spider.main.entities.record.filter.ArrestRecordFilter;
-import com.mcd.spider.main.entities.record.filter.ArrestRecordFilter.ArrestRecordFilterEnum;
+import com.mcd.spider.main.entities.record.filter.RecordFilter;
 import com.mcd.spider.main.entities.site.Site;
-import com.mcd.spider.main.entities.site.service.DesMoinesRegisterComSite;
 import com.mcd.spider.main.entities.site.service.HarrisCountyDistrictClerkComSite;
 import com.mcd.spider.main.entities.site.service.SiteService;
 import com.mcd.spider.main.exception.ExcelOutputException;
@@ -36,23 +13,33 @@ import com.mcd.spider.main.exception.IDCheckException;
 import com.mcd.spider.main.exception.SpiderException;
 import com.mcd.spider.main.util.ConnectionUtil;
 import com.mcd.spider.main.util.EngineUtil;
-import com.mcd.spider.main.util.ExcelWriter;
+import com.mcd.spider.main.util.OutputUtil;
 import com.mcd.spider.main.util.SpiderUtil;
-
 import common.Logger;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.*;
 
 /**
  *
  * @author MikeyDizzle
  *
  */
-public class HarrisCountyDistrictClerkComEngine implements CourtRecordEngine{
+public class HarrisCountyDistrictClerkComEngine implements CourtRecordEngine {
 
     private static final Logger logger = Logger.getLogger(HarrisCountyDistrictClerkComEngine.class);
     private SpiderUtil spiderUtil = new SpiderUtil();
     private EngineUtil engineUtil = new EngineUtil();
     private Set<String> crawledIds;
-    private ArrestRecordFilterEnum filter;
+    private RecordFilter.RecordFilterEnum filter;
     private boolean offline;
 
     @Override
@@ -61,7 +48,7 @@ public class HarrisCountyDistrictClerkComEngine implements CourtRecordEngine{
     }
     
     @Override
-    public void getArrestRecords(State state, long maxNumberOfResults, ArrestRecordFilter.ArrestRecordFilterEnum filter) throws SpiderException {
+    public void getCourtRecords(State state, long maxNumberOfResults, RecordFilter.RecordFilterEnum filter) throws SpiderException {
         offline = System.getProperty("offline").equals("true");
     	this.filter = filter;
         //split into more specific methods
@@ -71,7 +58,7 @@ public class HarrisCountyDistrictClerkComEngine implements CourtRecordEngine{
 
         //while(recordsProcessed <= maxNumberOfResults) {
         HarrisCountyDistrictClerkComSite site = (HarrisCountyDistrictClerkComSite) getSite(null);
-        ExcelWriter excelWriter = initializeOutputter(state, site);
+        OutputUtil outputUtil = initializeOutputter(state, site);
         
         logger.info("----Site: " + site.getName() + "----");
         logger.debug("Sending spider " + (offline?"offline":"online" ));
@@ -80,12 +67,12 @@ public class HarrisCountyDistrictClerkComEngine implements CourtRecordEngine{
         sleepTimeSum += offline?0:sleepTimeAverage;
         long time = System.currentTimeMillis();
         
-        recordsProcessed += scrapeSite(state, site, excelWriter, 1);
+        recordsProcessed += scrapeSite(state, site, outputUtil, 1);
         
         time = System.currentTimeMillis() - time;
         logger.info(site.getBaseUrl() + " took " + time + " ms");
 
-        //excelWriter.removeColumnsFromSpreadsheet(new int[]{ArrestRecord.RecordColumnEnum.ID_COLUMN.index()});
+        //outputUtil.removeColumnsFromSpreadsheet(new int[]{CourtRecord.RecordColumnEnum.ID_COLUMN.index()});
 
         spiderUtil.sendEmail(state);
         
@@ -99,8 +86,8 @@ public class HarrisCountyDistrictClerkComEngine implements CourtRecordEngine{
         logger.info(recordsProcessed + " total records were processed");
     }
 
-    @Override
-    public int scrapeSite(State state, Site site, ExcelWriter excelWriter, int attemptCount) {
+    
+    public int scrapeSite(State state, Site site, OutputUtil outputUtil, int attemptCount) {
         int recordsProcessed = 0;
     	int maxAttempts = site.getMaxAttempts();
         SiteService siteService = (HarrisCountyDistrictClerkComSite) site;
@@ -118,7 +105,7 @@ public class HarrisCountyDistrictClerkComEngine implements CourtRecordEngine{
         	}
 	        try {
 	            //build http post request
-	            URL obj = new URL(((DesMoinesRegisterComSite) siteService).getServiceUrl());
+	            URL obj = new URL(siteService.getServiceUrl());
 	            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 	
 	            //add request header
@@ -148,7 +135,7 @@ public class HarrisCountyDistrictClerkComEngine implements CourtRecordEngine{
 	            Map<String, String> detailMap;
 	            detailMap = parseDocForUrls(response, site);
                 
-	            recordsProcessed += scrapeRecords(detailMap, site, excelWriter);
+	            recordsProcessed += scrapeRecords(detailMap, site, outputUtil);
 	
 	        } catch (java.io.IOException e) {
 	            logger.error("IOException caught sending http request to " + site.getUrl(), e);
@@ -158,7 +145,7 @@ public class HarrisCountyDistrictClerkComEngine implements CourtRecordEngine{
         return recordsProcessed;
     }
 
-    @Override
+    
     public Map<String, String> parseDocForUrls(Object response, Site site){
         Map<String, String> detailMap = new HashMap<>();
         //read line in 
@@ -173,11 +160,11 @@ public class HarrisCountyDistrictClerkComEngine implements CourtRecordEngine{
         return detailMap;
     }
 
-    @Override
-    public int scrapeRecords(Map<String, String> recordsDetailsMap, Site site, ExcelWriter excelWriter){
+    
+    public int scrapeRecords(Map<String, String> recordsDetailsMap, Site site, OutputUtil outputUtil){
         int recordsProcessed = 0;
-        List<ArrestRecord> arrestRecords = new ArrayList<>();
-        ArrestRecord arrestRecord;
+        List<CourtRecord> courtRecords = new ArrayList<>();
+        CourtRecord courtRecord;
         for (Map.Entry<String,String> entry : recordsDetailsMap.entrySet()) {
             String id = entry.getKey();
             String detailString = recordsDetailsMap.get(id);
@@ -185,10 +172,10 @@ public class HarrisCountyDistrictClerkComEngine implements CourtRecordEngine{
 
             if (!detailString.equals("")) {
                     recordsProcessed++;
-                arrestRecord = populateArrestRecord(entry, site);
-                arrestRecords.add(arrestRecord);
+                courtRecord = populateCourtRecord(entry, site);
+                courtRecords.add(courtRecord);
                 //save each record in case of application failures
-                excelWriter.addRecordToMainWorkbook(arrestRecord);
+                outputUtil.addRecordToMainWorkbook(courtRecord);
                 spiderUtil.sleep(ConnectionUtil.getSleepTime(site), true);//sleep at random interval
                 
             } else {
@@ -198,7 +185,7 @@ public class HarrisCountyDistrictClerkComEngine implements CourtRecordEngine{
         }
         
         if (filter!=null) {
-	        List<Record> filteredRecords = filterRecords(arrestRecords);
+	        List<Record> filteredRecords = filterRecords(courtRecords);
 	        //create a separate sheet with filtered results
 	        logger.info(filteredRecords.size() + " " + filter.filterName() + " " + "records were crawled");
         }
@@ -206,10 +193,10 @@ public class HarrisCountyDistrictClerkComEngine implements CourtRecordEngine{
     }
 
     @SuppressWarnings("unchecked")
-	@Override
-    public CourtRecord populateArrestRecord(Object profileDetailObj, Site site) {
+	
+    public CourtRecord populateCourtRecord(Object profileDetailObj, Site site) {
     	String[] detailList = ((Map.Entry<String,String>) profileDetailObj).getValue().split("\t");
-        CourtRecord record = new ArrestRecord();
+        CourtRecord record = new CourtRecord();
         record.setId(((Map.Entry<String,String>) profileDetailObj).getKey());
         matchPropertyToField(record, detailList);
         logger.info("\t" + ((Map.Entry<String,String>)profileDetailObj).getValue());
@@ -217,57 +204,56 @@ public class HarrisCountyDistrictClerkComEngine implements CourtRecordEngine{
         return record;
     }
 
-    @Override
-    public ExcelWriter initializeOutputter(State state, Site site) throws SpiderException {
-    	ExcelWriter excelWriter  = new ExcelWriter(state, new ArrestRecord(), site);
+    
+    public OutputUtil initializeOutputter(State state, Site site) throws SpiderException {
+    	OutputUtil outputUtil = new OutputUtil(state, new CourtRecord(), site);
         try {
-            crawledIds = excelWriter.getPreviousIds();
-            excelWriter.createSpreadsheet();
+            crawledIds = outputUtil.getPreviousIds();
+            outputUtil.createSpreadsheet();
         } catch (ExcelOutputException | IDCheckException e) {
             throw e;
         }
-        return excelWriter;
+        return outputUtil;
     }
     
-    @Override
+    
     public void matchPropertyToField(CourtRecord record, Object profileDetail) {
     	String[] profileDetaiLString = (String[]) profileDetail;
-        formatArrestTime(record, profileDetail);
-        record.setArrestAge(Integer.parseInt(extractValue(profileDetail)));//birthdate 21
-        record.setCharges(extractValue(profileDetail).split(";"));
-        record.setGender(extractValue(profileDetail));
-		record.setCity(city);
-		record.setState("TX");
-        String bondAmount = extractValue(profileDetail);
-        int totalBond = Integer.parseInt(bondAmount.replace("$", "").replace(",", ""));
-        record.setTotalBond(totalBond); //9
-        record.setHeight(extractValue(profileDetail));
-        record.setWeight(extractValue(profileDetail));
-        record.setHairColor(extractValue(profileDetail));
-        record.setEyeColor(extractValue(profileDetail));
-        record.setCounty(extractValue(profileDetail));
-        record.setBirthPlace(birthPlace);
+//        formatArrestTime(record, profileDetail);
+//        record.setArrestAge(Integer.parseInt(extractValue(profileDetail)));//birthdate 21
+//        record.setCharges(extractValue(profileDetail).split(";"));
+//        record.setGender(extractValue(profileDetail));
+//		record.setCity(city);
+//		record.setState("TX");
+//        String bondAmount = extractValue(profileDetail);
+//        int totalBond = Integer.parseInt(bondAmount.replace("$", "").replace(",", ""));
+//        record.setTotalBond(totalBond); //9
+//        record.setHeight(extractValue(profileDetail));
+//        record.setWeight(extractValue(profileDetail));
+//        record.setHairColor(extractValue(profileDetail));
+//        record.setEyeColor(extractValue(profileDetail));
+//        record.setCounty(extractValue(profileDetail));
+//        record.setBirthPlace(birthPlace);
     }
 
-    @Override
-    public void formatName(ArrestRecord record, Element profileDetail) {
+    
+    public void formatName(CourtRecord record, Element profileDetail) {
     	
     }
 
-    @Override
+    
     public String extractValue(Element profileDetail) {
         return null;
     }
 
-    @Override
-    public void formatArrestTime(ArrestRecord record, Element profileDetail) {
+    
+    public void formatArrestTime(CourtRecord record, Element profileDetail) {
         String arrestDate = extractValue(profileDetail).replace("at", "");
         try {
-            //replace today
-            Date date = new Date(arrestDate);
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(date);
-            record.setArrestDate(calendar);
+//            Date date = new Date(arrestDate);
+//            Calendar calendar = Calendar.getInstance();
+//            calendar.setTime(date);
+//            record.setArrestDate(calendar);
         } catch (Exception e) {
             logger.error("Error converting " + arrestDate + " for record id " + record.getId());
         }
@@ -297,20 +283,20 @@ public class HarrisCountyDistrictClerkComEngine implements CourtRecordEngine{
     }
     
     @Override
-    public List<Record> filterRecords(List<ArrestRecord> fullArrestRecords) {
-    	List<Record> filteredArrestRecords = new ArrayList<>();
-    	for (Record record : fullArrestRecords) {
+    public List<Record> filterRecords(List<CourtRecord> fullCourtRecords) {
+    	List<Record> filteredCourtRecords = new ArrayList<>();
+    	for (Record record : fullCourtRecords) {
     		boolean recordMatches = false;
-    		String[] charges = ((ArrestRecord) record).getCharges();
-    		for (String charge : charges) {
-    			if (!recordMatches) {
-    				recordMatches = ArrestRecordFilter.filter(charge, filter);
-    			}
-    		}
+//    		String[] charges = ((CourtRecord) record).getCharges();
+//    		for (String charge : charges) {
+//    			if (!recordMatches) {
+//    				recordMatches = RecordFilter.filter(charge, filter);
+//    			}
+//    		}
     		if (recordMatches) {
-    			filteredArrestRecords.add(record);
+    			filteredCourtRecords.add(record);
     		}
     	}
-    	return filteredArrestRecords;
+    	return filteredCourtRecords;
     }
 }

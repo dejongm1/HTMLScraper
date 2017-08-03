@@ -1,27 +1,20 @@
 package com.mcd.spider.main.util;
 
+import com.mcd.spider.main.engine.SpiderEngine;
+import com.mcd.spider.main.entities.audit.OfflineResponse;
+import com.mcd.spider.main.entities.record.State;
+import org.apache.log4j.Logger;
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.ConnectException;
 import java.net.InetAddress;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import org.apache.log4j.Logger;
-import org.jsoup.Connection;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-
-import com.mcd.spider.main.engine.SpiderEngine;
-import com.mcd.spider.main.entities.audit.OfflineResponse;
-import com.mcd.spider.main.entities.record.State;
+import java.util.*;
 
 public class SpiderUtil {
 	
@@ -174,7 +167,7 @@ public class SpiderUtil {
 					"Pack##92", //need to encrypt
 					"dejong.c.michael@gmail.com",
 					"Arrest record parsing for " + state.getName(),
-					"Michael's a stud, he just successfully parsed the interwebs for arrest records in the state of Iowa");
+					"Michael's a stud, he just successfully parsed the interwebs for arrest records");
 			return true;
 		} catch (RuntimeException re) {
 			logger.error("An error occurred, email not sent");

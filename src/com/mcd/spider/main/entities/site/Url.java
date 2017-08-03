@@ -21,5 +21,8 @@ public class Url {
 	public String[] getExtensions() {
 		return extensions;
 	}
+	public String toString() {
+	    return domain + extensions.toString();
+    }
 
 }

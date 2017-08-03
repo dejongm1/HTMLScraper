@@ -1,29 +1,11 @@
 package com.mcd.spider.main.engine.record.various;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.log4j.Logger;
-import org.jsoup.Connection;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
-import org.jsoup.select.Elements;
-
 import com.mcd.spider.main.engine.record.ArrestRecordEngine;
 import com.mcd.spider.main.entities.record.ArrestRecord;
 import com.mcd.spider.main.entities.record.Record;
 import com.mcd.spider.main.entities.record.State;
-import com.mcd.spider.main.entities.record.filter.ArrestRecordFilter;
-import com.mcd.spider.main.entities.record.filter.ArrestRecordFilter.ArrestRecordFilterEnum;
+import com.mcd.spider.main.entities.record.filter.RecordFilter;
+import com.mcd.spider.main.entities.record.filter.RecordFilter.RecordFilterEnum;
 import com.mcd.spider.main.entities.site.Site;
 import com.mcd.spider.main.entities.site.html.ArrestsDotOrgSite;
 import com.mcd.spider.main.entities.site.html.SiteHTML;
@@ -32,8 +14,18 @@ import com.mcd.spider.main.exception.IDCheckException;
 import com.mcd.spider.main.exception.SpiderException;
 import com.mcd.spider.main.util.ConnectionUtil;
 import com.mcd.spider.main.util.EngineUtil;
-import com.mcd.spider.main.util.ExcelWriter;
+import com.mcd.spider.main.util.OutputUtil;
 import com.mcd.spider.main.util.SpiderUtil;
+import org.apache.log4j.Logger;
+import org.jsoup.Connection;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
+import org.jsoup.select.Elements;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.*;
 
 /**
  *
@@ -48,7 +40,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     SpiderUtil spiderUtil = new SpiderUtil();
     EngineUtil engineUtil = new EngineUtil();
     private Set<String> crawledIds;
-    private ArrestRecordFilterEnum filter;
+    private RecordFilterEnum filter;
     private boolean offline;
 
     @Override
@@ -57,7 +49,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     }
     
     @Override
-    public void getArrestRecords(State state, long maxNumberOfResults, ArrestRecordFilter.ArrestRecordFilterEnum filter) throws SpiderException {
+    public void getArrestRecords(State state, long maxNumberOfResults, RecordFilterEnum filter) throws SpiderException {
         long totalTime = System.currentTimeMillis();
         long recordsProcessed = 0;
         int sleepTimeSum = 0;
@@ -66,7 +58,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 
         //while(recordsProcessed <= maxNumberOfResults) {
         ArrestsDotOrgSite site = (ArrestsDotOrgSite) getSite(new String[]{state.getName()});
-        ExcelWriter excelWriter = initializeOutputter(state, site);
+        OutputUtil outputUtil = initializeOutputter(state, site);
         
         long siteTime = System.currentTimeMillis();
         logger.info("----Site: " + site.getName() + "-" + state.getName() + "----");
@@ -76,12 +68,12 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         sleepTimeSum += offline?0:sleepTimeAverage;
         long time = System.currentTimeMillis();
         
-        recordsProcessed += scrapeSite(state, site, excelWriter, 1);
+        recordsProcessed += scrapeSite(state, site, outputUtil, 1, maxNumberOfResults);
         
         time = System.currentTimeMillis() - time;
         logger.info(site.getBaseUrl() + " took " + time + " ms");
 
-        //excelWriter.removeColumnsFromSpreadsheet(new int[]{ArrestRecord.RecordColumnEnum.ID_COLUMN.index()});
+        //outputUtil.removeColumnsFromSpreadsheet(new int[]{ArrestRecord.RecordColumnEnum.ID_COLUMN.index()});
         siteTime = System.currentTimeMillis() - siteTime;
         logger.info(state.getName() + " took " + siteTime + " ms");
 
@@ -99,7 +91,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     }
 
     @Override
-    public int scrapeSite(State state, Site site, ExcelWriter excelWriter, int attemptCount) {
+    public int scrapeSite(State state, Site site, OutputUtil outputUtil, int attemptCount, long maxNumberOfResults) {
         //refactor to split out randomizing functionality, maybe reuse??
     	int maxAttempts = site.getMaxAttempts();
         int recordsProcessed = 0;
@@ -179,14 +171,14 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 
             spiderUtil.sleep(1000, true);
             //****iterate over collection, scraping records and simply opening others
-            recordsProcessed += scrapeRecords(recordDetailUrlMap, site, excelWriter);
+            recordsProcessed += scrapeRecords(recordDetailUrlMap, site, outputUtil);
 
             //****sort by arrest date (or something else) once everything has been gathered? can I sort spreadsheet after creation?
 
         } else {
             logger.error("Failed to load html doc from " + site.getBaseUrl());
             attemptCount++;
-            scrapeSite(state, site, excelWriter, attemptCount);
+            scrapeSite(state, site, outputUtil, attemptCount, maxNumberOfResults);
         }
         return recordsProcessed;
     }
@@ -209,7 +201,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     }
     
     @Override
-    public int scrapeRecords(Map<String,String> recordsDetailsUrlMap, Site site, ExcelWriter excelWriter) {
+    public int scrapeRecords(Map<String,String> recordsDetailsUrlMap, Site site, OutputUtil outputUtil) {
     	SiteHTML htmlSite = (ArrestsDotOrgSite) site;
         int recordsProcessed = 0;
         List<ArrestRecord> arrestRecords = new ArrayList<>();
@@ -237,7 +229,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
                     arrestRecord = populateArrestRecord(profileDetailDoc, htmlSite);
                     arrestRecords.add(arrestRecord);
                     //save each record in case of failures
-                    excelWriter.addRecordToMainWorkbook(arrestRecord);
+                    outputUtil.addRecordToMainWorkbook(arrestRecord);
                     spiderUtil.sleep(ConnectionUtil.getSleepTime(htmlSite), true);//sleep at random interval
                     
                 } else {
@@ -251,7 +243,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 	        List<Record> filteredRecords = filterRecords(arrestRecords);
 	        //create a separate sheet with filtered results
 	        logger.info(filteredRecords.size() + " " + filter.filterName() + " " + "records were crawled");
-	        excelWriter.createFilteredSpreadsheet(filter, filteredRecords);
+	        outputUtil.createFilteredSpreadsheet(filter, filteredRecords);
         }
         return recordsProcessed;
     }
@@ -270,16 +262,16 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     }
 
     @Override
-    public ExcelWriter initializeOutputter(State state, Site site) throws SpiderException {
-    	ExcelWriter excelWriter  = new ExcelWriter(state, new ArrestRecord(), site);
+    public OutputUtil initializeOutputter(State state, Site site) throws SpiderException {
+    	OutputUtil outputUtil = new OutputUtil(state, new ArrestRecord(), site);
         try {
             //this will get previously written IDs but then overwrite the spreadsheet
-            crawledIds = excelWriter.getPreviousIds();
-            excelWriter.createSpreadsheet();
+            crawledIds = outputUtil.getPreviousIds();
+            outputUtil.createSpreadsheet();
         } catch (ExcelOutputException | IDCheckException e) {
             throw e;
         }
-        return excelWriter;
+        return outputUtil;
     }
     
     @Override
@@ -371,7 +363,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     		String[] charges = ((ArrestRecord) record).getCharges();
     		for (String charge : charges) {
     			if (!recordMatches) {
-    				recordMatches = ArrestRecordFilter.filter(charge, filter);
+    				recordMatches = RecordFilter.filter(charge, filter);
     			}
     		}
     		if (recordMatches) {

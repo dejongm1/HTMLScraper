@@ -1,15 +1,14 @@
 package com.mcd.spider.main.util;
 
+import com.mcd.spider.main.entities.record.State;
+import com.mcd.spider.main.entities.record.filter.RecordFilter.RecordFilterEnum;
+import org.apache.commons.validator.routines.UrlValidator;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.commons.validator.routines.UrlValidator;
-
-import com.mcd.spider.main.entities.record.State;
-import com.mcd.spider.main.entities.record.filter.ArrestRecordFilter.ArrestRecordFilterEnum;
 
 public class InputUtil {
 	
@@ -83,8 +82,8 @@ public class InputUtil {
 		}
 	}
 	
-	public ArrestRecordFilterEnum convertToFilter(String input) {
-		ArrestRecordFilterEnum filter = ArrestRecordFilterEnum.findFilter(input);
+	public RecordFilterEnum convertToFilter(String input) {
+		RecordFilterEnum filter = RecordFilterEnum.findFilter(input);
 		if (filter!=null) {
 			return filter;
 		} else {

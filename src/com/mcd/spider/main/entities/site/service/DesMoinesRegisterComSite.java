@@ -1,5 +1,8 @@
 package com.mcd.spider.main.entities.site.service;
 
+import com.mcd.spider.main.engine.record.iowa.DesMoinesRegisterComEngine;
+import com.mcd.spider.main.entities.site.Url;
+import com.mcd.spider.main.util.ConnectionUtil;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
@@ -7,15 +10,12 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.mcd.spider.main.engine.record.iowa.DesMoinesRegisterComEngine;
-import com.mcd.spider.main.entities.site.Site;
-import com.mcd.spider.main.entities.site.Url;
-import com.mcd.spider.main.util.ConnectionUtil;
-
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 public class DesMoinesRegisterComSite implements SiteService {
 
@@ -43,7 +43,7 @@ public class DesMoinesRegisterComSite implements SiteService {
 		if (baseUrl==null) {
             Url url = getUrl();
             String builtUrl = url.getProtocol() + url.getDomain();
-            if (args.length>0) {
+            if (args!=null && args.length>0) {
                 builtUrl += "?co=" + args[0];
             }
             baseUrl = builtUrl.toLowerCase();

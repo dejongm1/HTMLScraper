@@ -19,6 +19,7 @@ deployment package
 		- output folder
 		- arg files
 		- script to accept simple run com and args and route to java -jar ....
+	open private internet access?
 	script to open cmd prompt and cd to jar location
 		-add jar location to PATH?
 	shortcut to output on desktop
@@ -28,6 +29,10 @@ deployment package
 
 getRecords()
 mugshot-publication.com
+http://publicsearch1.chicagopolice.org/Help/Api/
+http://publicsearch1.chicagopolice.org/
+https://www.dallasopendata.com/Public-Safety/Police-Arrests/r4wm-ig9m
+http://www3.dallascityhall.com/publicdata/offense-search.html
 
 http://www.hcdistrictclerk.com/Common/e-services/PublicDatasets.aspx
 	- txt file published daily at 5:00AM

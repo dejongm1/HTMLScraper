@@ -1,22 +1,22 @@
 package com.mcd.spider.main.exception;
 
-import com.mcd.spider.main.util.ExcelWriter;
+import com.mcd.spider.main.util.OutputUtil;
 
 public class ExcelOutputException extends SpiderException {
 
 
     private static final long serialVersionUID = 1L;
 
-    private ExcelWriter excelWriter;
+    private OutputUtil outputUtil;
     private String methodName;
 
-    public ExcelOutputException(ExcelWriter excelWriter, String methodName) {
-        this.excelWriter = excelWriter;
+    public ExcelOutputException(OutputUtil outputUtil, String methodName) {
+        this.outputUtil = outputUtil;
         this.methodName = methodName;
     }
 
-    public ExcelWriter getExcelWriter() {
-        return excelWriter;
+    public OutputUtil getOutputUtil() {
+        return outputUtil;
     }
 
     public String getMethodName() {

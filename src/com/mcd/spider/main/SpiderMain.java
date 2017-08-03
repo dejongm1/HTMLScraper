@@ -1,19 +1,18 @@
 package com.mcd.spider.main;
 
-import java.io.IOException;
-import java.util.List;
-
-import org.apache.log4j.Logger;
-
 import com.mcd.spider.main.engine.SpiderEngine;
 import com.mcd.spider.main.entities.audit.AuditParameters;
 import com.mcd.spider.main.entities.record.State;
-import com.mcd.spider.main.entities.record.filter.ArrestRecordFilter.ArrestRecordFilterEnum;
+import com.mcd.spider.main.entities.record.filter.RecordFilter.RecordFilterEnum;
 import com.mcd.spider.main.exception.ExcelOutputException;
 import com.mcd.spider.main.exception.SpiderException;
 import com.mcd.spider.main.exception.StateNotReadyException;
 import com.mcd.spider.main.util.InputUtil;
 import com.mcd.spider.main.util.SpiderConstants;
+import org.apache.log4j.Logger;
+
+import java.io.IOException;
+import java.util.List;
 
 /**
  * 
@@ -124,7 +123,7 @@ public class SpiderMain {
 	@SuppressWarnings("unchecked")
 	private static void getArrestRecords(String[] args) throws IOException, SpiderException {
 		List<State> states = args.length>=2?inputUtil.convertToStates(args[1]):(List<State>) inputUtil.getInput("State(s) or \"All\": ", 3, SpiderConstants.STATE_VALIDATION);
-		ArrestRecordFilterEnum filter = args.length>=3?inputUtil.convertToFilter(args[2]):null;
+		RecordFilterEnum filter = args.length>=3?inputUtil.convertToFilter(args[2]):null;
 		long maxNumberOfResults = args.length>=4?inputUtil.convertToNumber(args[3]):999999;
 		engine.getArrestRecordsByState(states, maxNumberOfResults, filter);
 	}
@@ -132,7 +131,7 @@ public class SpiderMain {
 	@SuppressWarnings("unchecked")
 	private static void crackArrestSite(String[] args) throws IOException, SpiderException {
 		List<State> states = args.length>=2?inputUtil.convertToStates(args[1]):(List<State>) inputUtil.getInput("State(s) or \"All\": ", 3, SpiderConstants.STATE_VALIDATION);
-		ArrestRecordFilterEnum filter = args.length>=3?inputUtil.convertToFilter(args[2]):null;
+		RecordFilterEnum filter = args.length>=3?inputUtil.convertToFilter(args[2]):null;
 		long maxNumberOfResults = args.length>=4?inputUtil.convertToNumber(args[3]):5;
 		engine.getArrestRecordsByStateCrack(states, maxNumberOfResults, filter);
 	}

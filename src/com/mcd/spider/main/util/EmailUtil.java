@@ -1,14 +1,10 @@
 package com.mcd.spider.main.util;
 
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Session;
-import javax.mail.Transport;
+import org.apache.log4j.Logger;
+
+import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-
-import org.apache.log4j.Logger;
 
 /**
  * 
@@ -42,7 +38,7 @@ public class EmailUtil {
 			//		props.setProperty("mail.smtp.socketFactory.port");  
 			//		props.setProperty("mail.smtp.socketFactory.class");
 			//		props.setProperty("mail.smtp.auth");    
-			//		props.setProperty("mail.smtp.port");    
+			//		props.setProperty("mail.smtp.port");
 			//get Session   
 			Session session = Session.getDefaultInstance(System.getProperties(),    
 					new javax.mail.Authenticator() {    
