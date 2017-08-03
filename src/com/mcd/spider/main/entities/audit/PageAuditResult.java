@@ -19,6 +19,7 @@ public class PageAuditResult implements Comparable<PageAuditResult>{
 	private long loadTime;
 	private Map<String, Term> frequentWords;
 	private SearchResults searchResults;
+	private int numberOfImages;
 	private SortedSet<Link> inBoundLinks = new TreeSet<>();
 	private SortedSet<Link> outBoundLinks = new TreeSet<>(); 
 	
@@ -40,6 +41,7 @@ public class PageAuditResult implements Comparable<PageAuditResult>{
 		sb.append("\n\tStatus Code: " + this.code);
 		sb.append("\n\tFull Response Code: " + this.fullResponseCode);
 		sb.append("\n\tLoad Time: " + this.loadTime);
+		sb.append("\n\tNo. of Images: " + this.numberOfImages);
 		sb.append("\n\tInbound Links: " + this.inBoundLinks.size());
 		sb.append("\n\tOutbound Links: " + this.outBoundLinks.size());
 		if (frequentWords!=null) {
@@ -99,6 +101,12 @@ public class PageAuditResult implements Comparable<PageAuditResult>{
 	}
 	public void setSearchResults(SearchResults searchResults) {
 		this.searchResults = searchResults;
+	}
+	public int getNumberOfImages() {
+		return numberOfImages;
+	}
+	public void setNumberOfImages(int numberOfImages) {
+		this.numberOfImages = numberOfImages;
 	}
 	@Override
 	public int compareTo(PageAuditResult lr) {

@@ -144,6 +144,7 @@ public class AuditEngine {
             if (spider.getTermsToSearch()!=null) {
             	search(docToCheck, spider.getTermsToSearch(), result, 0, false);
             }
+            countNumberOfImages(docToCheck, result);
             //get inbound and outbound links
 			ahrefs = docToCheck.select("a[href]");
 			for (Element element : ahrefs) {
@@ -330,7 +331,11 @@ public class AuditEngine {
 	    }
 	    return actualSitemap;
     }
-
+	
+	private void countNumberOfImages(Document doc, PageAuditResult page) {
+		page.setNumberOfImages(doc.getElementsByTag("img").size());
+	}
+	
     public void getPopularWords(String url, int numberOfWords) {
 		//TODO redirect to private method?
 		long time = System.currentTimeMillis();
@@ -416,5 +421,5 @@ public class AuditEngine {
 		time = System.currentTimeMillis() - time;
 		logger.info("Took " + time + " ms");
 	}
-	
+
 }
