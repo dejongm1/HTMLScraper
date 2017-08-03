@@ -280,7 +280,7 @@ public class AuditEngine {
 				for (Element tag : sitemapTags) {
 					Document specificSitemap = spiderUtil.getHtmlAsDoc(tag.getElementsByTag("loc").text());
 					if (spiderUtil.docWasRetrieved(specificSitemap)) {
-						tag.appendElement("sitemap").html(specificSitemap.html());
+						tag.children().last().after(specificSitemap.body().html());
 					}
 				}
 			} else if (spiderUtil.docWasRetrieved(sitemapDoc) && (!sitemapDoc.select("urlset").isEmpty() || !sitemapDoc.select("url").isEmpty())) {
@@ -324,7 +324,7 @@ public class AuditEngine {
 	    BufferedWriter  writer = null;
 	    try {
 	        writer = new BufferedWriter( new FileWriter("output//actualSitemap.xml"));
-	        writer.write(actualSitemap.toString());
+	        writer.write(actualSitemap.body().html());
 	    } catch ( IOException e) {
 	    	logger.error("Error trying to save actual site map", e);
 	    }
