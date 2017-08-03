@@ -99,7 +99,7 @@ public class AuditEngine {
 		
 		spider.setAuditResults(auditResults);
 		spider.setAveragePageLoadTime(timeSpent/urlsToCrawl.size());
-		logger.info("\n\n\t\t\t****YOUR AUDIT RESULTS****\n\n" + spider.getAuditResults().prettyPrint(auditParams.isFullReportFlag()));
+		logger.info("\n\n\t\t\t****YOUR AUDIT RESULTS****\n\n" + spider.getAuditResults().prettyPrint(auditParams.isLeanReportFlag()));
 		
 	}
 
@@ -211,7 +211,8 @@ public class AuditEngine {
             String[] termsInBody = bodyText.split("\\s+");
             for (String term : termsInBody) {
                 term = term.replaceAll("[[^\\p{L}\\p{Nd}]+]", "");
-                if (!term.equals("")) {
+                //if (!term.equals("")) {
+                if (!term.equals("") && page.isUncommon(term)) {
                     Term termObj = termCountMap.get(term);
                     if (termObj == null) {
                         termObj = new Term(term, 1);
@@ -351,7 +352,7 @@ public class AuditEngine {
 			for (String term : termsInBody) {
 				term = term.replaceAll("[[^\\p{L}\\p{Nd}]+]", "");
 				//instead of get, can this be a generous match?
-				if (!term.equals("")) {
+                if (!term.equals("") /*&& page.isUncommon(term)*/) {
 					Term termObj = termCountMap.get(term);
 					if (termObj == null) {
 						termObj = new Term(term, 1);

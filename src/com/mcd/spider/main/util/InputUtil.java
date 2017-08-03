@@ -118,6 +118,4 @@ public class InputUtil {
 	public boolean quitting(String input) {
         return input.equalsIgnoreCase("quit");
 	}
-
-	
 }

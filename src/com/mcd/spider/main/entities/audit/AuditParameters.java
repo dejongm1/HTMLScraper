@@ -20,7 +20,7 @@ public class AuditParameters {
 	private Integer depth;
 	private int sleepTime;
 	private boolean performanceTest;
-	private boolean fullReportFlag;
+	private boolean leanReportFlag;
 	private boolean includeCommonWordsFlag;
 	private InputUtil inputUtil = new InputUtil();
 	
@@ -51,13 +51,15 @@ public class AuditParameters {
 							addTerm(new Term(term.trim(), 0));
 						}
 					}
-				} else if (arg.startsWith("-perform")) {
+				} else if (arg.startsWith("-perform") || arg.startsWith("-load")) {
 					setPerformanceTest(true);
 				} else if (arg.startsWith("-sleep")) {
 					setSleepTime(inputUtil.convertToNumber(parameter));
 				} else if (arg.startsWith("-full")) {
-					setFullReportFlag(true);
-				} else if (arg.startsWith("-common")) {
+					setLeanReportFlag(true);
+				} else if (arg.startsWith("-common") || arg.startsWith("-frequent")) {
+					setIncludeCommonWordsFlag(true);
+				} else if (arg.startsWith("-sitemap") || arg.startsWith("-map")) {
 					setIncludeCommonWordsFlag(true);
 				} else {
 					System.out.println("I didn't recognize argument \"" + arg + "\". Ignoring and proceeding...");
@@ -106,12 +108,12 @@ public class AuditParameters {
 		this.performanceTest = performanceTest;
 	}
 
-	public boolean isFullReportFlag() {
-		return fullReportFlag;
+	public boolean isLeanReportFlag() {
+		return leanReportFlag;
 	}
 
-	public void setFullReportFlag(boolean fullReportFlag) {
-		this.fullReportFlag = fullReportFlag;
+	public void setLeanReportFlag(boolean leanReportFlag) {
+		this.leanReportFlag = leanReportFlag;
 	}
 
 	public boolean isIncludeCommonWordsFlag() {

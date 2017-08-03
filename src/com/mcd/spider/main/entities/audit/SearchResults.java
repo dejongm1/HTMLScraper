@@ -2,7 +2,6 @@ package com.mcd.spider.main.entities.audit;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class SearchResults {
 	//not sure what this will look like yet
@@ -10,7 +9,7 @@ public class SearchResults {
 
 	private PageAuditResult sourcePage;
 	private List<Term> results;
-	
+
 	public SearchResults(PageAuditResult page) {
 		this.results = new ArrayList<>();
 		this.sourcePage = page;

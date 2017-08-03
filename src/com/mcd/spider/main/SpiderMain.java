@@ -45,6 +45,8 @@ public class SpiderMain {
 		} else if (args.length>=1) {
 			scrapeTypeChoice = args[0];
 		}
+		//reset prompt
+		prompt = SpiderConstants.PROMPT;
 		try {
 			if (scrapeTypeChoice.toLowerCase().contains("frequen")
 					|| scrapeTypeChoice.toLowerCase().contains("words")
@@ -79,6 +81,8 @@ public class SpiderMain {
 				crackArrestSite(args);
 			} else if (inputUtil.quitting(scrapeTypeChoice)) {
 				System.exit(0);
+			} else if (scrapeTypeChoice.toLowerCase().contains("help")) {
+				help(scrapeTypeChoice);
 			} else {
 				prompt = SpiderConstants.UNKNOWN_COMMAND + SpiderConstants.PROMPT;
 				main(new String[] {});
@@ -114,8 +118,8 @@ public class SpiderMain {
 	}
 	
 	private static void getSearchTerms(String[] args) throws IOException {
-		String url = (String) inputUtil.getInput("URL: ", 3, SpiderConstants.URL_VALIDATION);
-		String words = (String) inputUtil.getInput("Words: ", 1, SpiderConstants.NO_VALIDATION);
+		String url = args.length>=2?inputUtil.convertToUrl(args[1]):(String) inputUtil.getInput("URL: ", 3, SpiderConstants.URL_VALIDATION);
+		String words = args.length>=3?args[2]:(String) inputUtil.getInput("Words: ", 1, SpiderConstants.NO_VALIDATION);
 		int flexibility = 0; //(int) inputUtil.getInput("Flexibility of search (1-3): ", 1, SpiderConstants.NUMBER_VALIDATION);
 		engine.search(url, words, flexibility);
 	}
@@ -141,6 +145,43 @@ public class SpiderMain {
 		//output type or location??
 		AuditParameters parameters = new AuditParameters(argString);
 		engine.performSEOAudit(parameters);
+	}
+
+	private static void help(String argString) throws IOException {
+		String[] args = argString.split(" ");
+		String helpType = args.length>=2?args[1]:"";
+		//display help and receive input
+		if (helpType.toLowerCase().contains("frequen")
+				|| helpType.toLowerCase().contains("words")
+				|| helpType.equals("1")) {
+			prompt = SpiderConstants.HELP_MESSAGE_1 + prompt;
+			main(new String[] {});
+		} else if (helpType.toLowerCase().contains("text")
+				|| helpType.toLowerCase().contains("scrap")
+				|| helpType.equals("2")) {
+			prompt = SpiderConstants.HELP_MESSAGE_2 + prompt;
+			main(new String[] {});
+		} else if (helpType.toLowerCase().contains("search")
+				|| helpType.toLowerCase().contains("term")
+				|| helpType.equals("3")) {
+			prompt = SpiderConstants.HELP_MESSAGE_3 + prompt;
+			main(new String[] {});
+		} else if (helpType.toLowerCase().contains("arrest")
+                || helpType.toLowerCase().contains("record")
+                || helpType.equals("4")) {
+			prompt = SpiderConstants.HELP_MESSAGE_4 + prompt;
+			main(new String[] {});
+        } else if (helpType.toLowerCase().contains("seo")
+				|| helpType.toLowerCase().contains("audit")
+				|| helpType.equals("5")) {
+			prompt = SpiderConstants.HELP_MESSAGE_5 + prompt;
+			main(new String[] {});
+        } else {
+			prompt = SpiderConstants.HELP_MESSAGE_ALL + prompt;
+			main(new String[] {});
+        }
+			
+			
 	}
 
 //	private static void testConnectionGetter(String[] args) throws IOException {

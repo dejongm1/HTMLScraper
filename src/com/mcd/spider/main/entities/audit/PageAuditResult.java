@@ -1,13 +1,11 @@
 package com.mcd.spider.main.entities.audit;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-
-import com.mcd.spider.main.entities.record.filter.RecordFilter.RecordFilterEnum;
 
 /**
  * 
@@ -56,7 +54,9 @@ public class PageAuditResult implements Comparable<PageAuditResult>{
 	private SearchResults searchResults;
 	private int numberOfImages;
 	private SortedSet<Link> inBoundLinks = new TreeSet<>();
-	private SortedSet<Link> outBoundLinks = new TreeSet<>(); 
+	private SortedSet<Link> outBoundLinks = new TreeSet<>(); 	
+	private Set<String> commonWords = new HashSet<>(Arrays.asList("the","and","a","that","i","it","not","he","as","you","this","but","his","they","her","she","or","an","will","my","one","all","would","there","their","to","of","in","for","on","with","at","by","from","up","about","into","over","after","your","our","be", "do", "go"));
+	
 	
 	public PageAuditResult(String url) {
 		this.url = url;
@@ -161,5 +161,8 @@ public class PageAuditResult implements Comparable<PageAuditResult>{
 		} else {
 			return 1;
 		}
+	}
+	public boolean isUncommon(String term) {
+		return !commonWords.contains(term.toLowerCase());
 	}
 }

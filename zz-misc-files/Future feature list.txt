@@ -11,6 +11,8 @@ SE Audit
 	list robots.txt
 	tags (what tags?)
 	search for words and variations
+		- add context flag (list few words before and after)
+		- add flexibility
 	obtaining actual sitemap
 		-getting truncated?? or only offline??
 		-remove <!--?xml and xmlns stuff
@@ -31,17 +33,15 @@ deployment package
 
 
 getRecords()
-mugshot-publication.com
-
-http://publicsearch1.chicagopolice.org/Help/Api/
-http://publicsearch1.chicagopolice.org/
-
-https://www.dallasopendata.com/Public-Safety/Police-Arrests/r4wm-ig9m
-http://www3.dallascityhall.com/publicdata/offense-search.html
-
-http://www.hcdistrictclerk.com/Common/e-services/PublicDatasets.aspx
-	- txt file published daily at 5:00AM
-	- move headers from engine to siteservice
+	mugshot-publication.com
+	
+	http://publicsearch1.chicagopolice.org/Help/Api/
+	http://publicsearch1.chicagopolice.org/
+	
+	https://www.dallasopendata.com/Public-Safety/Police-Arrests/r4wm-ig9m
+	http://www3.dallascityhall.com/publicdata/offense-search.html
+	
+	http://sheriffconnect.com/operations/jails/search-jail-inmates.html
 
 	mugshots.com
 		domain - http://mugshots.com
@@ -77,6 +77,12 @@ http://www.hcdistrictclerk.com/Common/e-services/PublicDatasets.aspx
 	Keep properties file separate from jar?
 		-use it to tweak things like site(s), columns to export/exclude, flags, etc
 	
+
+Court Records
+	http://www.hcdistrictclerk.com/Common/e-services/PublicDatasets.aspx
+		- txt file published daily at 5:00AM
+		- move headers from engine to siteservice
+
 
 
 Misc
