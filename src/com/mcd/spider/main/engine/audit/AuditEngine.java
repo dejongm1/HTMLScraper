@@ -120,10 +120,10 @@ public class AuditEngine {
 			}
 			docToCheck = response.parse();
 			result.setLoadTime(System.currentTimeMillis()-pageStartTime);
-			Map<String,String> responseHeaders = response.headers();
-			for (Entry<String,String> headerEntry : responseHeaders.entrySet()) {
-				logger.debug("Header=Value: " + headerEntry.getKey() + "=" + headerEntry.getValue());
-			}
+//			Map<String,String> responseHeaders = response.headers();
+//			for (Entry<String,String> headerEntry : responseHeaders.entrySet()) {
+//				logger.debug("Header=Value: " + headerEntry.getKey() + "=" + headerEntry.getValue());
+//			}
 			result.setFullResponseCode(response.headers().get(null));
 			result.setCode(response.statusCode());
 			result.setContentType(response.contentType());

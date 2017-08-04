@@ -1,0 +1,973 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html lang="en-US" xmlns="http://www.w3.org/1999/xhtml">
+<head id="Head">
+<script type="text/javascript">
+//<![CDATA[
+try{if (!window.CloudFlare) {var CloudFlare=[{verbose:0,p:0,byc:0,owlid:"cf",bag2:1,mirage2:0,oracle:0,paths:{cloudflare:"/cdn-cgi/nexp/dok3v=1613a3a185/"},atok:"58a8c84a30dfee20adff646143bce8af",petok:"c20df5a84d9b41655b43a2bd224c085a42aba0f8-1501849614-1800",zone:"intoxalock.com",rocket: "a",apps:{}}];document.write('<script type="text/javascript" src="//ajax.cloudflare.com/cdn-cgi/nexp/dok3v=85b614c0f6/cloudflare.min.js"><'+'\/script>');}}catch(e){};
+//]]>
+</script>
+<script data-rocketsrc="https://cdn.optimizely.com/js/8488152584.js" type="text/rocketscript"></script>
+<title>
+What is an Ignition Interlock Device? | Intoxalock
+</title>
+<meta name='robots' content='index'>
+<meta name='googlebot' content='index'>
+ 
+<link id="canonicalUrl" rel="canonical" href="https://www.intoxalock.com/ignition-interlock-devices/what-is-an-ignition-interlock-device"><meta name="google-site-verification" content="JA4HMiRT6qYThJCrNjLaMMUkrzVpY44u1wNtMqedQtk"/><meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/><meta content="text/javascript" http-equiv="Content-Script-Type"/><meta content="text/css" http-equiv="Content-Style-Type"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><meta id="MetaDescription" name="DESCRIPTION" content="An ignition interlock device is a car breathalyzer which controls the vehicle’s ignition system based on alcohol concentration (BrAC), to prevent drunk driving."/><meta id="MetaKeywords" name="KEYWORDS" content="what is an ignition interlock device, what is an iid, how does an ignition interlock work, how does an iid work"/><meta id="MetaCopyright" name="COPYRIGHT" content="Copyright 2017 by Intoxalock"/><meta id="MetaAuthor" name="AUTHOR" content="Intoxalock Ignition Interlock Device – Car Breathalyzer - 888-283-5899"/><meta name="RESOURCE-TYPE" content="DOCUMENT"/><meta name="DISTRIBUTION" content="GLOBAL"/><meta name="REVISIT-AFTER" content="1 DAYS"/><meta name="RATING" content="GENERAL"/><meta http-equiv="PAGE-ENTER" content="RevealTrans(Duration=0,Transition=1)"/><style id="StylePlaceholder" type="text/css"></style><link href="/Portals/_default/default.css?cdv=18" type="text/css" rel="stylesheet"/><link href="/Portals/_default/Skins/Intoxalock/skin.css?cdv=18" type="text/css" rel="stylesheet"/><link href="/Portals/0/portal.css?cdv=18" type="text/css" rel="stylesheet"/><link href="/Portals/_default/Skins/Intoxalock/css/style.css?cdv=18" type="text/css" rel="stylesheet"/><link href="/Portals/_default/Skins/Intoxalock/css/jquery.fancybox.css?cdv=18" type="text/css" rel="stylesheet"/><link href="/Portals/_default/Skins/Intoxalock/css/responsive.css?cdv=18" type="text/css" rel="stylesheet"/><script data-rocketsrc="/Resources/Shared/Scripts/jquery/jquery.min.js?cdv=18" type="text/rocketscript"></script><script data-rocketsrc="/Resources/Shared/Scripts/jquery/jquery-ui.min.js?cdv=18" type="text/rocketscript"></script>
+<script type="text/rocketscript">
+
+          function changeFocus(id) {
+              var v = "#" + id;
+              $(v).focus();
+          }
+
+          
+		   $(document).ready(function () {
+		       //$('.hlink').hide();
+		       var isMobile = $('#IsMobile').val();
+		       document.cookie = "isMobile=" + isMobile;
+		       
+			if(!Array.prototype.indexOf) {
+				Array.prototype.indexOf = function(obj, start) {
+					 for (var i = (start || 0), j = this.length; i < j; i++) {
+						 if (this[i] === obj) { return i; }
+					 }
+					 return -1;
+				}
+			}
+			
+			
+			
+			var removeMyAccountButtonPaths = [
+			"/fleets/ignition-interlock-solutions",
+			"/fleets/ignition-interlock-devices",
+			"/fleets/marketing-materials",
+			"/treatmentcenters/benefits-of-partnership",
+			"/treatmentcenters/ignition-interlock-devices",
+			"/treatmentcenters/signup",
+			"/attorney/benefits-of-partnership",
+			"/attorney/signup",
+			"/attorney/ignition-interlock-devices", 
+			"/monitoring/benefits-of-partnership",
+			"/monitoring/benefits-of-partnership",
+			"/monitoring/newsletter",
+			"/monitoring/marketing-materials",
+			"/monitoring/signup",
+			"/quick-start-statesubmit",
+			"/quick-start-submit"
+			];
+	
+		if(removeMyAccountButtonPaths.indexOf(window.location.pathname) !== -1) 
+		{
+			$('.removeMyaccount').hide();
+			$('.hlink.last').attr('style','top:0px');
+		}
+		else
+		{
+			$('.removeMyaccount').show();
+			$('.hlink.last').removeAttr('style');
+		}
+			
+			
+			 });
+			
+          var setfocus0 = setInterval(function () { if ($('#zipcode-popup-requrements').is(':visible') == true) { changeFocus('dnn_dnnZipCodeRequirements_txtZipCode2'); } }, 1000);
+          var setfocus1 = setInterval(function () { if ($('#zipcode-popup-instalation').is(':visible') == true) { changeFocus('dnn_dnnZipCodeInstallation_txtZipCode3'); } }, 1000);
+          var setfocus2 = setInterval(function () { if ($('#zipcode-popup').is(':visible') == true) { changeFocus('dnn_dnnZipCode_txtZipCode1'); } }, 1000);
+          //var setfocus3 = setInterval(function () { if ($('#zipcode-popup-requrements').is(':visible') == true) { changeFocus('dnn_dnnZipCodeRequirements_txtZipCode2'); } }, 1000);
+          //var setfocus4 = setInterval(function () { if ($('#zipcode-popup-requrements').is(':visible') == true) { changeFocus('dnn_dnnZipCodeRequirements_txtZipCode2'); } }, 1000);
+          
+		  
+    </script>
+ 
+<script type="text/rocketscript">
+var _prum = [['id', '57237c57abe53da227eb8f91'],
+             ['mark', 'firstbyte', (new Date()).getTime()]];
+(function() {
+    var s = document.getElementsByTagName('script')[0]
+      , p = document.createElement('script');
+    p.async = 'async';
+    p.src = '//rum-static.pingdom.net/prum.min.js';
+    s.parentNode.insertBefore(p, s);
+})();
+</script>
+ 
+<script type="application/ld+json">
+{
+  "@context" : "https://schema.org",
+  "@type" : "Organization",
+  "name" : "Intoxalock Ignition Interlock",
+  "url" : "http://www.intoxalock.com",
+  "sameAs" : [
+    "https://www.facebook.com/Intoxalock/",
+    "https://twitter.com/Intoxalock",
+    "https://plus.google.com/102477738090712874282",
+	"https://www.trustpilot.com/review/intoxalock.com"
+  ]
+}
+</script>
+ 
+ 
+<meta name="google-site-verification" content="3WFzphErTkEVDxez1gIVBbEFEddYVNpAyjYp2e5Etno"/><meta name="msvalidate.01" content="4A72B6C53F56520D8C8DBA6E445D74D4"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+ 
+<script type="text/rocketscript" id="inspectletjs">
+window.__insp = window.__insp || [];
+__insp.push(['wid', 32372565]);
+(function() {
+function __ldinsp(){var insp = document.createElement('script'); insp.type = 'text/javascript'; insp.async = true; insp.id = "inspsync"; insp.src = ('https:' == document.location.protocol ? 'https' : 'http') + '://cdn.inspectlet.com/inspectlet.js'; var x = document.getElementsByTagName('script')[0]; x.parentNode.insertBefore(insp, x); };
+document.readyState != "complete" ? (window.attachEvent ? window.attachEvent('onload', __ldinsp) : window.addEventListener('load', __ldinsp, false)) : __ldinsp();
+
+})();
+</script>
+ 
+ 
+<script type="text/rocketscript">
+
+  (function () {
+  var cx = '000516073538237703154:sju9jcg9kuk';
+  var gcse = document.createElement('script');
+  gcse.type = 'text/javascript';
+  gcse.async = true;
+  gcse.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') +
+  '//www.google.com/cse/cse.js?cx=' + cx;
+  var s = document.getElementsByTagName('script')[0];
+  s.parentNode.insertBefore(gcse, s);
+  })();
+
+</script>
+ 
+<script type="text/rocketscript" data-rocketsrc="/js/tracking.js"></script>
+ 
+<script type="text/rocketscript">
+
+  
+
+
+    //call all tracking code on document load
+	//Commented this function Temperoraily for ConversionSciences
+    //Added for PPC Project
+    $(document).on("ready", function(){
+		var sourcecookie = getCookie('ixSource');
+			CreateTrackingCookies();
+			if (window.location.href.search("california") == -1) {
+					setPhoneNumber();
+					
+				}	
+					
+					phoneTracking();
+					ZipSearchTracking();
+					QuickStartTracking();
+					InstallNowTracking(); 
+					LinkTracking();
+
+			
+
+    });
+
+
+
+</script>
+ 
+ 
+<script type="text/rocketscript">
+setTimeout(function(){var a=document.createElement("script");
+var b=document.getElementsByTagName("script")[0];
+a.src=document.location.protocol+"//script.crazyegg.com/pages/scripts/0038/0613.js?"+Math.floor(new Date().getTime()/3600000);
+a.async=true;a.type="text/javascript";b.parentNode.insertBefore(a,b)}, 1);
+</script>
+<script type="text/rocketscript">
+$(document).ready(function(){
+
+    $("video").click(function(e){
+
+    // handle click if not Firefox (Firefox supports this feature natively)
+    if (typeof InstallTrigger === 'undefined') {
+
+    // get click position
+    var clickY = (e.pageY - $(this).offset().top);
+    var height = parseFloat( $(this).height() );
+
+    // avoids interference with controls
+    if (clickY > 0.82*height) return;
+
+    // toggles play / pause
+    this.paused ? this.play() : this.pause();
+    }
+    });
+
+});
+</script>
+<style>.updated .form-box{display:block;}</style><link rel='SHORTCUT ICON' href='/Portals/0/favicon.ico' type='image/x-icon'/></head>
+<body id="Body">
+<form method="post" action="/ignition-interlock-devices/what-is-an-ignition-interlock-device" id="Form" enctype="multipart/form-data">
+<div class="aspNetHidden">
+<input type="hidden" name="StylesheetManager_TSSM" id="StylesheetManager_TSSM" value=""/>
+<input type="hidden" name="ScriptManager_TSM" id="ScriptManager_TSM" value=""/>
+<input type="hidden" name="__EVENTTARGET" id="__EVENTTARGET" value=""/>
+<input type="hidden" name="__EVENTARGUMENT" id="__EVENTARGUMENT" value=""/>
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="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"/>
+</div>
+<script type="text/rocketscript">
+//<![CDATA[
+var theForm = document.forms['Form'];
+if (!theForm) {
+    theForm = document.Form;
+}
+function __doPostBack(eventTarget, eventArgument) {
+    if (!theForm.onsubmit || (theForm.onsubmit() != false)) {
+        theForm.__EVENTTARGET.value = eventTarget;
+        theForm.__EVENTARGUMENT.value = eventArgument;
+        theForm.submit();
+    }
+}
+//]]>
+</script>
+<script data-rocketsrc="/WebResource.axd?d=Ql_5UbtX_7FoxsASBaT3CEO089WA_VxNBqf6PiWF6hRExXdcdLx3vTbdzwrnqolCfhEPutkfnFV6QIMv0&amp;t=636283902552661246" type="text/rocketscript"></script>
+<script data-rocketsrc="/Telerik.Web.UI.WebResource.axd?_TSM_HiddenField_=ScriptManager_TSM&amp;compress=1&amp;_TSM_CombinedScripts_=%3b%3bSystem.Web.Extensions%2c+Version%3d4.0.0.0%2c+Culture%3dneutral%2c+PublicKeyToken%3d31bf3856ad364e35%3aen-US%3abcca958d-0b33-4edf-8c7b-050821c334aa%3aea597d4b%3ab25378d2" type="text/rocketscript"></script>
+<div class="aspNetHidden">
+<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="CA0B0334"/>
+<input type="hidden" name="__VIEWSTATEENCRYPTED" id="__VIEWSTATEENCRYPTED" value=""/>
+</div><script type="text/rocketscript">
+//<![CDATA[
+Sys.WebForms.PageRequestManager._initialize('ScriptManager', 'Form', [], [], [], 90, '');
+//]]>
+</script>
+<script data-rocketsrc="/js/dnn.modalpopup.js?cdv=18" type="text/rocketscript"></script><script data-rocketsrc="/js/dnncore.js?cdv=18" type="text/rocketscript"></script><script data-rocketsrc="/Portals/_default/Skins/Intoxalock/js/jquery.fancybox.js?cdv=18" type="text/rocketscript"></script><script data-rocketsrc="/Portals/_default/Skins/Intoxalock/js/SalesChatGlobal.js?cdv=18" type="text/rocketscript"></script><script data-rocketsrc="/Portals/_default/Skins/Intoxalock/js/global.js?cdv=18" type="text/rocketscript"></script><script data-rocketsrc="/Portals/_default/Skins/Intoxalock/js/common.js?cdv=18" type="text/rocketscript"></script>
+<style>ul.header-links.vspace{margin-top:52px;}.header-links li{margin-bottom:5px;}</style>
+<div id="siteWrapper" class="updated">
+<div class="header-wrap">
+<div class="site-width">
+<div id="myDiv" style="width: inherit; text-align: right; height: 100px; position: fixed;z-index: 10000;display:none"><div style="z-index: 10003; position: absolute; right: 0px; margin-right: 20px; width: 30px; height: 30px; cursor: pointer;" onclick="CloseChatInvitation()"></div><span class="contact-num" style="margin-right: 20px;"><a href="javascript:PersistenceChat();"> <img src="/Portals/_default/Skins/Intoxalock/images/Chat_d.png" alt="Intoxalock live chat"></a></span></div>
+<div class="header">
+<div class="mobileMenuButton mobile-nav-btn">
+<img src="/Portals/_default/Skins/Intoxalock/images/menu.png" alt="Intoxalock menu" style="width:42px;height:49px"/>
+</div>
+<span class="logo">
+<a id="dnn_dnnLOGO_hypLogo" href="https://www.intoxalock.com"><img id="dnn_dnnLOGO_imgLogo" src="/Portals/0/logo.png" alt="Intoxalock - Ignition Interlock" style="border-width:0px;"/></a>
+</span>
+<div class="call-us-panel">
+<div id="dnn_HeaderLeft" class="text-col">
+<a href="tel:18665714148" id="headerMobilePhoneNumber" class="text headerMobilePhoneNumber">
+<img src="/Portals/_default/Skins/Intoxalock/images/phone.png" alt="Call Intoxalock 24/7" style="width:42px;height:49px"/>
+</a>
+<span class="text headerPhoneNumber">
+<b>Call us 24/7!</b><br>
+<b><span id="spanHeadText" class="fstyle">(866) 571-4148</span></b>
+<br>
+<span style="font-weight: normal; font-family: inherit;">Hablamos español</span>
+</span>
+</div>
+<div class="img-col">
+<img alt="Call Intoxalock 24/7" src="/Portals/_default/Skins/Intoxalock/Images/caller-img.jpg"/>
+</div>
+<div class="clearboth">
+</div>
+</div>
+<div class="header-right stateRequirements">
+<div id="dnn_translateLink"><div class="DnnModule DnnModule-DNN_HTML DnnModule-3941"><a name="3941"></a>
+<div class="DNNContainer_without_title">
+<div id="dnn_ctr3941_ContentPane"> <div id="dnn_ctr3941_ModuleContent" class="DNNModuleContent ModDNNHTMLC">
+<div id="dnn_ctr3941_HtmlModule_lblContent" class="Normal">
+<a class="nomob" title="Spanish" href="/es/dispositivos-bloqueo-de-arranque">En Español</a>
+</div>
+</div> </div>
+</div></div></div>
+<ul class="homeHeaderLinks header-links vspace vspace-mobile">
+<li class="hlink"><a title="My Account login" href="https://myaccount.intoxalock.com/login.aspx">
+My Account&nbsp;</a></li>
+<li class="hlink sep">|</li>
+<li class="hlink last"><a title="Search Intoxalock" href="/search">Search
+site</a></li>
+</ul>
+<ul class="mobile-header-links">
+<li><a title="My Account login" href="https://myaccount.intoxalock.com/login.aspx" class="roundedCornersButton myAccountButton">My Account</a></li>
+<li><a title="Search Intoxalock" href="/search" class="roundedCornersButton searchSiteButton">Search Site</a></li>
+</ul>
+<p class="stateRequirements signUp">Not signed up for My Account? <a title="My Account sign up page" href="https://myaccount.intoxalock.com/setup-account.aspx">Sign up</a></p>
+</div>
+<div class="clearboth">
+</div>
+</div>
+ 
+</div>
+</div>
+<div id="dnn_dnnNavbar_MainNav" class="nav-wrap">
+<div class="site-width">
+<ul class="nav hide-mobile">
+<li><a href="https://www.intoxalock.com" style="padding-top:7px;padding-bottom:7px;">Home</a></li>
+<li>
+<a id="dnn_dnnNavbar_lnkRegainYourLicense" href="https://www.intoxalock.com/find-state-requirements">State<br/>
+Requirements</a></li>
+<li>
+<a id="dnn_dnnNavbar_lnkInstallationLocations" href="https://www.intoxalock.com/find-an-installation-location">Installation<br/>
+Locations</a></li>
+<li><a href="https://www.intoxalock.com/ignition-interlock-devices">Ignition<br/>
+Interlocks</a>
+<ul>
+<li><a href="https://www.intoxalock.com/ignition-interlock-devices/what-is-an-ignition-interlock-device">What is an Ignition Interlock?</a></li>
+<li><a href="https://www.intoxalock.com/ignition-interlock-devices/legacy">Legacy</a></li>
+<li><a href="https://www.intoxalock.com/ignition-interlock-devices/elert" style="text-transform: none">eLERT</a></li>
+<li><a href="https://www.intoxalock.com/ignition-interlock-devices/elert-24" style="text-transform: none">eLERT 24</a></li>
+<li><a href="https://www.intoxalock.com/alcohol-monitoring-devices" style="text-transform: none">HOME eLERT</a></li>
+</ul>
+</li>
+<li><a href="/drunk-driving-prevention">Preventative<br/>Solutions</a>
+<ul>
+<li><a href="/drunk-driving-prevention/family">For Your Family</a></li>
+<li><a href="/drunk-driving-prevention/teens">For Teens &amp; Young Adults</a></li>
+<li><a href="/drunk-driving-prevention/fleets">For Your Business</a></li>
+</ul>
+</li>
+<li><a style="padding-top:7px;padding-bottom:7px;" href="/partners">Partners</a>
+<ul>
+<li><a href="/partners">Attorneys</a></li>
+<li><a href="/partners">Monitoring Authorities</a></li>
+<li><a href="/partners">Treatment Centers</a></li>
+<li><a href="/partners/become-an-installer">Service Centers</a></li>
+</ul>
+</li>
+<li><a href="https://duiblog.intoxalock.com" style="padding-top:7px;padding-bottom:7px;">Blog</a></li>
+</ul>
+<div class="mobile-nav-panel show-mobile">
+<ul class="mobile-nav">
+<li><a href="/">Home</a></li>
+<li><a href="/myaccount/login.aspx">My Account</a></li>
+<li><a id="dnn_dnnNavbar_lnkRegainYourLicenseMob" href="https://www.intoxalock.com/find-state-requirements">State Requirements</a></li>
+<li><a id="dnn_dnnNavbar_lnkInstallationLocationsMob" href="https://www.intoxalock.com/find-an-installation-location">Installation Locations</a></li>
+<li><a href="/ignition-interlock-devices" class="navWithChild" onclick="return false">Ignition Interlocks</a>
+<div class="mobileDropdown"><img src="/Portals/_default/Skins/Intoxalock/images/down.png" alt="Open menu"/></div><div class="mobileDropdownClose"><img src="/Portals/_default/Skins/Intoxalock/images/up.png" alt="Close menu"/></div>
+<ul class="mobileSecondNav">
+<li><a href="https://www.intoxalock.com/ignition-interlock-devices/what-is-an-ignition-interlock-device">What is an Ignition Interlock?</a></li>
+<li><a href="https://www.intoxalock.com/ignition-interlock-devices/legacy">Legacy</a></li>
+<li><a href="https://www.intoxalock.com/ignition-interlock-devices/elert" style="text-transform: none">eLERT</a></li>
+<li><a href="https://www.intoxalock.com/ignition-interlock-devices/elert-24" style="text-transform: none">eLERT 24</a></li>
+<li><a href="https://www.intoxalock.com/alcohol-monitoring-devices" style="text-transform: none">HOME eLERT</a></li>
+</ul>
+</li>
+<li><a href="/drunk-driving-prevention" class="navWithChild">Preventative Solutions</a>
+<div class="mobileDropdown"><img src="/Portals/_default/Skins/Intoxalock/images/down.png" alt="Open menu"/></div><div class="mobileDropdownClose"><img src="/Portals/_default/Skins/Intoxalock/images/up.png" alt="Close menu"/></div>
+<ul class="mobileSecondNav">
+<li><a href="/drunk-driving-prevention/family">For Your Family</a></li>
+<li><a href="/drunk-driving-prevention/teens">For Teens &amp; Young Adults</a></li>
+<li><a href="/drunk-driving-prevention/fleets">For Your Business</a></li>
+</ul>
+</li>
+<li><a class="navWithChild" href="/partners">Partners</a>
+<div class="mobileDropdown"><img src="/Portals/_default/Skins/Intoxalock/images/down.png" alt="Open menu"/></div><div class="mobileDropdownClose"><img src="/Portals/_default/Skins/Intoxalock/images/up.png" alt="Close menu"/></div>
+<ul class="mobileSecondNav">
+<li><a href="/partners">Attorneys</a></li>
+<li><a href="/partners/monitoring-authorities">Monitoring Authorities</a></li>
+<li><a href="/partners/treatment-centers">Treatment Centers</a></li>
+<li><a href="/partners/become-an-installer">Service Centers</a></li>
+</ul>
+</li>
+<li><a href="https://duiblog.intoxalock.com">Blog</a></li>
+<li><a href="/es/dispositivos-bloqueo-de-arranque">En espa&ntilde;ol</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div id="contentWrapper" class="sub-content newStateRequirements">
+<div class="site-width">
+<div class="banner-content h311">
+<div id="dnn_contentPane" class="banner">
+<div class="DnnModule DnnModule-DNN_HTML DnnModule-3966"><a name="3966"></a>
+<div class="DNNContainer_without_title">
+<div id="dnn_ctr3966_ContentPane"> <div id="dnn_ctr3966_ModuleContent" class="DNNModuleContent ModDNNHTMLC">
+<div id="dnn_ctr3966_HtmlModule_lblContent" class="Normal">
+<img src="/portals/0/Images/IntoxalockImages/Larger_format_photos/what-is-iid-banner.jpg" alt="ignition interlock pricing" style="width: 100%; height: auto;"><div class="box9">Find special offers<br>on ignition interlocks<br>in your state.</div>
+</div>
+</div> </div>
+</div></div></div>
+<div class="right-col">
+<style type="text/css">.manditory{color:red;font-weight:bold;font-size:17px;display:none;}</style>
+<script data-rocketsrc="/Portals/_default/Skins/Intoxalock/js/jquery.maskedinput.js" type="text/rocketscript"></script>
+<script type="text/rocketscript">
+    function Validation() {
+        var count = 0;
+        var name = document.getElementById('dnn_dnnSTATE_txtName').value;
+        var phone = document.getElementById('dnn_dnnSTATE_txtPhone').value;
+        var email = document.getElementById('dnn_dnnSTATE_txtEmail').value;
+        var zip = document.getElementById('dnn_dnnSTATE_txtZip').value;
+        var emailRegular = /^([\w-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([\w-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$/;
+        var zipreg =/^\d+$/;
+        var phoneRegular = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/;
+        if (name.length == 0 || name == "" || name == "Name") { $("#validName").css("display", "inline"); count++; } else { $("#validName").css("display", "none"); }
+        if (!phone.match(phoneRegular)) { $("#validPhone").css("display", "inline"); count++; } else { $("#validPhone").css("display", "none"); }
+        if (!zipreg.test(zip)) { $("#validZip").css("display", "inline"); count++; } else if (zip.length != 5) { $("#validZip").css("display", "inline"); count++; } else { $("#validZip").css("display", "none"); }
+        if (email.length == 0 || email == "" || email == "Email") { $("#validEmail").css("display", "inline"); count++; } else if (!email.match(emailRegular)) { $("#validEmail").css("display", "inline"); count++; } else { $("#validEmail").css("display", "none"); }
+        if (count > 0) { return false; count = 0; } else { return true; }
+    }
+    
+    function validateEmail(sEmail) {
+        var filter = /^([\w-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([\w-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$/;
+        if (filter.test(sEmail)) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    };
+
+    $(document).ready(function () {
+        $("#stateDiv input[type=text]").keyup(function (event) {
+            if (event.which == 13) {
+                if (Validation() == true) {
+                    eval($("#dnn_dnnSTATE_btnSubmit").attr('href'));
+                }
+            }
+        });   
+    $('label[for="dnn_dnnSTATE_chkSpanish"]').removeAttr('style');
+    $('label[for="dnn_dnnSTATE_chkSpanish"]').attr('style', 'font-size:9px');
+    });
+   
+    //Validations and Masking
+    $(document).ready(function () {
+
+        var useragent = navigator.userAgent;
+        useragent = useragent.toLowerCase();
+        if (useragent.indexOf('samsung') != -1 || useragent.indexOf('sm') != -1 || useragent.indexOf('sph') != -1) {
+            var $input = $('#dnn_dnnSTATE_txtPhone')
+            $input.keyup(function (e) {
+                var max = 14;
+                var inputText = $(this).val();
+                var resultText = inputText.replace(/[^0-9\.]+/g, '');
+                $(this).val(resultText);
+                this.value = this.value.replace(/(\d{3})\-?(\d{3})\-?(\d{4})/, '($1) $2-$3');
+                $('#dnn_dnnSTATE_txtPhone').val(this.value);
+                if ($input.val().length > max) {
+
+                    $input.val($input.val().substr(0, max));
+                }
+            });
+
+            var $zip = $('#dnn_dnnSTATE_txtZip')
+            $zip.keyup(function (e) {
+                var max = 5;
+                var inputText = $(this).val();
+                var resultText = inputText.replace(/[^0-9\.]+/g, '');
+                $(this).val(resultText);
+
+                if ($zip.val().length > max) {
+
+                    $zip.val($zip.val().substr(0, max));
+                }
+            });
+
+            $('#dnn_dnnSTATE_txtName').on('input', function () {
+                var inputText = $(this).val();
+
+                var resultText = inputText.replace(/[^a-zA-Z\s:]/, '');
+                $(this).val(resultText);
+            });
+
+
+        }
+        else {
+
+
+            //To check if you want to check phone number on KeyPress
+            $("#dnn_dnnSTATE_txtPhone").attr('maxlength', '14');
+            $("#dnn_dnnSTATE_txtZip").attr('maxlength', '5');
+
+
+            $('#dnn_dnnSTATE_btnSubmit').click(function (event) {
+
+                var sEmail = $('#dnn_dnnSTATE_txtEmail').val();
+                if ($.trim(sEmail).length == 0) {
+                    e.preventDefault();
+                }
+
+                if (validateEmail(sEmail)) { }
+                else {
+
+                    // $('#dnn_dnnBREATH_txtEmail').val('');
+                    Validation();
+                    // event.preventDefault();
+                }
+            });
+
+            jQuery(function ($) {
+
+
+
+                $("#dnn_dnnSTATE_txtPhone").mask("(999) 999-9999");
+            $("#dnn_dnnSTATE_txtPhone").attr('value', "Phone");
+            $('#dnn_dnnSTATE_txtPhone').focus(
+           function () {
+               if ($(this).val() == 'Phone') {
+                   $(this).val('');
+               }
+           })
+           .blur(function () {
+               if ($(this).val() == '') {
+                   $(this).val('Phone');
+               }
+           });
+
+        });
+
+            //first name
+        $('#dnn_dnnSTATE_txtName').keypress(
+
+               function (event) {
+                   var keycode = event.which;
+                   if ((event.shiftKey == false && ((keycode >= 48 && keycode <= 57)))) {
+                       event.preventDefault();
+                   }
+
+
+                   //if (!event.which != 8 && !isNaN(String.fromCharCode(event.which))) {
+                   //  event.preventDefault(); //stop numbers from entering input
+                   // }
+               });
+
+        $('#dnn_dnnSTATE_txtZip').keypress(
+
+               function (event) {
+                   if (isNaN(String.fromCharCode(event.which)) && event.which != 0) {
+                       if (event.which != 8) {
+                           event.preventDefault(); //stop character from entering input
+                       }
+                   }
+               });
+            //$('#dnn_dnnSTATE_txtEmail').keypress(
+
+            //      function (event) {
+            //          if (!event.which != 8 && !isNaN(String.fromCharCode(event.which))) {
+            //              event.preventDefault(); //stop numbers from entering input
+            //          }
+            //      });
+
+        }
+
+    });
+
+</script>
+<div class="form-box form2 " id="stateDiv" style="padding: 11px 23px 0;">
+<h2>
+Need an ignition interlock installed?
+<b>We can help.</b>
+</h2>
+<div>
+<input name="dnn$dnnSTATE$txtName" type="text" value="Name" id="dnn_dnnSTATE_txtName" class="textfield" onfocus="clearText(this)" onblur="clearText(this)"/>
+<span class="manditory" id="validName">*</span>
+</div>
+<div>
+<input name="dnn$dnnSTATE$txtPhone" value="Phone" id="dnn_dnnSTATE_txtPhone" type="tel" class="textfield" onfocus="clearText(this)" onblur="clearText(this)"/>
+<span class="manditory" id="validPhone">*</span>
+</div>
+<div>
+<input name="dnn$dnnSTATE$txtZip" value="Zip code" maxlength="5" id="dnn_dnnSTATE_txtZip" class="textfield quickstart-zipcode" onfocus="clearText(this)" onblur="clearText(this)" input="" type="tel"/>
+<span class="manditory" id="validZip">*</span>
+</div>
+<div>
+<input name="dnn$dnnSTATE$txtEmail" type="text" value="Email" id="dnn_dnnSTATE_txtEmail" class="textfield" onfocus="clearText(this)" onblur="clearText(this)"/>
+<span class="manditory" id="validEmail">*</span>
+</div>
+<div>
+<span class="cbox"><input id="dnn_dnnSTATE_chkSpanish" type="checkbox" name="dnn$dnnSTATE$chkSpanish"/><label for="dnn_dnnSTATE_chkSpanish">Necesito un representante que habla Español</label></span>
+</div>
+<div class="btn-row" style="padding: 6px 0 15px;">
+<a onclick="return Validation();" id="dnn_dnnSTATE_btnSubmit" class="quickstart-submit" href="javascript:__doPostBack(&#39;dnn$dnnSTATE$btnSubmit&#39;,&#39;&#39;)"><span class="psubmit">Get Quote</span></a>
+</div>
+<div id="errorMessage" class="popup-zip-msg" style="display: none;">
+<span class="text">An error occured while storing the information. Please try again.</span>
+</div>
+</div>
+</div>
+</div>
+ 
+<div class="clearboth">
+</div>
+<div class="threecol-layout">
+<div class="inner-content">
+<div id="dnn_mainContentPane" class="leftContent"><div class="DnnModule DnnModule-DNN_HTML DnnModule-3606"><a name="3606"></a><div id="dnn_ctr3606_ContentPane"> <div id="dnn_ctr3606_ModuleContent" class="DNNModuleContent ModDNNHTMLC">
+<div id="dnn_ctr3606_HtmlModule_lblContent" class="Normal">
+<h1 class="mobileHeading">What is an Intoxalock ignition interlock
+device?</h1><img alt="Intoxalock legacy device" class="hide-mobile" src="/portals/0/Images/IntoxalockImages/body/legacy-device.png" style="float: right; width: 281px; height: 219px;">
+<p>An ignition interlock device is a <a href="/ignition-interlock-devices/portable-breathalyzers" target="_blank" title="Portable brethalyzers" alt="Portable IID">breathalyzer </a>that is installed in your
+vehicle to prevent drinking and driving. It is made up of a mouthpiece, a
+handheld unit and a cord that attaches to your vehicle’s ignition system.
+You are required to blow into the mouthpiece to test your Breath Alcohol
+Concentration (BrAC) before starting your car.</p>
+<p>If your BrAC is below the limit set by your <a href="/find-state-requirements" title="state requirements">state</a>, your
+vehicle will start. If your BrAC is above your state’s limit, your vehicle
+will not start until you submit a breath sample that no longer detects
+alcohol.</p>
+<p>All activity is stored in the device and sent to your monitoring
+department (court, DMV, probation officer, etc.). With real-time reporting
+capabilities, Intoxalock is able to upload data immediately to our Log
+Reporter website. Some states require the information to be made available
+immediately, while others require the data to be sent monthly.</p><img alt="Intoxalock legacy device" class="show-mobile" src="/portals/0/Images/IntoxalockImages/body/legacy-device.png" style=""><br>
+<h2>How to use an ignition interlock device video</h2>
+<div id="videoContainer">
+<video id="myVideo" class="video-play-pause" controls="" poster="/Portals/_default/Skins/Intoxalock/videos/video-poster-user-video.jpg" src="/Portals/_default/Skins/Intoxalock/videos/user-video.mov" width="730" height="470">
+<source src="/Portals/_default/Skins/Intoxalock/videos/user-video.mov" type="video/mov"></video>
+</div>
+<br>
+<h2></h2>
+<h2>Step by step instructions</h2>
+<p><a href="/ignition-interlock-devices/how-to-pass-iid-test" target="_blank" title="How to pass a breathalyzer" alt="How" to="" pass="" an="" iid="">To use your ignition interlock device</a>, press the button on the handheld
+unit and wait until the LED displays “Blow.” Most states require you to
+submit a blow, inhale, blow breath pattern into the mouthpiece. Some states
+require you to just blow into the device. Check your <a href="https://myaccount.intoxalock.com/login.aspx" title="User's Manual">User’s
+Manual</a> for detailed instructions.</p>
+<p>All states require mandated retests to be submitted while the vehicle is
+running. The interlock device will ask for a retest at randomly spaced time
+intervals with a loud beep and a message displayed on the LED screen of the
+handheld. The user must submit another breath sample each time a retest is
+requested. If alcohol is detected during a retest, your ignition interlock
+will not turn off your vehicle while it is in motion but it will give a
+signal for you to stop.</p>
+<h2>Intoxalock device accuracy</h2>
+<p>Intoxalock uses fuel cell technology in all devices to ensure the
+highest levels of accuracy and reliability. Check your <a href="/find-state-requirements" title="state's requirements">state’s
+requirements</a> to see which products are approved in your state.</p>
+<ul>
+<li>
+<a href="/ignition-interlock-devices/legacy" title="Intoxalock Legacy">Intoxalock Legacy</a>
+</li>
+<li>
+<a href="/ignition-interlock-devices/elert" title="Intoxalock eLERT">Intoxalock eLERT</a>
+</li>
+<li>
+<a href="/elert-24" title="Intoxalock eLERT 24">Intoxalock eLERT
+24</a>
+</li>
+<li>
+<a href="/alcohol-monitoring-devices" title="Intoxalock Home eLERT">Intoxalock Home eLERT</a>
+</li>
+</ul>
+</div>
+</div> </div>
+</div><div class="DnnModule DnnModule-DNN_HTML DnnModule-3965"><a name="3965"></a></div></div>
+<div id="dnn_footerLeftPane" class="left-col floatRight">
+<div class="DnnModule DnnModule-DNN_HTML DnnModule-3607"><a name="3607"></a><div id="dnn_ctr3607_ContentPane"> <div id="dnn_ctr3607_ModuleContent" class="DNNModuleContent ModDNNHTMLC">
+<div id="dnn_ctr3607_HtmlModule_lblContent" class="Normal">
+<div class="block"> <h2>Ignition interlock<br>product information:</h2> <ul class="resources"><li> <a title="Why choose Intoxalock" href="/ignition-interlock-devices/why-choose-intoxalock"><span class="icon-wrap icon-yes" style="float:left;" alt="Why choose Intoxalock?"></span>Why choose <br>Intoxalock?</a></li> <li> <a title="Frequently asked questions" href="/ignition-interlock-devices/faq"><span class="icon-wrap icon-info" alt="FAQ"></span>FAQ</a></li> <li> <a title="Ignition interlock pricing" href="/ignition-interlock-devices/pricing"><span class="icon-wrap icon-dollar" alt="Pricing"></span>Pricing</a> </li> </ul></div>
+</div>
+</div> </div>
+</div></div>
+<div class="clearboth">
+</div>
+</div>
+</div>
+</div>
+ 
+</div>
+ 
+<div class="echat"></div>
+<div class="footer-wrap">
+<div class="site-width">
+<div id="footerPane" class="footer">
+<ul class="logos">
+<li>
+<img alt="20 Years of Service" src="/Portals/_default/Skins/Intoxalock/images/logos/1.gif" onMouseOver="this.src='/Portals/_default/Skins/Intoxalock/images/logos/1_o.gif'" onMouseOut="this.src='/Portals/_default/Skins/Intoxalock/images/logos/1.gif'" width="63" height="52"/>
+</li>
+<li>
+<img alt="NCADD - National Council on Alcoholism and Drug Dependence" src="/Portals/_default/Skins/Intoxalock/images/logos/2.gif" onMouseOver="this.src='/Portals/_default/Skins/Intoxalock/images/logos/2_o.gif'" onMouseOut="this.src='/Portals/_default/Skins/Intoxalock/images/logos/2.gif'" width="126" height="52"/>
+</li>
+<li>
+<img alt="AAA - Foundation for Safety" src="/Portals/_default/Skins/Intoxalock/images/logos/3.gif" onMouseOver="this.src='/Portals/_default/Skins/Intoxalock/images/logos/3_o.gif'" onMouseOut="this.src='/Portals/_default/Skins/Intoxalock/images/logos/3.gif'" width="87" height="52"/>
+</li>
+<li>
+<img alt="MADD - Mothers Against Drunk Driving" src="/Portals/_default/Skins/Intoxalock/images/logos/4.gif" onMouseOver="this.src='/Portals/_default/Skins/Intoxalock/images/logos/4_o.gif'" onMouseOut="this.src='/Portals/_default/Skins/Intoxalock/images/logos/4.gif'" width="102" height="52"/>
+</li>
+<li>
+<img alt="APPA - American Probation and Parole Association" src="/Portals/_default/Skins/Intoxalock/images/logos/5.gif" onMouseOver="this.src='/Portals/_default/Skins/Intoxalock/images/logos/5_o.gif'" onMouseOut="this.src='/Portals/_default/Skins/Intoxalock/images/logos/5.gif'" width="57" height="52"/>
+</li>
+<li>
+<img alt="BBB - Better Business Bureau" src="/Portals/_default/Skins/Intoxalock/images/logos/6.gif" onMouseOver="this.src='/Portals/_default/Skins/Intoxalock/images/logos/6_o.gif'" onMouseOut="this.src='/Portals/_default/Skins/Intoxalock/images/logos/6.gif'"/>
+</li>
+</ul>
+<div class="clearboth">
+</div>
+<div id="dnn_dnnFooter_pnlFooterLinks" style="font-size: 13px;">
+<ul class="footer-links">
+<li class="nomob"><a title="What is an Ignition Interlock Device?" href="https://www.intoxalock.com/ignition-interlock-devices/what-is-an-ignition-interlock-device">What is an Ignition Interlock?</a></li>
+<li class="nomob">|</li>
+<li><a title="Intoxalock Reviews" href="https://www.intoxalock.com/reviews">Reviews</a></li>
+<li class="nomob">|</li>
+<li><a title="Ignition Interlock Schedule Install" href="https://www.intoxalock.com/car-breathalyzer-quickstart">Get a Quote</a></li>
+<li class="nomob">|</li>
+<li><a title="About Intoxalock" href="https://www.intoxalock.com/about">About Us</a></li>
+<li class="nomob">|</li>
+<li><a title="Intoxalock Media" href="https://www.intoxalock.com/media">Media</a></li>
+<li class="nomob">|</li>
+<li><a title="Contact Intoxalock" href="https://www.intoxalock.com/contact-intoxalock">Contact</a></li>
+<li class="nomob">|</li>
+<li class="nomob"><a title="Intoxalock Careers" rel="nofollow" href="https://www.intoxalock.com/about/careers">Careers</a></li>
+ 
+<li class="nomob">|</li>
+<li class="nomob"><a title="Why Choose Intoxalock?" rel="nofollow" href="https://www.intoxalock.com/ignition-interlock-devices/why-choose-intoxalock">Why Choose Intoxalock?</a></li>
+<li class="">|</li>
+<li class=""><a title="Ignition Interlock Info Website" rel="nofollow" href="https://ignitioninterlockinfo.com" target="_blank">Ignitioninterlockinfo.com</a></li>
+</ul>
+<div class="utilities-center">
+<div class="clearboth"></div>
+<ul class="footer-links">
+<li><span>&nbsp;&copy;Copyright Intoxalock 2017. All Rights Reserved. </span><a class="privacy-link nomob" title="Intoxalock Privacy Policy" rel="nofollow" href="https://www.intoxalock.com/privacy-policy">View our Privacy Policy here.</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script type="text/rocketscript">
+    function Validate() {
+        var zipCode = document.getElementById('dnn_dnnZipCode_txtZipCode1').value;
+        var reg = /^\d+$/;
+        if (zipCode.length != 5) {
+            $.fancybox.close();
+            invalidZip();
+            $("#dnn_dnnZipCode_txtZipCode1").val('');
+            return false;
+        }
+        else if (!reg.test(zipCode)) {
+            $.fancybox.close();
+            invalidZip();
+            $("#dnn_dnnZipCode_txtZipCode1").val('');
+            return false;
+        }
+        else {
+            document.getElementById('dnn_dnnZipCode_hdnZipCode1').value = zipCode;
+            return true;
+        }
+    }
+    $(document).ready(function () {
+        $("#zipCodePopupDiv input[type=text]").keyup(function (event) {
+            if (event.which == 13) {
+                if (Validate() == true) {
+                    eval($("#dnn_dnnZipCode_lnkZipCode1").attr('href'));
+                }
+            }
+        });
+    });
+</script>
+<input type="hidden" name="dnn$dnnZipCode$hdnZipCode1" id="dnn_dnnZipCode_hdnZipCode1"/>
+<div id="zipcode-popup" class="zipcode-popup">
+<div class="top-panel">
+<span class="text">Enter zip code for results in your area</span>
+</div>
+<div class="bottom-panel" id="zipCodePopupDiv">
+<input name="dnn$dnnZipCode$txtZipCode1" type="text" id="dnn_dnnZipCode_txtZipCode1" class="textfield"/>
+<a onclick="return Validate();" id="dnn_dnnZipCode_lnkZipCode1" class="go-btn" href="javascript:__doPostBack(&#39;dnn$dnnZipCode$lnkZipCode1&#39;,&#39;&#39;)">Go</a>
+<div class="clearboth">
+</div>
+</div>
+</div>
+<script type="text/rocketscript">
+    function Validate2() {
+        var zipCode = document.getElementById('dnn_dnnZipCodeRequirements_txtZipCode2').value;
+        var reg = /^\d+$/;
+        if (zipCode.length != 5) {
+            $.fancybox.close();
+            invalidZip();
+            $("#dnn_dnnZipCodeRequirements_txtZipCode2").val('');
+            return false;
+        }
+        else if (!reg.test(zipCode)) {
+            $.fancybox.close();
+            invalidZip();
+            $("#dnn_dnnZipCodeRequirements_txtZipCode2").val('');
+            return false;
+        }
+        else {
+            document.getElementById('dnn_dnnZipCodeRequirements_hdnZipCode2').value = zipCode;
+            return true;
+        }
+    }
+    $(document).ready(function () {
+        $("#zipPopupRequirementsDiv input[type=text]").keyup(function (event) {
+            if (event.which == 13) {
+                if (Validate2() == true) {
+                    eval($("#dnn_dnnZipCodeRequirements_lnkZipCode2").attr('href'));
+                }
+            }
+        });
+    });
+    function changeFocus(id) {
+        var v = "#" + id;
+        $(v).focus();
+    }
+    var setfocus = setInterval(function () { if ($('#zipcode-popup-requrements').is(':visible') == true) { changeFocus('dnn_dnnZipCodeRequirements_txtZipCode2'); } }, 1000);
+</script>
+<div id="zipcode-popup-requrements" class="zipcode-popup-requrements">
+<div class="top-panel">
+<span class="text">Enter zip code for results in your area</span>
+</div>
+<div class="bottom-panel" id="zipPopupRequirementsDiv">
+<input name="dnn$dnnZipCodeRequirements$txtZipCode2" type="text" id="dnn_dnnZipCodeRequirements_txtZipCode2" class="textfield"/>
+<a onclick="return Validate2();" id="dnn_dnnZipCodeRequirements_lnkZipCode2" class="go-btn" href="javascript:__doPostBack(&#39;dnn$dnnZipCodeRequirements$lnkZipCode2&#39;,&#39;&#39;)">Go</a>
+<div class="clearboth">
+</div>
+</div>
+</div>
+<input type="hidden" name="dnn$dnnZipCodeRequirements$hdnZipCode2" id="dnn_dnnZipCodeRequirements_hdnZipCode2"/>
+<script type="text/rocketscript">
+    function Validate3() {
+        var zipCode = document.getElementById('dnn_dnnZipCodeInstallation_txtZipCode3').value;
+        var reg = /^\d+$/;
+        if (zipCode.length != 5) {
+            $.fancybox.close();
+            invalidZip();
+            $("#dnn_dnnZipCodeInstallation_txtZipCode3").val('');
+            return false;
+        }
+        else if (!reg.test(zipCode)) {
+            $.fancybox.close();
+            invalidZip();
+            $("#dnn_dnnZipCodeInstallation_txtZipCode3").val('');
+            return false;
+        }
+        else {
+            document.getElementById('dnn_dnnZipCodeInstallation_hdnZipCode3').value = zipCode;
+            return true;
+        }
+    }
+    $(document).ready(function () {
+        $("#zipPopupInstalationDiv input[type=text]").keyup(function (event) {
+            if (event.which == 13) {
+                if (Validate3() == true) {
+                    eval($("#dnn_dnnZipCodeInstallation_lnkZipCode3").attr('href'));
+                }
+            }
+        });
+    });
+</script>
+<div id="zipcode-popup-instalation" class="zipcode-popup-instalation">
+<div class="top-panel">
+<span class="text">Enter zip code for results in your area</span>
+</div>
+<div class="bottom-panel" id="zipPopupInstalationDiv">
+<input name="dnn$dnnZipCodeInstallation$txtZipCode3" type="text" id="dnn_dnnZipCodeInstallation_txtZipCode3" class="textfield"/>
+<a onclick="return Validate3();" id="dnn_dnnZipCodeInstallation_lnkZipCode3" class="go-btn" href="javascript:__doPostBack(&#39;dnn$dnnZipCodeInstallation$lnkZipCode3&#39;,&#39;&#39;)">Go</a>
+<div class="clearboth">
+</div>
+</div>
+</div>
+<input type="hidden" name="dnn$dnnZipCodeInstallation$hdnZipCode3" id="dnn_dnnZipCodeInstallation_hdnZipCode3"/>
+<div id="invalidZip" class="popup-zip-msg" style="display:none;">
+<span class="text">Please enter a valid zip code to receive your state's regulations</span>
+</div>
+ 
+<input name="ScrollTop" type="hidden" id="ScrollTop"/>
+<input name="IsMobile" type="hidden" id="IsMobile" value="False"/>
+<input name="__dnnVariable" type="hidden" id="__dnnVariable" autocomplete="off"/>
+<input type="hidden" name="formtype" id="formtype" value="https://www.intoxalock.com/Default.aspx?TabID=1071"/>
+<script type="text/rocketscript" data-rocketsrc="/Resources/Shared/scripts/initWidgets.js"></script></form>
+ 
+<script type="text/rocketscript">
+  var weburl = window.location.href;
+  var gacodenum = "UA-34664606-1";
+  if (weburl.search("intoxalockdev.com")>0) {
+  gacodenum = "UA-34664606-3";
+  }
+  else {
+
+  gacodenum = "UA-34664606-1";
+  }
+
+  (function (i, s, o, g, r, a, m) {
+  i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+  (i[r].q = i[r].q || []).push(arguments)
+  }, i[r].l = 1 * new Date(); a = s.createElement(o),
+  m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+  })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'gaix');
+
+  gaix('create', gacodenum, 'auto');
+  gaix('require', 'linkid', 'linkid.js');
+  gaix('require', 'displayfeatures');
+  gaix('send', 'pageview');
+
+</script>
+ 
+ 
+ 
+ 
+<script type="text/rocketscript">
+  var rmurl = window.location.href;
+  var rmnum = "502c0407b4059591";
+  if (weburl.search("quick-start")>-1) {
+  rmnum = "29df78e8fb04842e";
+  }
+  else if(rmurl.search("myaccount")>-1) {
+  rmnum = "52648c3c959b5525";
+  }
+  
+  else if(rmurl.search("regain-license")>-1) {
+  rmnum = "55f2833908d94b68";
+  }
+  
+  else if(rmurl.search("dui-ignition-interlock-los-angeles")>-1) {
+  rmnum = "b3d386483af42d9e";
+  }
+  
+  else if(rmurl.search("dui-ignition-interlock-los-angeles-geo-fencing")>-1) {
+  rmnum = "9ee86281905905bf";
+  }
+ 
+  var ssaUrl = ('https:' == document.location.protocol ? 'https://' : 'http://') + 'centro.pixel.ad/iap/'+rmnum;
+  new Image().src = ssaUrl;
+  
+
+</script>
+<script type="text/rocketscript" data-rocketsrc="//widget.trustpilot.com/bootstrap/v5/tp.widget.bootstrap.min.js"></script>
+ 
+ 
+<script type="text/rocketscript">
+/* <![CDATA[ */
+var google_conversion_id = 1070762767;
+var google_custom_params = window.google_tag_params;
+var google_remarketing_only = true;
+/* ]]> */
+</script>
+ 
+ 
+<script type="text/rocketscript">
+$(document).ready(function() {
+	$(".various").fancybox({
+		maxWidth	: 800,
+		maxHeight	: 600,
+		fitToView	: false,
+		width		: '70%',
+		height		: '70%',
+		autoSize	: false,
+		closeClick	: false,
+		openEffect	: 'none',
+		closeEffect	: 'none'
+	});
+	
+	$("#single_1").fancybox({
+          helpers: {
+              title : {
+                  type : 'float'
+              }
+          }
+      });
+
+    $("#single_2").fancybox({
+    	openEffect	: 'elastic',
+    	closeEffect	: 'elastic',
+
+    	helpers : {
+    		title : {
+    			type : 'inside'
+    		}
+    	}
+    });
+	
+	$('.toggle').click(function(){
+			$(this).next('.accordionContent').slideToggle('slow');
+			var qs= "q: "+this.innerHTML;
+			$(this).toggleClass('active');
+			gaix('send', 'event', 'FAQ Clicks', 'FAQ Questions', qs, 1);
+		});
+
+
+});
+</script>
+ 
+</body>
+</html>
