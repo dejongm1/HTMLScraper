@@ -148,25 +148,29 @@ public class AuditEngine {
 		//TODO needs a lot of refinement
 		String url = element.attr("href");
 		//filter out bogus stuff - xmls, pdfs, txt, images, etc
-		if (isInBound(url, baseUrl)) {
+		if (isValidInBound(url, baseUrl)) {
 			String absoluteUrl = url.startsWith("http")?url:baseUrl.toExternalForm() + url;
-			//TODO if the link is a sitemap and sitemap is not already set, set it here
 			if (!urlAlreadyChecked(absoluteUrl)) {//make absolute before adding to urlsToCheck map to avoid checking same page twice
                 urlsToCrawl.put(absoluteUrl, false);
                 iterator.add(absoluteUrl);
                 result.addInBoundLink(url);//adding original url for now to demonstrate variations
             }
-		} else {
+		} else if (url.startsWith("http://") || url.startsWith("https://")) {
 			urlsToCrawl.put(url, true); //Adding to list so it doesn't get added again but not retrieving it to look for links
             result.addOutBoundLink(url);
+		} else {
+			urlsToCrawl.put(url, true); //Adding to list so it doesn't get added again but not retrieving it to look for links
+            result.addUnresolvableLink(url);
 		}
 		return urlsToCrawl;
 	}
 	
-	private boolean isInBound(String url, URL baseUrl) {
+	private boolean isValidInBound(String url, URL baseUrl) {
 		if (url.startsWith("http://") || url.startsWith("https://")) { //isAbsolute
-			return url.contains(baseUrl.getHost());
-		} else return !url.contains("javascript");
+			return url.contains(baseUrl.getHost()) || url.contains(baseUrl.getHost().replace("wwww", ""));
+		} else {
+			return !url.contains("javascript") && url.startsWith("/"); //filtering out some unusual links
+		}
 	}
 	
 	private boolean urlAlreadyChecked(String absoluteUrl) {

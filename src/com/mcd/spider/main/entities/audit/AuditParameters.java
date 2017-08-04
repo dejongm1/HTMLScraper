@@ -38,9 +38,10 @@ public class AuditParameters {
 					String url = inputUtil.convertToUrl(parameter);
 					if (url==null) {
 						url = (String )inputUtil.getInput("URL: ", 3, SpiderConstants.URL_VALIDATION);
-					} else if (url.endsWith("/")) {
+					}
+					if (url.endsWith("/")) {
 				        url = url.substring(0, url.lastIndexOf("/"));
-			        } 
+			        }
 					setUrlToAudit(url);
 				} else if (arg.startsWith("-depth")) {
 					setDepth(inputUtil.convertToNumber(parameter));

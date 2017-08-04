@@ -54,7 +54,8 @@ public class PageAuditResult implements Comparable<PageAuditResult>{
 	private SearchResults searchResults;
 	private int numberOfImages;
 	private SortedSet<Link> inBoundLinks = new TreeSet<>();
-	private SortedSet<Link> outBoundLinks = new TreeSet<>(); 	
+	private SortedSet<Link> outBoundLinks = new TreeSet<>(); 
+	private SortedSet<Link> unresolvableLinks = new TreeSet<>(); 	
 	private Set<String> commonWords = new HashSet<>(Arrays.asList("the","and","a","that","i","it","not","he","as","you","this","but","his","they","her","she","or","an","will","my","one","all","would","there","their","to","of","in","for","on","with","at","by","from","up","about","into","over","after","your","our","be", "do", "go"));
 	
 	
@@ -80,6 +81,7 @@ public class PageAuditResult implements Comparable<PageAuditResult>{
 		sb.append(this.numberOfImages!=0?"\n\tNo. of Images: " + this.numberOfImages:"");
 		sb.append(!this.inBoundLinks.isEmpty()?"\n\tInbound Links: " + this.inBoundLinks.size():"");
 		sb.append(!this.outBoundLinks.isEmpty()?"\n\tOutbound Links: " + this.outBoundLinks.size():"");
+		sb.append(!this.unresolvableLinks.isEmpty()?"\n\tUnresolvable Links: " + this.unresolvableLinks.size():"");
 		if (frequentWords!=null) {
             sb.append("\n\tFrequent words: ");
             for (Map.Entry<String,Term> entry : this.frequentWords.entrySet())  {
@@ -132,6 +134,12 @@ public class PageAuditResult implements Comparable<PageAuditResult>{
 	}
 	public void addOutBoundLink(String toUrl) {
 		this.outBoundLinks.add(new Link(this.url, toUrl));	
+	}
+	public SortedSet<Link> getUnresolvableLinks() {
+		return unresolvableLinks;
+	}
+	public void addUnresolvableLink(String toUrl) {
+		this.unresolvableLinks.add(new Link(this.url, toUrl));
 	}
 	public Map<String,Term> getFrequentWords() {
 	    return this.frequentWords;

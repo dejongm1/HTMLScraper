@@ -48,6 +48,7 @@ public class AuditResults {
         sb.append("\n\t\t300 results: " + threeHundredResponses.size());
         sb.append("\n\t\t400 results: " + fourHundredResponses.size());
         sb.append("\n\t\t500 results: " + fiveHundredResponses.size());
+        //TODO Add total links counts and search results counts here
         if (getGeneratedSiteMap()!=null) {
             sb.append("\n\n\t\tSitemap generated and located at " + this.generatedSiteMap.getAbsolutePath());
         }
