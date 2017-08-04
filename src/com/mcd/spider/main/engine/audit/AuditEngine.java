@@ -1,24 +1,9 @@
 package com.mcd.spider.main.engine.audit;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import com.mcd.spider.main.entities.audit.*;
+import com.mcd.spider.main.util.ConnectionUtil;
+import com.mcd.spider.main.util.SpiderUtil;
+import com.redfin.sitemapgenerator.WebSitemapGenerator;
 import org.apache.commons.collections4.map.CaseInsensitiveMap;
 import org.apache.log4j.Logger;
 import org.jsoup.Connection;
@@ -27,16 +12,12 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.mcd.spider.main.entities.audit.AuditParameters;
-import com.mcd.spider.main.entities.audit.AuditResults;
-import com.mcd.spider.main.entities.audit.AuditSpider;
-import com.mcd.spider.main.entities.audit.OfflineResponse;
-import com.mcd.spider.main.entities.audit.PageAuditResult;
-import com.mcd.spider.main.entities.audit.SearchResults;
-import com.mcd.spider.main.entities.audit.Term;
-import com.mcd.spider.main.util.ConnectionUtil;
-import com.mcd.spider.main.util.SpiderUtil;
-import com.redfin.sitemapgenerator.WebSitemapGenerator;
+import java.io.*;
+import java.net.URL;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * 
@@ -116,6 +97,7 @@ public class AuditEngine {
 			if (spiderUtil.offline()) {
 				response = new OfflineResponse(200, urlString);
 			} else {
+			    //depending on content-type, don't execute
 				response = conn.execute();
 			}
 			docToCheck = response.parse();
@@ -136,7 +118,11 @@ public class AuditEngine {
             result.setCode(999);
             result.setFullResponseCode("HTTP/1.1 999 IOException");
 			logger.error("IOException caught getting document", e);
-		}
+        } catch (Exception e) {
+            result.setCode(980);
+            result.setFullResponseCode("HTTP/1.1 980 " + e.getClass().getSimpleName());
+            logger.error("Exception caught getting document", e);
+        }
 		logger.debug("Trying to get hrefs from " + urlString);
 		
 		//any other content-types to throughly scrape?
@@ -180,9 +166,7 @@ public class AuditEngine {
 	private boolean isInBound(String url, URL baseUrl) {
 		if (url.startsWith("http://") || url.startsWith("https://")) { //isAbsolute
 			return url.contains(baseUrl.getHost());
-		} else {
-			return true;
-		}
+		} else return !url.contains("javascript");
 	}
 	
 	private boolean urlAlreadyChecked(String absoluteUrl) {
@@ -227,7 +211,7 @@ public class AuditEngine {
             Map<String,Term> mostPopularTerms = new LinkedHashMap<>();
             int i = 0;
             while (iter.hasNext() && i < numberOfWords) {
-                Entry<String,Term> entry = (Entry<String,Term>) iter.next();
+                Entry<String,Term> entry = iter.next();
                 mostPopularTerms.put(entry.getKey(), entry.getValue());
                 i++;
             }
@@ -285,7 +269,7 @@ public class AuditEngine {
 				for (Element tag : sitemapTags) {
 					Document specificSitemap = spiderUtil.getHtmlAsDoc(tag.getElementsByTag("loc").text());
 					if (spiderUtil.docWasRetrieved(specificSitemap)) {
-						tag.children().last().after(specificSitemap.body().html());
+						tag.children().last().after(specificSitemap.toString());
 					}
 				}
 			} else if (spiderUtil.docWasRetrieved(sitemapDoc) && (!sitemapDoc.select("urlset").isEmpty() || !sitemapDoc.select("url").isEmpty())) {
@@ -319,7 +303,7 @@ public class AuditEngine {
 			}
 				
     	    sitemapGenerator.write();
-	    } catch (MalformedURLException e) {
+	    } catch (Exception e) {
 			e.printStackTrace();
 		}
 		return new File(sitemapDirectory + "\\sitemap.xml");
@@ -329,7 +313,11 @@ public class AuditEngine {
 	    BufferedWriter  writer = null;
 	    try {
 	        writer = new BufferedWriter( new FileWriter("output//actualSitemap.xml"));
-	        writer.write(actualSitemap.body().html());
+	        if (actualSitemap.body()!=null) {
+	            writer.write(actualSitemap.body().html());
+            } else {
+                writer.write(actualSitemap.toString());
+            }
 	    } catch ( IOException e) {
 	    	logger.error("Error trying to save actual site map", e);
 	    }

@@ -15,7 +15,6 @@ SE Audit
 		- add flexibility
 	obtaining actual sitemap
 		-getting truncated?? or only offline??
-		-remove <!--?xml and xmlns stuff
 
 
 deployment package
