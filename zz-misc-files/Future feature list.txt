@@ -13,6 +13,7 @@ SE Audit
 	search for words and variations
 		- add context flag (list few words before and after)
 		- add flexibility
+	    - total search count at end
 	obtaining actual sitemap
 		-getting truncated?? or only offline??
 
