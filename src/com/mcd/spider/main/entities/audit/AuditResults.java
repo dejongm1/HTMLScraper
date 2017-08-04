@@ -1,10 +1,10 @@
 package com.mcd.spider.main.entities.audit;
 
+import org.jsoup.nodes.Document;
+
 import java.io.File;
 import java.util.SortedSet;
 import java.util.TreeSet;
-
-import org.jsoup.nodes.Document;
 
 /**
  * 
@@ -36,15 +36,21 @@ public class AuditResults {
 		allResponses = new TreeSet<>();
 	}
 	
-	public String prettyPrint(boolean fullReport) {
+	public String prettyPrint(boolean leanReport) {
 		StringBuilder sb = new StringBuilder();
-		if (fullReport) {
+		if (!leanReport) {
 			for (PageAuditResult auditResult : allResponses) {
 				//logger.info(result.getCode()==0?result.getUrl() + " didn't have an html file":result.prettyPrint()));
 				sb.append(auditResult.prettyPrint());
 			}
 		}
-		sb.append("\n\nSitemap generated and located at " + this.generatedSiteMap.getAbsolutePath());
+		sb.append("\n\t\t200 results: " + twoHundredResponses.size());
+        sb.append("\n\t\t300 results: " + threeHundredResponses.size());
+        sb.append("\n\t\t400 results: " + fourHundredResponses.size());
+        sb.append("\n\t\t500 results: " + fiveHundredResponses.size());
+        if (getGeneratedSiteMap()!=null) {
+            sb.append("\n\n\t\tSitemap generated and located at " + this.generatedSiteMap.getAbsolutePath());
+        }
 		return sb.toString();
 	}
 	
