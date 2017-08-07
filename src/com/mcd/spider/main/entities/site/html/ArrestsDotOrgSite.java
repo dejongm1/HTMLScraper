@@ -16,11 +16,11 @@ import com.mcd.spider.main.entities.site.service.SiteService;
 public class ArrestsDotOrgSite implements SiteHTML {
 
 	private static final Url url = new Url("http://", "arrests.org", new String[]{});
-	private static final String name = "Arrests.org";
+	private static final String name = "ArrestsOrg";
 	private String baseUrl;
 	private int pages;
 	private int totalRecordCount;
-	private static final int[] perRecordSleepRange = new int[]{30,31};
+	private static final int[] perRecordSleepRange = new int[]{20,30};
 	private Map<String,Document> resultsPageDocuments;
 	private final int maxAttempts = 3;
 

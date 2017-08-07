@@ -20,7 +20,7 @@ import java.util.Map;
 public class DesMoinesRegisterComSite implements SiteService {
 
 	private static final Url url = new Url("http://", "data.desmoinesregister.com/iowa-mugshots/index.php", new String[]{});
-	private static final String name = "DesMoinesRegister.com";
+	private static final String name = "DesMoinesRegisterCom";
 	private String baseUrl;
 	private static final int[] perRecordSleepRange = new int[]{1,2};
 	private final int maxAttempts = 3;

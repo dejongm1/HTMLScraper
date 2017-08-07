@@ -9,7 +9,7 @@ import com.mcd.spider.main.util.ConnectionUtil;
 public class HarrisCountyDistrictClerkComSite implements SiteService {
 	
 	private static final Url url = new Url("http://", "www.hcdistrictclerk.com", new String[]{"/Common", "/e-services", "/PublicDatasets.aspx"});
-	private static final String name = "HarrisCountyDistrictClerk.com";
+	private static final String name = "HarrisCountyDistrictClerkCom";
 	private String baseUrl;
 	private int maxAttempts = 3;
 	private int[] perRecordSleepRange = new int[]{0,0};
