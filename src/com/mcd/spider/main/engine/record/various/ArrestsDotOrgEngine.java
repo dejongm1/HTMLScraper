@@ -113,53 +113,63 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             if (numberOfPages==0) {
                 numberOfPages = 1;
             }
-            Map<String, String> resultsUrlPlusMiscMap = new HashMap<>();
+            Map<Object, String> resultsUrlPlusMiscMap = new HashMap<>();
             logger.debug("Generating list of results pages for : " + htmlSite.getName() + " - " + state.getName());
             //also get misc urls
-            Map<String,String> miscUrls = htmlSite.getMiscSafeUrlsFromDoc(mainPageDoc, numberOfPages);
+            Map<Object,String> miscUrls = htmlSite.getMiscSafeUrlsFromDoc(mainPageDoc, numberOfPages);
             for (int p=1; p<=numberOfPages;p++) {
-                resultsUrlPlusMiscMap.put(String.valueOf(p), htmlSite.generateResultsPageUrl(p));
+                resultsUrlPlusMiscMap.put(p, htmlSite.generateResultsPageUrl(p));
             }
 
             resultsUrlPlusMiscMap.putAll(miscUrls);
 
             //shuffle urls before retrieving docs
-            Map<String,Document> resultsDocPlusMiscMap = new HashMap<>();
-            List<String> keys = new ArrayList<>(resultsUrlPlusMiscMap.keySet());
+            Map<Integer,Document> resultsDocPlusMiscMap = new HashMap<>();
+            List<Object> keys = new ArrayList<>(resultsUrlPlusMiscMap.keySet());
             Collections.shuffle(keys);
-            String previousKey = keys.get(keys.size()-1);
-            for (String k : keys) {
-            	Document docToCheck = null;
-            	String url = resultsUrlPlusMiscMap.get(k);
-            	try {
-	        		//can we guarantee previous is a page that has access to the current?
-	    			Connection.Response response = spiderUtil.retrieveConnectionResponse(url, resultsUrlPlusMiscMap.get(previousKey));
-	        		docToCheck = response.parse();
-	        		//TODO depending on response status code, take action
-            	} catch (FileNotFoundException fnfe) {
-                	logger.error("No html doc found for " + url);
-                } catch (IOException e) {
-            		logger.error("Failed to get a connection to " + url, e);
+            Integer previousKey = (Integer)keys.get(keys.size()-1);
+            int furthestPageToCheck = 9999;
+            for (Object k : keys) {
+            	int page = (Integer) k;
+            	if (page<=furthestPageToCheck) {
+	            	Document docToCheck = null;
+	            	String url = resultsUrlPlusMiscMap.get(k);
+	            	try {
+		        		//can we guarantee previous is a page that has access to the current?
+		    			Connection.Response response = spiderUtil.retrieveConnectionResponse(url, resultsUrlPlusMiscMap.get(previousKey));
+		        		docToCheck = response.parse();
+		        		//TODO depending on response status code, take action
+	            	} catch (FileNotFoundException fnfe) {
+	                	logger.error("No html doc found for " + url);
+	                } catch (IOException e) {
+	            		logger.error("Failed to get a connection to " + url, e);
+	            	}
+	            	//if docToCheck contains a crawledId, remember page number and don't add subsequent pages
+	            	for (String crawledId : crawledIds) {
+	            		if (furthestPageToCheck==9999) {
+			            	if (docToCheck!=null && docToCheck.html().contains(crawledId)) {
+			            		//set as current page number
+			            		furthestPageToCheck = page;
+			            	}
+	            		}
+	            	}
+	            	if (docToCheck!=null) {
+	            		resultsDocPlusMiscMap.put((Integer)k, docToCheck);
+	            	}
+	                int sleepTime = ConnectionUtil.getSleepTime(htmlSite);
+	                spiderUtil.sleep(sleepTime, false);
+	                logger.debug("Sleeping for " + sleepTime + " after fetching " + resultsUrlPlusMiscMap.get(k));
+	                
+	                previousKey = page;
             	}
-    			resultsDocPlusMiscMap.put(k, docToCheck);
-                
-                int sleepTime = ConnectionUtil.getSleepTime(htmlSite);
-                spiderUtil.sleep(sleepTime, false);
-                logger.debug("Sleeping for " + sleepTime + " after fetching " + resultsUrlPlusMiscMap.get(k));
-                
-                previousKey = k;
             }
 
-            //saving this for later?? should be able to get previous sorting by looking at page number in baseUri
-            htmlSite.setOnlyResultsPageDocuments(resultsDocPlusMiscMap);
-
-            //build a list of details page urls by parsing only results page docs in order
-            Map<String,Document> resultsPageDocsMap = htmlSite.getResultsPageDocuments();
-            Map<String,String> recordDetailUrlMap = new HashMap<>();
-            for (Map.Entry<String, Document> entry : resultsPageDocsMap.entrySet()) {
+            //build a list of details page urls by parsing results page docs
+            Map<Object,String> recordDetailUrlMap = new HashMap<>();
+            for (Map.Entry<Integer, Document> entry : resultsDocPlusMiscMap.entrySet()) {
                 Document doc = entry.getValue();
                 //only proceed if document was retrieved
-                if (spiderUtil.docWasRetrieved(doc)){
+                if (spiderUtil.docWasRetrieved(doc) && doc.baseUri().contains("&results=")){
                     logger.debug("Gather complete list of records to scrape from " + doc.baseUri());
                     recordDetailUrlMap.putAll(parseDocForUrls(doc, htmlSite));
                     //including some non-detail page links then randomize
@@ -171,9 +181,6 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 
             int recordsGathered = recordDetailUrlMap.size();
             logger.info("Gathered links for " + recordsGathered + " record profiles and misc");
-
-            //****TODO
-            //****use sorted map to check for already scraped records - should I used ID as map.key instead of a sequence?
 
             spiderUtil.sleep(1000, true);
             //****iterate over collection, scraping records and simply opening others
@@ -197,7 +204,6 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         for(int e=0;e<recordDetailElements.size();e++) {
             String url = htmlSite.getRecordDetailDocUrl(recordDetailElements.get(e));
             String id = htmlSite.generateRecordId(url);
-            //TODO try this earlier to avoid opening crawled results pages?
             //only add if we haven't already crawled it
             if (!crawledIds.contains(id)) {
             	recordDetailUrlMap.put(id, url);
@@ -207,15 +213,15 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     }
     
     @Override
-    public int scrapeRecords(Map<String,String> recordsDetailsUrlMap, Site site, OutputUtil outputUtil) {
+    public int scrapeRecords(Map<Object,String> recordsDetailsUrlMap, Site site, OutputUtil outputUtil) {
     	SiteHTML htmlSite = (ArrestsDotOrgSite) site;
         int recordsProcessed = 0;
         List<ArrestRecord> arrestRecords = new ArrayList<>();
         ArrestRecord arrestRecord;
-        List<String> keys = new ArrayList<>(recordsDetailsUrlMap.keySet());
+        List<Object> keys = new ArrayList<>(recordsDetailsUrlMap.keySet());
         Collections.shuffle(keys);
-        String previousKey = keys.get(keys.size()-1);
-        for (String k : keys) {
+        String previousKey = String.valueOf(keys.get(keys.size()-1));
+        for (Object k : keys) {
             String url = recordsDetailsUrlMap.get(k);
     		Document profileDetailDoc = null;
         	try {
@@ -242,7 +248,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
                     logger.error("Failed to load html doc from " + url);
                 }
             }
-            previousKey = k;
+            previousKey = String.valueOf(k);
         }
         
         if (filter!=null) {

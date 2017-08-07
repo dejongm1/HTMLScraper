@@ -542,13 +542,6 @@ Per page
 </li>
 <li>
 <div class='profile-card'>
-<div class='title'><a href='/Arrests/Audrey_Tamulewicz_33793413/?d=1'>Audrey<br/>Tamulewicz</a></div>
-<div class='picture'><a href='/Arrests/Audrey_Tamulewicz_33793413/?d=1'><img src='/thumbs/Story/2017-07-27_TAMULEWICZ-AUDREY.jpg' width='120' height='160' alt=''/></a></div>
-<div class='description'><a href='/Story/'>Story</a></div>
-</div>
-</li>
-<li>
-<div class='profile-card'>
 <div class='title'><a href='/Arrests/Tryggve_Rogers_33798924/?d=1'>Tryggve<br/>Rogers</a></div>
 <div class='picture'><a href='/Arrests/Tryggve_Rogers_33798924/?d=1'><img src='/thumbs/Story/2017-07-27_ROGERS-TRYGGVE.jpg' width='120' height='160' alt=''/></a></div>
 <div class='description'><a href='/Story/'>Story</a></div>
@@ -775,12 +768,6 @@ Per page
 <div class='profile-card'>
 <div class='title'><a href='/Arrests/Samantha_Reda_33783847/?d=1'>Samantha<br/>Reda</a></div>
 <div class='picture'><a href='/Arrests/Samantha_Reda_33783847/?d=1'><img src='/thumbs/Johnson/96304.jpg' width='120' height='160' alt=''/></a></div>
-</div>
-</li>
-<li class='last'>
-<div class='profile-card'>
-<div class='title'><a href='/Arrests/Audrey_Tamulewicz_33793413/?d=1'>Audrey<br/>Tamulewicz</a></div>
-<div class='picture'><a href='/Arrests/Audrey_Tamulewicz_33793413/?d=1'><img src='/thumbs/Story/2017-07-27_TAMULEWICZ-AUDREY.jpg' width='120' height='160' alt=''/></a></div>
 </div>
 </li>
 </ul>

@@ -139,27 +139,28 @@ public class ArrestsDotOrgSite implements SiteHTML {
 		return Character.getNumericValue(baseUri.charAt(baseUri.indexOf('&')-1));
 	}
 	@Override
-	public Map<String,String> getMiscSafeUrlsFromDoc(Document doc, int pagesToMatch) {
+	public Map<Object, String> getMiscSafeUrlsFromDoc(Document doc, int pagesToMatch) {
 		Elements links = doc.select("a[href]");
 		Collections.shuffle(links);
-		//get one misc page per results page
+		//get max of one misc page per results page
 		//double the size of the list and only fill the second half
-		Map<String,String> safeUrls = new HashMap<>();
+		Map<Object, String> safeUrls = new HashMap<>();
 		try {
-			for (int u=pagesToMatch+1;u<pagesToMatch*2;u++) {
+			for (int u=pagesToMatch+1;safeUrls.size()<pagesToMatch;u++) {
 				Element link = links.get(u);
-				//(ignore rel=stylesheet, include /ABC.php, '/ABC/', '/', '#', '/Arrests/ABC')
+				//(ignore rel=stylesheet, include '/ABC/', '/', '/Arrests/ABC')
 				if (!link.hasAttr("rel") &&  !link.attr("href").contains("?d=1")
-						&& (link.attr("href").endsWith(".php")
-							|| link.attr("href").startsWith("/Arrests/")
+						&& (link.attr("href").startsWith("/Arrests/")
 							//|| link.attr("href").equals("#")
 							|| link.attr("href").matches("/[a-zA-Z]+/")
 							|| link.attr("href").equals("/"))) {
-					safeUrls.put(String.valueOf(u),baseUrl + link.attr("href"));
+					if (!safeUrls.containsValue(baseUrl + link.attr("href"))) {
+						safeUrls.put(u,baseUrl + link.attr("href"));
+					}
 				}
 			}
 		} catch (IndexOutOfBoundsException aiobe) {
-			aiobe.printStackTrace();
+			//this catches if there aren't as many unique safe misc urls as pages to match
 			return safeUrls;
 		}
 		return safeUrls;

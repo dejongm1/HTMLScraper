@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.json.JSONArray;
@@ -131,8 +132,8 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
                 logger.debug("\nSending 'POST' request to URL : " + site.getUrl().getDomain());
                 StringBuffer response = sendRequest(con, urlParameters);
 
-                Map<String, String> profileDetailUrlMap;
-                profileDetailUrlMap = parseDocForUrls(response, site);
+                Map<Object, String> profileDetailUrlMap = new HashMap<>();
+                profileDetailUrlMap.putAll(parseDocForUrls(response, site));
 
                 recordsProcessed += scrapeRecords(profileDetailUrlMap, site, outputUtil);
 
@@ -164,12 +165,12 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     }
 
     @Override
-    public int scrapeRecords(Map<String, String> recordsDetailsUrlMap, Site site, OutputUtil outputUtil){
+    public int scrapeRecords(Map<Object, String> recordsDetailsUrlMap, Site site, OutputUtil outputUtil){
         int recordsProcessed = 0;
         List<ArrestRecord> arrestRecords = new ArrayList<>();
         ArrestRecord arrestRecord;
-        for (Map.Entry<String,String> entry : recordsDetailsUrlMap.entrySet()) {
-            String id = entry.getKey();
+        for (Entry<Object, String> entry : recordsDetailsUrlMap.entrySet()) {
+            String id = (String) entry.getKey();
             String url = recordsDetailsUrlMap.get(id);
             try {
                 logger.debug("\nSending 'POST' request for : " + id);
