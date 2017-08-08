@@ -38,7 +38,6 @@ public class AuditEngine {
 		long timeSpent = 0;
 		long startTime = 0;
 		//empty string checks because parameters are optional
-		//<url, checked>
 		try {
 			startTime = System.currentTimeMillis();
 			spider = new AuditSpider(auditParams.getUrlToAudit(), spiderUtil.offline());
@@ -283,7 +282,9 @@ public class AuditEngine {
 			//url contains sitemap
 			
 		}
-		auditResults.setActualSiteMap(outputActualSitemap(actualSitemap));
+		if (actualSitemap!=null) {
+            auditResults.setActualSiteMap(outputActualSitemap(actualSitemap));
+        }
     }
     
     private File generateSiteMap(String baseUrl, Set<PageAuditResult> resultPages) {

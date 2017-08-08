@@ -1,11 +1,11 @@
 package com.mcd.spider.main.entities.audit;
 
+import com.mcd.spider.main.util.InputUtil;
+import com.mcd.spider.main.util.SpiderConstants;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.mcd.spider.main.util.InputUtil;
-import com.mcd.spider.main.util.SpiderConstants;
 
 /**
  * 
@@ -67,6 +67,14 @@ public class AuditParameters {
 				}
 			}
 		}
+		//check for required args (url)
+        if (urlToAudit==null) {
+            String url = (String )inputUtil.getInput("URL: ", 3, SpiderConstants.URL_VALIDATION);
+            if (url.endsWith("/")) {
+                url = url.substring(0, url.lastIndexOf("/"));
+            }
+            setUrlToAudit(url);
+        }
 	}
 
 	public String getUrlToAudit() {
