@@ -1,23 +1,5 @@
 package com.mcd.spider.main.engine.record.various;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.log4j.Logger;
-import org.jsoup.Connection;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
-import org.jsoup.select.Elements;
-
 import com.mcd.spider.main.engine.record.ArrestRecordEngine;
 import com.mcd.spider.main.entities.record.ArrestRecord;
 import com.mcd.spider.main.entities.record.Record;
@@ -33,6 +15,16 @@ import com.mcd.spider.main.exception.SpiderException;
 import com.mcd.spider.main.util.ConnectionUtil;
 import com.mcd.spider.main.util.OutputUtil;
 import com.mcd.spider.main.util.SpiderUtil;
+import org.apache.log4j.Logger;
+import org.jsoup.Connection;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
+import org.jsoup.select.Elements;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.*;
 
 /**
  *
@@ -104,8 +96,20 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         SiteHTML htmlSite = (ArrestsDotOrgSite)site;
         htmlSite.getBaseUrl();
         String firstPageResults = htmlSite.generateResultsPageUrl(1);
-        //Add some retries if first connection to state site fails?
-        Document mainPageDoc = spiderUtil.getHtmlAsDoc(firstPageResults);
+        Document mainPageDoc = null;
+        try {
+            Connection.Response response = spiderUtil.retrieveConnectionResponse(firstPageResults, "www.google.com");
+            String views24Cookie = response.cookie("views_24");
+            String viewsSession = response.cookie("views_session");
+            for (Map.Entry<String,String> cookieEntry : response.cookies().entrySet()){
+                logger.debug(cookieEntry.getKey() + "=" + cookieEntry.getValue());
+            }
+            mainPageDoc = response.parse();
+        } catch (IOException e) {
+            logger.error("Couldn't make initial connection to site. Trying again " + (maxAttempts-attemptCount) + " more times", e);
+            attemptCount++;
+            scrapeSite(state, site, outputUtil, attemptCount, maxNumberOfResults);
+        }
         if (spiderUtil.docWasRetrieved(mainPageDoc) && attemptCount<=maxAttempts) {
             //restricting to 2 pages for now
         	//int numberOfPages = site.getTotalPages(mainPageDoc);
@@ -138,6 +142,11 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 		        		//can we guarantee previous is a page that has access to the current?
 		    			Connection.Response response = spiderUtil.retrieveConnectionResponse(url, resultsUrlPlusMiscMap.get(previousKey));
 		        		docToCheck = response.parse();
+                        String views24Cookie = response.cookie("views_24");
+                        String viewsSession = response.cookie("views_session");
+                        for (Map.Entry<String,String> cookieEntry : response.cookies().entrySet()){
+                            logger.debug(cookieEntry.getKey() + "=" + cookieEntry.getValue());
+                        }
 		        		//TODO depending on response status code, take action
 	            	} catch (FileNotFoundException fnfe) {
 	                	logger.error("No html doc found for " + url);
@@ -157,8 +166,8 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 	            		resultsDocPlusMiscMap.put((Integer)k, docToCheck);
 	            	}
 	                int sleepTime = ConnectionUtil.getSleepTime(htmlSite);
+                    logger.debug("Sleeping for " + sleepTime + " after fetching " + resultsUrlPlusMiscMap.get(k));
 	                spiderUtil.sleep(sleepTime, false);
-	                logger.debug("Sleeping for " + sleepTime + " after fetching " + resultsUrlPlusMiscMap.get(k));
 	                
 	                previousKey = page;
             	}
@@ -182,14 +191,14 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             int recordsGathered = recordDetailUrlMap.size();
             logger.info("Gathered links for " + recordsGathered + " record profiles and misc");
 
-            spiderUtil.sleep(1000, true);
+            spiderUtil.sleep(100000, true);
             //****iterate over collection, scraping records and simply opening others
             recordsProcessed += scrapeRecords(recordDetailUrlMap, site, outputUtil);
 
             //****sort by arrest date (or something else) once everything has been gathered? can I sort spreadsheet after creation?
 
         } else {
-            logger.error("Failed to load html doc from " + site.getBaseUrl());
+            logger.error("Failed to load html doc from " + site.getBaseUrl()+ ". Trying again " + (maxAttempts-attemptCount) + " more times");
             attemptCount++;
             scrapeSite(state, site, outputUtil, attemptCount, maxNumberOfResults);
         }
@@ -228,10 +237,14 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         		//can we guarantee previous is a page that has access to the current?
     			Connection.Response response = spiderUtil.retrieveConnectionResponse(url, recordsDetailsUrlMap.get(previousKey));
     			profileDetailDoc = response.parse();
+                for (Map.Entry<String,String> cookieEntry : response.cookies().entrySet()){
+                    logger.debug(cookieEntry.getKey() + "=" + cookieEntry.getValue());
+                }
         		//TODO depending on response status code, take action
         	} catch (FileNotFoundException fnfe) {
             	logger.error("No html doc found for " + url);
             } catch (IOException e) {
+        	    //500 is thrown when I get blocked, what can I do?
         		logger.error("Failed to get a connection to " + recordsDetailsUrlMap.get(k), e);
             }
             if (htmlSite.isARecordDetailDoc(profileDetailDoc)) {
@@ -248,6 +261,8 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
                     logger.error("Failed to load html doc from " + url);
                 }
             }
+            spiderUtil.sleep(ConnectionUtil.getSleepTime(htmlSite)/2, false);
+        	logger.info("Sleeping for half time because no record was crawled");
             previousKey = String.valueOf(k);
         }
         

@@ -1,17 +1,15 @@
 package com.mcd.spider.main.entities.site.html;
 
+import com.mcd.spider.main.entities.site.Url;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import com.mcd.spider.main.entities.site.Url;
-import com.mcd.spider.main.entities.site.service.SiteService;
 
 public class ArrestsDotOrgSite implements SiteHTML {
 
@@ -20,7 +18,7 @@ public class ArrestsDotOrgSite implements SiteHTML {
 	private String baseUrl;
 	private int pages;
 	private int totalRecordCount;
-	private static final int[] perRecordSleepRange = new int[]{20,30};
+	private static final int[] perRecordSleepRange = new int[]{15,45};
 	private Map<String,Document> resultsPageDocuments;
 	private final int maxAttempts = 3;
 
