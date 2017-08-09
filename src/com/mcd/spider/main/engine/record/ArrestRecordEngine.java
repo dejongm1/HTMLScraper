@@ -18,7 +18,7 @@ public interface ArrestRecordEngine {
 	void getArrestRecords(State state, long maxNumberOfResults, RecordFilter.RecordFilterEnum filter) throws SpiderException;
 	int scrapeSite(State state, Site site, OutputUtil outputUtil, int attemptCount, long maxNumberOfResults);
 	Map<String,String> parseDocForUrls(Object objectToParse, Site site);
-	int scrapeRecords(Map<Object, String> recordsDetailsUrlMap, Site site, OutputUtil outputUtil);
+	int scrapeRecords(Map<Object, String> recordsDetailsUrlMap, Site site, OutputUtil outputUtil, Map<String,String> cookies);
 	ArrestRecord populateArrestRecord(Object profileDetailObj, Site site);
 	void matchPropertyToField(ArrestRecord record, Object profileDetail);
 	void formatName(ArrestRecord record, Element profileDetail);

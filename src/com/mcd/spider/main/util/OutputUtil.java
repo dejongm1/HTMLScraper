@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class OutputUtil {
@@ -29,13 +30,14 @@ public class OutputUtil {
 	private String docName;
 	private WritableWorkbook workbook;
 	private State state;
-	private Site site;
 	private File idFile;
+	private File uncrawledIdFile;
 	private Record record;
 	private static final String OUTPUT_DIR = "output/";
-    private static final String TRACKING_DIR = "tracking/";
+	private static final String TRACKING_DIR = "tracking/";
 	private File oldBook;
 	private File newBook;
+	private Site site;
 	private Workbook currentWorkbook;
 	private WritableWorkbook copyWorkbook;
 	private WritableWorkbook backupWorkbook;
@@ -43,19 +45,20 @@ public class OutputUtil {
 	private boolean offline;
 
 	public OutputUtil(State state, Record record, Site site) {
-	    Calendar date = Calendar.getInstance();
+		Calendar date = Calendar.getInstance();
 		this.workbookCreateDate = date;
 		this.docName = state.getName() 
-		+ "_" + (date.get(Calendar.MONTH)+1)
-		+ "-" + date.get(Calendar.DAY_OF_MONTH)
-		+ "-" + date.get(Calendar.YEAR) + "_"
-		+ record.getClass().getSimpleName() + "_"
-        + site.getName() + ".xls";
-		this.site = site;
+				+ "_" + (date.get(Calendar.MONTH)+1)
+				+ "-" + date.get(Calendar.DAY_OF_MONTH)
+				+ "-" + date.get(Calendar.YEAR) + "_"
+				+ record.getClass().getSimpleName() + "_"
+				+ site.getName() + ".xls";
 		this.state = state;
 		this.record = record;
+		this.site = site;
 		this.idFile = new File(OUTPUT_DIR + TRACKING_DIR + site.getName() + "_Archive.txt");
-	    this.offline = System.getProperty("offline").equals("true");
+		this.uncrawledIdFile = new File(OUTPUT_DIR + TRACKING_DIR + site.getName() + "_Uncrawled.txt");
+		this.offline = System.getProperty("offline").equals("true");
 	}
 
 	public String getDocName() {
@@ -82,12 +85,12 @@ public class OutputUtil {
 	public void setNewBook(File newBook) {
 		this.newBook = newBook;
 	}
-    public Workbook getCurrentWorkbook() {
-        return currentWorkbook;
-    }
-    public WritableWorkbook getBackupWorkbook() {
-        return backupWorkbook;
-    }
+	public Workbook getCurrentWorkbook() {
+		return currentWorkbook;
+	}
+	public WritableWorkbook getBackupWorkbook() {
+		return backupWorkbook;
+	}
 	public Calendar getWorkbookCreateDate() {return this.workbookCreateDate; }
 	public void setCurrentWorkbook(Workbook currentWorkbook) {
 		this.currentWorkbook = currentWorkbook;
@@ -99,173 +102,155 @@ public class OutputUtil {
 		this.copyWorkbook = copyWorkbook;
 	}
 
-    public Set<String> getPreviousIds() throws SpiderException {
-        Set<String> ids = new HashSet<>();
-        //check name as well to make sure it's the right state/site
-        BufferedReader br = null;
-        if (!offline) {
-	        try {
-	            if (!idFile.exists()) {
-	                idFile.createNewFile();
-	            }
-	            br = new BufferedReader(new FileReader(idFile));
-	            String sCurrentLine;
-	            while ((sCurrentLine = br.readLine()) != null) {
-	                ids.add(sCurrentLine);
-	            }
-	        } catch (IOException e) {
-	            throw new IDCheckException();
-	        } finally {
-	            try {
-	                if (br != null) {
-	                    br.close();
-	                }
-	            } catch (IOException ioe) {
-	                throw new IDCheckException();
-	            }
-	        }
-        }
-        return ids;
-    }
-
-    public void createSpreadsheet() {
-        WritableWorkbook newWorkbook = null;
-        try {
-			createWorkbookCopy();
-	        workbook = copyWorkbook;
-	        replaceOldBookWithNew();
-        } catch (BiffException | IOException | WriteException e) {
-        	logger.error(e.getMessage());
+	public Set<String> getPreviousIds() throws SpiderException {
+		Set<String> ids = new HashSet<>();
+		//check name as well to make sure it's the right state/site
+		BufferedReader br = null;
+		if (!offline) {
+			try {
+				if (!idFile.exists()) {
+					idFile.createNewFile();
+				}
+				br = new BufferedReader(new FileReader(idFile));
+				String sCurrentLine;
+				while ((sCurrentLine = br.readLine()) != null) {
+					ids.add(sCurrentLine);
+				}
+			} catch (IOException e) {
+				throw new IDCheckException();
+			} finally {
+				try {
+					if (br != null) {
+						br.close();
+					}
+				} catch (IOException ioe) {
+					throw new IDCheckException();
+				}
+			}
 		}
-        try {
-            if (workbook==null) {
-                newWorkbook = Workbook.createWorkbook(new File(OUTPUT_DIR + docName));
+		return ids;
+	}
 
-                WritableSheet excelSheet = newWorkbook.createSheet(state.getName(), 0);
+	public void createSpreadsheet() {
+		WritableWorkbook newWorkbook = null;
+		try {
+			createWorkbookCopy();
+			workbook = copyWorkbook;
+			replaceOldBookWithNew();
+		} catch (BiffException | IOException | WriteException e) {
+			logger.error(e.getMessage());
+		}
+		try {
+			if (workbook==null) {
+				newWorkbook = Workbook.createWorkbook(new File(OUTPUT_DIR + docName));
 
-                //create columns based on Record.getFieldsToOutput()
-                int columnNumber = 0;
-                for (Field recordField : record.getFieldsToOutput()) {
-                    //********extract to createLabelMethod????
-                    Label columnLabel = new Label(columnNumber, 0, recordField.getName().toUpperCase());
-                    excelSheet.addCell(columnLabel);
-                    columnNumber++;
-                }
-                newWorkbook.write();
-                workbook = newWorkbook;//this only works if I create one spreadsheet per OutputUtil
-            }
-        } catch (IOException | WriteException e) {
-            logger.error(e.getMessage());
-        } finally {
-            if (newWorkbook != null) {
-                try {
-                    newWorkbook.close();
-                } catch (IOException e) {
-                    logger.error(e.getMessage());
-                } catch (WriteException e) {
-                    logger.error(e.getMessage());
-                }
-            }
-        }
-    }
+				WritableSheet excelSheet = newWorkbook.createSheet(state.getName(), 0);
 
-    public void createFilteredSpreadsheet(RecordFilterEnum filter, List<Record> records) {
-    	WritableWorkbook newWorkbook = null;
-    	try {
-    		newWorkbook = Workbook.createWorkbook(new File(OUTPUT_DIR + getFilteredDocName(filter)));
+				//create columns based on Record.getFieldsToOutput()
+				int columnNumber = 0;
+				for (Field recordField : record.getFieldsToOutput()) {
+					//********extract to createLabelMethod????
+					Label columnLabel = new Label(columnNumber, 0, recordField.getName().toUpperCase());
+					excelSheet.addCell(columnLabel);
+					columnNumber++;
+				}
+				newWorkbook.write();
+				workbook = newWorkbook;//this only works if I create one spreadsheet per OutputUtil
+			}
+		} catch (IOException | WriteException e) {
+			logger.error(e.getMessage());
+		} finally {
+			if (newWorkbook != null) {
+				try {
+					newWorkbook.close();
+				} catch (IOException e) {
+					logger.error(e.getMessage());
+				} catch (WriteException e) {
+					logger.error(e.getMessage());
+				}
+			}
+		}
+	}
 
-    		WritableSheet excelSheet = newWorkbook.createSheet(state.getName(), 0);
+	public void createFilteredSpreadsheet(RecordFilterEnum filter, List<Record> records) {
+		WritableWorkbook newWorkbook = null;
+		try {
+			newWorkbook = Workbook.createWorkbook(new File(OUTPUT_DIR + getFilteredDocName(filter)));
 
-    		//create columns based on Record.getFieldsToOutput()
-    		int columnNumber = 0;
-    		for (Field recordField : record.getFieldsToOutput()) {
-    			//********extract to createLabelMethod????
-    			Label columnLabel = new Label(columnNumber, 0, recordField.getName().toUpperCase());
-    			excelSheet.addCell(columnLabel);
-    			columnNumber++;
-    		}
-    		saveRecordsToWorkbook(records, newWorkbook);
-    		newWorkbook.write();
-    	} catch (IOException | WriteException e) {
-    		logger.error(e.getMessage());
-    	} finally {
-    		if (newWorkbook != null) {
-    			try {
-    				newWorkbook.close();
-    			} catch (IOException e) {
-    				logger.error(e.getMessage());
-    			} catch (WriteException e) {
-    				logger.error(e.getMessage());
-    			}
-    		}
-    	}
-    }
+			WritableSheet excelSheet = newWorkbook.createSheet(state.getName(), 0);
 
-    private String getFilteredDocName(RecordFilterEnum filter) {
+			//create columns based on Record.getFieldsToOutput()
+			int columnNumber = 0;
+			for (Field recordField : record.getFieldsToOutput()) {
+				//********extract to createLabelMethod????
+				Label columnLabel = new Label(columnNumber, 0, recordField.getName().toUpperCase());
+				excelSheet.addCell(columnLabel);
+				columnNumber++;
+			}
+			saveRecordsToWorkbook(records, newWorkbook);
+			newWorkbook.write();
+		} catch (IOException | WriteException e) {
+			logger.error(e.getMessage());
+		} finally {
+			if (newWorkbook != null) {
+				try {
+					newWorkbook.close();
+				} catch (IOException e) {
+					logger.error(e.getMessage());
+				} catch (WriteException e) {
+					logger.error(e.getMessage());
+				}
+			}
+		}
+	}
+
+	private String getFilteredDocName(RecordFilterEnum filter) {
 		return docName.substring(0, docName.indexOf(".xls")) + filter.filterName() + ".xls";
 	}
 
 	public void saveRecordsToWorkbook(List<Record> records, WritableWorkbook workbook) {
-        try {
-            int rowNumber = workbook.getSheet(0).getRows();
-            for (Record currentRecord : records) {
-                currentRecord.addToExcelSheet(workbook, rowNumber);
-                rowNumber++;
-            }
-        } catch (IllegalAccessException e) {
-            logger.error("Error trying to save data to workbook", e);
-        }
-    }
+		try {
+			int rowNumber = workbook.getSheet(0).getRows();
+			for (Record currentRecord : records) {
+				currentRecord.addToExcelSheet(workbook, rowNumber);
+				rowNumber++;
+			}
+		} catch (IllegalAccessException e) {
+			logger.error("Error trying to save data to workbook", e);
+		}
+	}
 
 	public void saveRecordsToMainWorkbook(List<Record> records) {
-        try {
-            int rowNumber = 0;
-            for (Record currentRecord : records) {
-                currentRecord.addToExcelSheet(workbook, rowNumber);
-                rowNumber++;
-            }
-        } catch (IllegalAccessException e) {
-            logger.error("Error trying to save data to workbook", e);
-        }
-    }
+		try {
+			int rowNumber = 0;
+			for (Record currentRecord : records) {
+				currentRecord.addToExcelSheet(workbook, rowNumber);
+				rowNumber++;
+			}
+		} catch (IllegalAccessException e) {
+			logger.error("Error trying to save data to workbook", e);
+		}
+	}
 
-    public void addRecordToMainWorkbook(Record record) {
-        FileWriter fw = null;
-        BufferedWriter bw = null;
-        try {
-            createWorkbookCopy();
-            int rowNumber = copyWorkbook.getSheet(0).getRows();
-            record.addToExcelSheet(copyWorkbook, rowNumber);
-            fw = new FileWriter(idFile, true);
-            bw = new BufferedWriter(fw);
-            bw.write(record.getId());
-            bw.newLine();
-            replaceOldBookWithNew();
-        } catch (IOException | WriteException | IllegalAccessException | BiffException  e) {
-            logger.error("Error trying to save record to workbook", e);
-        } finally {
-            try {
-                if (bw != null)
-                    bw.close();
-                if (fw != null)
-                    fw.close();
-            } catch (IOException e) {
-                logger.error("Error trying to save data to workbook", e);
-            }
-        }
-    }
-
-	public void findPossibleDuplicates() {
-		//use name
+	public void addRecordToMainWorkbook(Record record) {
+		try {
+			createWorkbookCopy();
+			int rowNumber = copyWorkbook.getSheet(0).getRows();
+			record.addToExcelSheet(copyWorkbook, rowNumber);
+			writeIdToFile(idFile, record.getId());
+			replaceOldBookWithNew();
+		} catch (IOException | WriteException | IllegalAccessException | BiffException  e) {
+			logger.error("Error trying to save record to workbook: " + record.getId(), e);
+		}
 	}
 
 	public boolean removeColumnsFromSpreadsheet(int[] args) {
 		boolean successful = false;
 		try {
 			createWorkbookCopy();
-			
+
 			WritableSheet sheet = copyWorkbook.getSheet(0);
-			
+
 			for (int c=0;c<args.length;c++) {
 				sheet.removeColumn(args[c]);
 			}
@@ -283,7 +268,7 @@ public class OutputUtil {
 		currentWorkbook = Workbook.getWorkbook(oldBook);
 		copyWorkbook = Workbook.createWorkbook(newBook, currentWorkbook);
 	}
-	
+
 	private void replaceOldBookWithNew() throws IOException, WriteException {
 		copyWorkbook.write();
 		copyWorkbook.close();
@@ -294,6 +279,41 @@ public class OutputUtil {
 		} else {
 			//making sure we don't lose data or override good data
 			newBook.renameTo(new File(OUTPUT_DIR + docName + System.currentTimeMillis()));
+		}
+	}
+
+	private void writeIdToFile(File outputFile, String id) {
+		FileWriter fw = null;
+		BufferedWriter bw = null;
+		try {
+			fw = new FileWriter(outputFile, true);
+			bw = new BufferedWriter(fw);
+			bw.write(id);
+			bw.newLine();
+		} catch (IOException e) {
+			logger.error("Error trying to write id to file: " + id, e);
+		} finally {
+			try {
+				if (bw != null)
+					bw.close();
+				if (fw != null)
+					fw.close();
+			} catch (IOException e) {
+				logger.error("Error trying to write id to file: " + id, e);
+			}
+		}
+	}
+
+	public void backupUnCrawledRecords(Map<Object, String> recordsDetailsUrlMap) {
+		//save, at minimum IDs, to a file
+		//wipe out file first?
+		for (Map.Entry<Object,String> entry : recordsDetailsUrlMap.entrySet()) {
+			try {
+				String id = (String) site.generateRecordId(entry.getValue());
+				writeIdToFile(uncrawledIdFile, id);
+			} catch (ArrayIndexOutOfBoundsException | StringIndexOutOfBoundsException e) {
+				//not a record detail url so ID could not be parsed
+			}
 		}
 	}
 }

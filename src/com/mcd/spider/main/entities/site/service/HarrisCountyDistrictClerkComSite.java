@@ -13,6 +13,7 @@ public class HarrisCountyDistrictClerkComSite implements SiteService {
 	private String baseUrl;
 	private int maxAttempts = 3;
 	private int[] perRecordSleepRange = new int[]{0,0};
+    private ConnectionUtil connectionUtil = new ConnectionUtil();
 		
 	public HarrisCountyDistrictClerkComSite() {
 		setBaseUrl(null);
@@ -62,7 +63,7 @@ public class HarrisCountyDistrictClerkComSite implements SiteService {
 
 	@Override
 	public String getUserAgent() {
-		return ConnectionUtil.getRandomUserAgent();
+		return connectionUtil.getRandomUserAgent();
 	}
 
 	@Override

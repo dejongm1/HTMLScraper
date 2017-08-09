@@ -3,6 +3,7 @@ package com.mcd.spider.main.entities.audit;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,11 +19,27 @@ public class OfflineResponse implements Response {
 	private String url;
 	private String contentType;
 	private Map<String, String> headers = new HashMap<>();
+	private Map<String,String> cookies = new HashMap<>();
 	
 	public OfflineResponse(int statusCode, String url) {
 		this.statusCode = statusCode;
 		this.url = url;
 		this.headers.put(null, "HTTP/1.1 " + statusCode + " OK");
+		this.cookies.put("__uzmc", "1150230450250");
+		this.cookies.put("__uzmd", String.valueOf(Calendar.getInstance().getTimeInMillis()));
+		this.cookies.put("PHPSESSID", "o538ftmf8fvepqt52n2bt088i2");
+		this.cookies.put("views_session", "1");
+		this.contentType = determineContentType();
+	}
+	
+	public OfflineResponse(int statusCode, String url, Map<String,String> cookies) {
+		this.statusCode = statusCode;
+		this.url = url;
+		this.headers.put(null, "HTTP/1.1 " + statusCode + " OK");
+		this.cookies.put("__uzmc", "1150230450250");
+		this.cookies.put("__uzmd", String.valueOf(Calendar.getInstance().getTimeInMillis()));
+		this.cookies.put("PHPSESSID", "o538ftmf8fvepqt52n2bt088i2");
+		this.cookies.put("views_session", String.valueOf(Integer.valueOf(cookies.get("views_session"))+1));
 		this.contentType = determineContentType();
 	}
 	
@@ -74,20 +91,18 @@ public class OfflineResponse implements Response {
 	
 	@Override
 	public String cookie(String arg0) {
-		// TODO Auto-generated method stub
-		return null;
+		return cookies.get(arg0);
 	}
 
 	@Override
 	public Response cookie(String arg0, String arg1) {
-		// TODO Auto-generated method stub
-		return null;
+		this.cookies.put(arg0, arg1);
+		return this;
 	}
 
 	@Override
 	public Map<String, String> cookies() {
-		// TODO Auto-generated method stub
-		return null;
+		return cookies;
 	}
 
 	@Override

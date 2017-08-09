@@ -19,10 +19,12 @@ import java.util.*;
 public class SpiderUtil {
 	
 	private static final Logger logger = Logger.getLogger(SpiderUtil.class);
+    private ConnectionUtil connectionUtil;
 //	private Properties properties;
 	
 	public SpiderUtil(){
 		loadProperties();
+		connectionUtil = new ConnectionUtil();
 		//this.properties = loadProperties();
 	}
 //	public Properties getProperties() {
@@ -68,7 +70,7 @@ public class SpiderUtil {
 
     public Document getHtmlAsDocTest(String url) {
         try {
-            return ConnectionUtil.getConnectionDocumentTest(url);
+            return connectionUtil.getConnectionDocumentTest(url);
         } catch (FileNotFoundException fne) {
             SpiderEngine.logger.error("I couldn't find an html file for " + url);
         } catch (ConnectException ce) {
@@ -88,7 +90,7 @@ public class SpiderUtil {
             if (offline()) {
                 return getOfflinePage(url);
             } else {
-                return ConnectionUtil.getConnection(url, referrer).get();
+                return connectionUtil.getConnection(url, referrer).get();
             }
         } catch (FileNotFoundException fne) {
             SpiderEngine.logger.error("I couldn't find an html file for " + url);
@@ -138,18 +140,6 @@ public class SpiderUtil {
 		}
 //		return tempProperties;
 	}
-    
-    public Connection.Response retrieveConnectionResponse(String url, String refferer) throws IOException {
-    	Connection.Response response;
-    	Connection conn = ConnectionUtil.getConnection(url, refferer);
-		if (offline()) {
-			response = new OfflineResponse(200, url);
-		} else {
-			response = conn.execute();
-		}
-		return response;
-    }
-    
 
 	public boolean docWasRetrieved(Document doc) {
 		if (doc!=null) {

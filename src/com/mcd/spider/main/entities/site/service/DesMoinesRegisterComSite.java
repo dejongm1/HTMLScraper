@@ -24,6 +24,7 @@ public class DesMoinesRegisterComSite implements SiteService {
 	private String baseUrl;
 	private static final int[] perRecordSleepRange = new int[]{1,2};
 	private final int maxAttempts = 3;
+    private ConnectionUtil connectionUtil = new ConnectionUtil();
 
 	public DesMoinesRegisterComSite(String[] args) {
 		setBaseUrl(args);
@@ -59,7 +60,7 @@ public class DesMoinesRegisterComSite implements SiteService {
     }
     @Override
     public String getUserAgent() {
-        return ConnectionUtil.getRandomUserAgent();
+        return connectionUtil.getRandomUserAgent();
     }
     @Override
     public String getAcceptType() {

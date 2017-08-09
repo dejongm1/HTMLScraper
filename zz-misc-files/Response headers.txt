@@ -1,0 +1,135 @@
+Response headers
+
+Date: Wed, 09 Aug 2017 01:07:00 GMT
+Content-Type: text/html
+Transfer-Encoding: chunked
+Connection: keep-alive
+Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0
+Cf-Railgun: 79dfc2e718 stream 0.000000 0210 e6be
+Expires: Thu, 19 Nov 1981 08:52:00 GMT
+Pragma: no-cache
+Set-Cookie: views_24=5; expires=Wed, 09-Aug-2017 10:40:39 GMT; Max-Age=34430; path=/; domain=arrests.org
+views_session=4; path=/; domain=arrests.org
+__uzmc=9460530149353; expires=Sat, 07-Aug-2027 01:06:49 GMT; Max-Age=315360000; path=/
+__uzmd=1502240809; expires=Sat, 07-Aug-2027 01:06:49 GMT; Max-Age=315360000; path=/
+Vary: Accept-Encoding
+X-Powered-By: PHP/5.5.9-1ubuntu4.21
+Server: cloudflare-nginx
+cf-ray: 38b6d0e6d10c5c27-STL
+Content-Encoding: gzip
+
+Next page- record popup
+
+Date: Wed, 09 Aug 2017 01:09:33 GMT
+Content-Type: text/html
+Transfer-Encoding: chunked
+Connection: keep-alive
+Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0
+Cf-Railgun: direct (starting new WAN connection)
+Expires: Thu, 19 Nov 1981 08:52:00 GMT
+Pragma: no-cache
+Set-Cookie: __uzmc=1150230450250; expires=Sat, 07-Aug-2027 01:09:22 GMT; Max-Age=315360000; path=/
+__uzmd=1502240962; expires=Sat, 07-Aug-2027 01:09:22 GMT; Max-Age=315360000; path=/
+Vary: Accept-Encoding
+X-Powered-By: PHP/5.5.9-1ubuntu4.21
+Server: cloudflare-nginx
+cf-ray: 38b6d4a4623b5c51-STL
+Content-Encoding: gzip
+
+Another popup
+
+Date: Wed, 09 Aug 2017 01:11:22 GMT
+Content-Type: text/html
+Transfer-Encoding: chunked
+Connection: keep-alive
+Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0
+Cf-Railgun: fb98b5e539 stream 0.000000 0200 e6be
+Expires: Thu, 19 Nov 1981 08:52:00 GMT
+Pragma: no-cache
+Set-Cookie: __uzmc=1718830762555; expires=Sat, 07-Aug-2027 01:11:11 GMT; Max-Age=315360000; path=/
+__uzmd=1502241071; expires=Sat, 07-Aug-2027 01:11:11 GMT; Max-Age=315360000; path=/
+Vary: Accept-Encoding
+X-Powered-By: PHP/5.5.9-1ubuntu4.21
+Server: cloudflare-nginx
+cf-ray: 38b6d74922005c3f-STL
+Content-Encoding: gzip
+
+Date: Wed, 09 Aug 2017 01:12:08 GMT
+Content-Type: text/html
+Transfer-Encoding: chunked
+Connection: keep-alive
+Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0
+Cf-Railgun: 1a52a68e8a stream 0.000000 0200 e6be
+Expires: Thu, 19 Nov 1981 08:52:00 GMT
+Pragma: no-cache
+Set-Cookie: __uzmc=5536331011627; expires=Sat, 07-Aug-2027 01:11:57 GMT; Max-Age=315360000; path=/
+__uzmd=1502241117; expires=Sat, 07-Aug-2027 01:11:57 GMT; Max-Age=315360000; path=/
+Vary: Accept-Encoding
+X-Powered-By: PHP/5.5.9-1ubuntu4.21
+Server: cloudflare-nginx
+cf-ray: 38b6d86b67ad5c3f-STL
+Content-Encoding: gzip
+
+Date: Wed, 09 Aug 2017 01:12:32 GMT
+Content-Type: text/html
+Transfer-Encoding: chunked
+Connection: keep-alive
+Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0
+Cf-Railgun: d7c7c002e4 stream 0.000000 0200 e6be
+Expires: Thu, 19 Nov 1981 08:52:00 GMT
+Pragma: no-cache
+Set-Cookie: __uzmc=9084531341086; expires=Sat, 07-Aug-2027 01:12:21 GMT; Max-Age=315360000; path=/
+__uzmd=1502241141; expires=Sat, 07-Aug-2027 01:12:21 GMT; Max-Age=315360000; path=/
+Vary: Accept-Encoding
+X-Powered-By: PHP/5.5.9-1ubuntu4.21
+Server: cloudflare-nginx
+cf-ray: 38b6d8ff01f25c3f-STL
+Content-Encoding: gzip
+
+Date: Wed, 09 Aug 2017 01:13:11 GMT
+Content-Type: text/html
+Transfer-Encoding: chunked
+Connection: keep-alive
+Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0
+Cf-Railgun: 0a9fd4657c stream 0.000000 0200 e6be
+Expires: Thu, 19 Nov 1981 08:52:00 GMT
+Pragma: no-cache
+Set-Cookie: __uzmc=3658231626942; expires=Sat, 07-Aug-2027 01:13:00 GMT; Max-Age=315360000; path=/
+__uzmd=1502241180; expires=Sat, 07-Aug-2027 01:13:00 GMT; Max-Age=315360000; path=/
+Vary: Accept-Encoding
+X-Powered-By: PHP/5.5.9-1ubuntu4.21
+Server: cloudflare-nginx
+cf-ray: 38b6d9f243485c3f-STL
+Content-Encoding: gzip
+
+Date: Wed, 09 Aug 2017 01:13:37 GMT
+Content-Type: text/html
+Transfer-Encoding: chunked
+Connection: keep-alive
+Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0
+Cf-Railgun: 2ca94d54e3 stream 0.000000 0200 e6be
+Expires: Thu, 19 Nov 1981 08:52:00 GMT
+Pragma: no-cache
+Set-Cookie: __uzmc=3828631925690; expires=Sat, 07-Aug-2027 01:13:26 GMT; Max-Age=315360000; path=/
+__uzmd=1502241206; expires=Sat, 07-Aug-2027 01:13:26 GMT; Max-Age=315360000; path=/
+Vary: Accept-Encoding
+X-Powered-By: PHP/5.5.9-1ubuntu4.21
+Server: cloudflare-nginx
+cf-ray: 38b6da9966cf5c3f-STL
+Content-Encoding: gzip
+
+Date: Wed, 09 Aug 2017 01:13:56 GMT
+Content-Type: text/html
+Transfer-Encoding: chunked
+Connection: keep-alive
+Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0
+Cf-Railgun: b7b0082470 stream 0.000000 0200 e6be
+Expires: Thu, 19 Nov 1981 08:52:00 GMT
+Pragma: no-cache
+Set-Cookie: __uzmc=4504332267470; expires=Sat, 07-Aug-2027 01:13:45 GMT; Max-Age=315360000; path=/
+__uzmd=1502241225; expires=Sat, 07-Aug-2027 01:13:45 GMT; Max-Age=315360000; path=/
+Vary: Accept-Encoding
+X-Powered-By: PHP/5.5.9-1ubuntu4.21
+Server: cloudflare-nginx
+cf-ray: 38b6db0ee6e35c3f-STL
+Content-Encoding: gzip

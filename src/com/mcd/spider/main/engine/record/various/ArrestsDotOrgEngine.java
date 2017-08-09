@@ -17,6 +17,7 @@ import com.mcd.spider.main.util.OutputUtil;
 import com.mcd.spider.main.util.SpiderUtil;
 import org.apache.log4j.Logger;
 import org.jsoup.Connection;
+import org.jsoup.HttpStatusException;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
@@ -40,6 +41,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     private Set<String> crawledIds;
     private RecordFilterEnum filter;
     private boolean offline;
+    private ConnectionUtil connectionUtil;
 
     @Override
     public Site getSite(String[] args) {
@@ -57,6 +59,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         //while(recordsProcessed <= maxNumberOfResults) {
         ArrestsDotOrgSite site = (ArrestsDotOrgSite) getSite(new String[]{state.getName()});
         OutputUtil outputUtil = initializeOutputter(state, site);
+        connectionUtil = new ConnectionUtil(true);
         
         long siteTime = System.currentTimeMillis();
         logger.info("----Site: " + site.getName() + "-" + state.getName() + "----");
@@ -97,16 +100,20 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         htmlSite.getBaseUrl();
         String firstPageResults = htmlSite.generateResultsPageUrl(1);
         Document mainPageDoc = null;
+        Map<String,String> resultsCookies = new HashMap<>();
         try {
-            Connection.Response response = spiderUtil.retrieveConnectionResponse(firstPageResults, "www.google.com");
-            String views24Cookie = response.cookie("views_24");
-            String viewsSession = response.cookie("views_session");
+            Connection.Response response = connectionUtil.retrieveConnectionResponse(firstPageResults, "www.google.com");
             for (Map.Entry<String,String> cookieEntry : response.cookies().entrySet()){
                 logger.debug(cookieEntry.getKey() + "=" + cookieEntry.getValue());
             }
             mainPageDoc = response.parse();
+            resultsCookies = response.cookies();
         } catch (IOException e) {
             logger.error("Couldn't make initial connection to site. Trying again " + (maxAttempts-attemptCount) + " more times", e);
+            //if it's a 500, we're probably blocked. Try a new user-agent TODO and IP if possible
+            if (e instanceof HttpStatusException && ((HttpStatusException) e).getStatusCode()==500) {
+            	connectionUtil = new ConnectionUtil(true);
+            }
             attemptCount++;
             scrapeSite(state, site, outputUtil, attemptCount, maxNumberOfResults);
         }
@@ -140,18 +147,17 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 	            	String url = resultsUrlPlusMiscMap.get(k);
 	            	try {
 		        		//can we guarantee previous is a page that has access to the current?
-		    			Connection.Response response = spiderUtil.retrieveConnectionResponse(url, resultsUrlPlusMiscMap.get(previousKey));
+		    			Connection.Response response = connectionUtil.retrieveConnectionResponse(url, resultsUrlPlusMiscMap.get(previousKey), resultsCookies);
 		        		docToCheck = response.parse();
-                        String views24Cookie = response.cookie("views_24");
-                        String viewsSession = response.cookie("views_session");
+		                resultsCookies = response.cookies();
                         for (Map.Entry<String,String> cookieEntry : response.cookies().entrySet()){
                             logger.debug(cookieEntry.getKey() + "=" + cookieEntry.getValue());
                         }
-		        		//TODO depending on response status code, take action
 	            	} catch (FileNotFoundException fnfe) {
 	                	logger.error("No html doc found for " + url);
 	                } catch (IOException e) {
 	            		logger.error("Failed to get a connection to " + url, e);
+		        		//TODO depending on response status code, take action
 	            	}
 	            	//if docToCheck contains a crawledId, remember page number and don't add subsequent pages
 	            	for (String crawledId : crawledIds) {
@@ -165,7 +171,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 	            	if (docToCheck!=null) {
 	            		resultsDocPlusMiscMap.put((Integer)k, docToCheck);
 	            	}
-	                int sleepTime = ConnectionUtil.getSleepTime(htmlSite);
+	                int sleepTime = connectionUtil.getSleepTime(htmlSite);
                     logger.debug("Sleeping for " + sleepTime + " after fetching " + resultsUrlPlusMiscMap.get(k));
 	                spiderUtil.sleep(sleepTime, false);
 	                
@@ -181,7 +187,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
                 if (spiderUtil.docWasRetrieved(doc) && doc.baseUri().contains("&results=")){
                     logger.debug("Gather complete list of records to scrape from " + doc.baseUri());
                     recordDetailUrlMap.putAll(parseDocForUrls(doc, htmlSite));
-                    //including some non-detail page links then randomize
+                    //include some non-detail page links then randomize
                     recordDetailUrlMap.putAll(htmlSite.getMiscSafeUrlsFromDoc(mainPageDoc, recordDetailUrlMap.size())); 
                 } else {
                     logger.info("Nothing was retrieved for " + doc.baseUri());
@@ -193,7 +199,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 
             spiderUtil.sleep(100000, true);
             //****iterate over collection, scraping records and simply opening others
-            recordsProcessed += scrapeRecords(recordDetailUrlMap, site, outputUtil);
+            recordsProcessed += scrapeRecords(recordDetailUrlMap, site, outputUtil, resultsCookies);
 
             //****sort by arrest date (or something else) once everything has been gathered? can I sort spreadsheet after creation?
 
@@ -222,21 +228,24 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     }
     
     @Override
-    public int scrapeRecords(Map<Object,String> recordsDetailsUrlMap, Site site, OutputUtil outputUtil) {
+    public int scrapeRecords(Map<Object,String> recordsDetailsUrlMap, Site site, OutputUtil outputUtil, Map<String,String> cookies) {
     	SiteHTML htmlSite = (ArrestsDotOrgSite) site;
+    	int failedAttempts = 0;
         int recordsProcessed = 0;
         List<ArrestRecord> arrestRecords = new ArrayList<>();
         ArrestRecord arrestRecord;
         List<Object> keys = new ArrayList<>(recordsDetailsUrlMap.keySet());
         Collections.shuffle(keys);
         String previousKey = String.valueOf(keys.get(keys.size()-1));
+        Map<String,String> recordCookies = cookies;
         for (Object k : keys) {
             String url = recordsDetailsUrlMap.get(k);
     		Document profileDetailDoc = null;
         	try {
         		//can we guarantee previous is a page that has access to the current?
-    			Connection.Response response = spiderUtil.retrieveConnectionResponse(url, recordsDetailsUrlMap.get(previousKey));
+    			Connection.Response response = connectionUtil.retrieveConnectionResponse(url, recordsDetailsUrlMap.get(previousKey), recordCookies);
     			profileDetailDoc = response.parse();
+    			recordCookies = response.cookies();
                 for (Map.Entry<String,String> cookieEntry : response.cookies().entrySet()){
                     logger.debug(cookieEntry.getKey() + "=" + cookieEntry.getValue());
                 }
@@ -244,8 +253,14 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         	} catch (FileNotFoundException fnfe) {
             	logger.error("No html doc found for " + url);
             } catch (IOException e) {
-        	    //500 is thrown when I get blocked, what can I do?
+            	failedAttempts++;
         		logger.error("Failed to get a connection to " + recordsDetailsUrlMap.get(k), e);
+            	if (failedAttempts>=site.getMaxAttempts()) {
+            		//save remaining records to file and exit or retry with new connection
+            		outputUtil.backupUnCrawledRecords(recordsDetailsUrlMap);
+            		logger.info("Hit the limit of failed connections. Saving list of unprocessed records and quitting");
+            		return recordsProcessed;
+            	}
             }
             if (htmlSite.isARecordDetailDoc(profileDetailDoc)) {
                 if (spiderUtil.docWasRetrieved(profileDetailDoc)) {
@@ -255,13 +270,13 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
                     arrestRecords.add(arrestRecord);
                     //save each record in case of failures
                     outputUtil.addRecordToMainWorkbook(arrestRecord);
-                    spiderUtil.sleep(ConnectionUtil.getSleepTime(htmlSite), true);//sleep at random interval
+                    spiderUtil.sleep(connectionUtil.getSleepTime(htmlSite), true);//sleep at random interval
                     
                 } else {
                     logger.error("Failed to load html doc from " + url);
                 }
             }
-            spiderUtil.sleep(ConnectionUtil.getSleepTime(htmlSite)/2, false);
+            spiderUtil.sleep(connectionUtil.getSleepTime(htmlSite)/2, false);
         	logger.info("Sleeping for half time because no record was crawled");
             previousKey = String.valueOf(k);
         }

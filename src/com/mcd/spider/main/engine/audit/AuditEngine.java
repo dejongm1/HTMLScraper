@@ -31,6 +31,7 @@ public class AuditEngine {
 	private SpiderUtil spiderUtil = new SpiderUtil();
 	private Map<String, Boolean> urlsToCrawl = new HashMap<>();
     private AuditSpider spider;
+    private ConnectionUtil connectionUtil = new ConnectionUtil();
     
 	
 	public void performSEOAudit(AuditParameters auditParams) {
@@ -92,13 +93,13 @@ public class AuditEngine {
 		Connection.Response response = null;
 		Document docToCheck = null;
 		try {
-			Connection conn = ConnectionUtil.getConnection(urlString, "");
-			if (spiderUtil.offline()) {
-				response = new OfflineResponse(200, urlString);
-			} else {
-			    //depending on content-type, don't execute
-				response = conn.execute();
-			}
+			response = connectionUtil.retrieveConnectionResponse(urlString, "");
+//			if (spiderUtil.offline()) {
+//				response = new OfflineResponse(200, urlString);
+//			} else {
+//			    //depending on content-type, don't execute
+//				response = conn.execute();
+//			}
 			docToCheck = response.parse();
 			result.setLoadTime(System.currentTimeMillis()-pageStartTime);
 //			Map<String,String> responseHeaders = response.headers();

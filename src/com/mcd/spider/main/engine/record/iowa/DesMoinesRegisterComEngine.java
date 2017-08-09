@@ -135,7 +135,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
                 Map<Object, String> profileDetailUrlMap = new HashMap<>();
                 profileDetailUrlMap.putAll(parseDocForUrls(response, site));
 
-                recordsProcessed += scrapeRecords(profileDetailUrlMap, site, outputUtil);
+                recordsProcessed += scrapeRecords(profileDetailUrlMap, site, outputUtil, null);
 
             } catch (java.io.IOException e) {
                 logger.error("IOException caught sending http request to " + site.getUrl(), e);
@@ -165,7 +165,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     }
 
     @Override
-    public int scrapeRecords(Map<Object, String> recordsDetailsUrlMap, Site site, OutputUtil outputUtil){
+    public int scrapeRecords(Map<Object, String> recordsDetailsUrlMap, Site site, OutputUtil outputUtil, Map<String,String> cookies){
         int recordsProcessed = 0;
         List<ArrestRecord> arrestRecords = new ArrayList<>();
         ArrestRecord arrestRecord;
