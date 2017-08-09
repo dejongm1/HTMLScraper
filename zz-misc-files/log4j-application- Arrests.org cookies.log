@@ -1,0 +1,52 @@
+2017-08-08 20:38:51 INFO  SpiderMain:34 - Application started
+2017-08-08 20:38:59 INFO  ArrestsDotOrgEngine:62 - ----Site: ArrestsOrg-Iowa----
+2017-08-08 20:38:59 DEBUG ArrestsDotOrgEngine:63 - Sending spider online
+2017-08-08 20:39:45 DEBUG ArrestsDotOrgEngine:117 - Generating list of results pages for : ArrestsOrg - Iowa
+2017-08-08 20:39:57 INFO  SpiderMain:34 - Application started
+2017-08-08 20:39:57 INFO  ArrestsDotOrgEngine:62 - ----Site: ArrestsOrg-Iowa----
+2017-08-08 20:39:57 DEBUG ArrestsDotOrgEngine:63 - Sending spider online
+2017-08-08 20:41:41 DEBUG ArrestsDotOrgEngine:117 - Generating list of results pages for : ArrestsOrg - Iowa
+2017-08-08 20:42:19 INFO  SpiderMain:34 - Application started
+2017-08-08 20:42:19 INFO  ArrestsDotOrgEngine:62 - ----Site: ArrestsOrg-Iowa----
+2017-08-08 20:42:19 DEBUG ArrestsDotOrgEngine:63 - Sending spider online
+2017-08-08 20:42:28 DEBUG ArrestsDotOrgEngine:118 - Generating list of results pages for : ArrestsOrg - Iowa
+2017-08-08 20:42:28 DEBUG ArrestsDotOrgEngine:163 - Sleeping for 44242 after fetching http://iowa.arrests.org/?page=2&results=56
+2017-08-08 20:43:44 DEBUG ArrestsDotOrgEngine:163 - Sleeping for 20056 after fetching http://iowa.arrests.org/Johnson/
+2017-08-08 20:44:25 DEBUG ArrestsDotOrgEngine:163 - Sleeping for 15312 after fetching http://iowa.arrests.org/?page=1&results=56
+2017-08-08 20:46:36 INFO  SpiderMain:34 - Application started
+2017-08-08 20:46:36 INFO  ArrestsDotOrgEngine:62 - ----Site: ArrestsOrg-Iowa----
+2017-08-08 20:46:36 DEBUG ArrestsDotOrgEngine:63 - Sending spider online
+2017-08-08 20:46:37 DEBUG ArrestsDotOrgEngine:105 - __cfduid=d6ee445caa30abf31f269b7a6e6efc1261502243195
+2017-08-08 20:46:37 DEBUG ArrestsDotOrgEngine:105 - PHPSESSID=2tkq9qc6evr7oq6ba0122t13e0
+2017-08-08 20:46:37 DEBUG ArrestsDotOrgEngine:105 - views_24=1
+2017-08-08 20:46:37 DEBUG ArrestsDotOrgEngine:105 - starttime_24=1502329584
+2017-08-08 20:46:37 DEBUG ArrestsDotOrgEngine:105 - views_session=1
+2017-08-08 20:46:37 DEBUG ArrestsDotOrgEngine:105 - __uzma=598a6970a36289.22062349
+2017-08-08 20:46:37 DEBUG ArrestsDotOrgEngine:105 - __uzmb=1502243184
+2017-08-08 20:46:37 DEBUG ArrestsDotOrgEngine:105 - __uzmc=941981019197
+2017-08-08 20:46:37 DEBUG ArrestsDotOrgEngine:105 - __uzmd=1502243184
+2017-08-08 20:46:44 DEBUG ArrestsDotOrgEngine:121 - Generating list of results pages for : ArrestsOrg - Iowa
+2017-08-08 20:46:45 DEBUG ArrestsDotOrgEngine:148 - PHPSESSID=9h1lr1iuk4v383cb29vlmdue07
+2017-08-08 20:46:45 DEBUG ArrestsDotOrgEngine:148 - views_24=1
+2017-08-08 20:46:45 DEBUG ArrestsDotOrgEngine:148 - starttime_24=1502329593
+2017-08-08 20:46:45 DEBUG ArrestsDotOrgEngine:148 - views_session=1
+2017-08-08 20:46:45 DEBUG ArrestsDotOrgEngine:148 - __uzma=598a69790f7058.69287557
+2017-08-08 20:46:45 DEBUG ArrestsDotOrgEngine:148 - __uzmb=1502243193
+2017-08-08 20:46:45 DEBUG ArrestsDotOrgEngine:148 - __uzmc=834501031771
+2017-08-08 20:46:45 DEBUG ArrestsDotOrgEngine:148 - __uzmd=1502243193
+2017-08-08 20:46:45 DEBUG ArrestsDotOrgEngine:148 - __cfduid=d0752e344ba50b838c9a6e23eafbdb4f81502243203
+2017-08-08 20:46:50 DEBUG ArrestsDotOrgEngine:169 - Sleeping for 22827 after fetching http://iowa.arrests.org/Celebrity/
+2017-08-08 20:47:18 DEBUG ArrestsDotOrgEngine:148 - __cfduid=df1bae83cff6b4df632bb529f62e9372c1502243236
+2017-08-08 20:47:18 DEBUG ArrestsDotOrgEngine:148 - PHPSESSID=n1s5jvnt6uu3mr3ic8tloccu91
+2017-08-08 20:47:18 DEBUG ArrestsDotOrgEngine:148 - views_24=1
+2017-08-08 20:47:18 DEBUG ArrestsDotOrgEngine:148 - starttime_24=1502329625
+2017-08-08 20:47:18 DEBUG ArrestsDotOrgEngine:148 - views_session=1
+2017-08-08 20:47:18 DEBUG ArrestsDotOrgEngine:148 - __uzma=598a6999ae46f1.06381566
+2017-08-08 20:47:18 DEBUG ArrestsDotOrgEngine:148 - __uzmb=1502243225
+2017-08-08 20:47:18 DEBUG ArrestsDotOrgEngine:148 - __uzmc=451471023388
+2017-08-08 20:47:18 DEBUG ArrestsDotOrgEngine:148 - __uzmd=1502243225
+2017-08-08 20:47:28 DEBUG ArrestsDotOrgEngine:169 - Sleeping for 30137 after fetching http://iowa.arrests.org/?page=1&results=56
+2017-08-08 20:48:07 DEBUG ArrestsDotOrgEngine:182 - Gather complete list of records to scrape from http://iowa.arrests.org/?page=1&results=56
+2017-08-08 20:48:07 INFO  ArrestsDotOrgEngine:187 - Nothing was retrieved for http://iowa.arrests.org/index.php?flag=Celebrity
+2017-08-08 20:48:07 INFO  ArrestsDotOrgEngine:192 - Gathered links for 74 record profiles and misc
+2017-08-08 20:48:07 DEBUG SpiderUtil:171 - Sleeping for 100 seconds
