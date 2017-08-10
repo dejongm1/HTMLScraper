@@ -1,17 +1,16 @@
 package com.mcd.spider.main.entities.audit;
 
+import com.mcd.spider.main.util.SpiderUtil;
+import org.jsoup.Connection.Method;
+import org.jsoup.Connection.Response;
+import org.jsoup.nodes.Document;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.jsoup.Connection.Method;
-import org.jsoup.Connection.Response;
-import org.jsoup.nodes.Document;
-
-import com.mcd.spider.main.util.SpiderUtil;
 
 public class OfflineResponse implements Response {
 

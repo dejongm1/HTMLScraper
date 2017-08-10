@@ -1,10 +1,8 @@
 package com.mcd.spider.main.util;
 
 import com.mcd.spider.main.engine.SpiderEngine;
-import com.mcd.spider.main.entities.audit.OfflineResponse;
 import com.mcd.spider.main.entities.record.State;
 import org.apache.log4j.Logger;
-import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 

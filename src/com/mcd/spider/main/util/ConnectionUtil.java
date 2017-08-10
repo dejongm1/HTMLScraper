@@ -1,5 +1,12 @@
 package com.mcd.spider.main.util;
 
+import com.mcd.spider.main.entities.audit.OfflineResponse;
+import com.mcd.spider.main.entities.site.Site;
+import org.apache.log4j.Logger;
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -10,14 +17,6 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
-
-import org.apache.log4j.Logger;
-import org.jsoup.Connection;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-
-import com.mcd.spider.main.entities.audit.OfflineResponse;
-import com.mcd.spider.main.entities.site.Site;
 
 public class ConnectionUtil {
 	

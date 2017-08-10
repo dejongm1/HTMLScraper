@@ -1,10 +1,9 @@
 package com.mcd.spider.main.entities.site.service;
 
-import java.util.Arrays;
-
-import com.mcd.spider.main.entities.site.Site;
 import com.mcd.spider.main.entities.site.Url;
 import com.mcd.spider.main.util.ConnectionUtil;
+
+import java.util.Arrays;
 
 public class HarrisCountyDistrictClerkComSite implements SiteService {
 	

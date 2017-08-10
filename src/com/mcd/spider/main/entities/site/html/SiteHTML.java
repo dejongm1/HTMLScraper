@@ -1,13 +1,12 @@
 package com.mcd.spider.main.entities.site.html;
 
-import java.util.List;
-import java.util.Map;
-
+import com.mcd.spider.main.entities.site.Site;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.mcd.spider.main.entities.site.Site;
+import java.util.List;
+import java.util.Map;
 
 public interface SiteHTML extends Site{
 	

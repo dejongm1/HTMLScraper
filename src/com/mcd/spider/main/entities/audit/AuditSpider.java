@@ -1,12 +1,12 @@
 package com.mcd.spider.main.entities.audit;
 
+import org.jsoup.Connection;
+import org.jsoup.nodes.Document;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
-
-import org.jsoup.Connection;
-import org.jsoup.nodes.Document;
 
 public class AuditSpider {
 	

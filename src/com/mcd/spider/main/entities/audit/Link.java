@@ -1,7 +1,5 @@
 package com.mcd.spider.main.entities.audit;
 
-import org.apache.commons.collections4.comparators.ComparableComparator;
-
 public class Link implements Comparable<Link>{
 	
 	private String origin;
