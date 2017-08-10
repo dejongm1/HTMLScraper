@@ -25,6 +25,6 @@ public interface ArrestRecordEngine {
 	String extractValue(Element profileDetail);
 	void formatArrestTime(ArrestRecord record, Element profileDetail);
 	OutputUtil initializeOutputter(State state, Site site) throws SpiderException;
-	List<Record> filterRecords(List<ArrestRecord> fullArrestRecords);
+	List<Record> filterRecords(List<Record> fullArrestRecords);
 	
 }

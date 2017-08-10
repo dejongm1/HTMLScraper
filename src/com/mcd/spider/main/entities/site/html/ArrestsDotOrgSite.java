@@ -18,7 +18,7 @@ public class ArrestsDotOrgSite implements SiteHTML {
 	private String baseUrl;
 	private int pages;
 	private int totalRecordCount;
-	private static final int[] perRecordSleepRange = new int[]{15,45};
+	private static final int[] perRecordSleepRange = new int[]{5,15};
 	private Map<String,Document> resultsPageDocuments;
 	private final int maxAttempts = 3;
 
@@ -101,7 +101,7 @@ public class ArrestsDotOrgSite implements SiteHTML {
 	}
 	@Override
 	public Elements getRecordDetailElements(Document doc) {
-		return doc.select(".content-box.profile.profile-full h3, .info .section-content div, .section-content.charges");
+		return doc.select(".content-box.profile.profile-full h3, .info .section-content div, .section-content.charges, img[src^=\"/mugs/\"]");
 	}
 	@Override
 	public int getTotalPages(Document doc) {

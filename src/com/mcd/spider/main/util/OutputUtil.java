@@ -1,22 +1,36 @@
 package com.mcd.spider.main.util;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Calendar;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.log4j.Logger;
+
+import com.mcd.spider.main.entities.record.ArrestRecord;
 import com.mcd.spider.main.entities.record.Record;
 import com.mcd.spider.main.entities.record.State;
 import com.mcd.spider.main.entities.record.filter.RecordFilter.RecordFilterEnum;
 import com.mcd.spider.main.entities.site.Site;
 import com.mcd.spider.main.exception.IDCheckException;
 import com.mcd.spider.main.exception.SpiderException;
+
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
 import jxl.write.Label;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
-import org.apache.log4j.Logger;
-
-import java.io.*;
-import java.lang.reflect.Field;
-import java.util.*;
 
 public class OutputUtil {
 
@@ -129,9 +143,9 @@ public class OutputUtil {
 	public void createSpreadsheet() {
 		WritableWorkbook newWorkbook = null;
 		try {
-			createWorkbookCopy();
+			createWorkbookCopy(docName);
 			workbook = copyWorkbook;
-			replaceOldBookWithNew();
+			replaceOldBookWithNew(docName);
 		} catch (BiffException | IOException | WriteException e) {
 			logger.error(e.getMessage());
 		}
@@ -140,15 +154,7 @@ public class OutputUtil {
 				newWorkbook = Workbook.createWorkbook(new File(OUTPUT_DIR + docName));
 
 				WritableSheet excelSheet = newWorkbook.createSheet(state.getName(), 0);
-
-				//create columns based on Record.getFieldsToOutput()
-				int columnNumber = 0;
-				for (Field recordField : record.getFieldsToOutput()) {
-					//********extract to createLabelMethod????
-					Label columnLabel = new Label(columnNumber, 0, recordField.getName().toUpperCase());
-					excelSheet.addCell(columnLabel);
-					columnNumber++;
-				}
+				createColumnHeaders(excelSheet);
 				newWorkbook.write();
 				workbook = newWorkbook;//this only works if I create one spreadsheet per OutputUtil
 			}
@@ -167,21 +173,24 @@ public class OutputUtil {
 		}
 	}
 
+	private void createColumnHeaders(WritableSheet excelSheet) throws WriteException {
+		//create columns based on Record.getFieldsToOutput()
+		int columnNumber = 0;
+		for (Field recordField : record.getFieldsToOutput()) {
+			//********extract to createLabelMethod????
+			Label columnLabel = new Label(columnNumber, 0, recordField.getName().toUpperCase());
+			excelSheet.addCell(columnLabel);
+			columnNumber++;
+		}
+	}
+	
 	public void createFilteredSpreadsheet(RecordFilterEnum filter, List<Record> records) {
 		WritableWorkbook newWorkbook = null;
 		try {
 			newWorkbook = Workbook.createWorkbook(new File(OUTPUT_DIR + getFilteredDocName(filter)));
 
 			WritableSheet excelSheet = newWorkbook.createSheet(state.getName(), 0);
-
-			//create columns based on Record.getFieldsToOutput()
-			int columnNumber = 0;
-			for (Field recordField : record.getFieldsToOutput()) {
-				//********extract to createLabelMethod????
-				Label columnLabel = new Label(columnNumber, 0, recordField.getName().toUpperCase());
-				excelSheet.addCell(columnLabel);
-				columnNumber++;
-			}
+			createColumnHeaders(excelSheet);
 			saveRecordsToWorkbook(records, newWorkbook);
 			newWorkbook.write();
 		} catch (IOException | WriteException e) {
@@ -199,7 +208,7 @@ public class OutputUtil {
 		}
 	}
 
-	private String getFilteredDocName(RecordFilterEnum filter) {
+	public String getFilteredDocName(RecordFilterEnum filter) {
 		return docName.substring(0, docName.indexOf(".xls")) + filter.filterName() + ".xls";
 	}
 
@@ -207,7 +216,8 @@ public class OutputUtil {
 		try {
 			int rowNumber = workbook.getSheet(0).getRows();
 			for (Record currentRecord : records) {
-				currentRecord.addToExcelSheet(workbook, rowNumber);
+				WritableSheet sheet = workbook.getSheet(0);
+				currentRecord.addToExcelSheet(rowNumber, sheet);
 				rowNumber++;
 			}
 		} catch (IllegalAccessException e) {
@@ -219,7 +229,8 @@ public class OutputUtil {
 		try {
 			int rowNumber = 0;
 			for (Record currentRecord : records) {
-				currentRecord.addToExcelSheet(workbook, rowNumber);
+				WritableSheet sheet = workbook.getSheet(0);
+				currentRecord.addToExcelSheet(rowNumber, sheet);
 				rowNumber++;
 			}
 		} catch (IllegalAccessException e) {
@@ -229,11 +240,12 @@ public class OutputUtil {
 
 	public void addRecordToMainWorkbook(Record record) {
 		try {
-			createWorkbookCopy();
+			createWorkbookCopy(docName);
 			int rowNumber = copyWorkbook.getSheet(0).getRows();
-			record.addToExcelSheet(copyWorkbook, rowNumber);
+			WritableSheet sheet = copyWorkbook.getSheet(0);
+			record.addToExcelSheet(rowNumber, sheet);
 			writeIdToFile(idFile, record.getId());
-			replaceOldBookWithNew();
+			replaceOldBookWithNew(docName);
 		} catch (IOException | WriteException | IllegalAccessException | BiffException  e) {
 			logger.error("Error trying to save record to workbook: " + record.getId(), e);
 		}
@@ -242,7 +254,7 @@ public class OutputUtil {
 	public boolean removeColumnsFromSpreadsheet(int[] args) {
 		boolean successful = false;
 		try {
-			createWorkbookCopy();
+			createWorkbookCopy(docName);
 
 			WritableSheet sheet = copyWorkbook.getSheet(0);
 
@@ -250,21 +262,21 @@ public class OutputUtil {
 				sheet.removeColumn(args[c]);
 			}
 
-			replaceOldBookWithNew();
+			replaceOldBookWithNew(docName);
 		} catch (IOException | WriteException | BiffException e) {
 			logger.error("Error trying to remove ID column from workbook", e);
 		}
 		return successful;
 	}
 
-	private void createWorkbookCopy() throws BiffException, IOException {
-		oldBook = new File(OUTPUT_DIR + docName);
+	private void createWorkbookCopy(String fileName) throws BiffException, IOException {
+		oldBook = new File(OUTPUT_DIR + fileName);
 		newBook = new File(OUTPUT_DIR + "temp_copy.xls");
 		currentWorkbook = Workbook.getWorkbook(oldBook);
 		copyWorkbook = Workbook.createWorkbook(newBook, currentWorkbook);
 	}
 
-	private void replaceOldBookWithNew() throws IOException, WriteException {
+	private void replaceOldBookWithNew(String docName) throws IOException, WriteException {
 		copyWorkbook.write();
 		copyWorkbook.close();
 		currentWorkbook.close();
@@ -310,5 +322,37 @@ public class OutputUtil {
 				//not a record detail url so ID could not be parsed
 			}
 		}
+	}
+	
+	public <T> boolean splitIntoSheets(String docName, String delimiter, List<List<Record>> recordsListList, Class<T> clazz) {
+		boolean successful = false;
+		Method fieldGetter = null;
+		for (Method method : clazz.getMethods()) {
+			if (method.getName().equalsIgnoreCase("get" + delimiter.replace(" ", ""))) {
+				fieldGetter = method;
+			}
+		}
+		try {
+			createWorkbookCopy(docName);
+			for (int s = 0; s<recordsListList.size();s++) {
+				try {
+					String delimitValue = (String) fieldGetter.invoke(recordsListList.get(s).get(0));
+					WritableSheet excelSheet = copyWorkbook.getSheet(delimitValue);
+					if (excelSheet==null) {
+						excelSheet = copyWorkbook.createSheet(delimitValue==null?"empty":delimitValue, s+1);//append a new sheet for each
+					}
+					createColumnHeaders(excelSheet);
+					for (int r = 0;r<recordsListList.get(s).size();r++) {
+						recordsListList.get(s).get(r).addToExcelSheet(excelSheet.getRows(), excelSheet);
+					}
+				} catch (NullPointerException e) {
+					logger.error("Error trying split workbook into sheets by " +  fieldGetter.getName(), e);
+				}
+			}
+			replaceOldBookWithNew(docName);
+		} catch (IOException | WriteException | BiffException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+			logger.error("Error trying split workbook into sheets", e);
+		}
+		return successful;
 	}
 }

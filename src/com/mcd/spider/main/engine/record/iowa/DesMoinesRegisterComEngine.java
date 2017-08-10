@@ -159,7 +159,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     @Override
     public int scrapeRecords(Map<Object, String> recordsDetailsUrlMap, Site site, OutputUtil outputUtil, Map<String,String> cookies){
         int recordsProcessed = 0;
-        List<ArrestRecord> arrestRecords = new ArrayList<>();
+        List<Record> arrestRecords = new ArrayList<>();
         ArrestRecord arrestRecord;
         for (Entry<Object, String> entry : recordsDetailsUrlMap.entrySet()) {
             String id = (String) entry.getKey();
@@ -322,7 +322,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     }
     
     @Override
-    public List<Record> filterRecords(List<ArrestRecord> fullArrestRecords) {
+    public List<Record> filterRecords(List<Record> fullArrestRecords) {
     	List<Record> filteredArrestRecords = new ArrayList<>();
     	for (Record record : fullArrestRecords) {
     		boolean recordMatches = false;

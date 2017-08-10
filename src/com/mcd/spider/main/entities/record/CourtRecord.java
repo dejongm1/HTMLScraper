@@ -88,9 +88,8 @@ public class CourtRecord implements Record {
 	}
 
 	@Override
-	public WritableSheet addToExcelSheet(WritableWorkbook workbook, int rowNumber) throws IllegalAccessException {
+	public WritableSheet addToExcelSheet(int rowNumber, WritableSheet sheet) throws IllegalAccessException {
 		int columnNumber = 0;
-		WritableSheet worksheet = workbook.getSheet(0);
 		for (Field field : getFieldsToOutput()) {
 			Object fieldValue = field.get(this);
 			StringBuilder fieldValueString = new StringBuilder();
@@ -109,14 +108,14 @@ public class CourtRecord implements Record {
 				}
 				try {
 					Label label = new Label(columnNumber, rowNumber, fieldValueString.toString());
-					worksheet.addCell(label);
+					sheet.addCell(label);
 
 				} catch (WriteException | NullPointerException e) {
 					logger.error("Trouble writing info from " + this.getFullName() + " into row " + rowNumber + ", column " + columnNumber, e);
 				}
 				columnNumber++;
 		}
-		return worksheet;
+		return sheet;
 	}
 //	
 //	public outputAsText() {

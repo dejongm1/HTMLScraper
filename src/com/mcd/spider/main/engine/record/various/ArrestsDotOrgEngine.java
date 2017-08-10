@@ -2,6 +2,7 @@ package com.mcd.spider.main.engine.record.various;
 
 import com.mcd.spider.main.engine.record.ArrestRecordEngine;
 import com.mcd.spider.main.entities.record.ArrestRecord;
+import com.mcd.spider.main.entities.record.ArrestRecord.RecordColumnEnum;
 import com.mcd.spider.main.entities.record.Record;
 import com.mcd.spider.main.entities.record.State;
 import com.mcd.spider.main.entities.record.filter.RecordFilter;
@@ -197,11 +198,9 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             int recordsGathered = recordDetailUrlMap.size();
             logger.info("Gathered links for " + recordsGathered + " record profiles and misc");
 
-            spiderUtil.sleep(100000, true);
+            spiderUtil.sleep(1000, true);
             //****iterate over collection, scraping records and simply opening others
             recordsProcessed += scrapeRecords(recordDetailUrlMap, site, outputUtil, resultsCookies);
-
-            //****sort by arrest date (or something else) once everything has been gathered? can I sort spreadsheet after creation?
 
         } else {
             logger.error("Failed to load html doc from " + site.getBaseUrl()+ ". Trying again " + (maxAttempts-attemptCount) + " more times");
@@ -227,12 +226,13 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         return recordDetailUrlMap;
     }
     
-    @Override
+    @SuppressWarnings({ "unchecked", "rawtypes", "static-access" })
+	@Override
     public int scrapeRecords(Map<Object,String> recordsDetailsUrlMap, Site site, OutputUtil outputUtil, Map<String,String> cookies) {
     	SiteHTML htmlSite = (ArrestsDotOrgSite) site;
     	int failedAttempts = 0;
         int recordsProcessed = 0;
-        List<ArrestRecord> arrestRecords = new ArrayList<>();
+        List<Record> arrestRecords = new ArrayList<>();
         ArrestRecord arrestRecord;
         List<Object> keys = new ArrayList<>(recordsDetailsUrlMap.keySet());
         Collections.shuffle(keys);
@@ -245,18 +245,26 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         		//can we guarantee previous is a page that has access to the current?
     			Connection.Response response = connectionUtil.retrieveConnectionResponse(url, recordsDetailsUrlMap.get(previousKey), recordCookies);
     			profileDetailDoc = response.parse();
+    			if (recordsProcessed % 100 == 0) {
+    				//every 100 records, cycle views cookies back to 1
+    				//TODO change user-agent as well?
+    				//TODO change IP?
+    				response.cookie("views_session", "1");
+    				response.cookie("views_24", "1");
+    			}
     			recordCookies = response.cookies();
                 for (Map.Entry<String,String> cookieEntry : response.cookies().entrySet()){
                     logger.debug(cookieEntry.getKey() + "=" + cookieEntry.getValue());
                 }
-        		//TODO depending on response status code, take action
+        		//depending on response status code, take action
         	} catch (FileNotFoundException fnfe) {
             	logger.error("No html doc found for " + url);
             } catch (IOException e) {
             	failedAttempts++;
         		logger.error("Failed to get a connection to " + recordsDetailsUrlMap.get(k), e);
             	if (failedAttempts>=site.getMaxAttempts()) {
-            		//save remaining records to file and exit or retry with new connection
+            		//save remaining records to file and exit 
+            		//TODO or retry with new connection/IP?
             		outputUtil.backupUnCrawledRecords(recordsDetailsUrlMap);
             		logger.info("Hit the limit of failed connections. Saving list of unprocessed records and quitting");
             		return recordsProcessed;
@@ -265,10 +273,10 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             if (htmlSite.isARecordDetailDoc(profileDetailDoc)) {
                 if (spiderUtil.docWasRetrieved(profileDetailDoc)) {
                     recordsProcessed++;
-                    //should we check for ID first or not bother unless we see duplicates??
+                    //should we check for ID first or not bother unless we start seeing duplicates??
                     arrestRecord = populateArrestRecord(profileDetailDoc, htmlSite);
                     arrestRecords.add(arrestRecord);
-                    //save each record in case of failures
+                    //save each record in case of failures mid-crawling
                     outputUtil.addRecordToMainWorkbook(arrestRecord);
                     spiderUtil.sleep(connectionUtil.getSleepTime(htmlSite), true);//sleep at random interval
                     
@@ -281,12 +289,21 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             previousKey = String.valueOf(k);
         }
         
+        //format the output
+        Collections.sort(arrestRecords, ArrestRecord.CountyComparator);
+    	String delimiter = RecordColumnEnum.COUNTY_COLUMN.title();
+    	Class clazz = ArrestRecord.class;
         if (filter!=null) {
 	        List<Record> filteredRecords = filterRecords(arrestRecords);
+	        List<List<Record>> splitRecords = Record.splitByField(filteredRecords, delimiter, clazz);
 	        //create a separate sheet with filtered results
 	        logger.info(filteredRecords.size() + " " + filter.filterName() + " " + "records were crawled");
 	        outputUtil.createFilteredSpreadsheet(filter, filteredRecords);
+	        outputUtil.splitIntoSheets(outputUtil.getFilteredDocName(filter), delimiter, splitRecords, clazz);
         }
+        List<List<Record>> splitRecords = Record.splitByField(arrestRecords, delimiter, clazz);
+        outputUtil.splitIntoSheets(outputUtil.getDocName(), delimiter, splitRecords, clazz);
+    
         return recordsProcessed;
     }
     
@@ -367,8 +384,12 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             } catch (NumberFormatException nfe) {
                 logger.error("Couldn't parse a numeric value from " + profileDetailElement.text());
             }
+        //trying it twice as the data seems inconsistent for county
         } else if (profileDetailElement.select("h3").hasText()) {
             record.setCounty(profileDetailElement.select("h3").text().replaceAll("(?i)county", "").trim());
+        } else if (profileDetailElement.hasAttr("src") && profileDetailElement.attr("src").contains("/mugs")) {
+        	String srcPath = profileDetailElement.attr("src").replaceAll("/mugs/", "");
+            record.setCounty(srcPath.substring(0, srcPath.indexOf('/')));
         }
     }
     @Override
@@ -398,7 +419,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     }
     
     @Override
-    public List<Record> filterRecords(List<ArrestRecord> fullArrestRecords) {
+    public List<Record> filterRecords(List<Record> fullArrestRecords) {
     	List<Record> filteredArrestRecords = new ArrayList<>();
     	for (Record record : fullArrestRecords) {
     		boolean recordMatches = false;

@@ -1,22 +1,25 @@
 package com.mcd.spider.main.entities.record;
 
-import jxl.write.Label;
-import jxl.write.WritableSheet;
-import jxl.write.WritableWorkbook;
-import jxl.write.WriteException;
-import org.apache.log4j.Logger;
-
 import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 
-public class ArrestRecord implements Record {
+import jxl.write.Label;
+import jxl.write.WritableSheet;
+import jxl.write.WritableWorkbook;
+import jxl.write.WriteException;
+
+
+public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 	
 	public enum RecordColumnEnum {
+		//the column names should match the fields names (lowercase, spaces removed)
 		ID_COLUMN(0, "ID"),
 		FULLNAME_COLUMN(1, "Full Name"),
 		FIRSTNAME_COLUMN(2, "First Name"),
@@ -211,7 +214,7 @@ public class ArrestRecord implements Record {
 		try {
 			fields.addAll(Arrays.asList(this.getClass().getDeclaredFields()));
 			for (int f=0;f<fields.size();f++) {
-				if (fields.get(f).getName().contains("logger") || fields.get(f).getName().contains("_COLUMN")) {
+				if (fields.get(f).getName().contains("logger") || fields.get(f).getName().contains("_COLUMN") || fields.get(f).getName().toLowerCase().contains("compar")) {
 					fields.remove(f);
 				}
 			}
@@ -232,11 +235,28 @@ public class ArrestRecord implements Record {
 		}
 		return fields;	
 	}
-
+	
 	@Override
-	public WritableSheet addToExcelSheet(WritableWorkbook workbook, int rowNumber) throws IllegalAccessException {
+	public int compareTo(ArrestRecord record) {
+		Calendar arrestDate = record.getArrestDate();
+		//ascending order
+		return this.arrestDate.compareTo(arrestDate);
+	}
+	
+	public static Comparator<Record> CountyComparator = new Comparator<Record>() {
+		@Override
+		public int compare(Record record1, Record record2) {
+
+			String recordCounty1 = ((ArrestRecord) record1).getCounty().toUpperCase();
+			String recordCounty2 = ((ArrestRecord) record2).getCounty().toUpperCase();
+			//ascending order
+			return recordCounty1.compareTo(recordCounty2);
+		}
+	};
+	
+	@Override
+	public WritableSheet addToExcelSheet(int rowNumber, WritableSheet sheet) throws IllegalAccessException {
 		int columnNumber = 0;
-		WritableSheet worksheet = workbook.getSheet(0);
 		for (Field field : getFieldsToOutput()) {
 			Object fieldValue = field.get(this);
 			StringBuilder fieldValueString = new StringBuilder();
@@ -255,17 +275,13 @@ public class ArrestRecord implements Record {
 				}
 				try {
 					Label label = new Label(columnNumber, rowNumber, fieldValueString.toString());
-					worksheet.addCell(label);
+					sheet.addCell(label);
 
 				} catch (WriteException | NullPointerException e) {
 					logger.error("Trouble writing info from " + this.getFullName() + " into row " + rowNumber + ", column " + columnNumber, e);
 				}
 				columnNumber++;
 		}
-		return worksheet;
+		return sheet;
 	}
-//	
-//	public outputAsText() {
-//	
-//	}
 }
