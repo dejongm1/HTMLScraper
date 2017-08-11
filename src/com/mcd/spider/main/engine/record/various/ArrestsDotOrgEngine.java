@@ -101,15 +101,15 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         htmlSite.getBaseUrl();
         String firstPageResults = htmlSite.generateResultsPageUrl(1);
         Document mainPageDoc = null;
-        Map<String,String> resultsCookies = new HashMap<>();
+        Map<String,String> nextRequestCookies = new HashMap<>();
         try {
+        	//TODO also set headers?
             Connection.Response response = connectionUtil.retrieveConnectionResponse(firstPageResults, "www.google.com");
             for (Map.Entry<String,String> cookieEntry : response.cookies().entrySet()){
                 logger.debug(cookieEntry.getKey() + "=" + cookieEntry.getValue());
             }
             mainPageDoc = response.parse();
-            resultsCookies = response.cookies();
-            //TODO can't just set result cookies. Need to maintain phpsessionid, others?
+            nextRequestCookies = response.cookies();
         } catch (IOException e) {
             logger.error("Couldn't make initial connection to site. Trying again " + (maxAttempts-attemptCount) + " more times", e);
             //if it's a 500, we're probably blocked. Try a new user-agent TODO and IP if possible
@@ -149,17 +149,14 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 	            	String url = resultsUrlPlusMiscMap.get(k);
 	            	try {
 		        		//can we guarantee previous is a page that has access to the current?
-		    			Connection.Response response = connectionUtil.retrieveConnectionResponse(url, resultsUrlPlusMiscMap.get(previousKey), resultsCookies);
+	                	//TODO also set headers?
+		    			Connection.Response response = connectionUtil.retrieveConnectionResponse(url, resultsUrlPlusMiscMap.get(previousKey), nextRequestCookies);
 		        		docToCheck = response.parse();
-		                resultsCookies = response.cookies();
-                        for (Map.Entry<String,String> cookieEntry : response.cookies().entrySet()){
-                            logger.debug(cookieEntry.getKey() + "=" + cookieEntry.getValue());
-                        }
+		        		nextRequestCookies = setCookies(response, nextRequestCookies, recordsProcessed);
 	            	} catch (FileNotFoundException fnfe) {
 	                	logger.error("No html doc found for " + url);
 	                } catch (IOException e) {
 	            		logger.error("Failed to get a connection to " + url, e);
-		        		//TODO depending on response status code, take action
 	            	}
 	            	//if docToCheck contains a crawledId, remember page number and don't add subsequent pages
 	            	for (String crawledId : crawledIds) {
@@ -201,7 +198,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 
             spiderUtil.sleep(1000, true);
             //****iterate over collection, scraping records and simply opening others
-            recordsProcessed += scrapeRecords(recordDetailUrlMap, site, outputUtil, resultsCookies);
+            recordsProcessed += scrapeRecords(recordDetailUrlMap, site, outputUtil, nextRequestCookies);
 
         } else {
             logger.error("Failed to load html doc from " + site.getBaseUrl()+ ". Trying again " + (maxAttempts-attemptCount) + " more times");
@@ -238,25 +235,16 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         List<Object> keys = new ArrayList<>(recordsDetailsUrlMap.keySet());
         Collections.shuffle(keys);
         String previousKey = String.valueOf(keys.get(keys.size()-1));
-        Map<String,String> recordCookies = cookies;
+        Map<String,String> nextRequestCookies = cookies;
         for (Object k : keys) {
             String url = recordsDetailsUrlMap.get(k);
     		Document profileDetailDoc = null;
         	try {
         		//can we guarantee previous is a page that has access to the current?
-    			Connection.Response response = connectionUtil.retrieveConnectionResponse(url, recordsDetailsUrlMap.get(previousKey), recordCookies);
+            	//TODO also set headers?
+    			Connection.Response response = connectionUtil.retrieveConnectionResponse(url, recordsDetailsUrlMap.get(previousKey), nextRequestCookies);
     			profileDetailDoc = response.parse();
-    			if (recordsProcessed % 100 == 0) {
-    				//every 100 records, cycle views cookies back to 1
-    				//TODO change user-agent as well?
-    				//TODO change IP?
-    				response.cookie("views_session", "1");
-    				response.cookie("views_24", "1");
-    			}
-    			recordCookies = response.cookies();
-                for (Map.Entry<String,String> cookieEntry : response.cookies().entrySet()){
-                    logger.debug(cookieEntry.getKey() + "=" + cookieEntry.getValue());
-                }
+        		nextRequestCookies = setCookies(response, nextRequestCookies, recordsProcessed);
         		//depending on response status code, take action
         	} catch (FileNotFoundException fnfe) {
             	logger.error("No html doc found for " + url);
@@ -435,5 +423,30 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     		}
     	}
     	return filteredArrestRecords;
+    }
+    
+    private Map<String,String> setCookies(Connection.Response response, Map<String,String> nextRequestCookies, int recordsProcessed) {
+    	for (Map.Entry<String,String> cookieEntry : response.cookies().entrySet()) {
+			nextRequestCookies.put(cookieEntry.getKey(), cookieEntry.getValue());
+            logger.debug(cookieEntry.getKey() + "=" + cookieEntry.getValue());
+		}
+    	String cookieToCycle = response.cookie("__utmb");
+    	int recordCap = offline?3:100;
+		if (recordsProcessed % recordCap == 0) {
+			//every 100 records, cycle back to 1
+			//TODO change user-agent as well?
+			//TODO change IP?
+			//these should only increment with results page views or new details pages, not layover details
+//			response.cookie("views_session", "1");
+//			response.cookie("views_24", "1");
+			String[] stringPieces = cookieToCycle.split("\\.");
+			try {
+				String newCookie = stringPieces[0] + "." + "1" + "." + stringPieces[2] + "." + stringPieces[3];
+				nextRequestCookies.put("__utmb", newCookie);
+			} catch (NumberFormatException nfe) {
+				logger.error("Failed to parse __utmb cookie for resetting");
+			}
+		}
+    	return nextRequestCookies;
     }
 }

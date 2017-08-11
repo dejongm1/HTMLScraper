@@ -51,12 +51,15 @@ public class ConnectionUtil {
         return Jsoup.parse(buffer.toString());
     }
 
-	public Connection getConnection(String url, String referrer, Map<String,String> cookies) throws IOException {
+	public Connection getConnection(String url, String referrer, Map<String,String> cookies, Map<String, String> headers) throws IOException {
 	    if (referrer==null) {
             referrer = "https://google.com";
         }
 	    if (cookies==null){
 	    	cookies = new HashMap<>();
+	    }
+	    if (headers==null){
+	    	//headers = //get default headers
 	    }
 	    logger.trace("UserAgent: " + userAgent);
 		return Jsoup.connect(url)
@@ -64,10 +67,11 @@ public class ConnectionUtil {
 				.referrer(referrer)
 				.maxBodySize(0)
 				.cookies(cookies)
+				//.headers(headers)
 				.timeout(30000);
 	}
 	public Connection getConnection(String url, String referrer) throws IOException {
-		return getConnection(url, referrer, null);
+		return getConnection(url, referrer, null, null);
 	}
 
 	public String getRandomUserAgent() { //to avoid getting blacklisted
@@ -95,7 +99,7 @@ public class ConnectionUtil {
 	
     public Connection.Response retrieveConnectionResponse(String url, String refferer, Map<String,String> cookies) throws IOException {
     	Connection.Response response;
-    	Connection conn = getConnection(url, refferer, cookies);
+    	Connection conn = getConnection(url, refferer, cookies, null);
 		if (offline) {
 			if (cookies!=null) {
 				response = new OfflineResponse(200, url, cookies);
