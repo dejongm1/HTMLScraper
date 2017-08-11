@@ -109,6 +109,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             }
             mainPageDoc = response.parse();
             resultsCookies = response.cookies();
+            //TODO can't just set result cookies. Need to maintain phpsessionid, others?
         } catch (IOException e) {
             logger.error("Couldn't make initial connection to site. Trying again " + (maxAttempts-attemptCount) + " more times", e);
             //if it's a 500, we're probably blocked. Try a new user-agent TODO and IP if possible
@@ -121,7 +122,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         if (spiderUtil.docWasRetrieved(mainPageDoc) && attemptCount<=maxAttempts) {
             //restricting to 2 pages for now
         	//int numberOfPages = site.getTotalPages(mainPageDoc);
-        	int numberOfPages = 2;
+        	int numberOfPages = 3;
             if (numberOfPages==0) {
                 numberOfPages = 1;
             }
@@ -172,7 +173,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 	            	if (docToCheck!=null) {
 	            		resultsDocPlusMiscMap.put((Integer)k, docToCheck);
 	            	}
-	                int sleepTime = connectionUtil.getSleepTime(htmlSite);
+	                int sleepTime = ConnectionUtil.getSleepTime(htmlSite);
                     logger.debug("Sleeping for " + sleepTime + " after fetching " + resultsUrlPlusMiscMap.get(k));
 	                spiderUtil.sleep(sleepTime, false);
 	                
