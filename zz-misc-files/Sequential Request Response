@@ -1,0 +1,124 @@
+Sequential Requests/Responses
+
+Cleared Cache
+
+Request - http://iowa.arrests.org/
+Host: iowa.arrests.org
+User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:54.0) Gecko/20100101 Firefox/54.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Connection: keep-alive
+Upgrade-Insecure-Requests: 1
+
+Response - http://iowa.arrests.org/
+Date: Fri, 11 Aug 2017 10:41:14 GMT
+Content-Type: text/html
+Transfer-Encoding: chunked
+Connection: keep-alive
+Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0
+Cf-Railgun: d9bc86227f 4.43 0.187548 0030 e6be
+Expires: Thu, 19 Nov 1981 08:52:00 GMT
+Pragma: no-cache
+Set-Cookie: __cfduid=d406925678ba464b8b34691a3d914a8161502448074; expires=Sat, 11-Aug-18 10:41:14 GMT; path=/; domain=.arrests.org; HttpOnly
+PHPSESSID=iagtmu5n7k77dfvhov9d2ni0r5; path=/; domain=.arrests.org
+views_24=1; expires=Sat, 12-Aug-2017 10:40:59 GMT; Max-Age=86400; path=/; domain=arrests.org
+starttime_24=1502534459; expires=Sat, 12-Aug-2017 10:40:59 GMT; Max-Age=86400; path=/; domain=arrests.org
+views_session=1; path=/; domain=arrests.org
+__uzma=598d89bbaaa894.86216922; expires=Mon, 09-Aug-2027 10:40:59 GMT; Max-Age=315360000; path=/
+__uzmb=1502448059; expires=Mon, 09-Aug-2027 10:40:59 GMT; Max-Age=315360000; path=/
+__uzmc=544521065574; expires=Mon, 09-Aug-2027 10:40:59 GMT; Max-Age=315360000; path=/
+__uzmd=1502448059; expires=Mon, 09-Aug-2027 10:40:59 GMT; Max-Age=315360000; path=/
+Vary: Accept-Encoding
+X-Powered-By: PHP/5.5.9-1ubuntu4.22
+Server: cloudflare-nginx
+cf-ray: 38ca94d17048562b-ORD
+Content-Encoding: gzip
+
+Request - http://iowa.arrests.org/Arrests/Anwon_Fuller_33936141/?d=1
+Host: iowa.arrests.org
+User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:54.0) Gecko/20100101 Firefox/54.0
+Accept: text/html, */*; q=0.01
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+X-fancyBox: true
+X-Requested-With: XMLHttpRequest
+Referer: http://iowa.arrests.org/
+Cookie: __cfduid=d406925678ba464b8b34691a3d914a8161502448074; PHPSESSID=iagtmu5n7k77dfvhov9d2ni0r5; views_24=1; starttime_24=1502534459; views_session=1; __uzma=598d89bbaaa894.86216922; __uzmb=1502448059; __uzmc=544521065574; __uzmd=1502448059; __ssds=2; __ssuzjsr2=a9be0cd8e; __utma=202431297.547636958.1502448077.1502448077.1502448077.1; __utmb=202431297.1.10.1502448077; __utmc=202431297; __utmz=202431297.1502448077.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); __utmt=1; __qca=P0-1204639430-1502448077696
+Connection: keep-alive
+
+Response - http://iowa.arrests.org/Arrests/Anwon_Fuller_33936141/?d=1
+Date: Fri, 11 Aug 2017 10:43:26 GMT
+Content-Type: text/html
+Transfer-Encoding: chunked
+Connection: keep-alive
+Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0
+Cf-Railgun: 96862354f0 stream 0.000000 0200 e6be
+Expires: Thu, 19 Nov 1981 08:52:00 GMT
+Pragma: no-cache
+Set-Cookie: __uzmc=915721359959; expires=Mon, 09-Aug-2027 10:43:11 GMT; Max-Age=315360000; path=/
+__uzmd=1502448191; expires=Mon, 09-Aug-2027 10:43:11 GMT; Max-Age=315360000; path=/
+Vary: Accept-Encoding
+X-Powered-By: PHP/5.5.9-1ubuntu4.22
+Server: cloudflare-nginx
+cf-ray: 38ca9806e54c09d0-ORD
+Content-Encoding: gzip
+
+Request - http://iowa.arrests.org/Arrests/Candace_Bryant_33936145/?d=1
+Host: iowa.arrests.org
+User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:54.0) Gecko/20100101 Firefox/54.0
+Accept: text/html, */*; q=0.01
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+X-fancyBox: true
+X-Requested-With: XMLHttpRequest
+Referer: http://iowa.arrests.org/
+Cookie: __cfduid=d406925678ba464b8b34691a3d914a8161502448074; PHPSESSID=iagtmu5n7k77dfvhov9d2ni0r5; views_24=1; starttime_24=1502534459; views_session=1; __uzma=598d89bbaaa894.86216922; __uzmb=1502448059; __uzmc=915721359959; __uzmd=1502448191; __ssds=2; __ssuzjsr2=a9be0cd8e; __utma=202431297.547636958.1502448077.1502448077.1502448077.1; __utmb=202431297.2.10.1502448077; __utmc=202431297; __utmz=202431297.1502448077.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); __utmt=1; __qca=P0-1204639430-1502448077696
+Connection: keep-alive
+
+Response - http://iowa.arrests.org/Arrests/Candace_Bryant_33936145/?d=1
+Date: Fri, 11 Aug 2017 10:45:04 GMT
+Content-Type: text/html
+Transfer-Encoding: chunked
+Connection: keep-alive
+Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0
+Cf-Railgun: fb7d262526 stream 0.000000 0200 e6be
+Expires: Thu, 19 Nov 1981 08:52:00 GMT
+Pragma: no-cache
+Set-Cookie: __uzmc=300821654376; expires=Mon, 09-Aug-2027 10:44:49 GMT; Max-Age=315360000; path=/
+__uzmd=1502448289; expires=Mon, 09-Aug-2027 10:44:49 GMT; Max-Age=315360000; path=/
+Vary: Accept-Encoding
+X-Powered-By: PHP/5.5.9-1ubuntu4.22
+Server: cloudflare-nginx
+cf-ray: 38ca9a7070392604-ORD
+Content-Encoding: gzip
+
+Request - http://iowa.arrests.org/?page=5&results=14
+Host: iowa.arrests.org
+User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:54.0) Gecko/20100101 Firefox/54.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: http://iowa.arrests.org/?page=3&results=14
+Cookie: __cfduid=d406925678ba464b8b34691a3d914a8161502448074; PHPSESSID=iagtmu5n7k77dfvhov9d2ni0r5; views_24=4; starttime_24=1502534459; views_session=4; __uzma=598d89bbaaa894.86216922; __uzmb=1502448059; __uzmc=190622547348; __uzmd=1502448345; __ssds=2; __ssuzjsr2=a9be0cd8e; __utma=202431297.547636958.1502448077.1502448077.1502448077.1; __utmb=202431297.6.10.1502448077; __utmc=202431297; __utmz=202431297.1502448077.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); __utmt=1; __qca=P0-1204639430-1502448077696
+Connection: keep-alive
+Upgrade-Insecure-Requests: 1
+
+Response - http://iowa.arrests.org/?page=5&results=14
+Date: Fri, 11 Aug 2017 10:46:05 GMT
+Content-Type: text/html
+Transfer-Encoding: chunked
+Connection: keep-alive
+Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0
+Cf-Railgun: 0d3290ea07 6.88 0.152720 0030 e6be
+Expires: Thu, 19 Nov 1981 08:52:00 GMT
+Pragma: no-cache
+Set-Cookie: views_24=5; expires=Sat, 12-Aug-2017 10:40:59 GMT; Max-Age=86110; path=/; domain=arrests.org
+views_session=5; path=/; domain=arrests.org
+__uzmc=882162841715; expires=Mon, 09-Aug-2027 10:45:49 GMT; Max-Age=315360000; path=/
+__uzmd=1502448349; expires=Mon, 09-Aug-2027 10:45:49 GMT; Max-Age=315360000; path=/
+Vary: Accept-Encoding
+X-Powered-By: PHP/5.5.9-1ubuntu4.22
+Server: cloudflare-nginx
+cf-ray: 38ca9be7f5d62604-ORD
+Content-Encoding: gzip
