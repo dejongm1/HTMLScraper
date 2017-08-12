@@ -75,7 +75,7 @@ public class ConnectionUtil {
 	}
 
 	public String getRandomUserAgent() { //to avoid getting blacklisted
-		String[] userAgentList = System.getProperty("user.agents").split(", ");
+		String[] userAgentList = System.getProperty("user.agents").split("\\|");
 		int r = getRandom(userAgentList.length-1, -1, false);
 		logger.trace("User-agent: " + userAgentList[r]);
 		return userAgentList[r];
@@ -83,7 +83,7 @@ public class ConnectionUtil {
 	
 	public static int getSleepTime(Site site) {
 		int[] sleepTimeRange = site.getPerRecordSleepRange();
-		return offline?0:getRandom(sleepTimeRange[0], sleepTimeRange[1], true);
+		return offline?0:getRandom(sleepTimeRange[0], sleepTimeRange[1], false);
 	}
 	
 	private static int getRandom(int from, int to, boolean inMilliseconds) {

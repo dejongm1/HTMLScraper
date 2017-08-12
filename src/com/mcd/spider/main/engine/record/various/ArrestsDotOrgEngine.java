@@ -110,6 +110,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             }
             mainPageDoc = response.parse();
             nextRequestCookies = response.cookies();
+            nextRequestCookies.put("__utmb", "202431297.1.10.1502492018");
         } catch (IOException e) {
             logger.error("Couldn't make initial connection to site. Trying again " + (maxAttempts-attemptCount) + " more times", e);
             //if it's a 500, we're probably blocked. Try a new user-agent TODO and IP if possible
@@ -261,13 +262,17 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             }
             if (htmlSite.isARecordDetailDoc(profileDetailDoc)) {
                 if (spiderUtil.docWasRetrieved(profileDetailDoc)) {
-                    recordsProcessed++;
-                    //should we check for ID first or not bother unless we start seeing duplicates??
-                    arrestRecord = populateArrestRecord(profileDetailDoc, htmlSite);
-                    arrestRecords.add(arrestRecord);
-                    //save each record in case of failures mid-crawling
-                    outputUtil.addRecordToMainWorkbook(arrestRecord);
-                    spiderUtil.sleep(connectionUtil.getSleepTime(htmlSite), true);//sleep at random interval
+                    try {
+                        recordsProcessed++;
+                        //should we check for ID first or not bother unless we start seeing duplicates??
+                        arrestRecord = populateArrestRecord(profileDetailDoc, htmlSite);
+                        arrestRecords.add(arrestRecord);
+                        //save each record in case of failures mid-crawling
+                        outputUtil.addRecordToMainWorkbook(arrestRecord);
+                        spiderUtil.sleep(connectionUtil.getSleepTime(htmlSite), true);//sleep at random interval
+                    } catch (Exception e) {
+                        logger.error("Generic exception caught while trying to grab arrest record for " + profileDetailDoc.baseUri(), e);
+                    }
                     
                 } else {
                     logger.error("Failed to load html doc from " + url);
@@ -410,6 +415,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     @Override
     public List<Record> filterRecords(List<Record> fullArrestRecords) {
     	List<Record> filteredArrestRecords = new ArrayList<>();
+    	//TODO nullpointer somewhere in here
     	for (Record record : fullArrestRecords) {
     		boolean recordMatches = false;
     		String[] charges = ((ArrestRecord) record).getCharges();
@@ -430,23 +436,27 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 			nextRequestCookies.put(cookieEntry.getKey(), cookieEntry.getValue());
             logger.debug(cookieEntry.getKey() + "=" + cookieEntry.getValue());
 		}
-    	String cookieToCycle = response.cookie("__utmb");
-    	int recordCap = offline?3:100;
-		if (recordsProcessed % recordCap == 0) {
-			//every 100 records, cycle back to 1
-			//TODO change user-agent as well?
-			//TODO change IP?
-			//these should only increment with results page views or new details pages, not layover details
-//			response.cookie("views_session", "1");
-//			response.cookie("views_24", "1");
-			String[] stringPieces = cookieToCycle.split("\\.");
-			try {
-				String newCookie = stringPieces[0] + "." + "1" + "." + stringPieces[2] + "." + stringPieces[3];
-				nextRequestCookies.put("__utmb", newCookie);
-			} catch (NumberFormatException nfe) {
-				logger.error("Failed to parse __utmb cookie for resetting");
-			}
-		}
+        try {
+            String cookieToCycle = nextRequestCookies.get("__utmb");
+            int recordCap = offline?3:100;
+            if (recordsProcessed!=0 && recordsProcessed % recordCap == 0) {
+                //every 100 records, cycle back to 1
+                //TODO change user-agent as well?
+                //TODO change IP?
+                //these should only increment with results page views or new details pages, not layover details
+    //			response.cookie("views_session", "1");
+    //			response.cookie("views_24", "1");
+                String[] stringPieces = cookieToCycle.split("\\.");
+                String newCookie = stringPieces[0] + "." + "1" + "." + stringPieces[2] + "." + stringPieces[3];
+                nextRequestCookies.put("__utmb", newCookie);
+            } else {
+                String[] stringPieces = cookieToCycle.split("\\.");
+                String newCookie = stringPieces[0] + "." + (Integer.parseInt(stringPieces[1])+1) + "." + stringPieces[2] + "." + stringPieces[3];
+                nextRequestCookies.put("__utmb", newCookie);
+            }
+        } catch (NumberFormatException nfe) {
+            logger.error("Failed to parse __utmb cookie for resetting");
+        }
     	return nextRequestCookies;
     }
 }
