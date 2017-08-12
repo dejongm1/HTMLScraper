@@ -28,8 +28,7 @@ public class OfflineResponse implements Response {
 		this.cookies.put("__uzmd", String.valueOf(Calendar.getInstance().getTimeInMillis()));
 		this.cookies.put("PHPSESSID", "o538ftmf8fvepqt52n2bt088i2");
 		this.cookies.put("views_session", "1");
-		this.cookies.put("views_24", "1");		
-		this.cookies.put("__utmb", "202431297.1.10.1502448077");
+		this.cookies.put("views_24", "1");
 		this.contentType = determineContentType();
 	}
 	
@@ -42,10 +41,6 @@ public class OfflineResponse implements Response {
 		this.cookies.put("PHPSESSID", "o538ftmf8fvepqt52n2bt088i2");
 		this.cookies.put("views_session", String.valueOf(Integer.valueOf(cookies.get("views_session"))+1));
 		this.cookies.put("__cfduid", "d406925678ba464b8b34691a3d914a8161502448074");
-		this.cookies.put("__utmb", "202431297.1.10.1502448077");
-		String[] stringPieces = cookies.get("__utmb").split("\\.");
-		String newCookie = stringPieces[0] + "." + (Long.parseLong(stringPieces[1])+1) + "." + stringPieces[2] + "." + stringPieces[3];
-		this.cookies.put("__utmb", newCookie);
 		this.contentType = determineContentType();
 	}
 	

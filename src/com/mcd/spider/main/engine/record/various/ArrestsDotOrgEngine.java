@@ -53,7 +53,6 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     public void getArrestRecords(State state, long maxNumberOfResults, RecordFilterEnum filter) throws SpiderException {
         long totalTime = System.currentTimeMillis();
         long recordsProcessed = 0;
-        int sleepTimeSum = 0;
         this.filter = filter;
 	    offline = System.getProperty("offline").equals("true");
 
@@ -66,8 +65,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         logger.info("----Site: " + site.getName() + "-" + state.getName() + "----");
         logger.debug("Sending spider " + (offline?"offline":"online" ));
         
-        int sleepTimeAverage = (site.getPerRecordSleepRange()[0]+site.getPerRecordSleepRange()[1])/2;
-        sleepTimeSum += offline?0:sleepTimeAverage;
+        int sleepTimeAverage = offline?0:(site.getPerRecordSleepRange()[0]+site.getPerRecordSleepRange()[1])/2000;
         long time = System.currentTimeMillis();
         
         recordsProcessed += scrapeSite(state, site, outputUtil, 1, maxNumberOfResults);
@@ -84,8 +82,8 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         //}
         totalTime = System.currentTimeMillis() - totalTime;
         if (!offline) {
-            logger.info("Sleep time was approximately " + sleepTimeSum + " ms");
-            logger.info("Processing time was approximately " + (totalTime-sleepTimeSum) + " ms");
+            logger.info("Sleep time was approximately " + sleepTimeAverage*recordsProcessed + " ms");
+            logger.info("Processing time was approximately " + (totalTime-(sleepTimeAverage*recordsProcessed)) + " ms");
         } else {
             logger.info("Total time taken was " + totalTime + " ms");
         }
@@ -110,7 +108,6 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             }
             mainPageDoc = response.parse();
             nextRequestCookies = response.cookies();
-            nextRequestCookies.put("__utmb", "202431297.1.10.1502492018");
         } catch (IOException e) {
             logger.error("Couldn't make initial connection to site. Trying again " + (maxAttempts-attemptCount) + " more times", e);
             //if it's a 500, we're probably blocked. Try a new user-agent TODO and IP if possible
@@ -415,18 +412,19 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     @Override
     public List<Record> filterRecords(List<Record> fullArrestRecords) {
     	List<Record> filteredArrestRecords = new ArrayList<>();
-    	//TODO nullpointer somewhere in here
     	for (Record record : fullArrestRecords) {
     		boolean recordMatches = false;
-    		String[] charges = ((ArrestRecord) record).getCharges();
-    		for (String charge : charges) {
-    			if (!recordMatches) {
-    				recordMatches = RecordFilter.filter(charge, filter);
-    			}
-    		}
-    		if (recordMatches) {
-    			filteredArrestRecords.add(record);
-    		}
+    		if (((ArrestRecord) record).getCharges()!=null) {
+                String[] charges = ((ArrestRecord) record).getCharges();
+                for (String charge : charges) {
+                    if (!recordMatches) {
+                        recordMatches = RecordFilter.filter(charge, filter);
+                    }
+                }
+                if (recordMatches) {
+                    filteredArrestRecords.add(record);
+                }
+            }
     	}
     	return filteredArrestRecords;
     }
@@ -436,27 +434,18 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 			nextRequestCookies.put(cookieEntry.getKey(), cookieEntry.getValue());
             logger.debug(cookieEntry.getKey() + "=" + cookieEntry.getValue());
 		}
-        try {
-            String cookieToCycle = nextRequestCookies.get("__utmb");
-            int recordCap = offline?3:100;
-            if (recordsProcessed!=0 && recordsProcessed % recordCap == 0) {
-                //every 100 records, cycle back to 1
-                //TODO change user-agent as well?
-                //TODO change IP?
-                //these should only increment with results page views or new details pages, not layover details
-    //			response.cookie("views_session", "1");
-    //			response.cookie("views_24", "1");
-                String[] stringPieces = cookieToCycle.split("\\.");
-                String newCookie = stringPieces[0] + "." + "1" + "." + stringPieces[2] + "." + stringPieces[3];
-                nextRequestCookies.put("__utmb", newCookie);
-            } else {
-                String[] stringPieces = cookieToCycle.split("\\.");
-                String newCookie = stringPieces[0] + "." + (Integer.parseInt(stringPieces[1])+1) + "." + stringPieces[2] + "." + stringPieces[3];
-                nextRequestCookies.put("__utmb", newCookie);
-            }
-        } catch (NumberFormatException nfe) {
-            logger.error("Failed to parse __utmb cookie for resetting");
+        int recordCap = offline?3:100;
+        if (recordsProcessed!=0 && recordsProcessed % recordCap == 0) {
+            //every 100 records, cycle back to 1
+            //TODO change user-agent as well?
+            //TODO change IP?
+            //these should only increment with results page views or new details pages, not layover details
+//			response.cookie("views_session", "1");
+//			response.cookie("views_24", "1");
+        } else {
+
         }
+
     	return nextRequestCookies;
     }
 }
