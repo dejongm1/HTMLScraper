@@ -14,7 +14,7 @@ import com.mcd.spider.main.exception.ExcelOutputException;
 import com.mcd.spider.main.exception.IDCheckException;
 import com.mcd.spider.main.exception.SpiderException;
 import com.mcd.spider.main.util.ConnectionUtil;
-import com.mcd.spider.main.util.OutputUtil;
+import com.mcd.spider.main.util.RecordOutputUtil;
 import com.mcd.spider.main.util.SpiderUtil;
 import org.apache.log4j.Logger;
 import org.jsoup.Connection;
@@ -59,7 +59,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 	    offline = System.getProperty("offline").equals("true");
 
         ArrestsDotOrgSite site = (ArrestsDotOrgSite) getSite(new String[]{state.getName()});
-        OutputUtil outputUtil = initializeOutputter(state, site);
+        RecordOutputUtil recordOutputUtil = initializeOutputter(state, site);
         connectionUtil = new ConnectionUtil(true);
         
         long siteTime = System.currentTimeMillis();
@@ -69,7 +69,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         int sleepTimeAverage = offline?0:(site.getPerRecordSleepRange()[0]+site.getPerRecordSleepRange()[1])/2000;
         long time = System.currentTimeMillis();
         
-        recordsProcessed += scrapeSite(site, outputUtil, 1, maxNumberOfResults);
+        recordsProcessed += scrapeSite(site, recordOutputUtil, 1, maxNumberOfResults);
         
         time = System.currentTimeMillis() - time;
         logger.info(site.getBaseUrl() + " took " + time + " ms");
@@ -91,7 +91,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     }
 
     @Override
-    public int scrapeSite(Site site, OutputUtil outputUtil, int attemptCount, long maxNumberOfResults) {
+    public int scrapeSite(Site site, RecordOutputUtil recordOutputUtil, int attemptCount, long maxNumberOfResults) {
         //refactor to split out randomizing functionality, maybe reuse??
     	int maxAttempts = site.getMaxAttempts();
         int recordsProcessed = 0;
@@ -115,7 +115,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             	connectionUtil = new ConnectionUtil(true);
             }
             attemptCount++;
-            scrapeSite(site, outputUtil, attemptCount, maxNumberOfResults);
+            scrapeSite(site, recordOutputUtil, attemptCount, maxNumberOfResults);
         }
         if (spiderUtil.docWasRetrieved(mainPageDoc) && attemptCount<=maxAttempts) {
             //restricting to 2 pages for now
@@ -200,12 +200,12 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 
             spiderUtil.sleep(100000, true);
             //****iterate over collection, scraping records and simply opening others
-            recordsProcessed += scrapeRecords(recordDetailUrlMap, site, outputUtil, nextRequestCookies);
+            recordsProcessed += scrapeRecords(recordDetailUrlMap, site, recordOutputUtil, nextRequestCookies);
 
         } else {
             logger.error("Failed to load html doc from " + site.getBaseUrl()+ ". Trying again " + (maxAttempts-attemptCount) + " more times");
             attemptCount++;
-            scrapeSite(site, outputUtil, attemptCount, maxNumberOfResults);
+            scrapeSite(site, recordOutputUtil, attemptCount, maxNumberOfResults);
         }
         return recordsProcessed;
     }
@@ -228,7 +228,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     
     @SuppressWarnings({ "unchecked", "rawtypes", "static-access" })
 	@Override
-    public int scrapeRecords(Map<Object,String> recordsDetailsUrlMap, Site site, OutputUtil outputUtil, Map<String,String> cookies) {
+    public int scrapeRecords(Map<Object,String> recordsDetailsUrlMap, Site site, RecordOutputUtil recordOutputUtil, Map<String,String> cookies) {
     	SiteHTML htmlSite = (ArrestsDotOrgSite) site;
     	int failedAttempts = 0;
         int recordsProcessed = 0;
@@ -256,7 +256,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             	if (failedAttempts>=site.getMaxAttempts()) {
             		//save remaining records to file and exit 
             		//TODO or retry with new connection/IP?
-            		outputUtil.backupUnCrawledRecords(recordsDetailsUrlMap);
+            		recordOutputUtil.backupUnCrawledRecords(recordsDetailsUrlMap);
             		logger.info("Hit the limit of failed connections. Saving list of unprocessed records and quitting");
             		return recordsProcessed;
             	}
@@ -271,7 +271,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
                         if (arrestRecord.getState()==null || arrestRecord.getState().equalsIgnoreCase(state.getName())) {
                             arrestRecords.add(arrestRecord);
                             //save each record in case of failures mid-crawling
-                            outputUtil.addRecordToMainWorkbook(arrestRecord);
+                            recordOutputUtil.addRecordToMainWorkbook(arrestRecord);
                             logger.debug("Record " + recordsProcessed + " saved");
                         }
                         spiderUtil.sleep(connectionUtil.getSleepTime(htmlSite), true);//sleep at random interval
@@ -297,11 +297,11 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 	        List<List<Record>> splitRecords = Record.splitByField(filteredRecords, delimiter, clazz);
 	        //create a separate sheet with filtered results
 	        logger.info(filteredRecords.size() + " " + filter.filterName() + " " + "records were crawled");
-	        outputUtil.createFilteredSpreadsheet(filter, filteredRecords);
-	        outputUtil.splitIntoSheets(outputUtil.getFilteredDocName(filter), delimiter, splitRecords, clazz);
+	        recordOutputUtil.createFilteredSpreadsheet(filter, filteredRecords);
+	        recordOutputUtil.splitIntoSheets(recordOutputUtil.getFilteredDocName(filter), delimiter, splitRecords, clazz);
         }
         List<List<Record>> splitRecords = Record.splitByField(arrestRecords, delimiter, clazz);
-        outputUtil.splitIntoSheets(outputUtil.getDocName(), delimiter, splitRecords, clazz);
+        recordOutputUtil.splitIntoSheets(recordOutputUtil.getDocName(), delimiter, splitRecords, clazz);
     
         return recordsProcessed;
     }
@@ -320,16 +320,16 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     }
 
     @Override
-    public OutputUtil initializeOutputter(State state, Site site) throws SpiderException {
-    	OutputUtil outputUtil = new OutputUtil(state, new ArrestRecord(), site);
+    public RecordOutputUtil initializeOutputter(State state, Site site) throws SpiderException {
+    	RecordOutputUtil recordOutputUtil = new RecordOutputUtil(state, new ArrestRecord(), site);
         try {
             //this will get previously written IDs but then overwrite the spreadsheet
-            crawledIds = outputUtil.getPreviousIds();
-            outputUtil.createSpreadsheet();
+            crawledIds = recordOutputUtil.getPreviousIds();
+            recordOutputUtil.createSpreadsheet();
         } catch (ExcelOutputException | IDCheckException e) {
             throw e;
         }
-        return outputUtil;
+        return recordOutputUtil;
     }
     
     @Override

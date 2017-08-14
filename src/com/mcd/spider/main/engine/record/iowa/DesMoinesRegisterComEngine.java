@@ -13,7 +13,7 @@ import com.mcd.spider.main.exception.ExcelOutputException;
 import com.mcd.spider.main.exception.IDCheckException;
 import com.mcd.spider.main.exception.SpiderException;
 import com.mcd.spider.main.util.ConnectionUtil;
-import com.mcd.spider.main.util.OutputUtil;
+import com.mcd.spider.main.util.RecordOutputUtil;
 import com.mcd.spider.main.util.SpiderUtil;
 import common.Logger;
 import org.json.JSONArray;
@@ -64,7 +64,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
 	
 	        //while(recordsProcessed <= maxNumberOfResults) {
 	        DesMoinesRegisterComSite site = (DesMoinesRegisterComSite) getSite(null);
-            OutputUtil outputUtil = initializeOutputter(state, site);
+            RecordOutputUtil recordOutputUtil = initializeOutputter(state, site);
             
 	        logger.info("----Site: " + site.getName() + "----");
 	        logger.debug("Sending spider " + (offline?"offline":"online" ));
@@ -73,7 +73,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
 	        sleepTimeSum += offline?0:sleepTimeAverage;
 	        long time = System.currentTimeMillis();
 	        
-	        recordsProcessed += scrapeSite(site, outputUtil, 1, maxNumberOfResults);
+	        recordsProcessed += scrapeSite(site, recordOutputUtil, 1, maxNumberOfResults);
 	        
 	        time = System.currentTimeMillis() - time;
 	        logger.info(site.getBaseUrl() + " took " + time + " ms");
@@ -94,7 +94,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     }
 
     @Override
-    public int scrapeSite(Site site, OutputUtil outputUtil, int attemptCount, long maxNumberOfResults) {
+    public int scrapeSite(Site site, RecordOutputUtil recordOutputUtil, int attemptCount, long maxNumberOfResults) {
         int recordsProcessed = 0;
         SiteService serviceSite = (DesMoinesRegisterComSite) site;
         for (String county : ((DesMoinesRegisterComSite) site).getCounties()) {
@@ -127,7 +127,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
                 Map<Object, String> profileDetailUrlMap = new HashMap<>();
                 profileDetailUrlMap.putAll(parseDocForUrls(response, site));
 
-                recordsProcessed += scrapeRecords(profileDetailUrlMap, site, outputUtil, null);
+                recordsProcessed += scrapeRecords(profileDetailUrlMap, site, recordOutputUtil, null);
 
             } catch (java.io.IOException e) {
                 logger.error("IOException caught sending http request to " + site.getUrl(), e);
@@ -157,7 +157,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     }
 
     @Override
-    public int scrapeRecords(Map<Object, String> recordsDetailsUrlMap, Site site, OutputUtil outputUtil, Map<String,String> cookies){
+    public int scrapeRecords(Map<Object, String> recordsDetailsUrlMap, Site site, RecordOutputUtil recordOutputUtil, Map<String,String> cookies){
         int recordsProcessed = 0;
         List<Record> arrestRecords = new ArrayList<>();
         ArrestRecord arrestRecord;
@@ -174,7 +174,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
                         arrestRecord = populateArrestRecord(profileDetailDoc, site);
                         arrestRecords.add(arrestRecord);
                         //save each record in case of application failures
-                        outputUtil.addRecordToMainWorkbook(arrestRecord);
+                        recordOutputUtil.addRecordToMainWorkbook(arrestRecord);
                         spiderUtil.sleep(ConnectionUtil.getSleepTime(site), true);//sleep at random interval
                         
                     } else {
@@ -212,15 +212,15 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     }
 
     @Override
-    public OutputUtil initializeOutputter(State state, Site site) throws SpiderException {
-    	OutputUtil outputUtil = new OutputUtil(state, new ArrestRecord(), site);
+    public RecordOutputUtil initializeOutputter(State state, Site site) throws SpiderException {
+    	RecordOutputUtil recordOutputUtil = new RecordOutputUtil(state, new ArrestRecord(), site);
         try {
-            crawledIds = outputUtil.getPreviousIds();
-            outputUtil.createSpreadsheet();
+            crawledIds = recordOutputUtil.getPreviousIds();
+            recordOutputUtil.createSpreadsheet();
         } catch (ExcelOutputException | IDCheckException e) {
             throw e;
         }
-        return outputUtil;
+        return recordOutputUtil;
     }
     
     @Override

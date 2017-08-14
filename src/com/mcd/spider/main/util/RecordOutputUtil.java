@@ -32,10 +32,16 @@ import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
 
-public class OutputUtil {
+/**
+ * 
+ * @author u569220
+ *
+ */
+public class RecordOutputUtil {
 
-	public static final Logger logger = Logger.getLogger(OutputUtil.class);
-
+	public static final Logger logger = Logger.getLogger(RecordOutputUtil.class);
+	private static final String EXT = ".xls";
+	
 	private String docName;
 	private WritableWorkbook workbook;
 	private State state;
@@ -53,15 +59,18 @@ public class OutputUtil {
 	private Calendar workbookCreateDate;
 	private boolean offline;
 
-	public OutputUtil(State state, Record record, Site site) {
+	public RecordOutputUtil(State state, Record record, Site site) {
 		Calendar date = Calendar.getInstance();
 		this.workbookCreateDate = date;
-		this.docName = state.getName() 
-				+ "_" + (date.get(Calendar.MONTH)+1)
-				+ "-" + date.get(Calendar.DAY_OF_MONTH)
-				+ "-" + date.get(Calendar.YEAR) + "_"
+		this.docName = state.getName()
 				+ record.getClass().getSimpleName() + "_"
-				+ site.getName() + ".xls";
+				+ site.getName() + EXT;
+//		this.docName = state.getName() 
+//				+ "_" + (date.get(Calendar.MONTH)+1)
+//				+ "-" + date.get(Calendar.DAY_OF_MONTH)
+//				+ "-" + date.get(Calendar.YEAR) + "_"
+//				+ record.getClass().getSimpleName() + "_"
+//				+ site.getName() + EXT;
 		this.state = state;
 		this.record = record;
 		this.site = site;
@@ -76,23 +85,17 @@ public class OutputUtil {
 	public WritableWorkbook getWorkbook() {
 		return workbook;
 	}
-	public void setWorkbook(WritableWorkbook workbook) {
-		this.workbook = workbook;
-	}
 	public State getState() {
 		return state;
+	}
+	public Record getRecord() {
+		return record;
 	}
 	public File getOldBook() {
 		return oldBook;
 	}
-	public void setOldBook(File oldBook) {
-		this.oldBook = oldBook;
-	}
 	public File getNewBook() {
 		return newBook;
-	}
-	public void setNewBook(File newBook) {
-		this.newBook = newBook;
 	}
 	public Workbook getCurrentWorkbook() {
 		return currentWorkbook;
@@ -107,10 +110,6 @@ public class OutputUtil {
 	public WritableWorkbook getCopyWorkbook() {
 		return copyWorkbook;
 	}
-	public void setCopyWorkbook(WritableWorkbook copyWorkbook) {
-		this.copyWorkbook = copyWorkbook;
-	}
-
 	public Set<String> getPreviousIds() throws SpiderException {
 		Set<String> ids = new HashSet<>();
 		//check name as well to make sure it's the right state/site
@@ -156,7 +155,7 @@ public class OutputUtil {
 				WritableSheet excelSheet = newWorkbook.createSheet(state.getName(), 0);
 				createColumnHeaders(excelSheet);
 				newWorkbook.write();
-				workbook = newWorkbook;//this only works if I create one spreadsheet per OutputUtil
+				workbook = newWorkbook;//this only works if I create one spreadsheet per RecordOutputUtil
 			}
 		} catch (IOException | WriteException e) {
 			logger.error(e.getMessage());
@@ -209,7 +208,7 @@ public class OutputUtil {
 	}
 
 	public String getFilteredDocName(RecordFilterEnum filter) {
-		return docName.substring(0, docName.indexOf(".xls")) + filter.filterName() + ".xls";
+		return docName.substring(0, docName.indexOf(EXT)) + "_" + filter.filterName() + EXT;
 	}
 
 	public void saveRecordsToWorkbook(List<Record> records, WritableWorkbook workbook) {
@@ -271,7 +270,7 @@ public class OutputUtil {
 
 	private void createWorkbookCopy(String fileName) throws BiffException, IOException {
 		oldBook = new File(OUTPUT_DIR + fileName);
-		newBook = new File(OUTPUT_DIR + "temp_copy.xls");
+		newBook = new File(OUTPUT_DIR + "temp_copy" + EXT);
 		currentWorkbook = Workbook.getWorkbook(oldBook);
 		copyWorkbook = Workbook.createWorkbook(newBook, currentWorkbook);
 	}
@@ -354,5 +353,12 @@ public class OutputUtil {
 			logger.error("Error trying split workbook into sheets", e);
 		}
 		return successful;
+	}
+	
+	public void backupWorkbook() {
+		//TODO create a backup of current workbook before appending new records
+		
+		
+		//this.backupWorkbook = workbookThatGetsCreated;
 	}
 }

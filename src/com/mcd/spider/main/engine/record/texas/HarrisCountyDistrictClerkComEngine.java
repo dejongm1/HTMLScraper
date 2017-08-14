@@ -12,7 +12,7 @@ import com.mcd.spider.main.exception.ExcelOutputException;
 import com.mcd.spider.main.exception.IDCheckException;
 import com.mcd.spider.main.exception.SpiderException;
 import com.mcd.spider.main.util.ConnectionUtil;
-import com.mcd.spider.main.util.OutputUtil;
+import com.mcd.spider.main.util.RecordOutputUtil;
 import com.mcd.spider.main.util.SpiderUtil;
 import common.Logger;
 import org.jsoup.nodes.Document;
@@ -56,7 +56,7 @@ public class HarrisCountyDistrictClerkComEngine implements CourtRecordEngine {
 
         //while(recordsProcessed <= maxNumberOfResults) {
         HarrisCountyDistrictClerkComSite site = (HarrisCountyDistrictClerkComSite) getSite(null);
-        OutputUtil outputUtil = initializeOutputter(state, site);
+        RecordOutputUtil recordOutputUtil = initializeOutputter(state, site);
         
         logger.info("----Site: " + site.getName() + "----");
         logger.debug("Sending spider " + (offline?"offline":"online" ));
@@ -65,7 +65,7 @@ public class HarrisCountyDistrictClerkComEngine implements CourtRecordEngine {
         sleepTimeSum += offline?0:sleepTimeAverage;
         long time = System.currentTimeMillis();
         
-        recordsProcessed += scrapeSite(state, site, outputUtil, 1);
+        recordsProcessed += scrapeSite(state, site, recordOutputUtil, 1);
         
         time = System.currentTimeMillis() - time;
         logger.info(site.getBaseUrl() + " took " + time + " ms");
@@ -85,7 +85,7 @@ public class HarrisCountyDistrictClerkComEngine implements CourtRecordEngine {
     }
 
     
-    public int scrapeSite(State state, Site site, OutputUtil outputUtil, int attemptCount) {
+    public int scrapeSite(State state, Site site, RecordOutputUtil recordOutputUtil, int attemptCount) {
         int recordsProcessed = 0;
     	int maxAttempts = site.getMaxAttempts();
         SiteService siteService = (HarrisCountyDistrictClerkComSite) site;
@@ -133,7 +133,7 @@ public class HarrisCountyDistrictClerkComEngine implements CourtRecordEngine {
 	            Map<String, String> detailMap;
 	            detailMap = parseDocForUrls(response, site);
                 
-	            recordsProcessed += scrapeRecords(detailMap, site, outputUtil);
+	            recordsProcessed += scrapeRecords(detailMap, site, recordOutputUtil);
 	
 	        } catch (java.io.IOException e) {
 	            logger.error("IOException caught sending http request to " + site.getUrl(), e);
@@ -159,7 +159,7 @@ public class HarrisCountyDistrictClerkComEngine implements CourtRecordEngine {
     }
 
     
-    public int scrapeRecords(Map<String, String> recordsDetailsMap, Site site, OutputUtil outputUtil){
+    public int scrapeRecords(Map<String, String> recordsDetailsMap, Site site, RecordOutputUtil recordOutputUtil){
         int recordsProcessed = 0;
         List<CourtRecord> courtRecords = new ArrayList<>();
         CourtRecord courtRecord;
@@ -173,7 +173,7 @@ public class HarrisCountyDistrictClerkComEngine implements CourtRecordEngine {
                 courtRecord = populateCourtRecord(entry, site);
                 courtRecords.add(courtRecord);
                 //save each record in case of application failures
-                outputUtil.addRecordToMainWorkbook(courtRecord);
+                recordOutputUtil.addRecordToMainWorkbook(courtRecord);
                 spiderUtil.sleep(ConnectionUtil.getSleepTime(site), true);//sleep at random interval
                 
             } else {
@@ -203,15 +203,15 @@ public class HarrisCountyDistrictClerkComEngine implements CourtRecordEngine {
     }
 
     
-    public OutputUtil initializeOutputter(State state, Site site) throws SpiderException {
-    	OutputUtil outputUtil = new OutputUtil(state, new CourtRecord(), site);
+    public RecordOutputUtil initializeOutputter(State state, Site site) throws SpiderException {
+    	RecordOutputUtil recordOutputUtil = new RecordOutputUtil(state, new CourtRecord(), site);
         try {
-            crawledIds = outputUtil.getPreviousIds();
-            outputUtil.createSpreadsheet();
+            crawledIds = recordOutputUtil.getPreviousIds();
+            recordOutputUtil.createSpreadsheet();
         } catch (ExcelOutputException | IDCheckException e) {
             throw e;
         }
-        return outputUtil;
+        return recordOutputUtil;
     }
     
     

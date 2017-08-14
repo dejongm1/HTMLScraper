@@ -1,19 +1,26 @@
 package com.mcd.spider.main.entities.record;
 
+import java.lang.reflect.Field;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Comparator;
+import java.util.List;
+
+import org.apache.log4j.Logger;
+
+import com.google.common.base.CaseFormat;
+
 import jxl.write.Label;
 import jxl.write.WritableSheet;
 import jxl.write.WriteException;
-import org.apache.log4j.Logger;
-
-import java.lang.reflect.Field;
-import java.text.SimpleDateFormat;
-import java.util.*;
 
 
 public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 	
 	public enum RecordColumnEnum {
-		//the column names should match the fields names (lowercase, spaces removed)
+		//the column names should match the fields names (camel case, spaces removed)
 		ID_COLUMN(0, "ID"),
 		FULLNAME_COLUMN(1, "Full Name"),
 		FIRSTNAME_COLUMN(2, "First Name"),
@@ -37,10 +44,16 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 	
 		private int columnIndex;
 		private String columnTitle;
+		private String fieldName;
+		private String getter;
+		private String setter;
 		
 		RecordColumnEnum(int columnIndex, String columnTitle) {
 			this.columnIndex = columnIndex;
 			this.columnTitle = columnTitle;
+			this.fieldName = CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, columnTitle);
+			this.getter = "get" + CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, columnTitle);
+			this.setter = "set" + CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, columnTitle);
 		}
 		public int index() {
 			return columnIndex;
@@ -48,7 +61,15 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 		public String title() {
 			return columnTitle;
 		}
-		
+		public String getFieldName() {
+			return fieldName;
+		}
+		public String getGetter() {
+			return getter;
+		}
+		public String getSetter() {
+			return setter;
+		}
 	}
 
 	public static final Logger logger = Logger.getLogger(ArrestRecord.class);
