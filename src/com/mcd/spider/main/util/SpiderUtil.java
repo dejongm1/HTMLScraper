@@ -22,7 +22,7 @@ public class SpiderUtil {
 	
 	public SpiderUtil(){
 		loadProperties();
-		connectionUtil = new ConnectionUtil();
+		connectionUtil = new ConnectionUtil(true);
 		//this.properties = loadProperties();
 	}
 //	public Properties getProperties() {

@@ -31,7 +31,7 @@ public class AuditEngine {
 	private SpiderUtil spiderUtil = new SpiderUtil();
 	private Map<String, Boolean> urlsToCrawl = new HashMap<>();
     private AuditSpider spider;
-    private ConnectionUtil connectionUtil = new ConnectionUtil();
+    private ConnectionUtil connectionUtil = new ConnectionUtil(true);
     
 	
 	public void performSEOAudit(AuditParameters auditParams) {

@@ -22,10 +22,8 @@ public class ConnectionUtil {
 	
 	private static final Logger logger = Logger.getLogger(ConnectionUtil.class);
 	
-	private static String userAgent;
+	private String userAgent;
 	private static boolean offline = Boolean.parseBoolean(System.getProperty("offline"));
-	
-	public  ConnectionUtil(){}
 	
 	public ConnectionUtil(boolean useSameUserAgent){
 		if (useSameUserAgent) {
@@ -79,6 +77,10 @@ public class ConnectionUtil {
 		int r = getRandom(userAgentList.length-1, -1, false);
 		logger.trace("User-agent: " + userAgentList[r]);
 		return userAgentList[r];
+	}
+
+	public void changeUserAgent() {
+		userAgent = getRandomUserAgent();
 	}
 	
 	public static int getSleepTime(Site site) {

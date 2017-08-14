@@ -12,7 +12,7 @@ public class HarrisCountyDistrictClerkComSite implements SiteService {
 	private String baseUrl;
 	private int maxAttempts = 3;
 	private int[] perRecordSleepRange = new int[]{0,0};
-    private ConnectionUtil connectionUtil = new ConnectionUtil();
+    private ConnectionUtil connectionUtil = new ConnectionUtil(true);
 		
 	public HarrisCountyDistrictClerkComSite() {
 		setBaseUrl(null);

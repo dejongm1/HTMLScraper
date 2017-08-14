@@ -57,7 +57,6 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         this.filter = filter;
 	    offline = System.getProperty("offline").equals("true");
 
-        //while(recordsProcessed <= maxNumberOfResults) {
         ArrestsDotOrgSite site = (ArrestsDotOrgSite) getSite(new String[]{state.getName()});
         OutputUtil outputUtil = initializeOutputter(state, site);
         connectionUtil = new ConnectionUtil(true);
@@ -81,7 +80,6 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 
         spiderUtil.sendEmail(state);
         
-        //}
         totalTime = System.currentTimeMillis() - totalTime;
         if (!offline) {
             logger.info("Sleep time was approximately " + sleepTimeSum + " ms");
@@ -180,17 +178,20 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 
             //build a list of details page urls by parsing results page docs
             Map<Object,String> recordDetailUrlMap = new HashMap<>();
-            for (Map.Entry<Integer, Document> entry : resultsDocPlusMiscMap.entrySet()) {
-                Document doc = entry.getValue();
-                //only proceed if document was retrieved
-                if (spiderUtil.docWasRetrieved(doc) && doc.baseUri().contains("&results=")){
-                    logger.debug("Gather complete list of records to scrape from " + doc.baseUri());
-                    recordDetailUrlMap.putAll(parseDocForUrls(doc, htmlSite));
-                    //include some non-detail page links then randomize
-                    recordDetailUrlMap.putAll(htmlSite.getMiscSafeUrlsFromDoc(mainPageDoc, recordDetailUrlMap.size())); 
-                } else {
-                    logger.info("Nothing was retrieved for " + doc.baseUri());
-                }
+
+            while(recordDetailUrlMap.size() <= maxNumberOfResults) {
+            	for (Map.Entry<Integer, Document> entry : resultsDocPlusMiscMap.entrySet()) {
+            		Document doc = entry.getValue();
+            		//only proceed if document was retrieved
+            		if (spiderUtil.docWasRetrieved(doc) && doc.baseUri().contains("&results=")){
+            			logger.debug("Gather complete list of records to scrape from " + doc.baseUri());
+            			recordDetailUrlMap.putAll(parseDocForUrls(doc, htmlSite));
+            			//include some non-detail page links then randomize
+            			recordDetailUrlMap.putAll(htmlSite.getMiscSafeUrlsFromDoc(mainPageDoc, recordDetailUrlMap.size())); 
+            		} else {
+            			logger.info("Nothing was retrieved for " + doc.baseUri());
+            		}
+            	}
             }
 
             int recordsGathered = recordDetailUrlMap.size();
@@ -431,14 +432,15 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             logger.debug(cookieEntry.getKey() + "=" + cookieEntry.getValue());
 		}
     	String cookieToCycle = response.cookie("__utmb");
-    	int recordCap = offline?3:100;
+    	int recordCap = offline?3:330;
 		if (recordsProcessed % recordCap == 0) {
-			//every 100 records, cycle back to 1
-			//TODO change user-agent as well?
+			//every 330 records, cycle back to 1
 			//TODO change IP?
 			//these should only increment with results page views or new details pages, not layover details
-//			response.cookie("views_session", "1");
-//			response.cookie("views_24", "1");
+			response.cookie("views_24", "1");
+			response.cookie("views_session", "1");
+			response.cookie("starttime_24", String.valueOf(Calendar.getInstance().getTime().getTime()));
+			connectionUtil.changeUserAgent();
 			String[] stringPieces = cookieToCycle.split("\\.");
 			try {
 				String newCookie = stringPieces[0] + "." + "1" + "." + stringPieces[2] + "." + stringPieces[3];

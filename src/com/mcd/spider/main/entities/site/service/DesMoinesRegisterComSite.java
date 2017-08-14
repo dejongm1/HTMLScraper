@@ -24,7 +24,7 @@ public class DesMoinesRegisterComSite implements SiteService {
 	private String baseUrl;
 	private static final int[] perRecordSleepRange = new int[]{1,2};
 	private final int maxAttempts = 3;
-    private ConnectionUtil connectionUtil = new ConnectionUtil();
+    private ConnectionUtil connectionUtil = new ConnectionUtil(true);
 
 	public DesMoinesRegisterComSite(String[] args) {
 		setBaseUrl(args);
