@@ -43,6 +43,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     private RecordFilterEnum filter;
     private boolean offline;
     private ConnectionUtil connectionUtil;
+    private State state;
 
     @Override
     public Site getSite(String[] args) {
@@ -52,8 +53,8 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     @Override
     public void getArrestRecords(State state, long maxNumberOfResults, RecordFilterEnum filter) throws SpiderException {
         long totalTime = System.currentTimeMillis();
+        this.state = state;
         long recordsProcessed = 0;
-        int sleepTimeSum = 0;
         this.filter = filter;
 	    offline = System.getProperty("offline").equals("true");
 
@@ -65,11 +66,10 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         logger.info("----Site: " + site.getName() + "-" + state.getName() + "----");
         logger.debug("Sending spider " + (offline?"offline":"online" ));
         
-        int sleepTimeAverage = (site.getPerRecordSleepRange()[0]+site.getPerRecordSleepRange()[1])/2;
-        sleepTimeSum += offline?0:sleepTimeAverage;
+        int sleepTimeAverage = offline?0:(site.getPerRecordSleepRange()[0]+site.getPerRecordSleepRange()[1])/2000;
         long time = System.currentTimeMillis();
         
-        recordsProcessed += scrapeSite(state, site, outputUtil, 1, maxNumberOfResults);
+        recordsProcessed += scrapeSite(site, outputUtil, 1, maxNumberOfResults);
         
         time = System.currentTimeMillis() - time;
         logger.info(site.getBaseUrl() + " took " + time + " ms");
@@ -82,8 +82,8 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         
         totalTime = System.currentTimeMillis() - totalTime;
         if (!offline) {
-            logger.info("Sleep time was approximately " + sleepTimeSum + " ms");
-            logger.info("Processing time was approximately " + (totalTime-sleepTimeSum) + " ms");
+            logger.info("Sleep time was approximately " + sleepTimeAverage*recordsProcessed + " ms");
+            logger.info("Processing time was approximately " + (totalTime-(sleepTimeAverage*recordsProcessed)) + " ms");
         } else {
             logger.info("Total time taken was " + totalTime + " ms");
         }
@@ -91,7 +91,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     }
 
     @Override
-    public int scrapeSite(State state, Site site, OutputUtil outputUtil, int attemptCount, long maxNumberOfResults) {
+    public int scrapeSite(Site site, OutputUtil outputUtil, int attemptCount, long maxNumberOfResults) {
         //refactor to split out randomizing functionality, maybe reuse??
     	int maxAttempts = site.getMaxAttempts();
         int recordsProcessed = 0;
@@ -110,12 +110,12 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             nextRequestCookies = response.cookies();
         } catch (IOException e) {
             logger.error("Couldn't make initial connection to site. Trying again " + (maxAttempts-attemptCount) + " more times", e);
-            //if it's a 500, we're probably blocked. Try a new user-agent TODO and IP if possible
+            //if it's a 500, we're probably blocked. Try a new user-agent TODO and IP if possible, else bail
             if (e instanceof HttpStatusException && ((HttpStatusException) e).getStatusCode()==500) {
             	connectionUtil = new ConnectionUtil(true);
             }
             attemptCount++;
-            scrapeSite(state, site, outputUtil, attemptCount, maxNumberOfResults);
+            scrapeSite(site, outputUtil, attemptCount, maxNumberOfResults);
         }
         if (spiderUtil.docWasRetrieved(mainPageDoc) && attemptCount<=maxAttempts) {
             //restricting to 2 pages for now
@@ -159,7 +159,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 	            	//if docToCheck contains a crawledId, remember page number and don't add subsequent pages
 	            	for (String crawledId : crawledIds) {
 	            		if (furthestPageToCheck==9999) {
-			            	if (docToCheck!=null && docToCheck.html().contains(crawledId)) {
+			            	if (docToCheck!=null && ((ArrestsDotOrgSite) site).isAResultsDoc(docToCheck) && docToCheck.html().contains(crawledId)) {
 			            		//set as current page number
 			            		furthestPageToCheck = page;
 			            	}
@@ -180,31 +180,32 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             Map<Object,String> recordDetailUrlMap = new HashMap<>();
 
             while(recordDetailUrlMap.size() <= maxNumberOfResults) {
-            	for (Map.Entry<Integer, Document> entry : resultsDocPlusMiscMap.entrySet()) {
-            		Document doc = entry.getValue();
-            		//only proceed if document was retrieved
-            		if (spiderUtil.docWasRetrieved(doc) && doc.baseUri().contains("&results=")){
-            			logger.debug("Gather complete list of records to scrape from " + doc.baseUri());
-            			recordDetailUrlMap.putAll(parseDocForUrls(doc, htmlSite));
-            			//include some non-detail page links then randomize
-            			recordDetailUrlMap.putAll(htmlSite.getMiscSafeUrlsFromDoc(mainPageDoc, recordDetailUrlMap.size())); 
-            		} else {
-            			logger.info("Nothing was retrieved for " + doc.baseUri());
-            		}
-            	}
+            for (Map.Entry<Integer, Document> entry : resultsDocPlusMiscMap.entrySet()) {
+                Document doc = entry.getValue();
+                //only crawl for records if document was retrieved, is a results doc and has not already been crawled
+                int page = entry.getKey();
+                if (spiderUtil.docWasRetrieved(doc) && doc.baseUri().contains("&results=") && page<=furthestPageToCheck){
+                    logger.debug("Gather complete list of records to scrape from " + doc.baseUri());
+                    recordDetailUrlMap.putAll(parseDocForUrls(doc, htmlSite));
+                    //include some non-detail page links then randomize
+                    recordDetailUrlMap.putAll(htmlSite.getMiscSafeUrlsFromDoc(mainPageDoc, recordDetailUrlMap.size())); 
+                } else {
+                    logger.info("Nothing was retrieved for " + doc.baseUri());
+                }
+            }
             }
 
             int recordsGathered = recordDetailUrlMap.size();
             logger.info("Gathered links for " + recordsGathered + " record profiles and misc");
 
-            spiderUtil.sleep(1000, true);
+            spiderUtil.sleep(100000, true);
             //****iterate over collection, scraping records and simply opening others
             recordsProcessed += scrapeRecords(recordDetailUrlMap, site, outputUtil, nextRequestCookies);
 
         } else {
             logger.error("Failed to load html doc from " + site.getBaseUrl()+ ". Trying again " + (maxAttempts-attemptCount) + " more times");
             attemptCount++;
-            scrapeSite(state, site, outputUtil, attemptCount, maxNumberOfResults);
+            scrapeSite(site, outputUtil, attemptCount, maxNumberOfResults);
         }
         return recordsProcessed;
     }
@@ -262,13 +263,21 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             }
             if (htmlSite.isARecordDetailDoc(profileDetailDoc)) {
                 if (spiderUtil.docWasRetrieved(profileDetailDoc)) {
-                    recordsProcessed++;
-                    //should we check for ID first or not bother unless we start seeing duplicates??
-                    arrestRecord = populateArrestRecord(profileDetailDoc, htmlSite);
-                    arrestRecords.add(arrestRecord);
-                    //save each record in case of failures mid-crawling
-                    outputUtil.addRecordToMainWorkbook(arrestRecord);
-                    spiderUtil.sleep(connectionUtil.getSleepTime(htmlSite), true);//sleep at random interval
+                    try {
+                        recordsProcessed++;
+                        //should we check for ID first or not bother unless we start seeing duplicates??
+                        arrestRecord = populateArrestRecord(profileDetailDoc, htmlSite);
+                        //try to match the record/county to the state being crawled
+                        if (arrestRecord.getState()==null || arrestRecord.getState().equalsIgnoreCase(state.getName())) {
+                            arrestRecords.add(arrestRecord);
+                            //save each record in case of failures mid-crawling
+                            outputUtil.addRecordToMainWorkbook(arrestRecord);
+                            logger.debug("Record " + recordsProcessed + " saved");
+                        }
+                        spiderUtil.sleep(connectionUtil.getSleepTime(htmlSite), true);//sleep at random interval
+                    } catch (Exception e) {
+                        logger.error("Generic exception caught while trying to grab arrest record for " + profileDetailDoc.baseUri(), e);
+                    }
                     
                 } else {
                     logger.error("Failed to load html doc from " + url);
@@ -330,7 +339,6 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         String label = profileDetailElement.select("b").text().toLowerCase();
         Elements charges = profileDetailElement.select(".charges li");
         if (!charges.isEmpty()) {
-            //should I try to categorize charge types here???
             String[] chargeStrings = new String[charges.size()];
             for (int c = 0; c < charges.size(); c++) {
                 chargeStrings[c] = charges.get(c).text();
@@ -413,15 +421,17 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     	List<Record> filteredArrestRecords = new ArrayList<>();
     	for (Record record : fullArrestRecords) {
     		boolean recordMatches = false;
-    		String[] charges = ((ArrestRecord) record).getCharges();
-    		for (String charge : charges) {
-    			if (!recordMatches) {
-    				recordMatches = RecordFilter.filter(charge, filter);
-    			}
-    		}
-    		if (recordMatches) {
-    			filteredArrestRecords.add(record);
-    		}
+    		if (((ArrestRecord) record).getCharges()!=null) {
+                String[] charges = ((ArrestRecord) record).getCharges();
+                for (String charge : charges) {
+                    if (!recordMatches) {
+                        recordMatches = RecordFilter.filter(charge, filter);
+                    }
+                }
+                if (recordMatches) {
+                    filteredArrestRecords.add(record);
+                }
+            }
     	}
     	return filteredArrestRecords;
     }
@@ -431,9 +441,9 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 			nextRequestCookies.put(cookieEntry.getKey(), cookieEntry.getValue());
             logger.debug(cookieEntry.getKey() + "=" + cookieEntry.getValue());
 		}
-    	String cookieToCycle = response.cookie("__utmb");
+
     	int recordCap = offline?3:330;
-		if (recordsProcessed % recordCap == 0) {
+		if (recordsProcessed % recordCap == 0 && recordsProcessed != 0) {
 			//every 330 records, cycle back to 1
 			//TODO change IP?
 			//these should only increment with results page views or new details pages, not layover details
@@ -441,14 +451,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 			response.cookie("views_session", "1");
 			response.cookie("starttime_24", String.valueOf(Calendar.getInstance().getTime().getTime()));
 			connectionUtil.changeUserAgent();
-			String[] stringPieces = cookieToCycle.split("\\.");
-			try {
-				String newCookie = stringPieces[0] + "." + "1" + "." + stringPieces[2] + "." + stringPieces[3];
-				nextRequestCookies.put("__utmb", newCookie);
-			} catch (NumberFormatException nfe) {
-				logger.error("Failed to parse __utmb cookie for resetting");
-			}
-		}
+        }
     	return nextRequestCookies;
     }
 }

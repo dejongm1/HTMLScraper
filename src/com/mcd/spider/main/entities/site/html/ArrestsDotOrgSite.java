@@ -18,7 +18,7 @@ public class ArrestsDotOrgSite implements SiteHTML {
 	private String baseUrl;
 	private int pages;
 	private int totalRecordCount;
-	private static final int[] perRecordSleepRange = new int[]{5,15};
+	private static final int[] perRecordSleepRange = new int[]{5000,15000};
 	private Map<String,Document> resultsPageDocuments;
 	private final int maxAttempts = 3;
 
@@ -176,7 +176,7 @@ public class ArrestsDotOrgSite implements SiteHTML {
     @Override
     public boolean isARecordDetailDoc(Document doc) {
         if (doc!=null) {
-            return doc.baseUri().matches(".*[A-Za-z]+_[0-9]/?.+");
+            return doc.baseUri().matches(".*[A-Za-z]+_[0-9]/?.+") && doc.baseUri().endsWith("/?d=1");
         } else {
             return false;
         }

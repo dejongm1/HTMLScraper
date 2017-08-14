@@ -1,19 +1,13 @@
 package com.mcd.spider.main.entities.record;
 
-import java.lang.reflect.Field;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Comparator;
-import java.util.List;
-
-import org.apache.log4j.Logger;
-
 import jxl.write.Label;
 import jxl.write.WritableSheet;
-import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
+import org.apache.log4j.Logger;
+
+import java.lang.reflect.Field;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 
 public class ArrestRecord implements Record, Comparable<ArrestRecord>{
@@ -246,9 +240,8 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 	public static Comparator<Record> CountyComparator = new Comparator<Record>() {
 		@Override
 		public int compare(Record record1, Record record2) {
-
-			String recordCounty1 = ((ArrestRecord) record1).getCounty().toUpperCase();
-			String recordCounty2 = ((ArrestRecord) record2).getCounty().toUpperCase();
+			String recordCounty1 = ((ArrestRecord) record1).getCounty()!=null?((ArrestRecord) record1).getCounty().toUpperCase():"No County";
+			String recordCounty2 = ((ArrestRecord) record2).getCounty()!=null?((ArrestRecord) record2).getCounty().toUpperCase():"No County";
 			//ascending order
 			return recordCounty1.compareTo(recordCounty2);
 		}

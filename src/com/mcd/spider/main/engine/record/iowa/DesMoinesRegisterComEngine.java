@@ -73,7 +73,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
 	        sleepTimeSum += offline?0:sleepTimeAverage;
 	        long time = System.currentTimeMillis();
 	        
-	        recordsProcessed += scrapeSite(state, site, outputUtil, 1, maxNumberOfResults);
+	        recordsProcessed += scrapeSite(site, outputUtil, 1, maxNumberOfResults);
 	        
 	        time = System.currentTimeMillis() - time;
 	        logger.info(site.getBaseUrl() + " took " + time + " ms");
@@ -94,7 +94,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     }
 
     @Override
-    public int scrapeSite(State state, Site site, OutputUtil outputUtil, int attemptCount, long maxNumberOfResults) {
+    public int scrapeSite(Site site, OutputUtil outputUtil, int attemptCount, long maxNumberOfResults) {
         int recordsProcessed = 0;
         SiteService serviceSite = (DesMoinesRegisterComSite) site;
         for (String county : ((DesMoinesRegisterComSite) site).getCounties()) {
