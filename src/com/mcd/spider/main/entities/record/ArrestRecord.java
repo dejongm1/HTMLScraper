@@ -240,9 +240,8 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 	public static Comparator<Record> CountyComparator = new Comparator<Record>() {
 		@Override
 		public int compare(Record record1, Record record2) {
-            //TODO use fake string if null
-			String recordCounty1 = ((ArrestRecord) record1).getCounty().toUpperCase();
-			String recordCounty2 = ((ArrestRecord) record2).getCounty().toUpperCase();
+			String recordCounty1 = ((ArrestRecord) record1).getCounty()!=null?((ArrestRecord) record1).getCounty().toUpperCase():"No County";
+			String recordCounty2 = ((ArrestRecord) record2).getCounty()!=null?((ArrestRecord) record2).getCounty().toUpperCase():"No County";
 			//ascending order
 			return recordCounty1.compareTo(recordCounty2);
 		}

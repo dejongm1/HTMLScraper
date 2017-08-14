@@ -176,7 +176,7 @@ public class ArrestsDotOrgSite implements SiteHTML {
     @Override
     public boolean isARecordDetailDoc(Document doc) {
         if (doc!=null) {
-            return doc.baseUri().matches(".*[A-Za-z]+_[0-9]/?.+");//TODO can this be improved? http://iowa.arrests.org/Arrests/Dawn_Delvichio_33886999/ passes
+            return doc.baseUri().matches(".*[A-Za-z]+_[0-9]/?.+") && doc.baseUri().endsWith("/?d=1");
         } else {
             return false;
         }
