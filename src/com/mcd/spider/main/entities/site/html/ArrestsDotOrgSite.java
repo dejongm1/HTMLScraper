@@ -20,7 +20,8 @@ public class ArrestsDotOrgSite implements SiteHTML {
 	private int totalRecordCount;
 	private static final int[] perRecordSleepRange = new int[]{5000,15000};
 	private Map<String,Document> resultsPageDocuments;
-	private final int maxAttempts = 3;
+	private int maxAttempts = 3;
+	private int resultsPerPage = 56;
 
 	public ArrestsDotOrgSite (String[] args) {
 		setBaseUrl(args);
@@ -38,6 +39,9 @@ public class ArrestsDotOrgSite implements SiteHTML {
 	public int[] getPerRecordSleepRange() {
 		return perRecordSleepRange;
 	}
+	public int getResultsPerPage() {
+		return resultsPerPage;
+	}
 	@Override
 	public String generateResultsPageUrl(int page/*, int resultsPerPage*/) {
 		String builtUrl = baseUrl;
@@ -45,7 +49,7 @@ public class ArrestsDotOrgSite implements SiteHTML {
 		/*if (resultsPerPage % 14 == 0) {
 			builtUrl += "&results="+resultsPerPage;
 		} else {*/
-			builtUrl += "&results=56";
+			builtUrl += "&results=" + resultsPerPage;
 		/*}*/
 		return builtUrl;
 	}

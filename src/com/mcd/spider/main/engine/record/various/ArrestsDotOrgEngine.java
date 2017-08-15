@@ -119,9 +119,11 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             scrapeSite(site, recordOutputUtil, attemptCount, maxNumberOfResults);
         }
         if (spiderUtil.docWasRetrieved(mainPageDoc) && attemptCount<=maxAttempts) {
-            //restricting to 2 pages for now
-        	//int numberOfPages = site.getTotalPages(mainPageDoc);
-        	int numberOfPages = 3;
+        	int numberOfPages = ((ArrestsDotOrgSite) site).getTotalPages(mainPageDoc);
+        	if (numberOfPages > maxNumberOfResults / ((ArrestsDotOrgSite)site).getResultsPerPage()) {
+        		numberOfPages = (int) maxNumberOfResults / ((ArrestsDotOrgSite)site).getResultsPerPage();
+        		numberOfPages = (int) maxNumberOfResults % ((ArrestsDotOrgSite)site).getResultsPerPage()>0?numberOfPages+1:numberOfPages+0;
+        	}
             if (numberOfPages==0) {
                 numberOfPages = 1;
             }
@@ -200,7 +202,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 
             spiderUtil.sleep(100000, true);
             //****iterate over collection, scraping records and simply opening others
-            recordsProcessed += scrapeRecords(recordDetailUrlMap, site, recordOutputUtil, nextRequestCookies);
+            recordsProcessed += scrapeRecords(recordDetailUrlMap, site, recordOutputUtil, nextRequestCookies, maxNumberOfResults);
 
         } else {
             logger.error("Failed to load html doc from " + site.getBaseUrl()+ ". Trying again " + (maxAttempts-attemptCount) + " more times");
@@ -228,7 +230,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     
     @SuppressWarnings({ "unchecked", "rawtypes", "static-access" })
 	@Override
-    public int scrapeRecords(Map<Object,String> recordsDetailsUrlMap, Site site, RecordOutputUtil recordOutputUtil, Map<String,String> cookies) {
+    public int scrapeRecords(Map<Object,String> recordsDetailsUrlMap, Site site, RecordOutputUtil recordOutputUtil, Map<String,String> cookies, long maxNumberOfResults) {
     	SiteHTML htmlSite = (ArrestsDotOrgSite) site;
     	int failedAttempts = 0;
         int recordsProcessed = 0;
@@ -239,53 +241,55 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         String previousKey = String.valueOf(keys.get(keys.size()-1));
         Map<String,String> nextRequestCookies = cookies;
         for (Object k : keys) {
-            String url = recordsDetailsUrlMap.get(k);
-    		Document profileDetailDoc = null;
-        	try {
-        		//can we guarantee previous is a page that has access to the current?
-            	//TODO also set headers?
-    			Connection.Response response = connectionUtil.retrieveConnectionResponse(url, recordsDetailsUrlMap.get(previousKey), nextRequestCookies);
-    			profileDetailDoc = response.parse();
-        		nextRequestCookies = setCookies(response, nextRequestCookies, recordsProcessed);
-        		//depending on response status code, take action
-        	} catch (FileNotFoundException fnfe) {
-            	logger.error("No html doc found for " + url);
-            } catch (IOException e) {
-            	failedAttempts++;
-        		logger.error("Failed to get a connection to " + recordsDetailsUrlMap.get(k), e);
-            	if (failedAttempts>=site.getMaxAttempts()) {
-            		//save remaining records to file and exit 
-            		//TODO or retry with new connection/IP?
-            		recordOutputUtil.backupUnCrawledRecords(recordsDetailsUrlMap);
-            		logger.info("Hit the limit of failed connections. Saving list of unprocessed records and quitting");
-            		return recordsProcessed;
-            	}
-            }
-            if (htmlSite.isARecordDetailDoc(profileDetailDoc)) {
-                if (spiderUtil.docWasRetrieved(profileDetailDoc)) {
-                    try {
-                        recordsProcessed++;
-                        //should we check for ID first or not bother unless we start seeing duplicates??
-                        arrestRecord = populateArrestRecord(profileDetailDoc, htmlSite);
-                        //try to match the record/county to the state being crawled
-                        if (arrestRecord.getState()==null || arrestRecord.getState().equalsIgnoreCase(state.getName())) {
-                            arrestRecords.add(arrestRecord);
-                            //save each record in case of failures mid-crawling
-                            recordOutputUtil.addRecordToMainWorkbook(arrestRecord);
-                            logger.debug("Record " + recordsProcessed + " saved");
-                        }
-                        spiderUtil.sleep(connectionUtil.getSleepTime(htmlSite), true);//sleep at random interval
-                    } catch (Exception e) {
-                        logger.error("Generic exception caught while trying to grab arrest record for " + profileDetailDoc.baseUri(), e);
-                    }
-                    
-                } else {
-                    logger.error("Failed to load html doc from " + url);
-                }
-            }
-            spiderUtil.sleep(connectionUtil.getSleepTime(htmlSite)/2, false);
-        	logger.info("Sleeping for half time because no record was crawled");
-            previousKey = String.valueOf(k);
+        	if (recordsProcessed<=maxNumberOfResults) {
+	            String url = recordsDetailsUrlMap.get(k);
+	    		Document profileDetailDoc = null;
+	        	try {
+	        		//can we guarantee previous is a page that has access to the current?
+	            	//TODO also set headers?
+	    			Connection.Response response = connectionUtil.retrieveConnectionResponse(url, recordsDetailsUrlMap.get(previousKey), nextRequestCookies);
+	    			profileDetailDoc = response.parse();
+	        		nextRequestCookies = setCookies(response, nextRequestCookies, recordsProcessed);
+	        		//depending on response status code, take action
+	        	} catch (FileNotFoundException fnfe) {
+	            	logger.error("No html doc found for " + url);
+	            } catch (IOException e) {
+	            	failedAttempts++;
+	        		logger.error("Failed to get a connection to " + recordsDetailsUrlMap.get(k), e);
+	            	if (failedAttempts>=site.getMaxAttempts()) {
+	            		//save remaining records to file and exit 
+	            		//TODO or retry with new connection/IP?
+	            		recordOutputUtil.backupUnCrawledRecords(recordsDetailsUrlMap);
+	            		logger.info("Hit the limit of failed connections. Saving list of unprocessed records and quitting");
+	            		return recordsProcessed;
+	            	}
+	            }
+	            if (htmlSite.isARecordDetailDoc(profileDetailDoc)) {
+	                if (spiderUtil.docWasRetrieved(profileDetailDoc)) {
+	                    try {
+	                        recordsProcessed++;
+	                        //should we check for ID first or not bother unless we start seeing duplicates??
+	                        arrestRecord = populateArrestRecord(profileDetailDoc, htmlSite);
+	                        //try to match the record/county to the state being crawled
+	                        if (arrestRecord.getState()==null || arrestRecord.getState().equalsIgnoreCase(state.getName())) {
+	                            arrestRecords.add(arrestRecord);
+	                            //save each record in case of failures mid-crawling
+	                            recordOutputUtil.addRecordToMainWorkbook(arrestRecord);
+	                            logger.debug("Record " + recordsProcessed + " saved");
+	                        }
+	                        spiderUtil.sleep(connectionUtil.getSleepTime(htmlSite), true);//sleep at random interval
+	                    } catch (Exception e) {
+	                        logger.error("Generic exception caught while trying to grab arrest record for " + profileDetailDoc.baseUri(), e);
+	                    }
+	                    
+	                } else {
+	                    logger.error("Failed to load html doc from " + url);
+	                }
+	            }
+	            spiderUtil.sleep(connectionUtil.getSleepTime(htmlSite)/2, false);
+	        	logger.info("Sleeping for half time because no record was crawled");
+	            previousKey = String.valueOf(k);
+        	}
         }
         
         //format the output
