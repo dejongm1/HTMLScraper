@@ -60,6 +60,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 
         ArrestsDotOrgSite site = (ArrestsDotOrgSite) getSite(new String[]{state.getName()});
         RecordOutputUtil recordOutputUtil = initializeOutputter(state, site);
+        //TODO check if this persists between states in same run
         connectionUtil = new ConnectionUtil(true);
         
         long siteTime = System.currentTimeMillis();
@@ -179,6 +180,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             //build a list of details page urls by parsing results page docs
             Map<Object,String> recordDetailUrlMap = new HashMap<>();
 
+            //TODO parse a page at a time instead of all details at once?
             for (Map.Entry<Integer, Document> entry : resultsDocPlusMiscMap.entrySet()) {
                 Document doc = entry.getValue();
                 //only crawl for records if document was retrieved, is a results doc and has not already been crawled
