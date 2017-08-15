@@ -179,7 +179,6 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             //build a list of details page urls by parsing results page docs
             Map<Object,String> recordDetailUrlMap = new HashMap<>();
 
-            while(recordDetailUrlMap.size() <= maxNumberOfResults) {
             for (Map.Entry<Integer, Document> entry : resultsDocPlusMiscMap.entrySet()) {
                 Document doc = entry.getValue();
                 //only crawl for records if document was retrieved, is a results doc and has not already been crawled
@@ -188,11 +187,10 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
                     logger.debug("Gather complete list of records to scrape from " + doc.baseUri());
                     recordDetailUrlMap.putAll(parseDocForUrls(doc, htmlSite));
                     //include some non-detail page links then randomize
-                    recordDetailUrlMap.putAll(htmlSite.getMiscSafeUrlsFromDoc(mainPageDoc, recordDetailUrlMap.size())); 
+                    recordDetailUrlMap.putAll(htmlSite.getMiscSafeUrlsFromDoc(mainPageDoc, recordDetailUrlMap.size()));
                 } else {
                     logger.info("Nothing was retrieved for " + doc.baseUri());
                 }
-            }
             }
 
             int recordsGathered = recordDetailUrlMap.size();
