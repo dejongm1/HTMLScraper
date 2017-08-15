@@ -12,8 +12,9 @@ import com.mcd.spider.main.exception.ExcelOutputException;
 import com.mcd.spider.main.exception.IDCheckException;
 import com.mcd.spider.main.exception.SpiderException;
 import com.mcd.spider.main.util.ConnectionUtil;
-import com.mcd.spider.main.util.RecordOutputUtil;
 import com.mcd.spider.main.util.SpiderUtil;
+import com.mcd.spider.main.util.io.RecordOutputUtil;
+
 import common.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;

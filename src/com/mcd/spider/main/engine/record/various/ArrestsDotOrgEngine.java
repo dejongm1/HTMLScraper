@@ -14,8 +14,9 @@ import com.mcd.spider.main.exception.ExcelOutputException;
 import com.mcd.spider.main.exception.IDCheckException;
 import com.mcd.spider.main.exception.SpiderException;
 import com.mcd.spider.main.util.ConnectionUtil;
-import com.mcd.spider.main.util.RecordOutputUtil;
 import com.mcd.spider.main.util.SpiderUtil;
+import com.mcd.spider.main.util.io.RecordOutputUtil;
+
 import org.apache.log4j.Logger;
 import org.jsoup.Connection;
 import org.jsoup.HttpStatusException;
@@ -325,10 +326,12 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 
     @Override
     public RecordOutputUtil initializeOutputter(State state, Site site) throws SpiderException {
+    	//TODO load new IOUtil instead
     	RecordOutputUtil recordOutputUtil = new RecordOutputUtil(state, new ArrestRecord(), site);
         try {
-            //this will get previously written IDs but then overwrite the spreadsheet
+            //load previously written records IDs into memory
             crawledIds = recordOutputUtil.getPreviousIds();
+        	//TODO load records in current spreadhseet into memory
             recordOutputUtil.createSpreadsheet();
         } catch (ExcelOutputException | IDCheckException e) {
             throw e;

@@ -1,4 +1,4 @@
-package com.mcd.spider.main.util;
+package com.mcd.spider.main.util.io;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -21,13 +21,13 @@ public class RecordInputUtil {
 	public static final Logger logger = Logger.getLogger(RecordInputUtil.class);
 
 	private String docName;
-	private WritableWorkbook workbook;
+//	private WritableWorkbook workbook;
 //	private Record record;
 	private static final String OUTPUT_DIR = "output/";
 
-	public RecordInputUtil(RecordOutputUtil outputUtil) {
+	public RecordInputUtil(String docName) {
 		Calendar date = Calendar.getInstance();
-		this.docName = outputUtil.getDocName();
+		this.docName = docName;
 //		this.state = outputUtil.getState();
 //		this.record = outputUtil.getRecord();
 //		this.site = outputUtil.getSite();
@@ -36,13 +36,6 @@ public class RecordInputUtil {
 	public String getDocName() {
 		return docName;
 	}
-	public WritableWorkbook getWorkbook() {
-		return workbook;
-	}
-	public void setWorkbook(WritableWorkbook workbook) {
-		this.workbook = workbook;
-	}
-
 	public List<Record> readDefaultSpreadsheet() {
 		//TODO
 		List<Record> storedRecords = new ArrayList<>();

@@ -7,7 +7,7 @@ import com.mcd.spider.main.entities.record.filter.RecordFilter.RecordFilterEnum;
 import com.mcd.spider.main.exception.ExcelOutputException;
 import com.mcd.spider.main.exception.SpiderException;
 import com.mcd.spider.main.exception.StateNotReadyException;
-import com.mcd.spider.main.util.InputUtil;
+import com.mcd.spider.main.util.MainInputUtil;
 import com.mcd.spider.main.util.SpiderConstants;
 import org.apache.log4j.Logger;
 
@@ -23,7 +23,7 @@ import java.util.List;
 public class SpiderMain {
 
 	private static final Logger logger = Logger.getLogger(SpiderMain.class);
-	private static InputUtil inputUtil;
+	private static MainInputUtil mainInputUtil;
 	private static SpiderEngine engine;
 	
 	private static String prompt;
@@ -32,7 +32,7 @@ public class SpiderMain {
 
 	public static void  main(String[] args) throws IOException {
 		logger.info("Application started");
-		inputUtil = new InputUtil();
+		mainInputUtil = new MainInputUtil();
 		engine = new SpiderEngine();
 		
 		if (prompt==null) {
@@ -41,7 +41,7 @@ public class SpiderMain {
 		String scrapeTypeChoice = "";
 		
 		if (args.length==0) {
-			scrapeTypeChoice = (String) inputUtil.getInput(prompt, 3, "");
+			scrapeTypeChoice = (String) mainInputUtil.getInput(prompt, 3, "");
 		} else if (args.length>=1) {
 			scrapeTypeChoice = args[0];
 		}
@@ -79,7 +79,7 @@ public class SpiderMain {
 					|| scrapeTypeChoice.toLowerCase().contains("enemy")
 					|| scrapeTypeChoice.equals("99")) {
 				crackArrestSite(args);
-			} else if (inputUtil.quitting(scrapeTypeChoice)) {
+			} else if (mainInputUtil.quitting(scrapeTypeChoice)) {
 				System.exit(0);
 			} else if (scrapeTypeChoice.toLowerCase().contains("help")) {
 				help(scrapeTypeChoice);
@@ -106,37 +106,37 @@ public class SpiderMain {
 	}
 
 	private static void getPopularWords(String[] args) throws IOException {
-		String url = args.length>=2?inputUtil.convertToUrl(args[1]):(String) inputUtil.getInput("URL: ", 3, SpiderConstants.URL_VALIDATION);
-		int numberOfWords = args.length>=3?inputUtil.convertToNumber(args[2]):(int) inputUtil.getInput("Number of words: ", 3, SpiderConstants.NUMBER_VALIDATION);
+		String url = args.length>=2?mainInputUtil.convertToUrl(args[1]):(String) mainInputUtil.getInput("URL: ", 3, SpiderConstants.URL_VALIDATION);
+		int numberOfWords = args.length>=3?mainInputUtil.convertToNumber(args[2]):(int) mainInputUtil.getInput("Number of words: ", 3, SpiderConstants.NUMBER_VALIDATION);
 		engine.getPopularWords(url, numberOfWords);
 	}
 	
 	private static void getTextBySelector(String[] args) throws IOException {
-		String url = args.length>=2?inputUtil.convertToUrl(args[1]):(String) inputUtil.getInput("URL: ", 3, SpiderConstants.URL_VALIDATION);
-		String selector = args.length>=3?args[2]:(String) inputUtil.getInput("Selector(s): ", 1, SpiderConstants.NO_VALIDATION);
+		String url = args.length>=2?mainInputUtil.convertToUrl(args[1]):(String) mainInputUtil.getInput("URL: ", 3, SpiderConstants.URL_VALIDATION);
+		String selector = args.length>=3?args[2]:(String) mainInputUtil.getInput("Selector(s): ", 1, SpiderConstants.NO_VALIDATION);
 		engine.getTextBySelector(url, selector);
 	}
 	
 	private static void getSearchTerms(String[] args) throws IOException {
-		String url = args.length>=2?inputUtil.convertToUrl(args[1]):(String) inputUtil.getInput("URL: ", 3, SpiderConstants.URL_VALIDATION);
-		String words = args.length>=3?args[2]:(String) inputUtil.getInput("Words: ", 1, SpiderConstants.NO_VALIDATION);
-		int flexibility = 0; //(int) inputUtil.getInput("Flexibility of search (1-3): ", 1, SpiderConstants.NUMBER_VALIDATION);
+		String url = args.length>=2?mainInputUtil.convertToUrl(args[1]):(String) mainInputUtil.getInput("URL: ", 3, SpiderConstants.URL_VALIDATION);
+		String words = args.length>=3?args[2]:(String) mainInputUtil.getInput("Words: ", 1, SpiderConstants.NO_VALIDATION);
+		int flexibility = 0; //(int) mainInputUtil.getInput("Flexibility of search (1-3): ", 1, SpiderConstants.NUMBER_VALIDATION);
 		engine.search(url, words, flexibility);
 	}
 
 	@SuppressWarnings("unchecked")
 	private static void getArrestRecords(String[] args) throws IOException, SpiderException {
-		List<State> states = args.length>=2?inputUtil.convertToStates(args[1]):(List<State>) inputUtil.getInput("State(s) or \"All\": ", 3, SpiderConstants.STATE_VALIDATION);
-		RecordFilterEnum filter = args.length>=3?inputUtil.convertToFilter(args[2]):null;
-		long maxNumberOfResults = args.length>=4?inputUtil.convertToNumber(args[3]):999999;
+		List<State> states = args.length>=2?mainInputUtil.convertToStates(args[1]):(List<State>) mainInputUtil.getInput("State(s) or \"All\": ", 3, SpiderConstants.STATE_VALIDATION);
+		RecordFilterEnum filter = args.length>=3?mainInputUtil.convertToFilter(args[2]):null;
+		long maxNumberOfResults = args.length>=4?mainInputUtil.convertToNumber(args[3]):999999;
 		engine.getArrestRecordsByState(states, maxNumberOfResults, filter);
 	}
 
 	@SuppressWarnings("unchecked")
 	private static void crackArrestSite(String[] args) throws IOException, SpiderException {
-		List<State> states = args.length>=2?inputUtil.convertToStates(args[1]):(List<State>) inputUtil.getInput("State(s) or \"All\": ", 3, SpiderConstants.STATE_VALIDATION);
-		RecordFilterEnum filter = args.length>=3?inputUtil.convertToFilter(args[2]):null;
-		long maxNumberOfResults = args.length>=4?inputUtil.convertToNumber(args[3]):5;
+		List<State> states = args.length>=2?mainInputUtil.convertToStates(args[1]):(List<State>) mainInputUtil.getInput("State(s) or \"All\": ", 3, SpiderConstants.STATE_VALIDATION);
+		RecordFilterEnum filter = args.length>=3?mainInputUtil.convertToFilter(args[2]):null;
+		long maxNumberOfResults = args.length>=4?mainInputUtil.convertToNumber(args[3]):5;
 		engine.getArrestRecordsByStateCrack(states, maxNumberOfResults, filter);
 	}
 
@@ -185,7 +185,7 @@ public class SpiderMain {
 	}
 
 //	private static void testConnectionGetter(String[] args) throws IOException {
-//        int numberOfTries = args.length>=2?inputUtil.convertToNumber(args[1]):(int) inputUtil.getInput("Number of connections to make: ", 3, SpiderConstants.NUMBER_VALIDATION);
+//        int numberOfTries = args.length>=2?mainInputUtil.convertToNumber(args[1]):(int) mainInputUtil.getInput("Number of connections to make: ", 3, SpiderConstants.NUMBER_VALIDATION);
 //        engine.testRandomConnections(numberOfTries);
 //    }
 }

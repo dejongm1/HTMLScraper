@@ -1,6 +1,6 @@
 package com.mcd.spider.main.entities.audit;
 
-import com.mcd.spider.main.util.InputUtil;
+import com.mcd.spider.main.util.MainInputUtil;
 import com.mcd.spider.main.util.SpiderConstants;
 
 import java.io.IOException;
@@ -22,7 +22,7 @@ public class AuditParameters {
 	private boolean performanceTest;
 	private boolean leanReportFlag;
 	private boolean includeCommonWordsFlag;
-	private InputUtil inputUtil = new InputUtil();
+	private MainInputUtil mainInputUtil = new MainInputUtil();
 	
 	public AuditParameters(String argString) throws IOException {
 		parseOutParameters(argString);
@@ -35,16 +35,16 @@ public class AuditParameters {
 			for (String arg : newArgs){
 				String parameter = arg.trim().substring(arg.indexOf(' ')+1);
 				if (arg.startsWith("-url")) {
-					String url = inputUtil.convertToUrl(parameter);
+					String url = mainInputUtil.convertToUrl(parameter);
 					if (url==null) {
-						url = (String )inputUtil.getInput("URL: ", 3, SpiderConstants.URL_VALIDATION);
+						url = (String )mainInputUtil.getInput("URL: ", 3, SpiderConstants.URL_VALIDATION);
 					}
 					if (url.endsWith("/")) {
 				        url = url.substring(0, url.lastIndexOf("/"));
 			        }
 					setUrlToAudit(url);
 				} else if (arg.startsWith("-depth")) {
-					setDepth(inputUtil.convertToNumber(parameter));
+					setDepth(mainInputUtil.convertToNumber(parameter));
 				} else if (arg.startsWith("-search") || arg.startsWith("-term")) {
 					String termString = parameter;
 					if (termString!=null) {
@@ -55,7 +55,7 @@ public class AuditParameters {
 				} else if (arg.startsWith("-perform") || arg.startsWith("-load")) {
 					setPerformanceTest(true);
 				} else if (arg.startsWith("-sleep")) {
-					setSleepTime(inputUtil.convertToNumber(parameter));
+					setSleepTime(mainInputUtil.convertToNumber(parameter));
 				} else if (arg.startsWith("-full")) {
 					setLeanReportFlag(true);
 				} else if (arg.startsWith("-common") || arg.startsWith("-frequent")) {
@@ -69,7 +69,7 @@ public class AuditParameters {
 		}
 		//check for required args (url)
         if (urlToAudit==null) {
-            String url = (String )inputUtil.getInput("URL: ", 3, SpiderConstants.URL_VALIDATION);
+            String url = (String )mainInputUtil.getInput("URL: ", 3, SpiderConstants.URL_VALIDATION);
             if (url.endsWith("/")) {
                 url = url.substring(0, url.lastIndexOf("/"));
             }

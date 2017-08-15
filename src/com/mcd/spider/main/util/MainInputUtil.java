@@ -10,9 +10,9 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-public class InputUtil {
+public class MainInputUtil {
 	
-	public InputUtil() {}
+	public MainInputUtil() {}
 
 	public Object getInput(String prompt, int numberOfTries, String validationType) throws IOException {
 		Object result;

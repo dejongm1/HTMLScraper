@@ -1,6 +1,6 @@
 package com.mcd.spider.main.exception;
 
-import com.mcd.spider.main.util.RecordOutputUtil;
+import com.mcd.spider.main.util.io.RecordOutputUtil;
 
 public class ExcelOutputException extends SpiderException {
 
