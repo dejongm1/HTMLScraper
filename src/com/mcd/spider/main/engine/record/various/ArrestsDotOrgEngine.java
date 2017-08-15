@@ -200,7 +200,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             int recordsGathered = recordDetailUrlMap.size();
             logger.info("Gathered links for " + recordsGathered + " record profiles and misc");
 
-            spiderUtil.sleep(100000, true);
+            spiderUtil.sleep(offline?0:100000, true);
             //****iterate over collection, scraping records and simply opening others
             recordsProcessed += scrapeRecords(recordDetailUrlMap, site, recordOutputUtil, nextRequestCookies, maxNumberOfResults);
 
@@ -241,7 +241,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         String previousKey = String.valueOf(keys.get(keys.size()-1));
         Map<String,String> nextRequestCookies = cookies;
         for (Object k : keys) {
-        	if (recordsProcessed<=maxNumberOfResults) {
+        	if (recordsProcessed<maxNumberOfResults) {
 	            String url = recordsDetailsUrlMap.get(k);
 	    		Document profileDetailDoc = null;
 	        	try {
