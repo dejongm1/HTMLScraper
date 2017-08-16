@@ -115,7 +115,7 @@ public class RecordOutputUtil {
 		}
 		try {
 			if (workbook == null) {
-				newWorkbook = Workbook.createWorkbook(new File(OUTPUT_DIR + docName));
+				newWorkbook = Workbook.createWorkbook(new File(docName));
 
 				WritableSheet excelSheet = newWorkbook.createSheet(state.getName(), 0);
 				createColumnHeaders(excelSheet);
@@ -146,26 +146,11 @@ public class RecordOutputUtil {
 		}
 	}
 
-	public void createFilteredSpreadsheet(RecordFilterEnum filter, List<Record> records) {
-		WritableWorkbook newWorkbook = null;
-		try {
-			newWorkbook = Workbook.createWorkbook(new File(OUTPUT_DIR + getFilteredDocName(filter)));
-
-			WritableSheet excelSheet = newWorkbook.createSheet(state.getName(), 0);
-			createColumnHeaders(excelSheet);
-			saveRecordsToWorkbook(records, newWorkbook);
-			newWorkbook.write();
-		} catch (IOException | WriteException e) {
-			logger.error("Create filtered spreadhseet error", e);
-		} finally {
-			if (newWorkbook != null) {
-				try {
-					newWorkbook.close();
-				} catch (IOException | WriteException e) {
-					logger.error("Create filtered spreadhseet error", e);
-				}
-			}
-		}
+	private void createWorkbookCopy(String oldBookName, String backupBookName) throws BiffException, IOException {
+		oldBook = new File(oldBookName);
+		newBook = new File(backupBookName);
+		currentWorkbook = Workbook.getWorkbook(oldBook);
+		copyWorkbook = Workbook.createWorkbook(newBook, currentWorkbook);
 	}
 
 	public String getFilteredDocName(RecordFilterEnum filter) {
@@ -229,13 +214,6 @@ public class RecordOutputUtil {
 		return successful;
 	}
 
-	private void createWorkbookCopy(String oldBookName, String backupBookName) throws BiffException, IOException {
-		oldBook = new File(OUTPUT_DIR + oldBookName);
-		newBook = new File(OUTPUT_DIR + backupBookName);
-		currentWorkbook = Workbook.getWorkbook(oldBook);
-		copyWorkbook = Workbook.createWorkbook(newBook, currentWorkbook);
-	}
-
 	private void handleBackup(String docName, boolean deleteBackup) throws IOException, WriteException {
 		copyWorkbook.write();
 		copyWorkbook.close();
@@ -243,10 +221,32 @@ public class RecordOutputUtil {
 
 		if (deleteBackup) {
 			if (oldBook.delete()) {
-				newBook.renameTo(new File(OUTPUT_DIR + docName));
+				newBook.renameTo(new File(docName));
 			} else {
 				// making sure we don't lose data or override good data
-				newBook.renameTo(new File(OUTPUT_DIR + docName + System.currentTimeMillis()));
+				newBook.renameTo(new File(docName + System.currentTimeMillis()));
+			}
+		}
+	}
+
+	public void createFilteredSpreadsheet(RecordFilterEnum filter, List<Record> records) {
+		WritableWorkbook newWorkbook = null;
+		try {
+			newWorkbook = Workbook.createWorkbook(new File(getFilteredDocName(filter)));
+
+			WritableSheet excelSheet = newWorkbook.createSheet(state.getName(), 0);
+			createColumnHeaders(excelSheet);
+			saveRecordsToWorkbook(records, newWorkbook);
+			newWorkbook.write();
+		} catch (IOException | WriteException e) {
+			logger.error("Create filtered spreadhseet error", e);
+		} finally {
+			if (newWorkbook != null) {
+				try {
+					newWorkbook.close();
+				} catch (IOException | WriteException e) {
+					logger.error("Create filtered spreadhseet error", e);
+				}
 			}
 		}
 	}
@@ -287,6 +287,7 @@ public class RecordOutputUtil {
 	}
 
 	public <T> boolean splitIntoSheets(String docName, String delimiter, List<List<Record>> recordsListList, Class<T> clazz) {
+	    //TODO this is duplicating records in the split sheets
 		boolean successful = false;
 		Method fieldGetter = null;
 		for (Method method : clazz.getMethods()) {

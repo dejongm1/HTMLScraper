@@ -92,7 +92,6 @@ public class RecordInputUtil {
 	}
 
 	public Set<Record> readSpreadsheet(File fileToRead) {
-		//TODO finish, if not done
 		Set<Record> storedRecords = new HashSet<>();
         try {
             Workbook workbook = Workbook.getWorkbook(fileToRead);

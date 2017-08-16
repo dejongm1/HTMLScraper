@@ -237,6 +237,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     	int failedAttempts = 0;
         int recordsProcessed = 0;
         List<Record> arrestRecords = new ArrayList<>();
+        arrestRecords.addAll(crawledRecords);
         ArrestRecord arrestRecord;
         List<Object> keys = new ArrayList<>(recordsDetailsUrlMap.keySet());
         Collections.shuffle(keys);
