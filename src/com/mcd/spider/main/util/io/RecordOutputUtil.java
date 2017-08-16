@@ -158,7 +158,7 @@ public class RecordOutputUtil {
 
 	public void saveRecordsToWorkbook(List<Record> records, WritableWorkbook workbook) {
 		try {
-			int rowNumber = 0;
+			int rowNumber = 1;
 			for (Record currentRecord : records) {
 				WritableSheet sheet = workbook.getSheet(0);
 				currentRecord.addToExcelSheet(rowNumber, sheet);
@@ -285,8 +285,7 @@ public class RecordOutputUtil {
 		}
 	}
 
-	public <T> boolean splitIntoSheets(String docName, String delimiter, List<List<Record>> recordsListList, Class<T> clazz) {
-	    //TODO this is duplicating records in the split sheets
+	public boolean splitIntoSheets(String docName, String delimiter, List<List<Record>> recordsListList, Class clazz) {
 		boolean successful = false;
 		Method fieldGetter = null;
 		for (Method method : clazz.getMethods()) {
@@ -306,15 +305,14 @@ public class RecordOutputUtil {
 					}
 					createColumnHeaders(excelSheet);
 					for (int r = 0; r < recordsListList.get(s).size(); r++) {
-						recordsListList.get(s).get(r).addToExcelSheet(excelSheet.getRows(), excelSheet);
+						recordsListList.get(s).get(r).addToExcelSheet(r+1, excelSheet);
 					}
 				} catch (NullPointerException e) {
 					logger.error("Error trying split workbook into sheets by " + fieldGetter.getName(), e);
 				}
 			}
 			handleBackup(docName, true);
-		} catch (IOException | WriteException | BiffException | IllegalAccessException | IllegalArgumentException
-				| InvocationTargetException e) {
+		} catch (IOException | WriteException | BiffException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 			logger.error("Error trying split workbook into sheets", e);
 		}
 		return successful;
