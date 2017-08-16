@@ -297,7 +297,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         
         //format the output
         Collections.sort(arrestRecords, ArrestRecord.CountyComparator);
-    	String delimiter = RecordColumnEnum.COUNTY_COLUMN.title();
+    	String delimiter = RecordColumnEnum.COUNTY_COLUMN.getColumnTitle();
     	Class clazz = ArrestRecord.class;
         if (filter!=null) {
 	        List<Record> filteredRecords = filterRecords(arrestRecords);

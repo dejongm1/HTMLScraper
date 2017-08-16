@@ -99,9 +99,7 @@ public class RecordInputUtil {
     				//loop over columnEnums for each row
     				try {
     					Object rowRecord = constructor.newInstance();
-    					for (int c=0;c<record.getFieldsToOutput().size();c++) {
-    						storedRecords.add(Record.readRowIntoRecord(clazz, mainSheet, rowRecord, c, r));
-    					}
+						storedRecords.add(Record.readRowIntoRecord(clazz, mainSheet, rowRecord, r, record.getFieldsToOutput().size()));
     				} catch (InvocationTargetException | InstantiationException | IllegalAccessException | IllegalArgumentException e) {
     					logger.error("Error trying to read row into record object, row " + r, e);
     				}

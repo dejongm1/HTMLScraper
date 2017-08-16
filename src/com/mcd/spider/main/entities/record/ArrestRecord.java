@@ -238,10 +238,10 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 			this.type = type;
 		}
 
-		public int index() {
+		public int getColumnIndex() {
 			return columnIndex;
 		}
-		public String title() {
+		public String getColumnTitle() {
 			return columnTitle;
 		}
 		public String getFieldName() {
@@ -311,8 +311,35 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 	}
 
 	@Override
-	public boolean matches(Record record) {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean matches(Record recordToMatch) {
+		//TODO ranking system, 
+		//higher than # means a match
+		//one or more points for each element matched
+		int score = 0;
+		ArrestRecord record = (ArrestRecord) recordToMatch;
+		if (this.fullName.replace("\\w", "").equalsIgnoreCase(record.getFullName().replace("\\w", ""))
+				|| (this.firstName.equalsIgnoreCase(record.getFirstName()) && this.lastName.equalsIgnoreCase(record.getLastName()))) {
+			score+=5;
+		}
+//		if (/*middle names matches*/) {
+//			score+=1;
+//		}
+//		if (/*counties match*/) {
+//			score+=1;
+//		}
+//		if (/*eye color and hair color match*/) {
+//			score+=1;
+//		}
+//		if (/*gender*/) {
+//			score+=1;
+//		}
+//		if (/*arrest date*/) {
+//			score+=1;
+//		}
+//		if (/*age*/) {
+//			score+=1;
+//		}
+		
+		return score >= 6;
 	}
 }
