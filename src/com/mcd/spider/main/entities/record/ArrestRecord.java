@@ -303,4 +303,16 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 		}
 		return sheet;
 	}
+
+	@Override
+	public Set<Record> merge(Record record) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean matches(Record record) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 }

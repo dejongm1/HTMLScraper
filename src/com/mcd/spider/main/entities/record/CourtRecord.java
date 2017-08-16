@@ -1,16 +1,19 @@
 package com.mcd.spider.main.entities.record;
 
-import jxl.write.Label;
-import jxl.write.WritableSheet;
-import jxl.write.WriteException;
-import org.apache.log4j.Logger;
-
 import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import org.apache.log4j.Logger;
+
+import jxl.write.Label;
+import jxl.write.WritableSheet;
+import jxl.write.WriteException;
 
 
 public class CourtRecord implements Record {
@@ -125,4 +128,14 @@ public class CourtRecord implements Record {
 //	public outputAsText() {
 //	
 //	}
+
+	@Override
+	public Set<Record> merge(Record record) {
+		return new HashSet<>();
+	}
+
+	@Override
+	public boolean matches(Record record) {
+		return false;
+	}
 }
