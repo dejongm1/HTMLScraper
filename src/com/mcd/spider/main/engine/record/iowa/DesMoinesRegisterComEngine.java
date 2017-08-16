@@ -14,8 +14,8 @@ import com.mcd.spider.main.exception.IDCheckException;
 import com.mcd.spider.main.exception.SpiderException;
 import com.mcd.spider.main.util.ConnectionUtil;
 import com.mcd.spider.main.util.SpiderUtil;
+import com.mcd.spider.main.util.io.RecordIOUtil;
 import com.mcd.spider.main.util.io.RecordOutputUtil;
-
 import common.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -43,6 +43,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     private static final Logger logger = Logger.getLogger(DesMoinesRegisterComEngine.class);
     private SpiderUtil spiderUtil = new SpiderUtil();
     private Set<String> crawledIds;
+    private Set<Record> crawledRecords;
     private RecordFilterEnum filter;
     private boolean offline;
 
@@ -65,7 +66,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
 	
 	        //while(recordsProcessed <= maxNumberOfResults) {
 	        DesMoinesRegisterComSite site = (DesMoinesRegisterComSite) getSite(null);
-            RecordOutputUtil recordOutputUtil = initializeOutputter(state, site);
+            RecordIOUtil recordIOUtil = initializeOutputter(state, site);
             
 	        logger.info("----Site: " + site.getName() + "----");
 	        logger.debug("Sending spider " + (offline?"offline":"online" ));
@@ -74,7 +75,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
 	        sleepTimeSum += offline?0:sleepTimeAverage;
 	        long time = System.currentTimeMillis();
 	        
-	        recordsProcessed += scrapeSite(site, recordOutputUtil, 1, maxNumberOfResults);
+	        recordsProcessed += scrapeSite(site, recordIOUtil.getOutputter(), 1, maxNumberOfResults);
 	        
 	        time = System.currentTimeMillis() - time;
 	        logger.info(site.getBaseUrl() + " took " + time + " ms");
@@ -213,15 +214,18 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     }
 
     @Override
-    public RecordOutputUtil initializeOutputter(State state, Site site) throws SpiderException {
-    	RecordOutputUtil recordOutputUtil = new RecordOutputUtil(state, new ArrestRecord(), site);
+    public RecordIOUtil initializeOutputter(State state, Site site) throws SpiderException {
+        RecordIOUtil ioUtil = new RecordIOUtil(state, new ArrestRecord(), site);
         try {
-            crawledIds = recordOutputUtil.getPreviousIds();
-            recordOutputUtil.createSpreadsheet();
+            //load previously written records IDs into memory
+            crawledIds = ioUtil.getInputter().getPreviousIds();
+            //TODO load records in current spreadsheet into memory
+            crawledRecords = ioUtil.getInputter().readDefaultSpreadsheet();
+            ioUtil.getOutputter().createSpreadsheet();
         } catch (ExcelOutputException | IDCheckException e) {
             throw e;
         }
-        return recordOutputUtil;
+        return ioUtil;
     }
     
     @Override

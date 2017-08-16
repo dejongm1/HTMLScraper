@@ -6,8 +6,8 @@ import com.mcd.spider.main.entities.record.State;
 import com.mcd.spider.main.entities.record.filter.RecordFilter;
 import com.mcd.spider.main.entities.site.Site;
 import com.mcd.spider.main.exception.SpiderException;
+import com.mcd.spider.main.util.io.RecordIOUtil;
 import com.mcd.spider.main.util.io.RecordOutputUtil;
-
 import org.jsoup.nodes.Element;
 
 import java.util.List;
@@ -25,7 +25,7 @@ public interface ArrestRecordEngine {
 	void formatName(ArrestRecord record, Element profileDetail);
 	String extractValue(Element profileDetail);
 	void formatArrestTime(ArrestRecord record, Element profileDetail);
-	RecordOutputUtil initializeOutputter(State state, Site site) throws SpiderException;
+	RecordIOUtil initializeOutputter(State state, Site site) throws SpiderException;
 	List<Record> filterRecords(List<Record> fullArrestRecords);
 	
 }

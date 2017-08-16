@@ -15,8 +15,8 @@ import com.mcd.spider.main.exception.IDCheckException;
 import com.mcd.spider.main.exception.SpiderException;
 import com.mcd.spider.main.util.ConnectionUtil;
 import com.mcd.spider.main.util.SpiderUtil;
+import com.mcd.spider.main.util.io.RecordIOUtil;
 import com.mcd.spider.main.util.io.RecordOutputUtil;
-
 import org.apache.log4j.Logger;
 import org.jsoup.Connection;
 import org.jsoup.HttpStatusException;
@@ -41,6 +41,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     
     SpiderUtil spiderUtil = new SpiderUtil();
     private Set<String> crawledIds;
+    private Set<Record> crawledRecords;
     private RecordFilterEnum filter;
     private boolean offline;
     private ConnectionUtil connectionUtil;
@@ -60,7 +61,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 	    offline = System.getProperty("offline").equals("true");
 
         ArrestsDotOrgSite site = (ArrestsDotOrgSite) getSite(new String[]{state.getName()});
-        RecordOutputUtil recordOutputUtil = initializeOutputter(state, site);
+        RecordIOUtil recordOutputUtil = initializeOutputter(state, site);
         //TODO check if this persists between states in same run
         connectionUtil = new ConnectionUtil(true);
         
@@ -71,7 +72,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         int sleepTimeAverage = offline?0:(site.getPerRecordSleepRange()[0]+site.getPerRecordSleepRange()[1])/2000;
         long time = System.currentTimeMillis();
         
-        recordsProcessed += scrapeSite(site, recordOutputUtil, 1, maxNumberOfResults);
+        recordsProcessed += scrapeSite(site, recordOutputUtil.getOutputter(), 1, maxNumberOfResults);
         
         time = System.currentTimeMillis() - time;
         logger.info(site.getBaseUrl() + " took " + time + " ms");
@@ -325,18 +326,18 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     }
 
     @Override
-    public RecordOutputUtil initializeOutputter(State state, Site site) throws SpiderException {
-    	//TODO load new IOUtil instead
-    	RecordOutputUtil recordOutputUtil = new RecordOutputUtil(state, new ArrestRecord(), site);
+    public RecordIOUtil initializeOutputter(State state, Site site) throws SpiderException {
+    	RecordIOUtil ioUtil = new RecordIOUtil(state, new ArrestRecord(), site);
         try {
             //load previously written records IDs into memory
-            crawledIds = recordOutputUtil.getPreviousIds();
-        	//TODO load records in current spreadhseet into memory
-            recordOutputUtil.createSpreadsheet();
+            crawledIds = ioUtil.getInputter().getPreviousIds();
+        	//TODO load records in current spreadsheet into memory
+            crawledRecords = ioUtil.getInputter().readDefaultSpreadsheet();
+            ioUtil.getOutputter().createSpreadsheet();
         } catch (ExcelOutputException | IDCheckException e) {
             throw e;
         }
-        return recordOutputUtil;
+        return ioUtil;
     }
     
     @Override

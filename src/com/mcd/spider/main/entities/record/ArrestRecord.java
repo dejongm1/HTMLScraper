@@ -1,75 +1,21 @@
 package com.mcd.spider.main.entities.record;
 
-import java.lang.reflect.Field;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Comparator;
-import java.util.List;
-
-import org.apache.log4j.Logger;
-
 import com.google.common.base.CaseFormat;
-
 import jxl.write.Label;
 import jxl.write.WritableSheet;
 import jxl.write.WriteException;
+import org.apache.log4j.Logger;
+
+import java.lang.reflect.Field;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 
 public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 	
-	public enum RecordColumnEnum {
-		//the column names should match the fields names (camel case, spaces removed)
-		ID_COLUMN(0, "ID"),
-		FULLNAME_COLUMN(1, "Full Name"),
-		FIRSTNAME_COLUMN(2, "First Name"),
-		MIDDLENAME_COLUMN(3, "Middle Name"),
-		LASTNAME_COLUMN(4, "Last Name"),
-		ARRESTDATE_COLUMN(5, "Arrest Date"),
-		TOTALBOND_COLUMN(6, "Total Bond"),
-		ARRESTAGE_COLUMN(7, "Arrest Age"),
-		GENDER_COLUMN(8, "Gender"),
-		CITY_COLUMN(9, "City"),
-		STATE_COLUMN(10, "State"),
-		COUNTY_COLUMN(11, "County"),
-		HEIGHT_COLUMN(12, "Height"),
-		WEIGHT_COLUMN(13, "Weight"),
-		HAIRCOLOR_COLUMN(14, "Hair Color"),
-		EYECOLOR_COLUMN(15, "Eye Color"),
-		BIRTHPLACE_COLUMN(16, "Birth Place"),
-		CHARGES_COLUMN(17, "Charges"),
-		OFFENDERID_COLUMN(18, "Offender ID"),
-		RACE(19, "Race");
-	
-		private int columnIndex;
-		private String columnTitle;
-		private String fieldName;
-		private String getter;
-		private String setter;
-		
-		RecordColumnEnum(int columnIndex, String columnTitle) {
-			this.columnIndex = columnIndex;
-			this.columnTitle = columnTitle;
-			this.fieldName = CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, columnTitle);
-			this.getter = "get" + CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, columnTitle);
-			this.setter = "set" + CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, columnTitle);
-		}
-		public int index() {
-			return columnIndex;
-		}
-		public String title() {
-			return columnTitle;
-		}
-		public String getFieldName() {
-			return fieldName;
-		}
-		public String getGetter() {
-			return getter;
-		}
-		public String getSetter() {
-			return setter;
-		}
+	@Override
+	public void setId(String id) {
+		this.id = id;
 	}
 
 	public static final Logger logger = Logger.getLogger(ArrestRecord.class);
@@ -102,10 +48,11 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 	public String getId() {
 		return id;
 	}
+
 	@Override
-	public void setId(String string) {
-		this.id = string;
-	}
+    public List<RecordColumnEnum> getColumnEnums() {
+        return Arrays.asList(RecordColumnEnum.values());
+    }
 	public String getFullName() {
 		return fullName;
 	}
@@ -249,6 +196,64 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 			e.printStackTrace();
 		}
 		return fields;	
+	}
+
+	public enum RecordColumnEnum {
+		//the column names should match the fields names (camel case, spaces removed)
+		ID_COLUMN(0, "ID", String.class),
+		FULLNAME_COLUMN(1, "Full Name", String.class),
+		FIRSTNAME_COLUMN(2, "First Name", String.class),
+		MIDDLENAME_COLUMN(3, "Middle Name", String.class),
+		LASTNAME_COLUMN(4, "Last Name", String.class),
+		ARRESTDATE_COLUMN(5, "Arrest Date", Calendar.class),
+		TOTALBOND_COLUMN(6, "Total Bond", long.class),
+		ARRESTAGE_COLUMN(7, "Arrest Age", int.class),
+		GENDER_COLUMN(8, "Gender", String.class),
+		CITY_COLUMN(9, "City", String.class),
+		STATE_COLUMN(10, "State", String.class),
+		COUNTY_COLUMN(11, "County", String.class),
+		HEIGHT_COLUMN(12, "Height", String.class),
+		WEIGHT_COLUMN(13, "Weight", String.class),
+		HAIRCOLOR_COLUMN(14, "Hair Color", String.class),
+		EYECOLOR_COLUMN(15, "Eye Color", String.class),
+		BIRTHPLACE_COLUMN(16, "Birth Place", String.class),
+		CHARGES_COLUMN(17, "Charges", String[].class),
+		OFFENDERID_COLUMN(18, "Offender ID", String.class),
+		RACE(19, "Race", String.class);
+
+		private int columnIndex;
+		private String columnTitle;
+		private String fieldName;
+        private static Map<Integer, RecordColumnEnum> indexToEnum = new HashMap();
+		private String getterName;
+		private String setterName;
+		private Class type;
+
+		RecordColumnEnum(int columnIndex, String columnTitle, Class type) {
+			this.columnIndex = columnIndex;
+			this.columnTitle = columnTitle;
+			this.fieldName = CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, columnTitle.replace(" ", "_"));
+			this.getterName = "get" + CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, columnTitle.replace(" ", "_"));
+			this.setterName = "set" + CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, columnTitle.replace(" ", "_"));
+			this.type = type;
+		}
+
+		public int index() {
+			return columnIndex;
+		}
+		public String title() {
+			return columnTitle;
+		}
+		public String getFieldName() {
+			return fieldName;
+		}
+		public String getGetterName() {
+			return getterName;
+		}
+		public String getSetterName() {
+			return setterName;
+		}
+		public Class getType() { return type; }
 	}
 	
 	@Override

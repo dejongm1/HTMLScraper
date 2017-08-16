@@ -13,8 +13,8 @@ import com.mcd.spider.main.exception.IDCheckException;
 import com.mcd.spider.main.exception.SpiderException;
 import com.mcd.spider.main.util.ConnectionUtil;
 import com.mcd.spider.main.util.SpiderUtil;
+import com.mcd.spider.main.util.io.RecordIOUtil;
 import com.mcd.spider.main.util.io.RecordOutputUtil;
-
 import common.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -57,7 +57,7 @@ public class HarrisCountyDistrictClerkComEngine implements CourtRecordEngine {
 
         //while(recordsProcessed <= maxNumberOfResults) {
         HarrisCountyDistrictClerkComSite site = (HarrisCountyDistrictClerkComSite) getSite(null);
-        RecordOutputUtil recordOutputUtil = initializeOutputter(state, site);
+        RecordIOUtil recordIOUtil = initializeOutputter(state, site);
         
         logger.info("----Site: " + site.getName() + "----");
         logger.debug("Sending spider " + (offline?"offline":"online" ));
@@ -66,7 +66,7 @@ public class HarrisCountyDistrictClerkComEngine implements CourtRecordEngine {
         sleepTimeSum += offline?0:sleepTimeAverage;
         long time = System.currentTimeMillis();
         
-        recordsProcessed += scrapeSite(state, site, recordOutputUtil, 1);
+        recordsProcessed += scrapeSite(state, site, recordIOUtil.getOutputter(), 1);
         
         time = System.currentTimeMillis() - time;
         logger.info(site.getBaseUrl() + " took " + time + " ms");
@@ -204,15 +204,15 @@ public class HarrisCountyDistrictClerkComEngine implements CourtRecordEngine {
     }
 
     
-    public RecordOutputUtil initializeOutputter(State state, Site site) throws SpiderException {
-    	RecordOutputUtil recordOutputUtil = new RecordOutputUtil(state, new CourtRecord(), site);
+    public RecordIOUtil initializeOutputter(State state, Site site) throws SpiderException {
+        RecordIOUtil recordIOUtil = new RecordIOUtil(state, new CourtRecord(), site);
         try {
-            crawledIds = recordOutputUtil.getPreviousIds();
-            recordOutputUtil.createSpreadsheet();
+            crawledIds = recordIOUtil.getInputter().getPreviousIds();
+            recordIOUtil.getOutputter().createSpreadsheet();
         } catch (ExcelOutputException | IDCheckException e) {
             throw e;
         }
-        return recordOutputUtil;
+        return recordIOUtil;
     }
     
     

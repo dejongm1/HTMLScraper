@@ -1,28 +1,28 @@
 package com.mcd.spider.main.entities.record;
 
+import jxl.write.WritableSheet;
+import org.apache.log4j.Logger;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
-
-import jxl.write.WritableSheet;
-import jxl.write.WritableWorkbook;
-
 /**
  * Created by MikeyDizzle on 7/18/2017.
  */
 public interface Record {
 
-	public static final Logger logger = Logger.getLogger(ArrestRecord.class);
+	Logger logger = Logger.getLogger(ArrestRecord.class);
 	
     String getId();
 
     void setId(String string);
 
     List<Field> getFieldsToOutput();
+
+    List<ArrestRecord.RecordColumnEnum> getColumnEnums();
 
     WritableSheet addToExcelSheet(int rowNumber, WritableSheet sheet) throws IllegalAccessException;
     

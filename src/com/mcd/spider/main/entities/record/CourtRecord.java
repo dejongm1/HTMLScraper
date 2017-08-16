@@ -2,7 +2,6 @@ package com.mcd.spider.main.entities.record;
 
 import jxl.write.Label;
 import jxl.write.WritableSheet;
-import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
 import org.apache.log4j.Logger;
 
@@ -87,7 +86,12 @@ public class CourtRecord implements Record {
 		return fields;	
 	}
 
-	@Override
+    @Override
+    public List<ArrestRecord.RecordColumnEnum> getColumnEnums() {
+        return null;
+    }
+
+    @Override
 	public WritableSheet addToExcelSheet(int rowNumber, WritableSheet sheet) throws IllegalAccessException {
 		int columnNumber = 0;
 		for (Field field : getFieldsToOutput()) {
