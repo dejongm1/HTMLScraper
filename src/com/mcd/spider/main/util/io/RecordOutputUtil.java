@@ -1,5 +1,6 @@
 package com.mcd.spider.main.util.io;
 
+import com.google.common.base.CaseFormat;
 import com.mcd.spider.main.entities.record.Record;
 import com.mcd.spider.main.entities.record.State;
 import com.mcd.spider.main.entities.record.filter.RecordFilter.RecordFilterEnum;
@@ -134,15 +135,38 @@ public class RecordOutputUtil {
 		}
 	}
 
-	private void createColumnHeaders(WritableSheet excelSheet) throws WriteException {
-		// create columns based on Record.getFieldsToOutput()
-		int columnNumber = 0;
-		for (Field recordField : record.getFieldsToOutput()) {
-			// ********extract to createLabelMethod????
-			Label columnLabel = new Label(columnNumber, 0, recordField.getName().toUpperCase());
-			excelSheet.addCell(columnLabel);
-			columnNumber++;
+	public boolean splitIntoSheets(String docName, String delimiter, List<List<Record>> recordsListList, Class clazz) {
+		boolean successful = false;
+		Method fieldGetter = null;
+		//TODO make this only gather getters for columns in spreadsheet
+		for (Method method : clazz.getMethods()) {
+			if (method.getName().equalsIgnoreCase("get" + delimiter.replace(" ", ""))) {
+				fieldGetter = method;
+			}
 		}
+		try {
+			createWorkbookCopy(docName, TEMP + EXT);
+			for (int s = 0; s < recordsListList.size(); s++) {
+				try {
+					String delimitValue = (String) fieldGetter.invoke(recordsListList.get(s).get(0));
+					WritableSheet excelSheet = copyWorkbook.getSheet(delimitValue);
+					if (excelSheet == null) {
+						//append a new sheet for each
+						excelSheet = copyWorkbook.createSheet(delimitValue == null ? "empty" : delimitValue, s + 1);
+					}
+					createColumnHeaders(excelSheet);
+					for (int r = 0; r < recordsListList.get(s).size(); r++) {
+						recordsListList.get(s).get(r).addToExcelSheet(r+1, excelSheet);
+					}
+				} catch (NullPointerException e) {
+					logger.error("Error trying split workbook into sheets by " + fieldGetter.getName(), e);
+				}
+			}
+			handleBackup(docName, true);
+		} catch (IOException | WriteException | BiffException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+			logger.error("Error trying split workbook into sheets", e);
+		}
+		return successful;
 	}
 
 	private void createWorkbookCopy(String oldBookName, String backupBookName) throws BiffException, IOException {
@@ -285,36 +309,15 @@ public class RecordOutputUtil {
 		}
 	}
 
-	public boolean splitIntoSheets(String docName, String delimiter, List<List<Record>> recordsListList, Class clazz) {
-		boolean successful = false;
-		Method fieldGetter = null;
-		for (Method method : clazz.getMethods()) {
-			if (method.getName().equalsIgnoreCase("get" + delimiter.replace(" ", ""))) {
-				fieldGetter = method;
-			}
+	private void createColumnHeaders(WritableSheet excelSheet) throws WriteException {
+		// create columns based on Record.getFieldsToOutput()
+		int columnNumber = 0;
+		for (Field recordField : record.getFieldsToOutput()) {
+			// ********extract to createLabelMethod????
+            CaseFormat format = record.getColumnCaseFormat();
+			Label columnLabel = new Label(columnNumber, 0, CaseFormat.LOWER_CAMEL.to(format, recordField.getName()));
+			excelSheet.addCell(columnLabel);
+			columnNumber++;
 		}
-		try {
-			createWorkbookCopy(docName, TEMP + EXT);
-			for (int s = 0; s < recordsListList.size(); s++) {
-				try {
-					String delimitValue = (String) fieldGetter.invoke(recordsListList.get(s).get(0));
-					WritableSheet excelSheet = copyWorkbook.getSheet(delimitValue);
-					if (excelSheet == null) {
-						//append a new sheet for each
-						excelSheet = copyWorkbook.createSheet(delimitValue == null ? "empty" : delimitValue, s + 1);
-					}
-					createColumnHeaders(excelSheet);
-					for (int r = 0; r < recordsListList.get(s).size(); r++) {
-						recordsListList.get(s).get(r).addToExcelSheet(r+1, excelSheet);
-					}
-				} catch (NullPointerException e) {
-					logger.error("Error trying split workbook into sheets by " + fieldGetter.getName(), e);
-				}
-			}
-			handleBackup(docName, true);
-		} catch (IOException | WriteException | BiffException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-			logger.error("Error trying split workbook into sheets", e);
-		}
-		return successful;
 	}
 }

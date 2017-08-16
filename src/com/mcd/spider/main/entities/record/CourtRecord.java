@@ -1,19 +1,14 @@
 package com.mcd.spider.main.entities.record;
 
-import java.lang.reflect.Field;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.log4j.Logger;
-
+import com.google.common.base.CaseFormat;
 import jxl.write.Label;
 import jxl.write.WritableSheet;
 import jxl.write.WriteException;
+import org.apache.log4j.Logger;
+
+import java.lang.reflect.Field;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 
 public class CourtRecord implements Record {
@@ -91,6 +86,11 @@ public class CourtRecord implements Record {
 
     @Override
     public List<ArrestRecord.RecordColumnEnum> getColumnEnums() {
+        return null;
+    }
+
+    @Override
+    public CaseFormat getColumnCaseFormat() {
         return null;
     }
 

@@ -1,7 +1,6 @@
 package com.mcd.spider.main.util.io;
 
 import com.mcd.spider.main.entities.record.Record;
-import com.mcd.spider.main.entities.site.Site;
 import com.mcd.spider.main.exception.IDCheckException;
 import com.mcd.spider.main.exception.SpiderException;
 import jxl.Sheet;
@@ -9,20 +8,10 @@ import jxl.Workbook;
 import jxl.read.biff.BiffException;
 import org.apache.log4j.Logger;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -88,23 +77,26 @@ public class RecordInputUtil {
     	int foundRecordsCount = 0;
     	try {
     		logger.debug("Attempting to read previous records from " + fileToRead.getName() + " into memory");
-    		Workbook workbook = Workbook.getWorkbook(fileToRead);
-    		if (workbook !=null) {
-    			Sheet mainSheet = workbook.getSheet(0);
-    			foundRecordsCount = mainSheet.getRows();
-    			Class<?> clazz = Record.getRecordClass(record);
-    			Constructor<?> constructor = Record.getConstructorForRecord(clazz, record);
-    			//starting with the first data row, read records into set
-    			for (int r=1;r<foundRecordsCount;r++) {
-    				//loop over columnEnums for each row
-    				try {
-    					Object rowRecord = constructor.newInstance();
-						storedRecords.add(Record.readRowIntoRecord(clazz, mainSheet, rowRecord, r, record.getFieldsToOutput().size()));
-    				} catch (InvocationTargetException | InstantiationException | IllegalAccessException | IllegalArgumentException e) {
-    					logger.error("Error trying to read row into record object, row " + r, e);
-    				}
-    			}
-    		}
+    		if (fileToRead.exists()) {
+                Workbook workbook = Workbook.getWorkbook(fileToRead);
+                if (workbook!=null) {
+                    Sheet mainSheet = workbook.getSheet(0);
+                    //TODO this is getting unpopulated rows
+                    foundRecordsCount = mainSheet.getRows();
+                    Class<?> clazz = Record.getRecordClass(record);
+                    Constructor<?> constructor = Record.getConstructorForRecord(clazz, record);
+                    //starting with the first data row, read records into set
+                    for (int r = 1; r<foundRecordsCount; r++) {
+                        //loop over columnEnums for each row
+                        try {
+                            Object rowRecord = constructor.newInstance();
+                            storedRecords.add(Record.readRowIntoRecord(clazz, mainSheet, rowRecord, r, record.getFieldsToOutput().size()));
+                        } catch (InvocationTargetException | InstantiationException | IllegalAccessException | IllegalArgumentException e) {
+                            logger.error("Error trying to read row into record object, row "+r, e);
+                        }
+                    }
+                }
+            }
     	} catch (FileNotFoundException e) {
     		logger.error("No record file found", e);
     	} catch (IOException | BiffException e) {

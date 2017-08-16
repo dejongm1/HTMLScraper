@@ -161,11 +161,9 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 	public void setOffenderId(String offenderId) {
 		this.offenderId = offenderId;
 	}
-	
 	public String getRace() {
 		return race;
 	}
-
 	public void setRace(String race) {
 		this.race = race;
 	}
@@ -173,33 +171,30 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 	@Override
 	public List<Field> getFieldsToOutput() {
 		List<Field> fields = new ArrayList<>();
-		try {
-			fields.addAll(Arrays.asList(this.getClass().getDeclaredFields()));
-			for (int f=0;f<fields.size();f++) {
-				if (fields.get(f).getName().contains("logger") || fields.get(f).getName().contains("_COLUMN") || fields.get(f).getName().toLowerCase().contains("compar")) {
-					fields.remove(f);
-				}
-			}
-//			fields.add(this.getClass().getDeclaredField("id"));
-//			fields.add(this.getClass().getDeclaredField("fullName"));
-//			fields.add(this.getClass().getDeclaredField("gender"));
-//			fields.add(this.getClass().getDeclaredField("height"));
-//			fields.add(this.getClass().getDeclaredField("weight"));
-//			fields.add(this.getClass().getDeclaredField("hairColor"));
-//			fields.add(this.getClass().getDeclaredField("eyeColor"));
-//			fields.add(this.getClass().getDeclaredField("birthPlace"));
-//			fields.add(this.getClass().getDeclaredField("city"));
-//			fields.add(this.getClass().getDeclaredField("county"));
-//			fields.add(this.getClass().getDeclaredField("arrestDate"));
-//			fields.add(this.getClass().getDeclaredField("charges"));
-		} catch (/**NoSuchFieldException |*/ SecurityException e) {
-			e.printStackTrace();
-		}
-		return fields;	
+	    for (RecordColumnEnum columnEnum : RecordColumnEnum.values()) {
+	        fields.add(columnEnum.getField());
+        }
+//		List<Field> fields = new ArrayList<>();
+//		try {
+//			fields.addAll(Arrays.asList(this.getClass().getDeclaredFields()));
+//			for (int f=0;f<fields.size();f++) {
+//				if (fields.get(f).getName().contains("logger") || fields.get(f).getName().contains("_COLUMN") || fields.get(f).getName().toLowerCase().contains("compar")) {
+//					fields.remove(f);
+//				}
+//			}
+//		} catch (/**NoSuchFieldException |*/ SecurityException e) {
+//			e.printStackTrace();
+//		}
+		return fields;
 	}
 
+	@Override
+	public CaseFormat getColumnCaseFormat() {
+	    return CaseFormat.UPPER_UNDERSCORE;
+    }
+
 	public enum RecordColumnEnum {
-		//the column names should match the fields names (camel case, spaces removed)
+		//the column titles should match the fields names (camel case, spaces removed)
 		ID_COLUMN(0, "ID", String.class),
 		FULLNAME_COLUMN(1, "Full Name", String.class),
 		FIRSTNAME_COLUMN(2, "First Name", String.class),
@@ -223,17 +218,22 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 
 		private int columnIndex;
 		private String columnTitle;
+		private Field field;
 		private String fieldName;
-        private static Map<Integer, RecordColumnEnum> indexToEnum = new HashMap();
 		private String getterName;
 		private String setterName;
 		private Class type;
 
 		RecordColumnEnum(int columnIndex, String columnTitle, Class type) {
 			this.columnIndex = columnIndex;
-			this.columnTitle = columnTitle;
-			this.fieldName = CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, columnTitle.replace(" ", "_"));
-			this.getterName = "get" + CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, columnTitle.replace(" ", "_"));
+            this.fieldName = CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, columnTitle.toUpperCase().replace(" ", "_"));
+            this.columnTitle = CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, fieldName);
+			try {
+                this.field = this.getDeclaringClass().getEnclosingClass().getDeclaredField(fieldName);
+            } catch (NoSuchFieldException  e) {
+                logger.error("Error tying field to enum: "+fieldName);
+            }
+            this.getterName = "get" + CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, columnTitle.replace(" ", "_"));
 			this.setterName = "set" + CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, columnTitle.replace(" ", "_"));
 			this.type = type;
 		}
@@ -244,9 +244,12 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 		public String getColumnTitle() {
 			return columnTitle;
 		}
-		public String getFieldName() {
-			return fieldName;
-		}
+        public Field getField() {
+            return field;
+        }
+        public String getFieldName() {
+            return fieldName;
+        }
 		public String getGetterName() {
 			return getterName;
 		}
@@ -255,7 +258,7 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 		}
 		public Class getType() { return type; }
 	}
-	
+
 	@Override
 	public int compareTo(ArrestRecord record) {
 		Calendar arrestDate = record.getArrestDate();
