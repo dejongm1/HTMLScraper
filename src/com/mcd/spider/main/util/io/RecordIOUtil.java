@@ -7,6 +7,11 @@ import org.apache.log4j.Logger;
 
 import java.io.File;
 
+/**
+ * 
+ * @author u569220
+ *
+ */
 public class RecordIOUtil {
 	
 	public static final Logger logger = Logger.getLogger(RecordIOUtil.class);
@@ -18,13 +23,38 @@ public class RecordIOUtil {
 	private RecordInputUtil inputter;
 	private RecordOutputUtil outputter;
 	private File idFile;
-//	private Site site;
+	private Record record;
 	
 	public RecordIOUtil(State state, Record record, Site site) {
         this.idFile = new File(OUTPUT_DIR + TRACKING_DIR + site.getName() + "_Archive.txt");
 		this.docName = OUTPUT_DIR + state.getName() + "_" + record.getClass().getSimpleName() + "_" + site.getName() + EXT;
-		this.outputter = new RecordOutputUtil(docName, idFile, state, record, site);
-		this.inputter = new RecordInputUtil(docName, idFile, site, record);
+		this.record = record;
+		this.outputter = new RecordOutputUtil(this, state, site);
+		this.inputter = new RecordInputUtil(this);
+	}
+
+	public String getDocName() {
+		return docName;
+	}
+
+	public void setDocName(String docName) {
+		this.docName = docName;
+	}
+
+	public File getIdFile() {
+		return idFile;
+	}
+
+	public void setIdFile(File idFile) {
+		this.idFile = idFile;
+	}
+
+	public Record getRecord() {
+		return record;
+	}
+
+	public void setRecord(Record record) {
+		this.record = record;
 	}
 
 	public RecordInputUtil getInputter() {

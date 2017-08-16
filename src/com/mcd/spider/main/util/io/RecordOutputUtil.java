@@ -31,6 +31,7 @@ import java.util.Map;
 public class RecordOutputUtil {
 
 	public static final Logger logger = Logger.getLogger(RecordOutputUtil.class);
+	private static final String TEMP = "temp_copy";
 	private static final String EXT = ".xls";
     private static final String OUTPUT_DIR = "output/";
     private static final String TRACKING_DIR = "tracking/";
@@ -47,18 +48,16 @@ public class RecordOutputUtil {
 	private Workbook currentWorkbook;
 	private WritableWorkbook copyWorkbook;
 	private Calendar workbookCreateDate;
-	private boolean offline;
 
-	public RecordOutputUtil(String docName, File idFile, State state, Record record, Site site) {
+	public RecordOutputUtil(RecordIOUtil ioUtil, State state, Site site) {
 		Calendar date = Calendar.getInstance();
 		this.workbookCreateDate = date;
-		this.docName = docName;
+		this.docName = ioUtil.getDocName();
 		this.state = state;
-		this.record = record;
+		this.record = ioUtil.getRecord();
 		this.site = site;
-		this.idFile = idFile;
+		this.idFile = ioUtil.getIdFile();
 		this.uncrawledIdFile = new File(OUTPUT_DIR + TRACKING_DIR + site.getName() + "_Uncrawled.txt");
-		this.offline = System.getProperty("offline").equals("true");
 	}
 
 	public String getDocName() {
@@ -159,7 +158,7 @@ public class RecordOutputUtil {
 
 	public void saveRecordsToWorkbook(List<Record> records, WritableWorkbook workbook) {
 		try {
-			int rowNumber = workbook.getSheet(0).getRows();
+			int rowNumber = 0;
 			for (Record currentRecord : records) {
 				WritableSheet sheet = workbook.getSheet(0);
 				currentRecord.addToExcelSheet(rowNumber, sheet);
@@ -185,7 +184,7 @@ public class RecordOutputUtil {
 
 	public void addRecordToMainWorkbook(Record record) {
 		try {
-			createWorkbookCopy(docName, "temp_copy" + EXT);
+			createWorkbookCopy(docName, TEMP + EXT);
 			int rowNumber = copyWorkbook.getSheet(0).getRows();
 			WritableSheet sheet = copyWorkbook.getSheet(0);
 			record.addToExcelSheet(rowNumber, sheet);
@@ -199,7 +198,7 @@ public class RecordOutputUtil {
 	public boolean removeColumnsFromSpreadsheet(int[] args) {
 		boolean successful = false;
 		try {
-			createWorkbookCopy(docName, "temp_copy" + EXT);
+			createWorkbookCopy(docName, TEMP + EXT);
 
 			WritableSheet sheet = copyWorkbook.getSheet(0);
 
@@ -296,7 +295,7 @@ public class RecordOutputUtil {
 			}
 		}
 		try {
-			createWorkbookCopy(docName, "temp_copy" + EXT);
+			createWorkbookCopy(docName, TEMP + EXT);
 			for (int s = 0; s < recordsListList.size(); s++) {
 				try {
 					String delimitValue = (String) fieldGetter.invoke(recordsListList.get(s).get(0));

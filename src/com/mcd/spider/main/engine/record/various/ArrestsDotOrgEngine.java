@@ -332,7 +332,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         try {
             //load previously written records IDs into memory
             crawledIds = ioUtil.getInputter().getPreviousIds();
-        	//TODO load records in current spreadsheet into memory
+        	//load records in current spreadsheet into memory
             crawledRecords = ioUtil.getInputter().readDefaultSpreadsheet();
             ioUtil.getOutputter().createSpreadsheet();
         } catch (ExcelOutputException | IDCheckException e) {
