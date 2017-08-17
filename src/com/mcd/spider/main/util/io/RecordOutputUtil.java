@@ -105,7 +105,7 @@ public class RecordOutputUtil {
 		WritableWorkbook newWorkbook = null;
 		try {
 			createWorkbookCopy(docName,
-					docName + "_" + (workbookCreateDate.get(Calendar.MONTH) + 1) + "-"
+					docName.substring(0, docName.indexOf(EXT)) + "_" + (workbookCreateDate.get(Calendar.MONTH) + 1) + "-"
 							+ workbookCreateDate.get(Calendar.DAY_OF_MONTH) + "-"
 							+ workbookCreateDate.get(Calendar.YEAR) + EXT);
 			workbook = copyWorkbook;

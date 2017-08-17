@@ -39,6 +39,8 @@ public interface Record {
 	    	for (Object currentEnum : (List<Object>) clazz.getMethod("getColumnEnums").invoke(rowRecord)) {
 				try {
 		    		String cellContents = mainSheet.getCell(c, r).getContents();
+		    		String labelContents = mainSheet.getCell(c, 0).getContents();
+		    		String columnTitle = ((String)currentEnum.getClass().getMethod("getColumnTitle").invoke(currentEnum));
 		    		if (cellContents.equals("")) {
                         c++;
                     } else if (currentEnum.getClass().getMethod("getColumnTitle").invoke(currentEnum).equals(mainSheet.getCell(c, 0).getContents())) {
@@ -86,6 +88,7 @@ public interface Record {
     boolean matches(Record record);
     
     static <T> List<List<Record>> splitByField(List<Record> records, String fieldName, Class<T> clazz) {
+        //TODO this isn't working for non-filtered sheet
 		List<List<Record>> recordListList = new ArrayList<>();
 		Method fieldGetter = null;
 		for (Method method : clazz.getMethods()) {
