@@ -49,6 +49,7 @@ public class RecordOutputUtil {
 	private Workbook currentWorkbook;
 	private WritableWorkbook copyWorkbook;
 	private Calendar workbookCreateDate;
+	private RecordIOUtil ioutil;
 
 	public RecordOutputUtil(RecordIOUtil ioUtil, State state, Site site) {
 		Calendar date = Calendar.getInstance();
@@ -58,6 +59,7 @@ public class RecordOutputUtil {
 		this.record = ioUtil.getRecord();
 		this.site = site;
 		this.idFile = ioUtil.getIdFile();
+		this.ioutil = ioUtil;
 		this.uncrawledIdFile = new File(OUTPUT_DIR + TRACKING_DIR + site.getName() + "_Uncrawled.txt");
 	}
 
@@ -68,11 +70,9 @@ public class RecordOutputUtil {
 //	public WritableWorkbook getWorkbook() {
 //		return workbook;
 //	}
-
 	public State getState() {
 		return state;
 	}
-
 	public Record getRecord() {
 		return record;
 	}
@@ -116,7 +116,6 @@ public class RecordOutputUtil {
 		try {
 			if (workbook == null) {
 				newWorkbook = Workbook.createWorkbook(new File(docName));
-
 				WritableSheet excelSheet = newWorkbook.createSheet(state.getName(), 0);
 				createColumnHeaders(excelSheet);
 				newWorkbook.write();
@@ -136,6 +135,7 @@ public class RecordOutputUtil {
 	}
 
 	public boolean splitIntoSheets(String docName, String delimiter, List<List<Record>> recordsListList, Class clazz) {
+		//TODO this is creating sheets with invalid names using test file
 		boolean successful = false;
 		Method fieldGetter = null;
 		for (Method method : clazz.getMethods()) {
@@ -208,7 +208,7 @@ public class RecordOutputUtil {
 	public void addRecordToMainWorkbook(Record record) {
 		try {
 			createWorkbookCopy(docName, TEMP + EXT);
-			int rowNumber = copyWorkbook.getSheet(0).getRows();
+			int rowNumber = ioutil.getInputter().getNonEmptyRowCount(copyWorkbook.getSheet(0));
 			WritableSheet sheet = copyWorkbook.getSheet(0);
 			record.addToExcelSheet(rowNumber, sheet);
 			writeIdToFile(idFile, record.getId());

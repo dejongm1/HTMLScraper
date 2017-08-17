@@ -61,7 +61,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 	    offline = System.getProperty("offline").equals("true");
 
         ArrestsDotOrgSite site = (ArrestsDotOrgSite) getSite(new String[]{state.getName()});
-        RecordIOUtil recordOutputUtil = initializeOutputter(state, site);
+        RecordIOUtil recordOutputUtil = initializeIOUtil(state, site);
         //TODO check if this persists between states in same run
         connectionUtil = new ConnectionUtil(true);
         
@@ -327,7 +327,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     }
 
     @Override
-    public RecordIOUtil initializeOutputter(State state, Site site) throws SpiderException {
+    public RecordIOUtil initializeIOUtil(State state, Site site) throws SpiderException {
     	RecordIOUtil ioUtil = new RecordIOUtil(state, new ArrestRecord(), site);
         try {
             //load previously written records IDs into memory

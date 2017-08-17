@@ -1,18 +1,25 @@
 package com.mcd.spider.main.util.io;
 
-import com.mcd.spider.main.entities.record.Record;
-import com.mcd.spider.main.exception.IDCheckException;
-import com.mcd.spider.main.exception.SpiderException;
-import jxl.Sheet;
-import jxl.Workbook;
-import jxl.read.biff.BiffException;
-import org.apache.log4j.Logger;
-
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.apache.log4j.Logger;
+
+import com.mcd.spider.main.entities.record.Record;
+import com.mcd.spider.main.exception.IDCheckException;
+import com.mcd.spider.main.exception.SpiderException;
+
+import jxl.Cell;
+import jxl.Sheet;
+import jxl.Workbook;
+import jxl.read.biff.BiffException;
 
 /**
  * 
@@ -27,12 +34,14 @@ public class RecordInputUtil {
 	private boolean offline;
 	private File idFile;
 	private Record record;
+	private RecordIOUtil ioUtil;
 
 	public RecordInputUtil(RecordIOUtil ioUtil) {
 		this.docName = ioUtil.getDocName();
 		this.record = ioUtil.getRecord();
         this.offline = System.getProperty("offline").equals("true");
         this.idFile = ioUtil.getIdFile();
+        this.ioUtil = ioUtil;
 	}
 
 	public String getDocName() {
@@ -85,14 +94,16 @@ public class RecordInputUtil {
                     Class<?> clazz = Record.getRecordClass(record);
                     Constructor<?> constructor = Record.getConstructorForRecord(clazz, record);
                     //starting with the first data row, read records into set
-                    for (int r = 1; r<foundRecordsCount; r++) {
+                    for (int r = 1; r<mainSheet.getRows(); r++) {
                         //loop over columnEnums for each row
-                        try {
-                            Object rowRecord = constructor.newInstance();
-                            storedRecords.add(Record.readRowIntoRecord(clazz, mainSheet, rowRecord, r));
-                        } catch (InvocationTargetException | InstantiationException | IllegalAccessException | IllegalArgumentException e) {
-                            logger.error("Error trying to read row into record object, row "+r, e);
-                        }
+                    	if (rowIsNotEmpty(mainSheet.getRow(r))) {
+	                        try {
+	                            Object rowRecord = constructor.newInstance();
+	                            storedRecords.add(Record.readRowIntoRecord(clazz, mainSheet, rowRecord, r));
+	                        } catch (InvocationTargetException | InstantiationException | IllegalAccessException | IllegalArgumentException e) {
+	                            logger.error("Error trying to read row into record object, row "+r, e);
+	                        }
+                    	}
                     }
                 }
             }
@@ -109,16 +120,20 @@ public class RecordInputUtil {
     }
 
     public int getNonEmptyRowCount(Sheet sheet) {
-	    int rowCount = sheet.getRows();
 	    int foundRecordCount = 0;
 	    for (int r=0; r<sheet.getRows(); r++) {
-	        if (sheet.getCell(0,r).getContents().length()>0 && sheet.getCell(1,r).getContents().length()>0) {
+	        if (rowIsNotEmpty(sheet.getRow(r))) {
                 foundRecordCount++;
             }
         }
 	    return foundRecordCount;
     }
 
+    private boolean rowIsNotEmpty(Cell[] row) {
+    	//if both of the first two columns are empty, consider row empty
+    	return row.length>0 && (row[0].getContents().length()>0 && row[1].getContents().length()>0);
+    }
+    
 	public Set<Record> mergeRecordsFromSpreadsheets(File fileOne, File fileTwo) {
 		Set<Record> storedRecordsOne = readSpreadsheet(fileOne);
 		Set<Record> storedRecordsTwo = readSpreadsheet(fileTwo);

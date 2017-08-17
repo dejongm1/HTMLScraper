@@ -40,10 +40,12 @@ public interface Record {
 				try {
 		    		String cellContents = mainSheet.getCell(c, r).getContents();
 		    		String labelContents = mainSheet.getCell(c, 0).getContents();
+		    		String fieldTitle = ((String)currentEnum.getClass().getMethod("getFieldName").invoke(currentEnum));
 		    		String columnTitle = ((String)currentEnum.getClass().getMethod("getColumnTitle").invoke(currentEnum));
 		    		if (cellContents.equals("")) {
                         c++;
-                    } else if (currentEnum.getClass().getMethod("getColumnTitle").invoke(currentEnum).equals(mainSheet.getCell(c, 0).getContents())) {
+                    } else if (columnTitle.equalsIgnoreCase(labelContents)
+                    			|| fieldTitle.equalsIgnoreCase(labelContents)) {
                         Method enumSetter = currentEnum.getClass().getMethod("getSetterName");
                         String setterName = (String) enumSetter.invoke(currentEnum);
                         Class fieldType = (Class) currentEnum.getClass().getMethod("getType").invoke(currentEnum);

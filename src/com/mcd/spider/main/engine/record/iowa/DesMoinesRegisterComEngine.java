@@ -66,7 +66,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
 	
 	        //while(recordsProcessed <= maxNumberOfResults) {
 	        DesMoinesRegisterComSite site = (DesMoinesRegisterComSite) getSite(null);
-            RecordIOUtil recordIOUtil = initializeOutputter(state, site);
+            RecordIOUtil recordIOUtil = initializeIOUtil(state, site);
             
 	        logger.info("----Site: " + site.getName() + "----");
 	        logger.debug("Sending spider " + (offline?"offline":"online" ));
@@ -214,7 +214,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     }
 
     @Override
-    public RecordIOUtil initializeOutputter(State state, Site site) throws SpiderException {
+    public RecordIOUtil initializeIOUtil(State state, Site site) throws SpiderException {
         RecordIOUtil ioUtil = new RecordIOUtil(state, new ArrestRecord(), site);
         try {
             //load previously written records IDs into memory
