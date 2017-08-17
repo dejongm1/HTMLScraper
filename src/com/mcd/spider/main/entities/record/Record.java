@@ -36,11 +36,8 @@ public interface Record {
 	static Record readRowIntoRecord(Class clazz, Sheet mainSheet, Object rowRecord, int r, int numberOfColumns) {
     	int c = 0;
     	try {
-		//for (int c=0;c<numberOfColumns;c++) {
 	    	for (Object currentEnum : (List<Object>) clazz.getMethod("getColumnEnums").invoke(rowRecord)) {
 				try {
-	//	    		List<Object> enums = (List<Object>) clazz.getMethod("getColumnEnums").invoke(rowRecord);
-	//				Object currentEnum = enums.get(c);
 		    		String cellContents = mainSheet.getCell(c, r).getContents();
 		    		String labelContents = mainSheet.getCell(c, 0).getContents();
 		    		String columnTitle = ((String)currentEnum.getClass().getMethod("getColumnTitle").invoke(currentEnum));

@@ -315,34 +315,33 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 
 	@Override
 	public boolean matches(Record recordToMatch) {
-		//TODO ranking system, 
+		//TODO ranking system, needs testing
 		//higher than # means a match
 		//one or more points for each element matched
 		int score = 0;
 		ArrestRecord record = (ArrestRecord) recordToMatch;
-		if (this.fullName.replace("\\w", "").equalsIgnoreCase(record.getFullName().replace("\\w", ""))
-				|| (this.firstName.equalsIgnoreCase(record.getFirstName()) && this.lastName.equalsIgnoreCase(record.getLastName()))) {
+		if (this.getFullName().replace("\\w", "").equalsIgnoreCase(record.getFullName().replace("\\w", ""))
+				|| (this.getFirstName().equalsIgnoreCase(record.getFirstName()) && this.getLastName().equalsIgnoreCase(record.getLastName()))) {
 			score+=5;
 		}
-//		if (/*middle names matches*/) {
-//			score+=1;
-//		}
-//		if (/*counties match*/) {
-//			score+=1;
-//		}
-//		if (/*eye color and hair color match*/) {
-//			score+=1;
-//		}
-//		if (/*gender*/) {
-//			score+=1;
-//		}
-//		if (/*arrest date*/) {
-//			score+=1;
-//		}
-//		if (/*age*/) {
-//			score+=1;
-//		}
-		
+		if (this.getMiddleName().equalsIgnoreCase(record.getMiddleName())) {
+			score+=1;
+		}
+		if (this.getCounty().equalsIgnoreCase(record.getCounty())) {
+			score+=1;
+		}
+		if (this.getEyeColor().equalsIgnoreCase(record.getEyeColor()) && this.getHairColor().equalsIgnoreCase(record.getHairColor())) {
+			score+=1;
+		}
+		if (this.getGender().equalsIgnoreCase(record.getGender())) {
+			score+=1;
+		}
+		if (this.getArrestDate().equals(record.getArrestDate())) {
+			score+=1;
+		}
+		if (this.getArrestAge()==(record.getArrestAge())) {
+			score+=1;
+		}
 		return score >= 6;
 	}
 }
