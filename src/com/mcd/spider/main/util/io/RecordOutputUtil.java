@@ -135,7 +135,6 @@ public class RecordOutputUtil {
 	}
 
 	public boolean splitIntoSheets(String docName, String delimiter, List<List<Record>> recordsListList, Class clazz) {
-		//TODO this is creating sheets with invalid names using test file
 		boolean successful = false;
 		Method fieldGetter = null;
 		for (Method method : clazz.getMethods()) {

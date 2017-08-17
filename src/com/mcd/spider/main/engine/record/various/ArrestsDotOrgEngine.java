@@ -62,7 +62,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 
         ArrestsDotOrgSite site = (ArrestsDotOrgSite) getSite(new String[]{state.getName()});
         RecordIOUtil recordOutputUtil = initializeIOUtil(state, site);
-        //TODO check if this persists between states in same run
+        //Do we want to persist between states in same run? Or not run multiple states at once?
         connectionUtil = new ConnectionUtil(true);
         
         long siteTime = System.currentTimeMillis();

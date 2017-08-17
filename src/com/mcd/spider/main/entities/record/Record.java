@@ -90,7 +90,6 @@ public interface Record {
     boolean matches(Record record);
     
     static <T> List<List<Record>> splitByField(List<Record> records, String fieldName, Class<T> clazz) {
-        //TODO this isn't working for non-filtered sheet
 		List<List<Record>> recordListList = new ArrayList<>();
 		Method fieldGetter = null;
 		for (Method method : clazz.getMethods()) {
