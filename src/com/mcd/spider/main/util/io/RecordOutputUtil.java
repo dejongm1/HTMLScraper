@@ -138,7 +138,6 @@ public class RecordOutputUtil {
 	public boolean splitIntoSheets(String docName, String delimiter, List<List<Record>> recordsListList, Class clazz) {
 		boolean successful = false;
 		Method fieldGetter = null;
-		//TODO make this only gather getters for columns in spreadsheet
 		for (Method method : clazz.getMethods()) {
 			if (method.getName().equalsIgnoreCase("get" + delimiter.replace(" ", ""))) {
 				fieldGetter = method;

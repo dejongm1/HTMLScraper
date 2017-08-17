@@ -100,7 +100,6 @@ public class ArrestsDotOrgSite implements SiteHTML {
 	}
 	@Override
 	public Map<String,String> getRecordDetailDocUrls(List<Document> resultsPageDocs) {
-		//TODO
 		return null;
 	}
 	@Override

@@ -33,14 +33,12 @@ public interface Record {
     List<ArrestRecord.RecordColumnEnum> getColumnEnums();
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-	static Record readRowIntoRecord(Class clazz, Sheet mainSheet, Object rowRecord, int r, int numberOfColumns) {
+	static Record readRowIntoRecord(Class clazz, Sheet mainSheet, Object rowRecord, int r) {
     	int c = 0;
     	try {
 	    	for (Object currentEnum : (List<Object>) clazz.getMethod("getColumnEnums").invoke(rowRecord)) {
 				try {
 		    		String cellContents = mainSheet.getCell(c, r).getContents();
-		    		String labelContents = mainSheet.getCell(c, 0).getContents();
-		    		String columnTitle = ((String)currentEnum.getClass().getMethod("getColumnTitle").invoke(currentEnum));
 		    		if (cellContents.equals("")) {
                         c++;
                     } else if (currentEnum.getClass().getMethod("getColumnTitle").invoke(currentEnum).equals(mainSheet.getCell(c, 0).getContents())) {

@@ -41,7 +41,6 @@ public class RecordInputUtil {
 
     public Set<String> getPreviousIds() throws SpiderException {
         Set<String> ids = new HashSet<>();
-        //TODO check name as well to make sure it's the right state/site
         BufferedReader br = null;
         if (!offline) {
             try {
@@ -81,8 +80,8 @@ public class RecordInputUtil {
                 Workbook workbook = Workbook.getWorkbook(fileToRead);
                 if (workbook!=null) {
                     Sheet mainSheet = workbook.getSheet(0);
-                    //TODO this is getting unpopulated rows
-                    foundRecordsCount = mainSheet.getRows();
+                    //when columns are deleted, "extra rows" are added to sheet
+                    foundRecordsCount = getNonEmptyRowCount(mainSheet);
                     Class<?> clazz = Record.getRecordClass(record);
                     Constructor<?> constructor = Record.getConstructorForRecord(clazz, record);
                     //starting with the first data row, read records into set
@@ -90,7 +89,7 @@ public class RecordInputUtil {
                         //loop over columnEnums for each row
                         try {
                             Object rowRecord = constructor.newInstance();
-                            storedRecords.add(Record.readRowIntoRecord(clazz, mainSheet, rowRecord, r, record.getFieldsToOutput().size()));
+                            storedRecords.add(Record.readRowIntoRecord(clazz, mainSheet, rowRecord, r));
                         } catch (InvocationTargetException | InstantiationException | IllegalAccessException | IllegalArgumentException e) {
                             logger.error("Error trying to read row into record object, row "+r, e);
                         }
@@ -107,6 +106,17 @@ public class RecordInputUtil {
 
     	logger.debug("Found " +  (foundRecordsCount-1) + " and retrieved " + storedRecords.size());
     	return storedRecords;
+    }
+
+    public int getNonEmptyRowCount(Sheet sheet) {
+	    int rowCount = sheet.getRows();
+	    int foundRecordCount = 0;
+	    for (int r=0; r<sheet.getRows(); r++) {
+	        if (sheet.getCell(0,r).getContents().length()>0 && sheet.getCell(1,r).getContents().length()>0) {
+                foundRecordCount++;
+            }
+        }
+	    return foundRecordCount;
     }
 
 	public Set<Record> mergeRecordsFromSpreadsheets(File fileOne, File fileTwo) {
