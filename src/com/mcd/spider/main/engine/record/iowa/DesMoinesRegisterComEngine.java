@@ -1,12 +1,38 @@
 package com.mcd.spider.main.engine.record.iowa;
 
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.jsoup.Connection;
+import org.jsoup.Connection.Response;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import com.mcd.spider.main.engine.record.ArrestRecordEngine;
 import com.mcd.spider.main.entities.record.ArrestRecord;
 import com.mcd.spider.main.entities.record.Record;
 import com.mcd.spider.main.entities.record.State;
+import com.mcd.spider.main.entities.record.ArrestRecord.RecordColumnEnum;
 import com.mcd.spider.main.entities.record.filter.RecordFilter;
 import com.mcd.spider.main.entities.record.filter.RecordFilter.RecordFilterEnum;
 import com.mcd.spider.main.entities.site.Site;
+import com.mcd.spider.main.entities.site.SpiderWeb;
 import com.mcd.spider.main.entities.site.service.DesMoinesRegisterComSite;
 import com.mcd.spider.main.entities.site.service.SiteService;
 import com.mcd.spider.main.exception.ExcelOutputException;
@@ -16,22 +42,8 @@ import com.mcd.spider.main.util.ConnectionUtil;
 import com.mcd.spider.main.util.SpiderUtil;
 import com.mcd.spider.main.util.io.RecordIOUtil;
 import com.mcd.spider.main.util.io.RecordOutputUtil;
-import common.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.*;
-import java.util.Map.Entry;
+import common.Logger;
 
 /**
  *
@@ -41,100 +53,84 @@ import java.util.Map.Entry;
 public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
 
     private static final Logger logger = Logger.getLogger(DesMoinesRegisterComEngine.class);
+    
     private SpiderUtil spiderUtil = new SpiderUtil();
-    private Set<String> crawledIds;
-    private Set<Record> crawledRecords;
     private RecordFilterEnum filter;
-    private boolean offline;
-    private Site site;
+    private ConnectionUtil connectionUtil;
+    private DesMoinesRegisterComSite site;
     private RecordIOUtil recordIOUtil;
+    private SpiderWeb spiderWeb;
 
     @Override
     public void getArrestRecords(State state, long maxNumberOfResults, RecordFilterEnum filter) throws SpiderException {
         long totalTime = System.currentTimeMillis();
-        offline = System.getProperty("offline").equals("true");
     	this.filter = filter;
-    	if (offline) {
+    	spiderWeb = new SpiderWeb(maxNumberOfResults, false);
+    	if (spiderWeb.isOffline()) {
     		logger.debug("Offline - can't scrape this php site. Try making an offline version");
     	} else {
-	        //split into more specific methods
-
-	        long recordsProcessed = 0;
 	        int sleepTimeSum = 0;
-
-	        //while(recordsProcessed <= maxNumberOfResults) {
 	        site = new DesMoinesRegisterComSite(null);
             recordIOUtil = initializeIOUtil(state);
+            connectionUtil = new ConnectionUtil(true);
 
+            long siteTime = System.currentTimeMillis();
 	        logger.info("----Site: " + site.getName() + "----");
-	        logger.debug("Sending spider " + (offline?"offline":"online" ));
+	        logger.debug("Sending spider " + (spiderWeb.isOffline()?"offline":"online" ));
 
-	        int sleepTimeAverage = (site.getPerRecordSleepRange()[0]+site.getPerRecordSleepRange()[1])/2;
-	        sleepTimeSum += offline?0:sleepTimeAverage;
+	        int sleepTimeAverage = spiderWeb.isOffline()?0:(site.getPerRecordSleepRange()[0]+site.getPerRecordSleepRange()[1])/2;
 	        long time = System.currentTimeMillis();
 
-	        recordsProcessed += scrapeSite(1, maxNumberOfResults);
+	        spiderWeb.addToRecordsProcessed(scrapeSite(1));
 
 	        time = System.currentTimeMillis() - time;
 	        logger.info(site.getBaseUrl() + " took " + time + " ms");
 
 	        //outputUtil.removeColumnsFromSpreadsheet(new int[]{ArrestRecord.RecordColumnEnum.ID_COLUMN.index()});
+	        siteTime = System.currentTimeMillis() - siteTime;
+	        logger.info(state.getName() + " took " + siteTime + " ms");
 
 	        spiderUtil.sendEmail(state);
 
 	        totalTime = System.currentTimeMillis() - totalTime;
-	        if (!offline) {
-	            logger.info("Sleep time was approximately " + sleepTimeSum + " ms");
-	            logger.info("Processing time was approximately " + (totalTime-sleepTimeSum) + " ms");
+	        if (!spiderWeb.isOffline()) {
+	            logger.info("Sleep time was approximately " + sleepTimeAverage*spiderWeb.getRecordsProcessed() + " ms");
+	            logger.info("Processing time was approximately " + (totalTime-(sleepTimeAverage*spiderWeb.getRecordsProcessed())) + " ms");
 	        } else {
 	            logger.info("Total time taken was " + totalTime + " ms");
 	        }
-            logger.info(recordsProcessed + " total records were processed");
+            logger.info(spiderWeb.getRecordsProcessed() + " total records were processed");
     	}
     }
 
     @Override
-    public int scrapeSite(int attemptCount, long maxNumberOfResults) {
-        int recordsProcessed = 0;
-        SiteService serviceSite = (DesMoinesRegisterComSite) site;
-        for (String county : ((DesMoinesRegisterComSite) site).getCounties()) {
+    public long scrapeSite(int attemptCount) {
+    	int maxAttempts = site.getMaxAttempts();
+        for (String county : site.getCounties()) {
             site.setBaseUrl(new String[]{county});
+            StringBuffer response = new StringBuffer();
             try {
-                //build http post request
-                URL obj = new URL(serviceSite.getServiceUrl());
-                HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-
-                //add request header
-                con.setRequestMethod(serviceSite.getRequestType());
-                con.setRequestProperty("User-Agent", serviceSite.getUserAgent());
-                con.setRequestProperty("Accept-Language", serviceSite.getAcceptLanguage());
-                con.setRequestProperty("Accept-Encoding", serviceSite.getAcceptEncoding());
-                con.setRequestProperty("Accept", serviceSite.getAcceptType());
-                con.setRequestProperty("Content-Length", serviceSite.getContentLength());
-                con.setRequestProperty("Content-Type", serviceSite.getContentType());
-                con.setRequestProperty("Cookie", serviceSite.getCookie());
-                //con.setRequestProperty("Referer", serviceSite.getReferer());
-                con.setRequestProperty("XRequested-With", ((DesMoinesRegisterComSite) serviceSite).getXRequestedWith());
-                con.setRequestProperty("Proxy-Connection", serviceSite.getProxyConnection());
-                con.setRequestProperty("Host", serviceSite.getHost());
-//                String urlParameters = serviceSite.getRequestBody(new String[]{county, "getmugs", "0", "10000"});
-                String urlParameters = serviceSite.getRequestBody(new String[]{county, "getmugs", "0", String.valueOf(maxNumberOfResults/3)});
-
-                // Send post request
-                logger.debug("\nSending 'POST' request to URL : " + site.getUrl().getDomain());
-                StringBuffer response = sendRequest(con, urlParameters);
-
-                Map<Object, String> profileDetailUrlMap = new HashMap<>();
-                profileDetailUrlMap.putAll(parseDocForUrls(response));
-
-                recordsProcessed += scrapeRecords(profileDetailUrlMap, null, 99999999);
-
+            	response = (StringBuffer) initiateConnection(county);
             } catch (java.io.IOException e) {
                 logger.error("IOException caught sending http request to " + site.getUrl(), e);
             }
+            if (attemptCount<=maxAttempts) {
+                logger.info("Retrieving details page urls");
+                //build a list of details page urls by parsing results page docs
+                Map<Object,String> recordDetailUrlMap = compileRecordDetailUrlMap(response);
 
+                logger.info("Gathered links for " + recordDetailUrlMap.size() + " record profiles");
+
+                spiderUtil.sleep(spiderWeb.isOffline()?0:100000, true);
+                //****iterate over collection, scraping records and simply opening others
+                spiderWeb.addToRecordsProcessed(scrapeRecords(recordDetailUrlMap));
+            } else {
+            	 logger.error("Failed to load html doc from " + site.getBaseUrl()+ ". Trying again " + (maxAttempts-attemptCount) + " more times");
+                 attemptCount++;
+                 scrapeSite(attemptCount);
+             }
         }
-        return recordsProcessed;
+        return spiderWeb.getRecordsProcessed();
     }
 
     @Override
@@ -146,7 +142,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
             for(int m=0;m<mugShots.length();m++) {
                 JSONObject mugshot = (JSONObject) mugShots.get(m);
                 //only add if we haven't already crawled it
-                if (!crawledIds.contains(mugshot.getString("id"))) {
+                if (!spiderWeb.getCrawledIds().contains(mugshot.getString("id"))) {
                     detailUrlMap.put(mugshot.getString("id"), site.getBaseUrl() + "&id=" + mugshot.getString("id"));
                 }
             }
@@ -157,46 +153,49 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     }
 
     @Override
-    public int scrapeRecords(Map<Object, String> recordsDetailsUrlMap, Map<String,String> cookies, long maxNumberOfResults){
-        int recordsProcessed = 0;
+    public long scrapeRecords(Map<Object, String> recordsDetailsUrlMap){
         List<Record> arrestRecords = new ArrayList<>();
         ArrestRecord arrestRecord;
         RecordOutputUtil recordOutputUtil = recordIOUtil.getOutputter();
+        String referer = "";
         for (Entry<Object, String> entry : recordsDetailsUrlMap.entrySet()) {
             String id = (String) entry.getKey();
             String url = recordsDetailsUrlMap.get(id);
             try {
                 logger.debug("\nSending 'POST' request for : " + id);
-                Document profileDetailDoc = ((DesMoinesRegisterComSite) site).getDetailsDoc(url, this);
+                Document profileDetailDoc = obtainRecordDetailDoc(url, referer);
 
                 if (spiderUtil.docWasRetrieved(profileDetailDoc)) {
-                    if (((DesMoinesRegisterComSite) site).isARecordDetailDoc(profileDetailDoc)) {
-                        recordsProcessed++;
-                        arrestRecord = populateArrestRecord(profileDetailDoc);
-                        arrestRecords.add(arrestRecord);
-                        //save each record in case of application failures
-                        recordOutputUtil.addRecordToMainWorkbook(arrestRecord);
-                        spiderUtil.sleep(ConnectionUtil.getSleepTime(site), true);//sleep at random interval
-
+                    if (site.isARecordDetailDoc(profileDetailDoc)) {
+                    	try {
+	                    	spiderWeb.addToRecordsProcessed(1);
+	                        arrestRecord = populateArrestRecord(profileDetailDoc);
+	                        arrestRecords.add(arrestRecord);
+	                        //save each record in case of application failures
+	                        recordOutputUtil.addRecordToMainWorkbook(arrestRecord);
+	                        spiderUtil.sleep(ConnectionUtil.getSleepTime(site), true);//sleep at random interval
+                    	} catch (Exception e) {
+	                        logger.error("Generic exception caught while trying to grab arrest record for " + profileDetailDoc.baseUri(), e);
+	                    }
                     } else {
                         logger.debug("This doc doesn't have any record details: " + id);
                     }
                 } else {
                     logger.error("Failed to load html doc from " + url);
                 }
+                spiderUtil.sleep(ConnectionUtil.getSleepTime(site)/2, false);
+	        	logger.info("Sleeping for half time because no record was crawled");
             } catch (IOException e) {
                 logger.error("IOException caught sending http request to " + url, e);
             } catch (JSONException e) {
                 logger.error("JSONExecption caught on id " + id, e);
             }
+            referer = url;
         }
 
-        if (filter!=null) {
-	        List<Record> filteredRecords = filterRecords(arrestRecords);
-	        //create a separate sheet with filtered results
-	        logger.info(filteredRecords.size() + " " + filter.filterName() + " " + "records were crawled");
-        }
-        return recordsProcessed;
+        formatOutput(arrestRecords, recordOutputUtil);
+        
+        return spiderWeb.getRecordsProcessed();
     }
 
     @Override
@@ -217,9 +216,9 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
         RecordIOUtil ioUtil = new RecordIOUtil(state, new ArrestRecord(), site);
         try {
             //load previously written records IDs into memory
-            crawledIds = ioUtil.getInputter().getPreviousIds();
-            //TODO load records in current spreadsheet into memory
-            crawledRecords = ioUtil.getInputter().readDefaultSpreadsheet();
+        	spiderWeb.setCrawledIds(ioUtil.getInputter().getPreviousIds());
+            //load records in current spreadsheet into memory
+        	spiderWeb.setCrawledRecords(ioUtil.getInputter().readDefaultSpreadsheet());
             ioUtil.getOutputter().createSpreadsheet();
         } catch (ExcelOutputException | IDCheckException e) {
             throw e;
@@ -227,6 +226,75 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
         return ioUtil;
     }
 
+    @Override
+    public Object initiateConnection(String county) throws IOException {
+        //build http post request
+        URL obj = new URL(site.getServiceUrl());
+        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+        String referer = "www.google.com";
+        
+        //add request header
+        con.setRequestMethod(site.getRequestType());
+        con.setRequestProperty("User-Agent", site.getUserAgent());
+        con.setRequestProperty("Accept-Language", site.getAcceptLanguage());
+        con.setRequestProperty("Accept-Encoding", site.getAcceptEncoding());
+        con.setRequestProperty("Accept", site.getAcceptType());
+        con.setRequestProperty("Content-Length", site.getContentLength());
+        con.setRequestProperty("Content-Type", site.getContentType());
+        con.setRequestProperty("Cookie", site.getCookie());
+        con.setRequestProperty("Referer", referer);
+        con.setRequestProperty("XRequested-With", site.getXRequestedWith());
+        con.setRequestProperty("Proxy-Connection", site.getProxyConnection());
+        con.setRequestProperty("Host", site.getHost());
+        
+        String urlParameters = site.getRequestBody(new String[]{county, "getmugs", "0", String.valueOf(spiderWeb.getMaxNumberOfResults()==0?10000:spiderWeb.getMaxNumberOfResults()/3)});
+
+        // Send post request
+        logger.debug("\nSending 'POST' request to URL : " + site.getUrl().getDomain());
+        return sendRequest(con, urlParameters);
+
+    }
+
+    public Map<Object,String> compileRecordDetailUrlMap(StringBuffer response) {
+        Map<Object, String> profileDetailUrlMap = new HashMap<>();
+        profileDetailUrlMap.putAll(parseDocForUrls(response));
+        return profileDetailUrlMap;
+    }
+
+    public Document obtainRecordDetailDoc(String url, String referer) throws IOException, JSONException {
+    	return site.getDetailsDoc(url, this, referer);
+    }
+    
+    @Override
+    public void formatOutput(List<Record> arrestRecords, RecordOutputUtil recordOutputUtil) {
+    	//format the output
+        logger.info("Starting to output the results");
+        Collections.sort(arrestRecords, ArrestRecord.CountyComparator);
+        String delimiter = RecordColumnEnum.COUNTY_COLUMN.getColumnTitle();
+        Class<ArrestRecord> clazz = ArrestRecord.class;
+        if (filter!=null) {
+            try {
+                logger.info("Outputting filtered results");
+                List<Record> filteredRecords = filterRecords(arrestRecords);
+                List<List<Record>> splitRecords = Record.splitByField(filteredRecords, delimiter, clazz);
+                //create a separate sheet with filtered results
+                logger.info(filteredRecords.size()+" "+filter.filterName()+" "+"records were crawled");
+                if (!filteredRecords.isEmpty()) {
+                    recordOutputUtil.createFilteredSpreadsheet(filter, filteredRecords);
+                    recordOutputUtil.splitIntoSheets(recordOutputUtil.getFilteredDocName(filter), delimiter, splitRecords, clazz);
+                }
+            } catch (Exception e) {
+                logger.error("Error trying to create filtered spreadsheet", e);
+            }
+        }
+        try {
+            List<List<Record>> splitRecords = Record.splitByField(arrestRecords, delimiter, clazz);
+            recordOutputUtil.splitIntoSheets(recordOutputUtil.getDocName(), delimiter, splitRecords, clazz);
+        } catch (Exception e) {
+            logger.error("Error trying to split full list of records", e);
+        }
+    }
+    
     @Override
     public void matchPropertyToField(ArrestRecord record, Object profileDetail) {
     	Element profileDetailElement = (Element) profileDetail;
@@ -269,7 +337,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
 
     @Override
     public void formatName(ArrestRecord record, Element profileDetail) {
-
+    	//only full name included
     }
 
     @Override
@@ -342,4 +410,15 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     	}
     	return filteredArrestRecords;
     }
+
+	@Override
+	public void setCookies(Response response) {
+		for (Map.Entry<String,String> cookieEntry : response.cookies().entrySet()) {
+    		spiderWeb.addSessionCookie(cookieEntry.getKey(), cookieEntry.getValue());
+		}
+    	int recordCap = spiderWeb.isOffline()?3:330;
+		if (spiderWeb.getRecordsProcessed() % recordCap == 0 && spiderWeb.getRecordsProcessed() != 0) {
+			connectionUtil.changeUserAgent();
+        }
+	}
 }

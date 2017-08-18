@@ -6,8 +6,14 @@ import com.mcd.spider.main.entities.record.State;
 import com.mcd.spider.main.entities.record.filter.RecordFilter;
 import com.mcd.spider.main.exception.SpiderException;
 import com.mcd.spider.main.util.io.RecordIOUtil;
+import com.mcd.spider.main.util.io.RecordOutputUtil;
+
+import org.jsoup.Connection.Response;
+import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -24,5 +30,8 @@ public interface ArrestRecordEngine {
 	void formatArrestTime(ArrestRecord record, Element profileDetail);
 	RecordIOUtil initializeIOUtil(State state) throws SpiderException;
 	List<Record> filterRecords(List<Record> fullArrestRecords);
+	Object initiateConnection(String arg) throws IOException;
+	void formatOutput(List<Record> arrestRecords, RecordOutputUtil recordOutputUtil);
+	void setCookies(Response response);
 	
 }

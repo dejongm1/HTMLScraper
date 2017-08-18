@@ -114,7 +114,7 @@ public class DesMoinesRegisterComSite implements SiteService {
         return "keep-alive";
     }
 
-    public Document getDetailsDoc(String url, DesMoinesRegisterComEngine engine) throws IOException, JSONException {
+    public Document getDetailsDoc(String url, DesMoinesRegisterComEngine engine, String referer) throws IOException, JSONException {
         //build http post request
         URL obj = new URL(getServiceUrl());
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
@@ -128,7 +128,7 @@ public class DesMoinesRegisterComSite implements SiteService {
         con.setRequestProperty("Content-Length", getContentLength());
         con.setRequestProperty("Content-Type", getContentType());
         con.setRequestProperty("Cookie", "firefly_akamai=\"cLkvZkvH7cwea80CJ+rzt9cwX8wnDMCM3tE9MUVJmJncB7suSielvriXGBSA/LzsvfWsybxGAz0bAEe5HsGyc5881eOcBkc9PTGxZhwFaE4qAdmgKbnutW1vu+W7GDUvojNccx5/6hSyKNKuum5mpjKeDVoHoeD7NH4jm+2gvIE=\"; firefly_general=\"eyJlcG9jaER1cmF0aW9uIjogMjU5MjAwMH0=\"; cX_LSP=csst%3D1495388706788%26psst%3D1494931551541; cX_P=izn80nagz6zxtja1; gup_anonid=33e35a58-fc6f-11e6-82af-0637abe42581; AMCV_CF4957F555EE9B727F000101%40AdobeOrg=1999109931%7CMCMID%7C08137730111966913956488348982869344992%7CMCAID%7CNONE%7CMCAAMLH-1495536356%7C9%7CMCAAMB-1495536358%7Chmk_Lq6TPIBMW925SPhw3Q%7CMCCIDH%7C1030878072; __gads=ID=f129007cfb05976e:T=1488146523:S=ALNI_MbgVMj3U0Y9i4xuaGEQxmZ-gmyL3Q; __tbc=%7Bjzx%7D6l728p5gqYPl92Ljk9MJnavQmqycOnDQA7P4PjGvljC0S4Ja7_qwYsfr0v2pDJUqL-dKnmz0JkjN7l4cyX-M-Zv-s6M0lcJmLdQRzsJbMcxIC2l7TQs-1JgqUhypJ-GTM-NXNzZFl08uOR6k8Xqy8xZdOpogTGxRAvPLIR7NAcGEi78mgz6cCwnoS3RwNSexnFOAhlz154SzCpmbdIS_1tl-_J4FgZMSK38aniBC8-6KdPrw_DbgzXpmn4rlfkAf-UfADqN8iu8pxHpx_Q5GDMb1g4gZtUxvxgK4dHvJ9JtqLnVKcIQXgEmAfC2Dzun95HAD9W0u7O_ZSHRPD3Qdwxa7Ruy73FWyHklDUvFLyyq2Qf_J78yf5FVBxKoEWRNTEitDHSn92qlXJbo0pxFKVi2zlZSn6Ex_jXNongBP4GYgZwwlFefvdy6zTGmQ_BEZ1tCtO2_nQ7nxabApCFKxZIAxV1jZxPEeWPZnSY2BxV8z2zqhqEgIJeBXY2xqVISdRYN4Q_cNWKdfbo3eXJwq_KbdRi_FsP_Wk8oMHDYdWKugOYtLYbiFb0_2lv88hHY5QVG-N8_ztrIpB1HT5pK7r1rvat04E7xaAOpYaAgs0Xg; xbc=%7Bjzx%7DhSS_mImmxwyTEBn-JWL3J56lO1V8tJ8vACKyeB74jDLoqLcSoMInYOcDeWDxynYwwpZKSRjx4lH45T5yulzTfH3ZAt3KmroGyu-14RmEGsok7UDmNdViNaHi_hxs0_c_DmuPJPtBPajtn_XWl9qIVqoVamigWChh0BGJTcAJJ2SMIjZLq35Y8z-aurEUifjKQMuvZNTyoTe3h4z-Yxjhv7_08gtAIlRYcr55YLi55I3vZfLP8lSCOt45kbBKtVK1; __ibxl=1; firefly_akamai_meter=sFhqO6TsfghnsQlbvEwyxwipzHUVnHeTdhnU5LGKp2Y=; firefly_akamai_open=eyJ2aWV3Q291bnQiOjIsICJ2aWV3VGhyZXNob2xkIjo1LCAidmlld2VkQ29udGVudCI6IFsiMzIyNTcwMDAxIiwgIjMyNjc3ODAwMSJdfQ==; AMCV_desmoinesregister1=MCAID%7C2CB8A53D05035169-6000118B600048F7; s_fid=5DFCB905AD0E0E76-2BEEBBA11D693F61; _cb_ls=1; _cb=B8xhRmDu7dcwKEJNd; _chartbeat2=.1500596863238.1500692560679.11.B52cMjDiqlMTCOilflC-ebfoBs2puL; s_cc=true; _cb_svref=https%3A%2F%2Fwww.google.com%2F; _chartbeat5=");
-        //con.setRequestProperty("Referer", getReferer());
+        con.setRequestProperty("Referer", referer);
         con.setRequestProperty("XRequested-With", getXRequestedWith());
         con.setRequestProperty("Host", getHost());
 

@@ -9,7 +9,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.jsoup.Connection;
@@ -53,13 +52,6 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     private ArrestsDotOrgSite site;
     private RecordIOUtil recordIOUtil;
     private SpiderWeb spiderWeb;
-//     Set<Record> crawledIds;
-//     Set<Record> crawledRecords;
-//     Map<String,String> sessionCookies;
-//     boolean offline;
-//     int furthestPageToCheck;
-//     long recordsProcessed;
-//     long maxNumberOfResults;
 
     @Override
     public void getArrestRecords(State state, long maxNumberOfResults, RecordFilterEnum filter) throws SpiderException {
@@ -67,7 +59,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         this.state = state;
         this.filter = filter;
         spiderWeb = new SpiderWeb(maxNumberOfResults, true);
-        site = new ArrestsDotOrgSite((new String[]{state.getName()}));
+        site = new ArrestsDotOrgSite(new String[]{state.getName()});
         recordIOUtil = initializeIOUtil(state);
         //Do we want to persist between states in same run? Or not run multiple states at once?
         connectionUtil = new ConnectionUtil(true);
@@ -102,13 +94,11 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 
     @Override
     public long scrapeSite(int attemptCount) {
-        //refactor to split out randomizing functionality, maybe reuse??
     	int maxAttempts = site.getMaxAttempts();
         String firstPageResultsUrl = site.generateResultsPageUrl(1);
         Document mainPageDoc = null;
-//        Map<String,String> sessionCookies = new HashMap<>();
         try {
-        	mainPageDoc = initiateConnection(firstPageResultsUrl);
+        	mainPageDoc = (Document) initiateConnection(firstPageResultsUrl);
         } catch (IOException e) {
             logger.error("Couldn't make initial connection to site. Trying again " + (maxAttempts-attemptCount) + " more times", e);
             //if it's a 500, we're probably blocked. Try a new user-agent TODO and IP if possible, else bail
@@ -119,7 +109,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             scrapeSite(attemptCount);
         }
         if (spiderUtil.docWasRetrieved(mainPageDoc) && attemptCount<=maxAttempts) {
-        	int numberOfPages = getNumberOfResultsPages(mainPageDoc);
+        	spiderWeb.setNumberOfPages(getNumberOfResultsPages(mainPageDoc));
 
             logger.info("Generating list of results pages for : " + site.getName() + " - " + state.getName());
         	Map<Object, String> resultsUrlPlusMiscMap = compileResultsUrlMap(mainPageDoc);
@@ -160,7 +150,6 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         return recordDetailUrlMap;
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes", "static-access" })
 	@Override
     public long scrapeRecords(Map<Object,String> recordsDetailsUrlMap) {
     	RecordOutputUtil recordOutputUtil = recordIOUtil.getOutputter();
@@ -174,14 +163,9 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         for (Object k : keys) {
         	if (spiderWeb.getRecordsProcessed()<spiderWeb.getMaxNumberOfResults()) {
 	            String url = recordsDetailsUrlMap.get(k);
-	    		Document profileDetailDoc = null;
-	        	try {
-	        		//can we guarantee previous is a page that has access to the current?
-	            	//TODO also set headers?
-	    			Connection.Response response = connectionUtil.retrieveConnectionResponse(url, recordsDetailsUrlMap.get(previousKey), spiderWeb.getSessionCookies());
-	    			profileDetailDoc = response.parse();
-	    			setCookies(response);
-	        		//depending on response status code, take action
+	            Document profileDetailDoc = null;
+	            try {
+		    		profileDetailDoc = obtainRecordDetailDoc(url, recordsDetailsUrlMap.get(previousKey));
 	        	} catch (FileNotFoundException fnfe) {
 	            	logger.error("No html doc found for " + url);
 	            } catch (IOException e) {
@@ -190,34 +174,36 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 	            	if (failedAttempts>=site.getMaxAttempts()) {
 	            		//save remaining records to file and exit
 	            		//TODO or retry with new connection/IP?
-	            		recordOutputUtil.backupUnCrawledRecords(recordsDetailsUrlMap);
 	            		logger.info("Hit the limit of failed connections. Saving list of unprocessed records and quitting");
+	            		recordOutputUtil.backupUnCrawledRecords(recordsDetailsUrlMap);
 	            		return spiderWeb.getRecordsProcessed();
 	            	}
 	            }
-	            if (site.isARecordDetailDoc(profileDetailDoc)) {
-	                if (spiderUtil.docWasRetrieved(profileDetailDoc)) {
-	                    try {
-	                    	spiderWeb.addToRecordsProcessed(1);
-	                        //should we check for ID first or not bother unless we start seeing duplicates??
-	                        arrestRecord = populateArrestRecord(profileDetailDoc);
-	                        //try to match the record/county to the state being crawled
-	                        if (arrestRecord.getState()==null || arrestRecord.getState().equalsIgnoreCase(state.getName())) {
-	                            arrestRecords.add(arrestRecord);
-	                            //save each record in case of failures mid-crawling
-	                            recordOutputUtil.addRecordToMainWorkbook(arrestRecord);
-	                            logger.debug("Record " + spiderWeb.getRecordsProcessed() + " saved");
-	                        }
-	                        spiderUtil.sleep(connectionUtil.getSleepTime(site), true);//sleep at random interval
-	                    } catch (Exception e) {
-	                        logger.error("Generic exception caught while trying to grab arrest record for " + profileDetailDoc.baseUri(), e);
-	                    }
 
-	                } else {
-	                    logger.error("Failed to load html doc from " + url);
-	                }
+	            if (spiderUtil.docWasRetrieved(profileDetailDoc)) {
+	            	if (site.isARecordDetailDoc(profileDetailDoc)) {
+	            		try {
+	            			spiderWeb.addToRecordsProcessed(1);
+	            			arrestRecord = populateArrestRecord(profileDetailDoc);
+	            			//try to match the record/county to the state being crawled
+	            			if (arrestRecord.getState()==null || arrestRecord.getState().equalsIgnoreCase(state.getName())) {
+	            				arrestRecords.add(arrestRecord);
+	            				//save each record in case of failures mid-crawling
+	            				recordOutputUtil.addRecordToMainWorkbook(arrestRecord);
+	            				logger.debug("Record " + spiderWeb.getRecordsProcessed() + " saved");
+	            			}
+	            			spiderUtil.sleep(ConnectionUtil.getSleepTime(site), true);//sleep at random interval
+	            		} catch (Exception e) {
+	            			logger.error("Generic exception caught while trying to grab arrest record for " + profileDetailDoc.baseUri(), e);
+	            		}
+
+	            	} else {
+	            		logger.debug("This doc doesn't have any record details: " + profileDetailDoc.baseUri());
+	            	}
+	            } else {
+	            	logger.error("Failed to load html doc from " + url);
 	            }
-	            spiderUtil.sleep(connectionUtil.getSleepTime(site)/2, false);
+	            spiderUtil.sleep(ConnectionUtil.getSleepTime(site)/2, false);
 	        	logger.info("Sleeping for half time because no record was crawled");
 	            previousKey = String.valueOf(k);
         	}
@@ -255,7 +241,8 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         return ioUtil;
     }
 
-    public Document initiateConnection(String firstPageResults) throws IOException {
+    @Override
+    public Object initiateConnection(String firstPageResults) throws IOException {
         //TODO also set headers?
         Connection.Response response = connectionUtil.retrieveConnectionResponse(firstPageResults, "www.google.com");
         for (Map.Entry<String,String> cookieEntry : response.cookies().entrySet()){
@@ -356,12 +343,21 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         return recordDetailUrlMap;
     }
 
+    public Document obtainRecordDetailDoc(String url, String referer) throws IOException {
+		//can we guarantee previous is a page that has access to the current?
+    	//TODO also set headers?
+		Connection.Response response = connectionUtil.retrieveConnectionResponse(url, referer, spiderWeb.getSessionCookies());
+		setCookies(response);
+    	return response.parse();
+    }
+    
+    @Override
     public void formatOutput(List<Record> arrestRecords, RecordOutputUtil recordOutputUtil) {
         //format the output
         logger.info("Starting to output the results");
         Collections.sort(arrestRecords, ArrestRecord.CountyComparator);
         String delimiter = RecordColumnEnum.COUNTY_COLUMN.getColumnTitle();
-        Class clazz = ArrestRecord.class;
+        Class<ArrestRecord> clazz = ArrestRecord.class;
         if (filter!=null) {
             try {
                 logger.info("Outputting filtered results");
@@ -369,7 +365,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
                 List<List<Record>> splitRecords = Record.splitByField(filteredRecords, delimiter, clazz);
                 //create a separate sheet with filtered results
                 logger.info(filteredRecords.size()+" "+filter.filterName()+" "+"records were crawled");
-                if (filteredRecords.size()>0) {
+                if (!filteredRecords.isEmpty()) {
                     recordOutputUtil.createFilteredSpreadsheet(filter, filteredRecords);
                     recordOutputUtil.splitIntoSheets(recordOutputUtil.getFilteredDocName(filter), delimiter, splitRecords, clazz);
                 }
@@ -383,7 +379,6 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         } catch (Exception e) {
             logger.error("Error trying to split full list of records", e);
         }
-
     }
     
     @Override
@@ -444,6 +439,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             record.setCounty(srcPath.substring(0, srcPath.indexOf('/')));
         }
     }
+    
     @Override
     public void formatName(ArrestRecord record, Element profileDetail) {
         record.setFirstName(profileDetail.select("span [itemprop=\"givenName\"]").text());
@@ -454,6 +450,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         fullName += " " + record.getLastName();
         record.setFullName(fullName);
     }
+    
     @Override
     public void formatArrestTime(ArrestRecord record, Element profileDetail) {
         Calendar arrestDate = record.getArrestDate();
@@ -465,6 +462,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             record.setArrestDate(arrestDate);
         }
     }
+    
     @Override
     public String extractValue(Element profileDetail) {
         return profileDetail.text().substring(profileDetail.text().indexOf(':')+1).trim();
@@ -475,22 +473,23 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     	List<Record> filteredArrestRecords = new ArrayList<>();
     	for (Record record : fullArrestRecords) {
     		boolean recordMatches = false;
-    		if (((ArrestRecord) record).getCharges()!=null) {
-                String[] charges = ((ArrestRecord) record).getCharges();
-                for (String charge : charges) {
-                    if (!recordMatches) {
-                        recordMatches = RecordFilter.filter(charge, filter);
-                    }
-                }
-                if (recordMatches) {
-                    filteredArrestRecords.add(record);
-                }
-            }
-    	}
+	    		if (((ArrestRecord)record).getCharges()!=null) {
+	                String[] charges = ((ArrestRecord)record).getCharges();
+	                for (String charge : charges) {
+	                    if (!recordMatches) {
+	                        recordMatches = RecordFilter.filter(charge, filter);
+	                    }
+	                }
+	                if (recordMatches) {
+	                    filteredArrestRecords.add(record);
+	                }
+	            }
+    		}
     	return filteredArrestRecords;
     }
     
-    private void setCookies(Connection.Response response) {
+    @Override
+    public void setCookies(Connection.Response response) {
     	for (Map.Entry<String,String> cookieEntry : response.cookies().entrySet()) {
     		spiderWeb.addSessionCookie(cookieEntry.getKey(), cookieEntry.getValue());
             logger.debug(cookieEntry.getKey() + "=" + cookieEntry.getValue());
