@@ -1,23 +1,5 @@
 package com.mcd.spider.main.engine.record.various;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.log4j.Logger;
-import org.jsoup.Connection;
-import org.jsoup.HttpStatusException;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
-import org.jsoup.select.Elements;
-
 import com.mcd.spider.main.engine.record.ArrestRecordEngine;
 import com.mcd.spider.main.entities.record.ArrestRecord;
 import com.mcd.spider.main.entities.record.ArrestRecord.RecordColumnEnum;
@@ -34,6 +16,17 @@ import com.mcd.spider.main.util.ConnectionUtil;
 import com.mcd.spider.main.util.SpiderUtil;
 import com.mcd.spider.main.util.io.RecordIOUtil;
 import com.mcd.spider.main.util.io.RecordOutputUtil;
+import org.apache.log4j.Logger;
+import org.jsoup.Connection;
+import org.jsoup.HttpStatusException;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
+import org.jsoup.select.Elements;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.*;
 
 /**
  *
@@ -43,6 +36,7 @@ import com.mcd.spider.main.util.io.RecordOutputUtil;
 
 public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 
+//    public static final Logger logger = Logger.getLogger("arrestsorgLogger");
     public static final Logger logger = Logger.getLogger(ArrestsDotOrgEngine.class);
     
     SpiderUtil spiderUtil = new SpiderUtil();

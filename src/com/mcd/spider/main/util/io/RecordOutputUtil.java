@@ -76,7 +76,39 @@ public class RecordOutputUtil {
 	public Record getRecord() {
 		return record;
 	}
-//
+	public boolean splitIntoSheets(String docName, String delimiter, List<List<Record>> recordsListList, Class clazz) {
+		boolean successful = false;
+		Method fieldGetter = null;
+		for (Method method : clazz.getMethods()) {
+			if (method.getName().equalsIgnoreCase("get" + delimiter.replace(" ", ""))) {
+				fieldGetter = method;
+			}
+		}
+		try {
+			createWorkbookCopy(docName, getTempFileName() + EXT);
+			for (int s = 0; s < recordsListList.size(); s++) {
+				try {
+					String delimitValue = (String) fieldGetter.invoke(recordsListList.get(s).get(0));
+					WritableSheet excelSheet = copyWorkbook.getSheet(delimitValue);
+					if (excelSheet == null) {
+						//append a new sheet for each
+						excelSheet = copyWorkbook.createSheet(delimitValue == null ? "empty" : delimitValue, s + 1);
+					}
+					createColumnHeaders(excelSheet);
+					for (int r = 0; r < recordsListList.get(s).size(); r++) {
+						recordsListList.get(s).get(r).addToExcelSheet(r+1, excelSheet);
+					}
+				} catch (NullPointerException e) {
+					logger.error("Error trying split workbook into sheets by " + fieldGetter.getName(), e);
+				}
+			}
+			handleBackup(docName, true);
+		} catch (IOException | WriteException | BiffException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+			logger.error("Error trying split workbook into sheets", e);
+		}
+		return successful;
+	}
+	//
 //	public File getOldBook() {
 //		return oldBook;
 //	}
@@ -134,38 +166,9 @@ public class RecordOutputUtil {
 		}
 	}
 
-	public boolean splitIntoSheets(String docName, String delimiter, List<List<Record>> recordsListList, Class clazz) {
-		boolean successful = false;
-		Method fieldGetter = null;
-		for (Method method : clazz.getMethods()) {
-			if (method.getName().equalsIgnoreCase("get" + delimiter.replace(" ", ""))) {
-				fieldGetter = method;
-			}
-		}
-		try {
-			createWorkbookCopy(docName, TEMP + EXT);
-			for (int s = 0; s < recordsListList.size(); s++) {
-				try {
-					String delimitValue = (String) fieldGetter.invoke(recordsListList.get(s).get(0));
-					WritableSheet excelSheet = copyWorkbook.getSheet(delimitValue);
-					if (excelSheet == null) {
-						//append a new sheet for each
-						excelSheet = copyWorkbook.createSheet(delimitValue == null ? "empty" : delimitValue, s + 1);
-					}
-					createColumnHeaders(excelSheet);
-					for (int r = 0; r < recordsListList.get(s).size(); r++) {
-						recordsListList.get(s).get(r).addToExcelSheet(r+1, excelSheet);
-					}
-				} catch (NullPointerException e) {
-					logger.error("Error trying split workbook into sheets by " + fieldGetter.getName(), e);
-				}
-			}
-			handleBackup(docName, true);
-		} catch (IOException | WriteException | BiffException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-			logger.error("Error trying split workbook into sheets", e);
-		}
-		return successful;
-	}
+    public String getTempFileName() {
+        return TEMP + "_" + Calendar.getInstance().getTimeInMillis();
+    }
 
 	private void createWorkbookCopy(String oldBookName, String backupBookName) throws BiffException, IOException {
 		oldBook = new File(oldBookName);
@@ -206,7 +209,7 @@ public class RecordOutputUtil {
 
 	public void addRecordToMainWorkbook(Record record) {
 		try {
-			createWorkbookCopy(docName, TEMP + EXT);
+			createWorkbookCopy(docName, getTempFileName() + EXT);
 			int rowNumber = ioutil.getInputter().getNonEmptyRowCount(copyWorkbook.getSheet(0));
 			WritableSheet sheet = copyWorkbook.getSheet(0);
 			record.addToExcelSheet(rowNumber, sheet);
@@ -220,7 +223,7 @@ public class RecordOutputUtil {
 	public boolean removeColumnsFromSpreadsheet(int[] args) {
 		boolean successful = false;
 		try {
-			createWorkbookCopy(docName, TEMP + EXT);
+			createWorkbookCopy(docName, getTempFileName() + EXT);
 
 			WritableSheet sheet = copyWorkbook.getSheet(0);
 

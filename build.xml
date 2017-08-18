@@ -15,7 +15,7 @@
     	     package blacklist of common words
     	     create empty files named as possible paremeters (url, search, depth)
     	     			-->
-        <jar destfile="${dir.workspace}/Spider.jar" filesetmanifest="mergewithoutmain">
+        <jar destfile="Spider.jar" filesetmanifest="mergewithoutmain">
             <manifest>
                 <attribute name="Main-Class" value="com.mcd.spider.main.SpiderMain"/>
                 <attribute name="Class-Path" value="."/>

@@ -1,40 +1,14 @@
 package com.mcd.spider.main.engine.record.iowa;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.jsoup.Connection;
-import org.jsoup.Connection.Response;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
 import com.mcd.spider.main.engine.record.ArrestRecordEngine;
 import com.mcd.spider.main.entities.record.ArrestRecord;
+import com.mcd.spider.main.entities.record.ArrestRecord.RecordColumnEnum;
 import com.mcd.spider.main.entities.record.Record;
 import com.mcd.spider.main.entities.record.State;
-import com.mcd.spider.main.entities.record.ArrestRecord.RecordColumnEnum;
 import com.mcd.spider.main.entities.record.filter.RecordFilter;
 import com.mcd.spider.main.entities.record.filter.RecordFilter.RecordFilterEnum;
-import com.mcd.spider.main.entities.site.Site;
 import com.mcd.spider.main.entities.site.SpiderWeb;
 import com.mcd.spider.main.entities.site.service.DesMoinesRegisterComSite;
-import com.mcd.spider.main.entities.site.service.SiteService;
 import com.mcd.spider.main.exception.ExcelOutputException;
 import com.mcd.spider.main.exception.IDCheckException;
 import com.mcd.spider.main.exception.SpiderException;
@@ -42,8 +16,23 @@ import com.mcd.spider.main.util.ConnectionUtil;
 import com.mcd.spider.main.util.SpiderUtil;
 import com.mcd.spider.main.util.io.RecordIOUtil;
 import com.mcd.spider.main.util.io.RecordOutputUtil;
+import org.apache.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.jsoup.Connection.Response;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
-import common.Logger;
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  *
@@ -52,7 +41,8 @@ import common.Logger;
  */
 public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
 
-    private static final Logger logger = Logger.getLogger(DesMoinesRegisterComEngine.class);
+//    private static final Logger logger = Logger.getLogger("dsmregcomLogger");
+    public static final Logger logger = Logger.getLogger(DesMoinesRegisterComEngine.class);
     
     private SpiderUtil spiderUtil = new SpiderUtil();
     private RecordFilterEnum filter;
@@ -200,7 +190,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
 
     @Override
     public ArrestRecord populateArrestRecord(Object profileDetailObj) {
-        Elements profileDetails = ((DesMoinesRegisterComSite) site).getRecordDetailElements((Document) profileDetailObj);
+        Elements profileDetails = site.getRecordDetailElements((Document) profileDetailObj);
         ArrestRecord record = new ArrestRecord();
         record.setId(site.generateRecordId(((Element) profileDetailObj).select("#permalink-url a").get(0).attr("href")));
         //made it here
