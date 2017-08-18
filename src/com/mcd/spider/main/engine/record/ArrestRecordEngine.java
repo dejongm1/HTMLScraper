@@ -14,9 +14,9 @@ import java.util.Map;
 public interface ArrestRecordEngine {
 
 	void getArrestRecords(State state, long maxNumberOfResults, RecordFilter.RecordFilterEnum filter) throws SpiderException;
-	int scrapeSite(int attemptCount, long maxNumberOfResults);
+	long scrapeSite(int attemptCount);
 	Map<String,String> parseDocForUrls(Object objectToParse);
-	int scrapeRecords(Map<Object, String> recordsDetailsUrlMap, Map<String,String> cookies, long maxNumberOfResults);
+	long scrapeRecords(Map<Object, String> recordsDetailsUrlMap);
 	ArrestRecord populateArrestRecord(Object profileDetailObj);
 	void matchPropertyToField(ArrestRecord record, Object profileDetail);
 	void formatName(ArrestRecord record, Element profileDetail);
