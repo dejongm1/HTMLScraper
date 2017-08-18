@@ -26,25 +26,35 @@ public class SpiderEngine {
 	public void getArrestRecordsByState(List<State> states, long maxNumberOfResults, RecordFilterEnum filter) throws SpiderException {
 		//TODO use threading here for multiple states, maybe even within states
 		for (State state : states) {
-			if (state.getEngines().size()!=0) {
+			if (!state.getEngines().isEmpty()) {
 				StateRouter router = new StateRouter(state);
 				router.collectRecords(maxNumberOfResults, filter);
 			} else {
 				throw new StateNotReadyException(state);
 			}
 		}
-		
 	}
 	
 	public void getArrestRecordsByStateCrack(List<State> states, long maxNumberOfResults, RecordFilterEnum filter) throws SpiderException {
 		for (State state : states) {
-			state.getEngines().removeAll(state.getEngines());
+			state.getEngines().clear();
 			state.addEngine(new ArrestsDotOrgEngine());
 //			state.addEngine(new MugShotsDotComEngine());
 			StateRouter router = new StateRouter(state);
 			router.collectRecords(maxNumberOfResults, filter);
 		}
 		
+	}
+	
+	public void getArrestRecordsByThreading(List<State> states, long maxNumberOfResults, RecordFilterEnum filter) throws SpiderException {
+		for (State state : states) {
+			if (!state.getEngines().isEmpty()) {
+				StateRouter router = new StateRouter(state);
+				router.collectRecordsUsingThreading(maxNumberOfResults, filter);
+			} else {
+				throw new StateNotReadyException(state);
+			}
+		}
 	}
 	
 	public void performSEOAudit(AuditParameters auditParams) {

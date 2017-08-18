@@ -79,6 +79,8 @@ public class SpiderMain {
 					|| scrapeTypeChoice.toLowerCase().contains("enemy")
 					|| scrapeTypeChoice.equals("99")) {
 				crackArrestSite(args);
+			} else if (scrapeTypeChoice.toLowerCase().contains("thread")) {
+				threading(args);
 			} else if (mainInputUtil.quitting(scrapeTypeChoice)) {
 				System.exit(0);
 			} else if (scrapeTypeChoice.toLowerCase().contains("help")) {
@@ -138,6 +140,14 @@ public class SpiderMain {
 		RecordFilterEnum filter = args.length>=3?mainInputUtil.convertToFilter(args[2]):null;
 		long maxNumberOfResults = args.length>=4?mainInputUtil.convertToNumber(args[3]):5;
 		engine.getArrestRecordsByStateCrack(states, maxNumberOfResults, filter);
+	}
+
+	@SuppressWarnings("unchecked")
+	private static void threading(String[] args) throws IOException, SpiderException {
+		List<State> states = args.length>=2?mainInputUtil.convertToStates(args[1]):(List<State>) mainInputUtil.getInput("State(s) or \"All\": ", 3, SpiderConstants.STATE_VALIDATION);
+		RecordFilterEnum filter = args.length>=3?mainInputUtil.convertToFilter(args[2]):null;
+		long maxNumberOfResults = args.length>=4?mainInputUtil.convertToNumber(args[3]):5;
+		engine.getArrestRecordsByThreading(states, maxNumberOfResults, filter);
 	}
 
 	private static void getSEOAudit(String argString) throws IOException {

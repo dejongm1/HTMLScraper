@@ -12,5 +12,6 @@ import com.mcd.spider.main.exception.SpiderException;
 public interface EngineRouter {
 	
 	void collectRecords(long maxNumberOfResults, RecordFilter.RecordFilterEnum filter) throws SpiderException;
+	void collectRecordsUsingThreading(long maxNumberOfResults, RecordFilter.RecordFilterEnum filter) throws SpiderException;
 
 }
