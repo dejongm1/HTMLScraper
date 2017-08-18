@@ -1,9 +1,11 @@
 package com.mcd.spider.main.entities.record;
 
 import com.mcd.spider.main.engine.record.ArrestRecordEngine;
-import com.mcd.spider.main.engine.record.iowa.DesMoinesRegisterComEngine;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public final class State {
 	private static Map<String, State> abbreviationToState = new HashMap();
@@ -28,8 +30,8 @@ public final class State {
 	public static final State ID = new State("Idaho", "ID", new ArrayList<>());
 	public static final State IL = new State("Illinois", "IL", new ArrayList<>());
 	public static final State IN = new State("Indiana", "IN", new ArrayList<>());
-	public static final State IA = new State("Iowa", "IA", new ArrayList<>(Arrays.asList(new DesMoinesRegisterComEngine()/*,
-                                                                                                            new PolkCountyOrgEngine()*/)));
+	public static final State IA = new State("Iowa", "IA", new ArrayList<>(/*Arrays.asList(new DesMoinesRegisterComEngine(),
+                                                                                                            new PolkCountyOrgEngine())*/));
 //    public static final State IA = new State("Iowa", "IA", new ArrestRecordEngine[]{new ArrestsDotOrgEngine()});
 	public static final State KS = new State("Kansas", "KS", new ArrayList<>());
 	public static final State KY = new State("Kentucky", "KY", new ArrayList<>());

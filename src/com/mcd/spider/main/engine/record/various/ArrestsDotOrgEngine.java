@@ -7,9 +7,7 @@ import com.mcd.spider.main.entities.record.Record;
 import com.mcd.spider.main.entities.record.State;
 import com.mcd.spider.main.entities.record.filter.RecordFilter;
 import com.mcd.spider.main.entities.record.filter.RecordFilter.RecordFilterEnum;
-import com.mcd.spider.main.entities.site.Site;
 import com.mcd.spider.main.entities.site.html.ArrestsDotOrgSite;
-import com.mcd.spider.main.entities.site.html.SiteHTML;
 import com.mcd.spider.main.exception.ExcelOutputException;
 import com.mcd.spider.main.exception.IDCheckException;
 import com.mcd.spider.main.exception.SpiderException;
@@ -46,22 +44,22 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     private boolean offline;
     private ConnectionUtil connectionUtil;
     private State state;
+    private Map<String,String> sessionCookies;
+    private ArrestsDotOrgSite site;
+    private RecordIOUtil recordIOUtil;
+    //TODO private SpiderWeb (new tracker object) spiderWeb;
+    //TODO move furthestPageToCheck, records processed, maxNumberOfResults, etc into this object and pass it along
 
-    @Override
-    public Site getSite(String[] args) {
-    	return new ArrestsDotOrgSite(args);
-    }
-    
     @Override
     public void getArrestRecords(State state, long maxNumberOfResults, RecordFilterEnum filter) throws SpiderException {
         long totalTime = System.currentTimeMillis();
         this.state = state;
-        long recordsProcessed = 0;
+        int recordsProcessed = 0;
         this.filter = filter;
 	    offline = System.getProperty("offline").equals("true");
 
-        ArrestsDotOrgSite site = (ArrestsDotOrgSite) getSite(new String[]{state.getName()});
-        RecordIOUtil recordOutputUtil = initializeIOUtil(state, site);
+        site = new ArrestsDotOrgSite((new String[]{state.getName()}));
+        recordIOUtil = initializeIOUtil(state);
         //Do we want to persist between states in same run? Or not run multiple states at once?
         connectionUtil = new ConnectionUtil(true);
         
@@ -72,7 +70,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         int sleepTimeAverage = offline?0:(site.getPerRecordSleepRange()[0]+site.getPerRecordSleepRange()[1])/2000;
         long time = System.currentTimeMillis();
         
-        recordsProcessed += scrapeSite(site, recordOutputUtil.getOutputter(), 1, maxNumberOfResults);
+        recordsProcessed += scrapeSite(1, maxNumberOfResults);
         
         time = System.currentTimeMillis() - time;
         logger.info(site.getBaseUrl() + " took " + time + " ms");
@@ -94,23 +92,17 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     }
 
     @Override
-    public int scrapeSite(Site site, RecordOutputUtil recordOutputUtil, int attemptCount, long maxNumberOfResults) {
+    public int scrapeSite(int attemptCount, long maxNumberOfResults) {
         //refactor to split out randomizing functionality, maybe reuse??
     	int maxAttempts = site.getMaxAttempts();
         int recordsProcessed = 0;
-        SiteHTML htmlSite = (ArrestsDotOrgSite)site;
-        htmlSite.getBaseUrl();
-        String firstPageResults = htmlSite.generateResultsPageUrl(1);
+        int furthestPageToCheck = 9999;
+//        site.getBaseUrl();
+        String firstPageResultsUrl = site.generateResultsPageUrl(1);
         Document mainPageDoc = null;
-        Map<String,String> nextRequestCookies = new HashMap<>();
+//        Map<String,String> sessionCookies = new HashMap<>();
         try {
-        	//TODO also set headers?
-            Connection.Response response = connectionUtil.retrieveConnectionResponse(firstPageResults, "www.google.com");
-            for (Map.Entry<String,String> cookieEntry : response.cookies().entrySet()){
-                logger.debug(cookieEntry.getKey() + "=" + cookieEntry.getValue());
-            }
-            mainPageDoc = response.parse();
-            nextRequestCookies = response.cookies();
+        	mainPageDoc = initiateConnection(firstPageResultsUrl);
         } catch (IOException e) {
             logger.error("Couldn't make initial connection to site. Trying again " + (maxAttempts-attemptCount) + " more times", e);
             //if it's a 500, we're probably blocked. Try a new user-agent TODO and IP if possible, else bail
@@ -118,110 +110,42 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             	connectionUtil = new ConnectionUtil(true);
             }
             attemptCount++;
-            scrapeSite(site, recordOutputUtil, attemptCount, maxNumberOfResults);
+            scrapeSite(attemptCount, maxNumberOfResults);
         }
         if (spiderUtil.docWasRetrieved(mainPageDoc) && attemptCount<=maxAttempts) {
-        	int numberOfPages = ((ArrestsDotOrgSite) site).getTotalPages(mainPageDoc);
-        	if (numberOfPages > maxNumberOfResults / ((ArrestsDotOrgSite)site).getResultsPerPage()) {
-        		numberOfPages = (int) maxNumberOfResults / ((ArrestsDotOrgSite)site).getResultsPerPage();
-        		numberOfPages = (int) maxNumberOfResults % ((ArrestsDotOrgSite)site).getResultsPerPage()>0?numberOfPages+1:numberOfPages+0;
-        	}
-            if (numberOfPages==0) {
-                numberOfPages = 1;
-            }
-            Map<Object, String> resultsUrlPlusMiscMap = new HashMap<>();
-            logger.debug("Generating list of results pages for : " + htmlSite.getName() + " - " + state.getName());
-            //also get misc urls
-            Map<Object,String> miscUrls = htmlSite.getMiscSafeUrlsFromDoc(mainPageDoc, numberOfPages);
-            for (int p=1; p<=numberOfPages;p++) {
-                resultsUrlPlusMiscMap.put(p, htmlSite.generateResultsPageUrl(p));
-            }
+        	int numberOfPages = getNumberOfResultsPages(mainPageDoc, maxNumberOfResults);
 
-            resultsUrlPlusMiscMap.putAll(miscUrls);
+            logger.info("Generating list of results pages for : " + site.getName() + " - " + state.getName());
+        	Map<Object, String> resultsUrlPlusMiscMap = compileResultsUrlMap(mainPageDoc, numberOfPages, true);
 
-            //shuffle urls before retrieving docs
-            Map<Integer,Document> resultsDocPlusMiscMap = new HashMap<>();
-            List<Object> keys = new ArrayList<>(resultsUrlPlusMiscMap.keySet());
-            Collections.shuffle(keys);
-            Integer previousKey = (Integer)keys.get(keys.size()-1);
-            int furthestPageToCheck = 9999;
-            for (Object k : keys) {
-            	int page = (Integer) k;
-            	if (page<=furthestPageToCheck) {
-	            	Document docToCheck = null;
-	            	String url = resultsUrlPlusMiscMap.get(k);
-	            	try {
-		        		//can we guarantee previous is a page that has access to the current?
-	                	//TODO also set headers?
-		    			Connection.Response response = connectionUtil.retrieveConnectionResponse(url, resultsUrlPlusMiscMap.get(previousKey), nextRequestCookies);
-		        		docToCheck = response.parse();
-		        		nextRequestCookies = setCookies(response, nextRequestCookies, recordsProcessed);
-	            	} catch (FileNotFoundException fnfe) {
-	                	logger.error("No html doc found for " + url);
-	                } catch (IOException e) {
-	            		logger.error("Failed to get a connection to " + url, e);
-	            	}
-	            	//if docToCheck contains a crawledId, remember page number and don't add subsequent pages
-	            	for (String crawledId : crawledIds) {
-	            		if (furthestPageToCheck==9999) {
-			            	if (docToCheck!=null && ((ArrestsDotOrgSite) site).isAResultsDoc(docToCheck) && docToCheck.html().contains(crawledId)) {
-			            		//set as current page number
-			            		furthestPageToCheck = page;
-			            	}
-	            		}
-	            	}
-	            	if (docToCheck!=null) {
-	            		resultsDocPlusMiscMap.put((Integer)k, docToCheck);
-	            	}
-	                int sleepTime = ConnectionUtil.getSleepTime(htmlSite);
-                    logger.debug("Sleeping for " + sleepTime + " after fetching " + resultsUrlPlusMiscMap.get(k));
-	                spiderUtil.sleep(sleepTime, false);
-	                
-	                previousKey = page;
-            	}
-            }
+            logger.info("Retrieving results page docs");
+            Map<Integer,Document> resultsDocPlusMiscMap = compileResultsDocMap(resultsUrlPlusMiscMap, furthestPageToCheck);
 
+            logger.info("Retrieving details page urls");
             //build a list of details page urls by parsing results page docs
-            Map<Object,String> recordDetailUrlMap = new HashMap<>();
+            Map<Object,String> recordDetailUrlMap = compileRecordDetailUrlMap(mainPageDoc, resultsDocPlusMiscMap, furthestPageToCheck, true);
 
-            //TODO parse a page at a time instead of all details at once?
-            for (Map.Entry<Integer, Document> entry : resultsDocPlusMiscMap.entrySet()) {
-                Document doc = entry.getValue();
-                //only crawl for records if document was retrieved, is a results doc and has not already been crawled
-                int page = entry.getKey();
-                if (spiderUtil.docWasRetrieved(doc) && doc.baseUri().contains("&results=") && page<=furthestPageToCheck){
-                    logger.debug("Gather complete list of records to scrape from " + doc.baseUri());
-                    recordDetailUrlMap.putAll(parseDocForUrls(doc, htmlSite));
-                    //include some non-detail page links then randomize
-                    recordDetailUrlMap.putAll(htmlSite.getMiscSafeUrlsFromDoc(mainPageDoc, recordDetailUrlMap.size()));
-                } else {
-                    logger.info("Nothing was retrieved for " + doc.baseUri());
-                }
-            }
-
-            int recordsGathered = recordDetailUrlMap.size();
-            logger.info("Gathered links for " + recordsGathered + " record profiles and misc");
+            logger.info("Gathered links for " + recordDetailUrlMap.size() + " record profiles and misc pages");
 
             spiderUtil.sleep(offline?0:100000, true);
             //****iterate over collection, scraping records and simply opening others
-            recordsProcessed += scrapeRecords(recordDetailUrlMap, site, recordOutputUtil, nextRequestCookies, maxNumberOfResults);
+            recordsProcessed += scrapeRecords(recordDetailUrlMap, sessionCookies, maxNumberOfResults);
 
         } else {
             logger.error("Failed to load html doc from " + site.getBaseUrl()+ ". Trying again " + (maxAttempts-attemptCount) + " more times");
             attemptCount++;
-            scrapeSite(site, recordOutputUtil, attemptCount, maxNumberOfResults);
+            scrapeSite(attemptCount, maxNumberOfResults);
         }
         return recordsProcessed;
     }
-    
+
     @Override
-    public Map<String,String> parseDocForUrls(Object doc, Site site) {
-    	SiteHTML htmlSite = (ArrestsDotOrgSite) site;
+    public Map<String,String> parseDocForUrls(Object doc) {
         Map<String,String> recordDetailUrlMap = new HashMap<>();
-        Elements recordDetailElements = htmlSite.getRecordElements((Document) doc);
+        Elements recordDetailElements = site.getRecordElements((Document) doc);
         for(int e=0;e<recordDetailElements.size();e++) {
-            String url = htmlSite.getRecordDetailDocUrl(recordDetailElements.get(e));
-            String id = htmlSite.generateRecordId(url);
+            String url = site.getRecordDetailDocUrl(recordDetailElements.get(e));
+            String id = site.generateRecordId(url);
             //only add if we haven't already crawled it
             if (!crawledIds.contains(id)) {
             	recordDetailUrlMap.put(id, url);
@@ -229,11 +153,11 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         }
         return recordDetailUrlMap;
     }
-    
+
     @SuppressWarnings({ "unchecked", "rawtypes", "static-access" })
 	@Override
-    public int scrapeRecords(Map<Object,String> recordsDetailsUrlMap, Site site, RecordOutputUtil recordOutputUtil, Map<String,String> cookies, long maxNumberOfResults) {
-    	SiteHTML htmlSite = (ArrestsDotOrgSite) site;
+    public int scrapeRecords(Map<Object,String> recordsDetailsUrlMap, Map<String,String> cookies, long maxNumberOfResults) {
+    	RecordOutputUtil recordOutputUtil = recordIOUtil.getOutputter();
     	int failedAttempts = 0;
         int recordsProcessed = 0;
         List<Record> arrestRecords = new ArrayList<>();
@@ -260,19 +184,19 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 	            	failedAttempts++;
 	        		logger.error("Failed to get a connection to " + recordsDetailsUrlMap.get(k), e);
 	            	if (failedAttempts>=site.getMaxAttempts()) {
-	            		//save remaining records to file and exit 
+	            		//save remaining records to file and exit
 	            		//TODO or retry with new connection/IP?
 	            		recordOutputUtil.backupUnCrawledRecords(recordsDetailsUrlMap);
 	            		logger.info("Hit the limit of failed connections. Saving list of unprocessed records and quitting");
 	            		return recordsProcessed;
 	            	}
 	            }
-	            if (htmlSite.isARecordDetailDoc(profileDetailDoc)) {
+	            if (site.isARecordDetailDoc(profileDetailDoc)) {
 	                if (spiderUtil.docWasRetrieved(profileDetailDoc)) {
 	                    try {
 	                        recordsProcessed++;
 	                        //should we check for ID first or not bother unless we start seeing duplicates??
-	                        arrestRecord = populateArrestRecord(profileDetailDoc, htmlSite);
+	                        arrestRecord = populateArrestRecord(profileDetailDoc);
 	                        //try to match the record/county to the state being crawled
 	                        if (arrestRecord.getState()==null || arrestRecord.getState().equalsIgnoreCase(state.getName())) {
 	                            arrestRecords.add(arrestRecord);
@@ -280,43 +204,29 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 	                            recordOutputUtil.addRecordToMainWorkbook(arrestRecord);
 	                            logger.debug("Record " + recordsProcessed + " saved");
 	                        }
-	                        spiderUtil.sleep(connectionUtil.getSleepTime(htmlSite), true);//sleep at random interval
+	                        spiderUtil.sleep(connectionUtil.getSleepTime(site), true);//sleep at random interval
 	                    } catch (Exception e) {
 	                        logger.error("Generic exception caught while trying to grab arrest record for " + profileDetailDoc.baseUri(), e);
 	                    }
-	                    
+
 	                } else {
 	                    logger.error("Failed to load html doc from " + url);
 	                }
 	            }
-	            spiderUtil.sleep(connectionUtil.getSleepTime(htmlSite)/2, false);
+	            spiderUtil.sleep(connectionUtil.getSleepTime(site)/2, false);
 	        	logger.info("Sleeping for half time because no record was crawled");
 	            previousKey = String.valueOf(k);
         	}
         }
-        
-        //format the output
-        Collections.sort(arrestRecords, ArrestRecord.CountyComparator);
-    	String delimiter = RecordColumnEnum.COUNTY_COLUMN.getColumnTitle();
-    	Class clazz = ArrestRecord.class;
-        if (filter!=null) {
-	        List<Record> filteredRecords = filterRecords(arrestRecords);
-	        List<List<Record>> splitRecords = Record.splitByField(filteredRecords, delimiter, clazz);
-	        //create a separate sheet with filtered results
-	        logger.info(filteredRecords.size() + " " + filter.filterName() + " " + "records were crawled");
-	        recordOutputUtil.createFilteredSpreadsheet(filter, filteredRecords);
-	        recordOutputUtil.splitIntoSheets(recordOutputUtil.getFilteredDocName(filter), delimiter, splitRecords, clazz);
-        }
-        List<List<Record>> splitRecords = Record.splitByField(arrestRecords, delimiter, clazz);
-        recordOutputUtil.splitIntoSheets(recordOutputUtil.getDocName(), delimiter, splitRecords, clazz);
-    
+
+        formatOutput(arrestRecords, recordOutputUtil);
+
         return recordsProcessed;
     }
-    
+
     @Override
-    public ArrestRecord populateArrestRecord(Object profileDetailObj, Site site) {
-    	SiteHTML htmlSite = (ArrestsDotOrgSite) site;
-        Elements profileDetails = htmlSite.getRecordDetailElements((Document) profileDetailObj);
+    public ArrestRecord populateArrestRecord(Object profileDetailObj) {
+        Elements profileDetails = site.getRecordDetailElements((Document) profileDetailObj);
         ArrestRecord record = new ArrestRecord();
         record.setId(site.generateRecordId(((Node) profileDetailObj).baseUri()));
         for (Element profileDetail : profileDetails) {
@@ -327,7 +237,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     }
 
     @Override
-    public RecordIOUtil initializeIOUtil(State state, Site site) throws SpiderException {
+    public RecordIOUtil initializeIOUtil(State state) throws SpiderException {
     	RecordIOUtil ioUtil = new RecordIOUtil(state, new ArrestRecord(), site);
         try {
             //load previously written records IDs into memory
@@ -339,6 +249,137 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             throw e;
         }
         return ioUtil;
+    }
+
+    public Document initiateConnection(String firstPageResults) throws IOException {
+        //TODO also set headers?
+        Connection.Response response = connectionUtil.retrieveConnectionResponse(firstPageResults, "www.google.com");
+        for (Map.Entry<String,String> cookieEntry : response.cookies().entrySet()){
+            logger.debug(cookieEntry.getKey() + "=" + cookieEntry.getValue());
+        }
+        sessionCookies = response.cookies();
+        return response.parse();
+    }
+
+    public int getNumberOfResultsPages(Document mainPageDoc, long maxNumberOfResults) {
+        int numberOfPages = site.getTotalPages(mainPageDoc);
+        if (numberOfPages > maxNumberOfResults / site.getResultsPerPage()) {
+            numberOfPages = (int) maxNumberOfResults / site.getResultsPerPage();
+            numberOfPages = (int) maxNumberOfResults % site.getResultsPerPage()>0?numberOfPages+1:numberOfPages+0;
+        }
+        if (numberOfPages==0) {
+            numberOfPages = 1;
+        }
+        return numberOfPages;
+    }
+    
+    public Map<Object,String> compileResultsUrlMap(Document mainPageDoc, int numberOfPages, boolean addMisc) {
+        Map<Object,String> resultsUrlPlusMiscMap = new HashMap<>();
+        Map<Object,String> miscUrls = site.getMiscSafeUrlsFromDoc(mainPageDoc, numberOfPages);
+        for (int p=1; p<=numberOfPages;p++) {
+            resultsUrlPlusMiscMap.put(p, site.generateResultsPageUrl(p));
+        }
+        //also get misc urls
+        if (addMisc) {
+            resultsUrlPlusMiscMap.putAll(miscUrls);
+        }
+        return resultsUrlPlusMiscMap;
+    }
+    
+    public Map<Integer,Document> compileResultsDocMap(Map<Object,String> resultsUrlPlusMiscMap, int furthestPageToCheck) {
+        //shuffle urls before retrieving docs
+        Map<Integer,Document> resultsDocPlusMiscMap = new HashMap<>();
+        List<Object> keys = new ArrayList<>(resultsUrlPlusMiscMap.keySet());
+        Collections.shuffle(keys);
+        Integer previousKey = (Integer)keys.get(keys.size()-1);
+        for (Object k : keys) {
+            int page = (Integer) k;
+            if (page<=furthestPageToCheck) {
+                Document docToCheck = null;
+                String url = resultsUrlPlusMiscMap.get(k);
+                try {
+                    //can we guarantee previous is a page that has access to the current?
+                    //TODO also set headers?
+                    Connection.Response response = connectionUtil.retrieveConnectionResponse(url, resultsUrlPlusMiscMap.get(previousKey), sessionCookies);
+                    docToCheck = response.parse();
+                    sessionCookies = setCookies(response, sessionCookies, 0);
+                } catch (FileNotFoundException fnfe) {
+                    logger.error("No html doc found for " + url);
+                } catch (IOException e) {
+                    logger.error("Failed to get a connection to " + url, e);
+                }
+                //if docToCheck contains a crawledId, remember page number and don't add subsequent pages
+                for (String crawledId : crawledIds) {
+                    if (furthestPageToCheck==9999) {
+                        if (docToCheck!=null && site.isAResultsDoc(docToCheck) && docToCheck.html().contains(crawledId)) {
+                            //set as current page number
+                            furthestPageToCheck = page;
+                        }
+                    }
+                }
+                if (docToCheck!=null) {
+                    resultsDocPlusMiscMap.put((Integer)k, docToCheck);
+                }
+                int sleepTime = ConnectionUtil.getSleepTime(site);
+                logger.debug("Sleeping for " + sleepTime + " after fetching " + resultsUrlPlusMiscMap.get(k));
+                spiderUtil.sleep(sleepTime, false);
+
+                previousKey = page;
+            }
+        }
+        return resultsDocPlusMiscMap;
+    }
+
+    public Map<Object,String> compileRecordDetailUrlMap(Document mainPageDoc, Map<Integer,Document> resultsDocPlusMiscMap, int furthestPageToCheck, boolean addMisc) {
+        Map<Object,String> recordDetailUrlMap = new HashMap<>();
+        //TODO parse a page at a time instead of all details at once?
+        for (Map.Entry<Integer, Document> entry : resultsDocPlusMiscMap.entrySet()) {
+            Document doc = entry.getValue();
+            //only crawl for records if document was retrieved, is a results doc and has not already been crawled
+            int page = entry.getKey();
+            if (spiderUtil.docWasRetrieved(doc) && doc.baseUri().contains("&results=") && page<=furthestPageToCheck){
+                logger.info("Gather complete list of records to scrape from " + doc.baseUri());
+                recordDetailUrlMap.putAll(parseDocForUrls(doc));
+
+                //include some non-detail page links then randomize
+                if (addMisc) {
+                    recordDetailUrlMap.putAll(site.getMiscSafeUrlsFromDoc(mainPageDoc, recordDetailUrlMap.size()));
+                }
+            } else {
+                logger.info("Nothing was retrieved for " + doc.baseUri());
+            }
+        }
+        return recordDetailUrlMap;
+    }
+
+    public void formatOutput(List<Record> arrestRecords, RecordOutputUtil recordOutputUtil) {
+        //format the output
+        logger.info("Starting to output the results");
+        Collections.sort(arrestRecords, ArrestRecord.CountyComparator);
+        String delimiter = RecordColumnEnum.COUNTY_COLUMN.getColumnTitle();
+        Class clazz = ArrestRecord.class;
+        if (filter!=null) {
+            try {
+                logger.info("Outputting filtered results");
+                List<Record> filteredRecords = filterRecords(arrestRecords);
+                List<List<Record>> splitRecords = Record.splitByField(filteredRecords, delimiter, clazz);
+                //create a separate sheet with filtered results
+                logger.info(filteredRecords.size()+" "+filter.filterName()+" "+"records were crawled");
+                if (filteredRecords.size()>0) {
+                    recordOutputUtil.createFilteredSpreadsheet(filter, filteredRecords);
+                    recordOutputUtil.splitIntoSheets(recordOutputUtil.getFilteredDocName(filter), delimiter, splitRecords, clazz);
+                }
+            } catch (Exception e) {
+                logger.error("Error trying to create filtered spreadsheet", e);
+            }
+        }
+        try {
+            List<List<Record>> splitRecords = Record.splitByField(arrestRecords, delimiter, clazz);
+            recordOutputUtil.splitIntoSheets(recordOutputUtil.getDocName(), delimiter, splitRecords, clazz);
+        } catch (Exception e) {
+            logger.error("Error trying to split full list of records", e);
+        }
+
     }
     
     @Override
