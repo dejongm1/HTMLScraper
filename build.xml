@@ -5,17 +5,16 @@
     <!--define folder properties-->
     <property name="dir.buildfile" value="."/>
     <property name="dir.workspace" value="${dir.buildfile}/.."/>
-    <property name="dir.jarfile" value="${dir.workspace}"/>
-    <target name="create_run_jar">
-    	<!-- TODO 
-    		 Add a date to jar
-    	     Move old jar to archive
-    	     copy htmls files to jar destination for offline testing?
-    	     package properties file
+    <property name="dir.backup" value="${dir.workspace}/backup"/>
+    <property name="version" value="1.0"/>
+    <target name="create_run_jar" depends="backup">
+        <buildnumber/>
+    	<!-- TODO
+    	     run tests before building
     	     package blacklist of common words
-    	     create empty files named as possible paremeters (url, search, depth)
+    	     create empty files named as possible parameters (url, search, depth)
     	     			-->
-        <jar destfile="Spider.jar" filesetmanifest="mergewithoutmain">
+        <jar destfile="Spider-${version}.${build.number}.jar" filesetmanifest="mergewithoutmain">
             <manifest>
                 <attribute name="Main-Class" value="com.mcd.spider.main.SpiderMain"/>
                 <attribute name="Class-Path" value="."/>
@@ -30,9 +29,16 @@
         	<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/java-json.jar"/>
         	<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/sitemapgen4j-1.0.1.jar"/>
         	<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/guava-19.0.jar"/>
-            <fileset dir="${dir.buildfile}/bin"/>
-        	<!--<zipfileset dir="${dir.buildfile}/htmls" includes="*.htm*" prefix="htmls"/> -->
-            <zipfileset dir="${dir.buildfile}/resources" includes="*.*" prefix="resources"/>
+        <fileset dir="${dir.buildfile}/bin"/>
+        <!--<zipfileset dir="${dir.buildfile}/htmls" includes="*.htm*" prefix="htmls"/> -->
+        <zipfileset dir="${dir.buildfile}/resources" includes="*.*" prefix="resources"/>
         </jar>
+    </target>
+    <target name="backup">
+        <move todir="${dir.backup}">
+            <fileset dir="./">
+                <include name="Spider-${version}*.jar"/>
+            </fileset>
+        </move>
     </target>
 </project>

@@ -157,24 +157,23 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
 
                 if (spiderUtil.docWasRetrieved(profileDetailDoc)) {
                     if (site.isARecordDetailDoc(profileDetailDoc)) {
-                    	try {
-	                    	spiderWeb.addToRecordsProcessed(1);
-	                        arrestRecord = populateArrestRecord(profileDetailDoc);
-	                        arrestRecords.add(arrestRecord);
-	                        //save each record in case of application failures
-	                        recordOutputUtil.addRecordToMainWorkbook(arrestRecord);
-	                        spiderUtil.sleep(ConnectionUtil.getSleepTime(site), true);//sleep at random interval
-                    	} catch (Exception e) {
-	                        logger.error("Generic exception caught while trying to grab arrest record for " + profileDetailDoc.baseUri(), e);
-	                    }
+                        try {
+                            spiderWeb.addToRecordsProcessed(1);
+                            arrestRecord = populateArrestRecord(profileDetailDoc);
+                            arrestRecords.add(arrestRecord);
+                            //save each record in case of application failures
+                            recordOutputUtil.addRecordToMainWorkbook(arrestRecord);
+                            logger.debug("Record " + spiderWeb.getRecordsProcessed() + " saved");
+                            spiderUtil.sleep(ConnectionUtil.getSleepTime(site), true);//sleep at random interval
+                        } catch (Exception e) {
+                            logger.error("Generic exception caught while trying to grab arrest record for " + profileDetailDoc.baseUri(), e);
+                        }
                     } else {
                         logger.debug("This doc doesn't have any record details: " + id);
                     }
                 } else {
                     logger.error("Failed to load html doc from " + url);
                 }
-                spiderUtil.sleep(ConnectionUtil.getSleepTime(site)/2, false);
-	        	logger.info("Sleeping for half time because no record was crawled");
             } catch (IOException e) {
                 logger.error("IOException caught sending http request to " + url, e);
             } catch (JSONException e) {
@@ -184,7 +183,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
         }
 
         formatOutput(arrestRecords, recordOutputUtil);
-        
+
         return spiderWeb.getRecordsProcessed();
     }
 
@@ -196,7 +195,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
         //made it here
         for (Element profileDetail : profileDetails) {
             matchPropertyToField(record, profileDetail);
-            logger.info("\t" + profileDetail.text());
+            logger.debug("\t" + profileDetail.text());
         }
         return record;
     }
