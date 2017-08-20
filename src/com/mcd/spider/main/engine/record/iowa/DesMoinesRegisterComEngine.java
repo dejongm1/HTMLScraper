@@ -81,9 +81,8 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
 	        if (!spiderWeb.isOffline()) {
 	            logger.info("Sleep time was approximately " + sleepTimeAverage*spiderWeb.getRecordsProcessed() + " ms");
 	            logger.info("Processing time was approximately " + (totalTime-(sleepTimeAverage*spiderWeb.getRecordsProcessed())) + " ms");
-	        } else {
-	            logger.info("Total time taken was " + totalTime + " ms");
 	        }
+            logger.info("Total time taken was " + totalTime + " ms");
             logger.info(spiderWeb.getRecordsProcessed() + " total records were processed");
     	}
     }
@@ -335,7 +334,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
                 Calendar calendar = Calendar.getInstance();
                 calendar.setTime(date);
                 record.setArrestDate(calendar);
-            } else {
+            } else if (!arrestDate.trim().equalsIgnoreCase("today")) {
                 String hour = arrestDate.substring(arrestDate.toLowerCase().indexOf("today") + 5, arrestDate.indexOf(':')).trim();
                 String minutes = arrestDate.substring(arrestDate.indexOf(':')+1, arrestDate.length()-3).trim();
                 Date date = new Date();
