@@ -64,21 +64,16 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
             recordIOUtil = initializeIOUtil(state);
             connectionUtil = new ConnectionUtil(true);
 
-            long siteTime = System.currentTimeMillis();
 	        logger.info("----Site: " + site.getName() + "----");
 	        logger.debug("Sending spider " + (spiderWeb.isOffline()?"offline":"online" ));
 
 	        int sleepTimeAverage = spiderWeb.isOffline()?0:(site.getPerRecordSleepRange()[0]+site.getPerRecordSleepRange()[1])/2;
-	        long time = System.currentTimeMillis();
 
-	        spiderWeb.addToRecordsProcessed(scrapeSite(1));
+	        scrapeSite(1);
 
-	        time = System.currentTimeMillis() - time;
-	        logger.info(site.getBaseUrl() + " took " + time + " ms");
+            formatOutput(new ArrayList<>(recordIOUtil.getInputter().readDefaultSpreadsheet()), recordIOUtil.getOutputter());
 
 	        //outputUtil.removeColumnsFromSpreadsheet(new int[]{ArrestRecord.RecordColumnEnum.ID_COLUMN.index()});
-	        siteTime = System.currentTimeMillis() - siteTime;
-	        logger.info(state.getName() + " took " + siteTime + " ms");
 
 	        spiderUtil.sendEmail(state);
 
@@ -94,7 +89,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     }
 
     @Override
-    public long scrapeSite(int attemptCount) {
+    public void scrapeSite(int attemptCount) {
     	int maxAttempts = site.getMaxAttempts();
         for (String county : site.getCounties()) {
             site.setBaseUrl(new String[]{county});
@@ -111,16 +106,14 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
 
                 logger.info("Gathered links for " + recordDetailUrlMap.size() + " record profiles");
 
-                spiderUtil.sleep(spiderWeb.isOffline()?0:100000, true);
-                //****iterate over collection, scraping records and simply opening others
-                spiderWeb.addToRecordsProcessed(scrapeRecords(recordDetailUrlMap));
+                spiderUtil.sleep(spiderWeb.isOffline()?0:10000, true);
+                scrapeRecords(recordDetailUrlMap);
             } else {
             	 logger.error("Failed to load html doc from " + site.getBaseUrl()+ ". Trying again " + (maxAttempts-attemptCount) + " more times");
                  attemptCount++;
                  scrapeSite(attemptCount);
              }
         }
-        return spiderWeb.getRecordsProcessed();
     }
 
     @Override
@@ -143,7 +136,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     }
 
     @Override
-    public long scrapeRecords(Map<Object, String> recordsDetailsUrlMap){
+    public void scrapeRecords(Map<Object, String> recordsDetailsUrlMap){
         List<Record> arrestRecords = new ArrayList<>();
         ArrestRecord arrestRecord;
         RecordOutputUtil recordOutputUtil = recordIOUtil.getOutputter();
@@ -158,11 +151,11 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
                 if (spiderUtil.docWasRetrieved(profileDetailDoc)) {
                     if (site.isARecordDetailDoc(profileDetailDoc)) {
                         try {
-                            spiderWeb.addToRecordsProcessed(1);
                             arrestRecord = populateArrestRecord(profileDetailDoc);
                             arrestRecords.add(arrestRecord);
                             //save each record in case of application failures
                             recordOutputUtil.addRecordToMainWorkbook(arrestRecord);
+                            spiderWeb.addToRecordsProcessed(1);
                             logger.debug("Record " + spiderWeb.getRecordsProcessed() + " saved");
                             spiderUtil.sleep(ConnectionUtil.getSleepTime(site), true);//sleep at random interval
                         } catch (Exception e) {
@@ -181,10 +174,8 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
             }
             referer = url;
         }
-
-        formatOutput(arrestRecords, recordOutputUtil);
-
-        return spiderWeb.getRecordsProcessed();
+        //don't format here since we only have 1 county's records
+        //formatOutput(arrestRecords, recordOutputUtil);
     }
 
     @Override

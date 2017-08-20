@@ -57,22 +57,15 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         recordIOUtil = initializeIOUtil(state);
         //Do we want to persist between states in same run? Or not run multiple states at once?
         connectionUtil = new ConnectionUtil(true);
-        
-        long siteTime = System.currentTimeMillis();
+
         logger.info("----Site: " + site.getName() + "-" + state.getName() + "----");
         logger.debug("Sending spider " + (spiderWeb.isOffline()?"offline":"online" ));
         
         int sleepTimeAverage = spiderWeb.isOffline()?0:(site.getPerRecordSleepRange()[0]+site.getPerRecordSleepRange()[1])/2000;
-        long time = System.currentTimeMillis();
         
-        spiderWeb.addToRecordsProcessed(scrapeSite(1));
-        
-        time = System.currentTimeMillis() - time;
-        logger.info(site.getBaseUrl() + " took " + time + " ms");
+        scrapeSite(1);
 
         //outputUtil.removeColumnsFromSpreadsheet(new int[]{ArrestRecord.RecordColumnEnum.ID_COLUMN.index()});
-        siteTime = System.currentTimeMillis() - siteTime;
-        logger.info(state.getName() + " took " + siteTime + " ms");
 
         spiderUtil.sendEmail(state);
         
@@ -87,7 +80,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     }
 
     @Override
-    public long scrapeSite(int attemptCount) {
+    public void scrapeSite(int attemptCount) {
     	int maxAttempts = site.getMaxAttempts();
         String firstPageResultsUrl = site.generateResultsPageUrl(1);
         Document mainPageDoc = null;
@@ -119,14 +112,13 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 
             spiderUtil.sleep(spiderWeb.isOffline()?0:100000, true);
             //****iterate over collection, scraping records and simply opening others
-            spiderWeb.addToRecordsProcessed(scrapeRecords(recordDetailUrlMap));
+            scrapeRecords(recordDetailUrlMap);
 
         } else {
             logger.error("Failed to load html doc from " + site.getBaseUrl()+ ". Trying again " + (maxAttempts-attemptCount) + " more times");
             attemptCount++;
             scrapeSite(attemptCount);
         }
-        return spiderWeb.getRecordsProcessed();
     }
 
     @Override
@@ -145,7 +137,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     }
 
 	@Override
-    public long scrapeRecords(Map<Object,String> recordsDetailsUrlMap) {
+    public void scrapeRecords(Map<Object,String> recordsDetailsUrlMap) {
     	RecordOutputUtil recordOutputUtil = recordIOUtil.getOutputter();
     	int failedAttempts = 0;
         List<Record> arrestRecords = new ArrayList<>();
@@ -170,7 +162,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 	            		//TODO or retry with new connection/IP?
 	            		logger.info("Hit the limit of failed connections. Saving list of unprocessed records and quitting");
 	            		recordOutputUtil.backupUnCrawledRecords(recordsDetailsUrlMap);
-	            		return spiderWeb.getRecordsProcessed();
+	            		return;
 	            	}
 	            }
 
@@ -202,10 +194,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 	            previousKey = String.valueOf(k);
         	}
         }
-
         formatOutput(arrestRecords, recordOutputUtil);
-
-        return spiderWeb.getRecordsProcessed();
     }
 
     @Override

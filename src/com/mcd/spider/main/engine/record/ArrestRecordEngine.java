@@ -7,12 +7,9 @@ import com.mcd.spider.main.entities.record.filter.RecordFilter;
 import com.mcd.spider.main.exception.SpiderException;
 import com.mcd.spider.main.util.io.RecordIOUtil;
 import com.mcd.spider.main.util.io.RecordOutputUtil;
-
 import org.jsoup.Connection.Response;
-import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -20,9 +17,9 @@ import java.util.Map;
 public interface ArrestRecordEngine {
 
 	void getArrestRecords(State state, long maxNumberOfResults, RecordFilter.RecordFilterEnum filter) throws SpiderException;
-	long scrapeSite(int attemptCount);
+	void scrapeSite(int attemptCount);
 	Map<String,String> parseDocForUrls(Object objectToParse);
-	long scrapeRecords(Map<Object, String> recordsDetailsUrlMap);
+	void scrapeRecords(Map<Object, String> recordsDetailsUrlMap);
 	ArrestRecord populateArrestRecord(Object profileDetailObj);
 	void matchPropertyToField(ArrestRecord record, Object profileDetail);
 	void formatName(ArrestRecord record, Element profileDetail);
