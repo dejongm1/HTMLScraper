@@ -16,7 +16,7 @@ import java.util.Map;
 
 public interface ArrestRecordEngine {
 
-	void getArrestRecords(State state, long maxNumberOfResults, RecordFilter.RecordFilterEnum filter) throws SpiderException;
+	void getArrestRecords(State state, long maxNumberOfResults, RecordFilter.RecordFilterEnum filter, boolean retrieveMissedRecords) throws SpiderException;
 	void scrapeSite(int attemptCount);
 	Map<String,String> parseDocForUrls(Object objectToParse);
 	void scrapeRecords(Map<Object, String> recordsDetailsUrlMap);

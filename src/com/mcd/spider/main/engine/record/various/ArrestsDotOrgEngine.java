@@ -48,11 +48,11 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     private SpiderWeb spiderWeb;
 
     @Override
-    public void getArrestRecords(State state, long maxNumberOfResults, RecordFilterEnum filter) throws SpiderException {
+    public void getArrestRecords(State state, long maxNumberOfResults, RecordFilterEnum filter, boolean retrieveMissedRecords) throws SpiderException {
         long totalTime = System.currentTimeMillis();
         this.state = state;
         this.filter = filter;
-        spiderWeb = new SpiderWeb(maxNumberOfResults, true);
+        spiderWeb = new SpiderWeb(maxNumberOfResults, true, retrieveMissedRecords);
         site = new ArrestsDotOrgSite(new String[]{state.getName()});
         recordIOUtil = initializeIOUtil(state);
         //Do we want to persist between states in same run? Or not run multiple states at once?
@@ -110,7 +110,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 
             logger.info("Gathered links for " + recordDetailUrlMap.size() + " record profiles and misc pages");
 
-            spiderUtil.sleep(spiderWeb.isOffline()?0:100000, true);
+            spiderUtil.sleep(spiderWeb.isOffline()?0:ConnectionUtil.getSleepTime(site)*2, true);
             //****iterate over collection, scraping records and simply opening others
             scrapeRecords(recordDetailUrlMap);
 
@@ -283,8 +283,9 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
                     logger.error("Failed to get a connection to " + url, e);
                 }
                 //if docToCheck contains a crawledId, remember page number and don't add subsequent pages
-                for (String crawledId : spiderWeb.getCrawledIds()) {
-                    if (spiderWeb.getFurthestPageToCheck()==9999) {
+                //unless trying to retrieve missed records
+                if (spiderWeb.getFurthestPageToCheck()==9999 && !spiderWeb.retrieveMissedRecords()) {
+                    for (String crawledId : spiderWeb.getCrawledIds()) {
                         if (docToCheck!=null && site.isAResultsDoc(docToCheck) && docToCheck.html().contains(crawledId)) {
                             //set as current page number
                         	spiderWeb.setFurthestPageToCheck(page);

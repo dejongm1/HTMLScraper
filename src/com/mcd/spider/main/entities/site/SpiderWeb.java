@@ -1,10 +1,9 @@
 package com.mcd.spider.main.entities.site;
 
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import com.mcd.spider.main.entities.record.Record;
+
+import java.util.Map;
+import java.util.Set;
 
 public class SpiderWeb {
 	
@@ -17,12 +16,14 @@ public class SpiderWeb {
     private long maxNumberOfResults;
     private int numberOfPages;
     private boolean addMisc;
+    private boolean retrieveMissedRecords;
     
-    public SpiderWeb(long maxNumberOfResults, boolean addMisc) {
+    public SpiderWeb(long maxNumberOfResults, boolean addMisc, boolean retrieveMissedRecords) {
     	this.maxNumberOfResults = maxNumberOfResults;
 	    offline = System.getProperty("offline").equals("true");
 	    furthestPageToCheck = 9999;
 	    this.addMisc = addMisc;
+	    this.retrieveMissedRecords = retrieveMissedRecords;
     }
 
 	public Set<String> getCrawledIds() {
@@ -65,10 +66,6 @@ public class SpiderWeb {
 		return recordsProcessed;
 	}
 
-	public void setRecordsProcessed(long recordsProcessed) {
-		this.recordsProcessed = recordsProcessed;
-	}
-
 	public void addToRecordsProcessed(long recordsProcessed) {
 		this.recordsProcessed += recordsProcessed;
 	}
@@ -97,8 +94,8 @@ public class SpiderWeb {
 		return addMisc;
 	}
 
-	public void setAddMisc(boolean addMisc) {
-		this.addMisc = addMisc;
-	}
+	public boolean retrieveMissedRecords() {
+        return retrieveMissedRecords;
+    }
 	
 }

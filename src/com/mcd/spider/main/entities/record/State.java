@@ -29,7 +29,7 @@ public final class State {
 	public static final State ID = new State("Idaho", "ID", new ArrayList<>());
 	public static final State IL = new State("Illinois", "IL", new ArrayList<>(Arrays.asList(new ArrestsDotOrgEngine())));
 	public static final State IN = new State("Indiana", "IN", new ArrayList<>(Arrays.asList(new ArrestsDotOrgEngine())));
-    public static final State IA = new State("Iowa", "IA", new ArrayList<>(Arrays.asList(/*new ArrestsDotOrgEngine(), */new DesMoinesRegisterComEngine())));
+    public static final State IA = new State("Iowa", "IA", new ArrayList<>(Arrays.asList(new ArrestsDotOrgEngine(), new DesMoinesRegisterComEngine())));
 	public static final State KS = new State("Kansas", "KS", new ArrayList<>(Arrays.asList(new ArrestsDotOrgEngine())));
 	public static final State KY = new State("Kentucky", "KY", new ArrayList<>(Arrays.asList(new ArrestsDotOrgEngine())));
 	public static final State LA = new State("Louisiana", "LA", new ArrayList<>(Arrays.asList(new ArrestsDotOrgEngine())));

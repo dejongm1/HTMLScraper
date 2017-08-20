@@ -131,7 +131,7 @@ public class SpiderMain {
 		List<State> states = args.length>=2?mainInputUtil.convertToStates(args[1]):(List<State>) mainInputUtil.getInput("State(s) or \"All\": ", 3, SpiderConstants.STATE_VALIDATION);
 		RecordFilterEnum filter = args.length>=3?mainInputUtil.convertToFilter(args[2]):null;
 		long maxNumberOfResults = args.length>=4?mainInputUtil.convertToNumber(args[3]):999999;
-		engine.getArrestRecordsByState(states, maxNumberOfResults, filter);
+		engine.getArrestRecordsByState(states, maxNumberOfResults, filter, false);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -139,7 +139,7 @@ public class SpiderMain {
 		List<State> states = args.length>=2?mainInputUtil.convertToStates(args[1]):(List<State>) mainInputUtil.getInput("State(s) or \"All\": ", 3, SpiderConstants.STATE_VALIDATION);
 		RecordFilterEnum filter = args.length>=3?mainInputUtil.convertToFilter(args[2]):null;
 		long maxNumberOfResults = args.length>=4?mainInputUtil.convertToNumber(args[3]):5;
-		engine.getArrestRecordsByStateCrack(states, maxNumberOfResults, filter);
+		engine.getArrestRecordsByStateCrack(states, maxNumberOfResults, filter, false);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -147,7 +147,7 @@ public class SpiderMain {
 		List<State> states = args.length>=2?mainInputUtil.convertToStates(args[1]):(List<State>) mainInputUtil.getInput("State(s) or \"All\": ", 3, SpiderConstants.STATE_VALIDATION);
 		RecordFilterEnum filter = args.length>=3?mainInputUtil.convertToFilter(args[2]):null;
 		long maxNumberOfResults = args.length>=4?mainInputUtil.convertToNumber(args[3]):5;
-		engine.getArrestRecordsByThreading(states, maxNumberOfResults, filter);
+		engine.getArrestRecordsByThreading(states, maxNumberOfResults, filter, false);
 	}
 
 	private static void getSEOAudit(String argString) throws IOException {

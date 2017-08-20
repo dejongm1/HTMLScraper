@@ -23,34 +23,34 @@ public class SpiderEngine {
 	public static final Logger logger = Logger.getLogger(SpiderEngine.class);
 
 	//redirect to Appropriate engine from here
-	public void getArrestRecordsByState(List<State> states, long maxNumberOfResults, RecordFilterEnum filter) throws SpiderException {
+	public void getArrestRecordsByState(List<State> states, long maxNumberOfResults, RecordFilterEnum filter, boolean retrieveMissedRecords) throws SpiderException {
 		//TODO use threading here for multiple states, maybe even within states
 		for (State state : states) {
 			if (!state.getEngines().isEmpty()) {
 				StateRouter router = new StateRouter(state);
-				router.collectRecords(maxNumberOfResults, filter);
+				router.collectRecords(maxNumberOfResults, filter, retrieveMissedRecords);
 			} else {
 				throw new StateNotReadyException(state);
 			}
 		}
 	}
 	
-	public void getArrestRecordsByStateCrack(List<State> states, long maxNumberOfResults, RecordFilterEnum filter) throws SpiderException {
+	public void getArrestRecordsByStateCrack(List<State> states, long maxNumberOfResults, RecordFilterEnum filter, boolean retrieveMissedRecords) throws SpiderException {
 		for (State state : states) {
 			state.getEngines().clear();
 			state.addEngine(new ArrestsDotOrgEngine());
 //			state.addEngine(new MugShotsDotComEngine());
 			StateRouter router = new StateRouter(state);
-			router.collectRecords(maxNumberOfResults, filter);
+			router.collectRecords(maxNumberOfResults, filter, retrieveMissedRecords);
 		}
 		
 	}
 	
-	public void getArrestRecordsByThreading(List<State> states, long maxNumberOfResults, RecordFilterEnum filter) throws SpiderException {
+	public void getArrestRecordsByThreading(List<State> states, long maxNumberOfResults, RecordFilterEnum filter, boolean retrieveMissedRecords) throws SpiderException {
 		for (State state : states) {
 			if (!state.getEngines().isEmpty()) {
 				StateRouter router = new StateRouter(state);
-				router.collectRecordsUsingThreading(maxNumberOfResults, filter);
+				router.collectRecordsUsingThreading(maxNumberOfResults, filter, retrieveMissedRecords);
 			} else {
 				throw new StateNotReadyException(state);
 			}

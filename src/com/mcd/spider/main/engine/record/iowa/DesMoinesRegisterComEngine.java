@@ -52,10 +52,10 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     private SpiderWeb spiderWeb;
 
     @Override
-    public void getArrestRecords(State state, long maxNumberOfResults, RecordFilterEnum filter) throws SpiderException {
+    public void getArrestRecords(State state, long maxNumberOfResults, RecordFilterEnum filter, boolean retrieveMissedRecords) throws SpiderException {
         long totalTime = System.currentTimeMillis();
     	this.filter = filter;
-    	spiderWeb = new SpiderWeb(maxNumberOfResults, false);
+    	spiderWeb = new SpiderWeb(maxNumberOfResults, false, retrieveMissedRecords);
     	if (spiderWeb.isOffline()) {
     		logger.debug("Offline - can't scrape this php site. Try making an offline version");
     	} else {
@@ -105,7 +105,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
 
                 logger.info("Gathered links for " + recordDetailUrlMap.size() + " record profiles");
 
-                spiderUtil.sleep(spiderWeb.isOffline()?0:10000, true);
+                spiderUtil.sleep(spiderWeb.isOffline()?0:ConnectionUtil.getSleepTime(site)*2, true);
                 scrapeRecords(recordDetailUrlMap);
             } else {
             	 logger.error("Failed to load html doc from " + site.getBaseUrl()+ ". Trying again " + (maxAttempts-attemptCount) + " more times");
