@@ -1,10 +1,5 @@
 package com.mcd.spider.main.engine;
 
-import java.io.File;
-import java.util.List;
-
-import org.apache.log4j.Logger;
-
 import com.mcd.spider.main.engine.audit.AuditEngine;
 import com.mcd.spider.main.engine.record.various.ArrestsDotOrgEngine;
 import com.mcd.spider.main.engine.router.StateRouter;
@@ -15,6 +10,10 @@ import com.mcd.spider.main.entities.record.filter.RecordFilter.RecordFilterEnum;
 import com.mcd.spider.main.exception.SpiderException;
 import com.mcd.spider.main.exception.StateNotReadyException;
 import com.mcd.spider.main.util.io.RecordIOUtil;
+import org.apache.log4j.Logger;
+
+import java.io.File;
+import java.util.List;
 
 /**
  * 
@@ -55,11 +54,11 @@ public class SpiderEngine {
 				StateRouter router = new StateRouter(state);
 				router.collectRecordsUsingThreading(maxNumberOfResults, filter, retrieveMissedRecords);
 				//TODO merge records here
-//				RecordIOUtil mainIOutil = new RecordIOUtil(state, new ArrestRecord(), state.getEngines().get(0).getSite());
-//				for (int e=1;e<state.getEngines().size();e++) {
-//					RecordIOUtil comparingIOUtil = new RecordIOUtil(state, new ArrestRecord(), state.getEngines().get(e).getSite());
-//					mainIOutil.mergeRecordsFromSpreadsheets(new File(mainIOutil.getDocName()), new File(comparingIOUtil.getDocName()));
-//				}
+				RecordIOUtil mainIOutil = new RecordIOUtil(state, new ArrestRecord(), state.getEngines().get(0).getSite());
+				for (int e=1;e<state.getEngines().size();e++) {
+					RecordIOUtil comparingIOUtil = new RecordIOUtil(state, new ArrestRecord(), state.getEngines().get(e).getSite());
+					mainIOutil.mergeRecordsFromSpreadsheets(new File(mainIOutil.getDocName()), new File(comparingIOUtil.getDocName()), filter);
+				}
 			} else {
 				throw new StateNotReadyException(state);
 			}

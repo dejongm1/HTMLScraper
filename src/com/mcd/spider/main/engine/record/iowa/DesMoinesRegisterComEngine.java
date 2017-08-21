@@ -26,10 +26,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.*;
@@ -76,7 +73,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
 
 	        scrapeSite(1);
 
-            formatOutput(new ArrayList<>(recordIOUtil.getInputter().readDefaultSpreadsheet()), recordIOUtil.getOutputter());
+            formatOutput(new ArrayList<>(recordIOUtil.getInputter().readRecordsFromDefaultWorkbook().get(0)), recordIOUtil.getOutputter());
 
 	        //outputUtil.removeColumnsFromSpreadsheet(new int[]{ArrestRecord.RecordColumnEnum.ID_COLUMN.index()});
 
@@ -202,7 +199,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
             //load previously written records IDs into memory
         	spiderWeb.setCrawledIds(ioUtil.getInputter().getPreviousIds());
             //load records in current spreadsheet into memory
-        	spiderWeb.setCrawledRecords(ioUtil.getInputter().readDefaultSpreadsheet());
+        	spiderWeb.setCrawledRecords(ioUtil.getInputter().readRecordsFromSheet(new File(ioUtil.getDocName()),0));
             ioUtil.getOutputter().createSpreadsheet();
         } catch (ExcelOutputException | IDCheckException e) {
             throw e;

@@ -25,6 +25,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
@@ -222,7 +223,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             //load previously written records IDs into memory
         	spiderWeb.setCrawledIds(ioUtil.getInputter().getPreviousIds());
         	//load records in current spreadsheet into memory
-        	spiderWeb.setCrawledRecords(ioUtil.getInputter().readDefaultSpreadsheet());
+            spiderWeb.setCrawledRecords(ioUtil.getInputter().readRecordsFromSheet(new File(ioUtil.getDocName()),0));
             ioUtil.getOutputter().createSpreadsheet();
         } catch (ExcelOutputException | IDCheckException e) {
             throw e;
