@@ -143,7 +143,7 @@ public class RecordOutputUtil {
 	}
 
     public String getTempFileName() {
-        return TEMP + "_" + Calendar.getInstance().getTimeInMillis();
+        return OUTPUT_DIR + TEMP + "_" + Calendar.getInstance().getTimeInMillis();
     }
 
 	private void createWorkbookCopy(String oldBookName, String backupBookName) throws BiffException, IOException {
