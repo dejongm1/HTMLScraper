@@ -3,6 +3,7 @@
 /output/
 /jxl exploded/
 /test-output/
-Spider.iml
-Spider.jar
+/Spider.iml
+/Spider*.jar
 /.idea/
+/backup/
