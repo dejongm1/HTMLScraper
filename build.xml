@@ -1,12 +1,27 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project default="create_run_jar" name="Create Runnable Jar for Project Spider">
     <!--this file was created by Eclipse Runnable JAR Export Wizard-->
-    <!--ANT 1.7 is required                                        -->
+    <!--ANT 1.7 is required-->
     <!--define folder properties-->
     <property name="dir.buildfile" value="."/>
     <property name="dir.workspace" value="${dir.buildfile}/.."/>
     <property name="dir.backup" value="backup"/>
     <property name="version" value="1.0"/>
+    <property name="dir.src" value="src"/>
+    <property name="dir.build" value="build"/>
+    <property name="dir.dist" value="dist"/>
+
+    <!-- Creates the output directories -->
+    <target name="prepare">
+        <mkdir dir="${dir.build}"/>
+        <mkdir dir="${dir.dist}"/>
+    </target>
+
+    <target name="compile" depends="prepare" description="Compile all source code.">
+        <javac srcdir="${dir.src}" destdir="${dir.build}"/>
+    </target>
+
+    <!--<target name="create_run_jar" depends="compile, backup">-->
     <target name="create_run_jar" depends="backup">
         <buildnumber/>
     	<!-- TODO
@@ -15,27 +30,25 @@
     	     create empty files named as possible parameters (url, search, depth)
     	     why is this file so big?
     	     			-->
-        <jar destfile="Spider-${version}.${build.number}.jar" filesetmanifest="mergewithoutmain" excludes="**/Spider-*.jar" >
+        <jar jarfile="Spider-${version}.${build.number}.jar">
             <manifest>
                 <attribute name="Main-Class" value="com.mcd.spider.main.SpiderMain"/>
                 <attribute name="Class-Path" value="."/>
             </manifest>
-            <zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/jsoup-1.10.3.jar"/>
-        	<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/commons-validator-1.6.jar"/>
-        	<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/commons-collections4-4.1.jar"/>
-        	<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/log4j-1.2.17.jar"/>
-        	<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/jxl-2.6.jar"/>
-        	<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/mail.jar"/>
-        	<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/activation.jar"/>
-        	<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/java-json.jar"/>
-        	<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/sitemapgen4j-1.0.1.jar"/>
-        	<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/guava-19.0.jar"/>
-            <exclude name="**/Spider-*.jar" />
-            <exclude name="${dir.backup}" />
-            <exclude name="logs" />
-        <fileset dir="${dir.buildfile}/bin"/>
-        <!--<zipfileset dir="${dir.buildfile}/htmls" includes="*.htm*" prefix="htmls"/> -->
-        <zipfileset dir="${dir.buildfile}/resources" includes="*.*" prefix="resources"/>
+            <!--<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/jsoup-1.10.3.jar"/>-->
+        	<!--<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/commons-validator-1.6.jar"/>-->
+        	<!--<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/commons-collections4-4.1.jar"/>-->
+        	<!--<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/log4j-1.2.17.jar"/>-->
+        	<!--<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/jxl-2.6.jar"/>-->
+        	<!--<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/mail.jar"/>-->
+        	<!--<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/activation.jar"/>-->
+        	<!--<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/java-json.jar"/>-->
+        	<!--<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/sitemapgen4j-1.0.1.jar"/>-->
+        	<!--<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/guava-19.0.jar"/>-->
+
+            <fileset dir="${dir.buildfile}/lib" />
+            <fileset dir="${dir.buildfile}/bin/"/>
+            <!--<zipfileset dir="${dir.buildfile}/htmls" includes="*.htm*" prefix="htmls"/> -->
         </jar>
     </target>
 
