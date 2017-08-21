@@ -32,6 +32,12 @@ public interface Record {
 
     List<ArrestRecord.RecordColumnEnum> getColumnEnums();
 
+    WritableSheet addToExcelSheet(int rowNumber, WritableSheet sheet) throws IllegalAccessException;
+    
+    Record merge(Record record);
+    
+    boolean matches(Record record);
+    
     @SuppressWarnings({ "unchecked", "rawtypes" })
 	static Record readRowIntoRecord(Class clazz, Sheet mainSheet, Object rowRecord, int r) {
     	int c = 0;
@@ -83,12 +89,6 @@ public interface Record {
     	return (Record) rowRecord;
     }
 
-    WritableSheet addToExcelSheet(int rowNumber, WritableSheet sheet) throws IllegalAccessException;
-    
-    Set<Record> merge(Record record);
-    
-    boolean matches(Record record);
-    
     static <T> List<List<Record>> splitByField(List<Record> records, String fieldName, Class<T> clazz) {
 		List<List<Record>> recordListList = new ArrayList<>();
 		Method fieldGetter = null;
@@ -97,19 +97,22 @@ public interface Record {
 				fieldGetter = method;
 			}
 		}
-		Object previousDelimiter = null;
+		Object groupingDelimiter = null;
 		List<Record> delimiterList = new ArrayList<>();
 		for (Record record : records) {
 			try {
+				//TODO not catching case where delimiter value is null
 				Object delimiterValue = fieldGetter.invoke(record);
-				if (previousDelimiter == null && delimiterValue!= null) {
-					previousDelimiter = delimiterValue;
+				if (groupingDelimiter == null && delimiterValue!= null) {
+					groupingDelimiter = delimiterValue;
 				}
-				if (previousDelimiter!=null && delimiterValue!= null && delimiterValue.equals(previousDelimiter)) {
+				if (groupingDelimiter!=null && delimiterValue!= null && delimiterValue.equals(groupingDelimiter)) {
 					delimiterList.add(record);
 				} else {
-					recordListList.add(delimiterList);
-					previousDelimiter = fieldGetter.invoke(record);
+					if (!delimiterList.isEmpty()) {
+						recordListList.add(delimiterList);
+					}
+					groupingDelimiter = fieldGetter.invoke(record);
 					delimiterList = new ArrayList<>();
 					delimiterList.add(record);
 				}

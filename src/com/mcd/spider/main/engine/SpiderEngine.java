@@ -1,16 +1,20 @@
 package com.mcd.spider.main.engine;
 
+import java.io.File;
+import java.util.List;
+
+import org.apache.log4j.Logger;
+
 import com.mcd.spider.main.engine.audit.AuditEngine;
 import com.mcd.spider.main.engine.record.various.ArrestsDotOrgEngine;
 import com.mcd.spider.main.engine.router.StateRouter;
 import com.mcd.spider.main.entities.audit.AuditParameters;
+import com.mcd.spider.main.entities.record.ArrestRecord;
 import com.mcd.spider.main.entities.record.State;
 import com.mcd.spider.main.entities.record.filter.RecordFilter.RecordFilterEnum;
 import com.mcd.spider.main.exception.SpiderException;
 import com.mcd.spider.main.exception.StateNotReadyException;
-import org.apache.log4j.Logger;
-
-import java.util.List;
+import com.mcd.spider.main.util.io.RecordIOUtil;
 
 /**
  * 
@@ -24,7 +28,6 @@ public class SpiderEngine {
 
 	//redirect to Appropriate engine from here
 	public void getArrestRecordsByState(List<State> states, long maxNumberOfResults, RecordFilterEnum filter, boolean retrieveMissedRecords) throws SpiderException {
-		//TODO use threading here for multiple states, maybe even within states
 		for (State state : states) {
 			if (!state.getEngines().isEmpty()) {
 				StateRouter router = new StateRouter(state);
@@ -51,6 +54,12 @@ public class SpiderEngine {
 			if (!state.getEngines().isEmpty()) {
 				StateRouter router = new StateRouter(state);
 				router.collectRecordsUsingThreading(maxNumberOfResults, filter, retrieveMissedRecords);
+				//TODO merge records here
+//				RecordIOUtil mainIOutil = new RecordIOUtil(state, new ArrestRecord(), state.getEngines().get(0).getSite());
+//				for (int e=1;e<state.getEngines().size();e++) {
+//					RecordIOUtil comparingIOUtil = new RecordIOUtil(state, new ArrestRecord(), state.getEngines().get(e).getSite());
+//					mainIOutil.mergeRecordsFromSpreadsheets(new File(mainIOutil.getDocName()), new File(comparingIOUtil.getDocName()));
+//				}
 			} else {
 				throw new StateNotReadyException(state);
 			}

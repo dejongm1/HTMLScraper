@@ -108,30 +108,6 @@ public class RecordOutputUtil {
 		}
 		return successful;
 	}
-	//
-//	public File getOldBook() {
-//		return oldBook;
-//	}
-//
-//	public File getNewBook() {
-//		return newBook;
-//	}
-//
-//	public Workbook getCurrentWorkbook() {
-//		return currentWorkbook;
-//	}
-//
-//	public Calendar getWorkbookCreateDate() {
-//		return this.workbookCreateDate;
-//	}
-//
-//	public void setCurrentWorkbook(Workbook currentWorkbook) {
-//		this.currentWorkbook = currentWorkbook;
-//	}
-//
-//	public WritableWorkbook getCopyWorkbook() {
-//		return copyWorkbook;
-//	}
 
 	public void createSpreadsheet() {
 		WritableWorkbook newWorkbook = null;
@@ -179,6 +155,10 @@ public class RecordOutputUtil {
 
 	public String getFilteredDocName(RecordFilterEnum filter) {
 		return docName.substring(0, docName.indexOf(EXT)) + "_" + filter.filterName() + EXT;
+	}
+
+	public String getMergedDocName() {
+		return docName.substring(0, docName.indexOf(EXT)) + "_" + "MERGED" + EXT;
 	}
 
 	public void saveRecordsToWorkbook(List<Record> records, WritableWorkbook workbook) {
@@ -257,6 +237,28 @@ public class RecordOutputUtil {
 		WritableWorkbook newWorkbook = null;
 		try {
 			newWorkbook = Workbook.createWorkbook(new File(getFilteredDocName(filter)));
+
+			WritableSheet excelSheet = newWorkbook.createSheet(state.getName(), 0);
+			createColumnHeaders(excelSheet);
+			saveRecordsToWorkbook(records, newWorkbook);
+			newWorkbook.write();
+		} catch (IOException | WriteException e) {
+			logger.error("Create filtered spreadhseet error", e);
+		} finally {
+			if (newWorkbook != null) {
+				try {
+					newWorkbook.close();
+				} catch (IOException | WriteException e) {
+					logger.error("Create filtered spreadhseet error", e);
+				}
+			}
+		}
+	}
+	
+	public void createMergedSpreadsheet(List<Record> records) {
+		WritableWorkbook newWorkbook = null;
+		try {
+			newWorkbook = Workbook.createWorkbook(new File(getMergedDocName()));
 
 			WritableSheet excelSheet = newWorkbook.createSheet(state.getName(), 0);
 			createColumnHeaders(excelSheet);

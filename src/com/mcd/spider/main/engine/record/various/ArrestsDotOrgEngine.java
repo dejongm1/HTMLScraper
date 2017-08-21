@@ -7,6 +7,7 @@ import com.mcd.spider.main.entities.record.Record;
 import com.mcd.spider.main.entities.record.State;
 import com.mcd.spider.main.entities.record.filter.RecordFilter;
 import com.mcd.spider.main.entities.record.filter.RecordFilter.RecordFilterEnum;
+import com.mcd.spider.main.entities.site.Site;
 import com.mcd.spider.main.entities.site.SpiderWeb;
 import com.mcd.spider.main.entities.site.html.ArrestsDotOrgSite;
 import com.mcd.spider.main.exception.ExcelOutputException;
@@ -47,6 +48,11 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     private RecordIOUtil recordIOUtil;
     private SpiderWeb spiderWeb;
 
+    @Override
+    public Site getSite() {
+    	return site;
+    }
+    
     @Override
     public void getArrestRecords(State state, long maxNumberOfResults, RecordFilterEnum filter, boolean retrieveMissedRecords) throws SpiderException {
         long totalTime = System.currentTimeMillis();

@@ -33,11 +33,13 @@ public class StateRouter implements EngineRouter {
 	}
 	
 	@Override
-	public void collectRecordsUsingThreading(long maxNumberOfResults, RecordFilter.RecordFilterEnum filter, boolean retrieveMissedRecords){
+	public void collectRecordsUsingThreading(long maxNumberOfResults, RecordFilter.RecordFilterEnum filter, boolean retrieveMissedRecords) {
 		logger.info("Routing record collection to " + state.getName() + " engines");
 
+		Thread[] threads = new Thread[state.getEngines().size()];
+		int t = 0;
 		for (ArrestRecordEngine engine : state.getEngines()) {
-			new Thread("" + engine.getClass().getSimpleName()){
+			threads[t] = new Thread("" + engine.getClass().getSimpleName()){
 				@Override
 				public void run(){
 					logger.info("Thread: " + getName() + " running");
@@ -48,8 +50,16 @@ public class StateRouter implements EngineRouter {
 						logger.error("Thread: " + getName() + " caught an exception", e);
 					}
 				}
-			}.start();
-
+			};
+			threads[t].start();
+			t++;
+		}
+		for (Thread thread : threads) {
+			try {
+				thread.join(10000);
+			} catch (InterruptedException e) {
+				logger.error("Error starting or joining thread", e);
+			}
 		}
 	}
 

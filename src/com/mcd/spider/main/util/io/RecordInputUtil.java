@@ -133,27 +133,4 @@ public class RecordInputUtil {
     	//if both of the first two columns are empty, consider row empty
     	return row.length>0 && (row[0].getContents().length()>0 && row[1].getContents().length()>0);
     }
-    
-	public Set<Record> mergeRecordsFromSpreadsheets(File fileOne, File fileTwo) {
-		Set<Record> storedRecordsOne = readSpreadsheet(fileOne);
-		Set<Record> storedRecordsTwo = readSpreadsheet(fileTwo);
-		Set<Record> compiledRecords = new HashSet<>();
-		Set<Record> outerSet = storedRecordsOne;
-		Set<Record> innerSet = storedRecordsTwo;
-//		
-		for (Record recordOne : outerSet) {
-			for (Record recordTwo : innerSet) {
-				if (recordOne.matches(recordTwo)) {
-					recordOne.merge(recordTwo);
-					compiledRecords.add(recordOne);
-					storedRecordsTwo.remove(recordTwo);
-				} else {
-					compiledRecords.add(recordOne);
-				}
-			}
-		}
-		compiledRecords.addAll(storedRecordsTwo);		
-		
-		return compiledRecords;
-	}
 }

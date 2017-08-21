@@ -12,13 +12,9 @@ import java.util.*;
 
 
 public class ArrestRecord implements Record, Comparable<ArrestRecord>{
-	
-	@Override
-	public void setId(String id) {
-		this.id = id;
-	}
 
 	public static final Logger logger = Logger.getLogger(ArrestRecord.class);
+	public static final String MERGE_SEPARATOR = "---";
 
 	//create a person entity?	
 	private String id;
@@ -43,6 +39,11 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 	private String race;
 
 	public ArrestRecord(){}
+	
+	@Override
+	public void setId(String id) {
+		this.id = id;
+	}
 
     @Override
 	public String getId() {
@@ -261,9 +262,9 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 
 	@Override
 	public int compareTo(ArrestRecord record) {
-		Calendar arrestDate = record.getArrestDate();
+		Calendar arrestDateToCompare = record.getArrestDate();
 		//ascending order
-		return this.arrestDate.compareTo(arrestDate);
+		return this.arrestDate.compareTo(arrestDateToCompare);
 	}
 	
 	public static Comparator<Record> CountyComparator = new Comparator<Record>() {
@@ -308,15 +309,44 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 	}
 
 	@Override
-	public Set<Record> merge(Record record) {
-		// TODO Auto-generated method stub
-		return null;
+	public Record merge(Record record) {
+		ArrestRecord recordToMerge = (ArrestRecord) record;
+		//combine ids to indicate a merged record
+		this.id = this.id + MERGE_SEPARATOR + record.getId();
+		List<Field> fieldsToMerge = getFieldsToOutput();
+		for (Field field : fieldsToMerge) {
+			try {
+				if (isNotPopulated(field.get(this))) {
+					field.set(this, recordToMerge.getClass().getDeclaredField(field.getName()).get(recordToMerge));
+				}
+			} catch (IllegalArgumentException | IllegalAccessException | SecurityException | NoSuchFieldException e) {
+				logger.error("Error merging field " + field.getName() + " for records " + this.getId(), e);
+			}
+		}
+		return this;
+	}
+	
+	private boolean isNotPopulated(Object object) {
+		//check type of Object before comparing
+		if (object==null) {
+			return true;
+		} else if (object instanceof String) {
+			return object.equals("");
+		} else if (object instanceof Integer) {
+			return (Integer) object==0;
+		} else if (object instanceof Long) {
+			return (Long) object==0;
+		} /*else if (object instanceof Calendar) {
+			return object.equals("");
+		} */else {
+			return false;
+		}
 	}
 
 	@Override
 	public boolean matches(Record recordToMatch) {
-		//TODO ranking system, needs testing
-		//higher than # means a match
+		//ranking system, needs testing
+		//score of 6 or higher means a match
 		//one or more points for each element matched
 		int score = 0;
 		ArrestRecord record = (ArrestRecord) recordToMatch;

@@ -1,11 +1,15 @@
 package com.mcd.spider.main.util.io;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.apache.log4j.Logger;
+
 import com.mcd.spider.main.entities.record.Record;
 import com.mcd.spider.main.entities.record.State;
 import com.mcd.spider.main.entities.site.Site;
-import org.apache.log4j.Logger;
-
-import java.io.File;
 
 /**
  * 
@@ -72,7 +76,30 @@ public class RecordIOUtil {
 	public void setOutputter(RecordOutputUtil outputter) {
 		this.outputter = outputter;
 	}
-	
+
+	public void mergeRecordsFromSpreadsheets(File fileOne, File fileTwo) {
+		Set<Record> storedRecordsOne = inputter.readSpreadsheet(fileOne);
+		Set<Record> storedRecordsTwo = inputter.readSpreadsheet(fileTwo);
+		Set<Record> compiledRecords = new HashSet<>();
+		Set<Record> outerSet = new HashSet<>(storedRecordsOne);
+		Set<Record> innerSet = new HashSet<>(storedRecordsTwo);
+//		
+		for (Record recordOne : outerSet) {
+			for (Record recordTwo : innerSet) {
+				if (recordOne.matches(recordTwo)) {
+					recordOne.merge(recordTwo);
+					compiledRecords.add(recordOne);
+					storedRecordsTwo.remove(recordTwo);
+				} else {
+					compiledRecords.add(recordOne);
+				}
+			}
+		}
+		compiledRecords.addAll(storedRecordsTwo);		
+		//create new spreadsheet with compiled records
+		outputter.createMergedSpreadsheet(new ArrayList<>(compiledRecords));
+		
+	}
 	
 
 }

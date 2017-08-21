@@ -7,6 +7,7 @@ import com.mcd.spider.main.entities.record.Record;
 import com.mcd.spider.main.entities.record.State;
 import com.mcd.spider.main.entities.record.filter.RecordFilter;
 import com.mcd.spider.main.entities.record.filter.RecordFilter.RecordFilterEnum;
+import com.mcd.spider.main.entities.site.Site;
 import com.mcd.spider.main.entities.site.SpiderWeb;
 import com.mcd.spider.main.entities.site.service.DesMoinesRegisterComSite;
 import com.mcd.spider.main.exception.ExcelOutputException;
@@ -52,15 +53,19 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     private SpiderWeb spiderWeb;
 
     @Override
+    public Site getSite() {
+    	return site;
+    }
+    
+    @Override
     public void getArrestRecords(State state, long maxNumberOfResults, RecordFilterEnum filter, boolean retrieveMissedRecords) throws SpiderException {
         long totalTime = System.currentTimeMillis();
     	this.filter = filter;
     	spiderWeb = new SpiderWeb(maxNumberOfResults, false, retrieveMissedRecords);
+        site = new DesMoinesRegisterComSite(null);
     	if (spiderWeb.isOffline()) {
     		logger.debug("Offline - can't scrape this php site. Try making an offline version");
     	} else {
-	        int sleepTimeSum = 0;
-	        site = new DesMoinesRegisterComSite(null);
             recordIOUtil = initializeIOUtil(state);
             connectionUtil = new ConnectionUtil(true);
 

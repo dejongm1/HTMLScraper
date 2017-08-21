@@ -130,8 +130,8 @@ public class CourtRecord implements Record {
 //	}
 
 	@Override
-	public Set<Record> merge(Record record) {
-		return new HashSet<>();
+	public Record merge(Record record) {
+		return new CourtRecord();
 	}
 
 	@Override
