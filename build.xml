@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project default="create_run_jar" name="Create Runnable Jar for Project Spider">
-    <!--this file was created by Eclipse Runnable JAR Export Wizard-->
     <!--ANT 1.7 is required-->
+	
+	<!-- TODO
+	     run tests before building
+	     package blacklist of common words
+	     create empty files named as possible parameters (url, search, depth)
+	     clean up unused jars
+	     			-->
+	
     <!--define folder properties-->
     <property name="dir.buildfile" value="."/>
     <property name="dir.workspace" value="${dir.buildfile}/.."/>
@@ -17,41 +24,57 @@
         <mkdir dir="${dir.dist}"/>
     </target>
 
-    <target name="compile" depends="prepare" description="Compile all source code.">
-        <javac srcdir="${dir.src}" destdir="${dir.build}"/>
+    <target name="compile" depends="prepare">
+    	<path id="dir.classpath">
+    	    <fileset dir="lib">
+    	        <include name="*.jar"/>
+    	    	<exclude name="testng-5.0.jar"/>
+    	    </fileset>
+    	</path>
+        <javac srcdir="${dir.src}" destdir="${dir.build}">
+    		<classpath refid="dir.classpath" />
+        </javac>
     </target>
 
-    <!--<target name="create_run_jar" depends="compile, backup">-->
-    <target name="create_run_jar" depends="backup">
+    <target name="create_run_jar" depends="backup, compile, prepare">
         <buildnumber/>
-    	<!-- TODO
-    	     run tests before building
-    	     package blacklist of common words
-    	     create empty files named as possible parameters (url, search, depth)
-    	     why is this file so big?
-    	     			-->
+
+    	<path id="dep.runtime">
+    		<fileset dir="./resources">
+    	        <include name="**/*.*" />
+    	    </fileset>
+    	    <fileset dir="./lib">
+    	        <include name="**/*.jar" />
+    	    	<exclude name="jmeter/"/>
+    	    	<exclude name="selenium/"/>
+    	    </fileset>
+    	</path>
+    	
+    	<manifestclasspath jarfile="Spider-${version}.${build.number}.jar" property="manifest_cp">
+	        <classpath refid="dep.runtime" />
+	    </manifestclasspath>
+    	
+    	<property name="dep_cp" value="${toString:dep.runtime}" />
+
         <jar jarfile="Spider-${version}.${build.number}.jar">
             <manifest>
                 <attribute name="Main-Class" value="com.mcd.spider.main.SpiderMain"/>
-                <attribute name="Class-Path" value="."/>
+                <attribute name="Class-Path" value="${manifest_cp}"/>
             </manifest>
-            <!--<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/jsoup-1.10.3.jar"/>-->
-        	<!--<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/commons-validator-1.6.jar"/>-->
-        	<!--<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/commons-collections4-4.1.jar"/>-->
-        	<!--<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/log4j-1.2.17.jar"/>-->
-        	<!--<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/jxl-2.6.jar"/>-->
-        	<!--<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/mail.jar"/>-->
-        	<!--<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/activation.jar"/>-->
-        	<!--<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/java-json.jar"/>-->
-        	<!--<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/sitemapgen4j-1.0.1.jar"/>-->
-        	<!--<zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/guava-19.0.jar"/>-->
-
-            <fileset dir="${dir.buildfile}/lib" />
-            <fileset dir="${dir.buildfile}/bin/"/>
-            <!--<zipfileset dir="${dir.buildfile}/htmls" includes="*.htm*" prefix="htmls"/> -->
+        	<fileset dir="${dir.buildfile}/${dir.build}" />
+        	<fileset dir="${dir.buildfile}/${dir.src}" />
+            <zipfileset dir="${dir.buildfile}/lib" includes="*.jar" excludes="*javadoc*.jar *sources*.jar" prefix="lib"/>
+            <!--<zipfileset dir="${dir.buildfile}/resources" includes="*.*" prefix="resources"/>-->
+            <zipfileset dir="${dir.buildfile}/resources" includes="*.*"/>
         </jar>
+    	<antcall target="cleanup"/>
     </target>
-
+	
+	<target name="cleanup" description="Remove all generated files.">
+		<delete dir="${dir.build}"/>
+		<delete dir="${dir.dist}"/>
+	</target>
+	
     <target name="backup">
         <move todir="${dir.backup}">
             <fileset dir="./">

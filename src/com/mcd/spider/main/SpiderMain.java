@@ -31,7 +31,11 @@ public class SpiderMain {
 	private SpiderMain(){}
 
 	public static void  main(String[] args) throws IOException {
-		logger.info("Application started");
+		logger.info("*******************************************************************************************");
+		logger.info("*********************************                        **********************************");
+		logger.info("*********************************     Spider started     **********************************");
+		logger.info("*********************************                        **********************************");
+		logger.info("*******************************************************************************************");
 		mainInputUtil = new MainInputUtil();
 		engine = new SpiderEngine();
 		
