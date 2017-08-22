@@ -68,7 +68,7 @@ public class SpiderUtil {
 
     public Document getHtmlAsDocTest(String url) {
         try {
-            return connectionUtil.getConnectionDocumentTest(url);
+            return ConnectionUtil.getConnectionDocumentTest(url);
         } catch (FileNotFoundException fne) {
             SpiderEngine.logger.error("I couldn't find an html file for " + url);
         } catch (ConnectException ce) {
@@ -107,8 +107,8 @@ public class SpiderUtil {
 		Properties properties = new Properties();
 		try {
 			// load a properties file
-			ClassLoader loader = Thread.currentThread().getContextClassLoader();
 			if (Boolean.valueOf(System.getProperty("runInEclipse"))) {
+                ClassLoader loader = Thread.currentThread().getContextClassLoader();
 				input = loader.getResourceAsStream("config.properties");
 			} else {
 				input = SpiderUtil.class.getResourceAsStream("/resources/config.properties");

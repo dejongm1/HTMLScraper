@@ -350,26 +350,28 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 		//one or more points for each element matched
 		int score = 0;
 		ArrestRecord record = (ArrestRecord) recordToMatch;
-		if (this.getFullName().replace("\\w", "").equalsIgnoreCase(record.getFullName().replace("\\w", ""))
-				|| (this.getFirstName().equalsIgnoreCase(record.getFirstName()) && this.getLastName().equalsIgnoreCase(record.getLastName()))) {
+		if (this.getFullName()!=null && record.getFullName()!=null && this.getFullName().replace("\\w", "").equalsIgnoreCase(record.getFullName().replace("\\w", ""))
+				|| (this.getFirstName()!=null && record.getFirstName()!=null && this.getFirstName().equalsIgnoreCase(record.getFirstName())
+                    && this.getLastName()!=null && record.getLastName()!=null && this.getLastName().equalsIgnoreCase(record.getLastName()))) {
 			score+=5;
 		}
-		if (this.getMiddleName().equalsIgnoreCase(record.getMiddleName())) {
+		if (this.getMiddleName()!=null && record.getMiddleName()!=null && this.getMiddleName().equalsIgnoreCase(record.getMiddleName())) {
 			score+=1;
 		}
-		if (this.getCounty().equalsIgnoreCase(record.getCounty())) {
+		if (this.getCounty()!=null && record.getCounty()!=null && this.getCounty().equalsIgnoreCase(record.getCounty())) {
 			score+=1;
 		}
-		if (this.getEyeColor().equalsIgnoreCase(record.getEyeColor()) && this.getHairColor().equalsIgnoreCase(record.getHairColor())) {
+		if (this.getEyeColor()!=null && record.getEyeColor()!=null && this.getEyeColor().equalsIgnoreCase(record.getEyeColor())
+                && this.getHairColor()!=null && record.getHairColor()!=null && this.getHairColor().equalsIgnoreCase(record.getHairColor())) {
 			score+=1;
 		}
-		if (this.getGender().equalsIgnoreCase(record.getGender())) {
+		if (this.getGender()!=null && record.getGender()!=null && this.getGender().equalsIgnoreCase(record.getGender())) {
 			score+=1;
 		}
-		if (this.getArrestDate().equals(record.getArrestDate())) {
+		if (this.getArrestDate()!=null && record.getArrestDate()!=null && this.getArrestDate().equals(record.getArrestDate())) {
 			score+=1;
 		}
-		if (this.getArrestAge()==(record.getArrestAge())) {
+		if (this.getArrestAge()!=0 && record.getArrestAge()!=0 && this.getArrestAge()==(record.getArrestAge())) {
 			score+=1;
 		}
 		return score >= 6;

@@ -108,22 +108,22 @@ public class RecordInputUtil {
         try {
             Workbook workbook = Workbook.getWorkbook(fileToRead);
             if (workbook!=null) {
-                Sheet mainSheet = workbook.getSheet(sheetNumber);
-                logger.debug("Attempting to read previous records from " + mainSheet.getName() + " into memory");
+                Sheet sheetToRead = workbook.getSheet(sheetNumber);
+                logger.debug("Attempting to read previous records from " + fileToRead.getName() + " into memory");
                 //starting with the first data row, read records into set
-                foundRecordsCount+=getNonEmptyRowCount(mainSheet);
-                for (int r = 1; r<mainSheet.getRows(); r++) {
+                foundRecordsCount+=getNonEmptyRowCount(sheetToRead);
+                for (int r = 1; r<sheetToRead.getRows(); r++) {
                     //loop over columnEnums for each row
-                    if (rowIsNotEmpty(mainSheet.getRow(r))) {
+                    if (rowIsNotEmpty(sheetToRead.getRow(r))) {
                         try {
                             Object rowRecord = constructor.newInstance();
-                            storedRecords.add(Record.readRowIntoRecord(clazz, mainSheet, rowRecord, r));
-                            retrievedRecordsCount+=storedRecords.size();
+                            storedRecords.add(Record.readRowIntoRecord(clazz, sheetToRead, rowRecord, r));
                         } catch (InvocationTargetException | InstantiationException | IllegalAccessException | IllegalArgumentException e) {
                             logger.error("Error trying to read row into record object, row "+r, e);
                         }
                     }
                 }
+                retrievedRecordsCount+=storedRecords.size();
             }
 
         } catch (BiffException | IOException e) {

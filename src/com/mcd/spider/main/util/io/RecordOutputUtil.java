@@ -76,38 +76,6 @@ public class RecordOutputUtil {
 	public Record getRecord() {
 		return record;
 	}
-	public boolean splitIntoSheets(String docName, String delimiter, List<List<Record>> recordsListList, Class clazz) {
-		boolean successful = false;
-		Method fieldGetter = null;
-		for (Method method : clazz.getMethods()) {
-			if (method.getName().equalsIgnoreCase("get" + delimiter.replace(" ", ""))) {
-				fieldGetter = method;
-			}
-		}
-		try {
-			createWorkbookCopy(docName, getTempFileName() + EXT);
-			for (int s = 0; s < recordsListList.size(); s++) {
-				try {
-					String delimitValue = (String) fieldGetter.invoke(recordsListList.get(s).get(0));
-					WritableSheet excelSheet = copyWorkbook.getSheet(delimitValue);
-					if (excelSheet == null) {
-						//append a new sheet for each
-						excelSheet = copyWorkbook.createSheet(delimitValue == null ? "empty" : delimitValue, s + 1);
-					}
-					createColumnHeaders(excelSheet);
-					for (int r = 0; r < recordsListList.get(s).size(); r++) {
-						recordsListList.get(s).get(r).addToExcelSheet(r+1, excelSheet);
-					}
-				} catch (NullPointerException e) {
-					logger.error("Error trying split workbook into sheets by " + fieldGetter.getName(), e);
-				}
-			}
-			handleBackup(docName, true);
-		} catch (IOException | WriteException | BiffException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-			logger.error("Error trying split workbook into sheets", e);
-		}
-		return successful;
-	}
 
 	public void createSpreadsheet() {
 		WritableWorkbook newWorkbook = null;
@@ -158,7 +126,7 @@ public class RecordOutputUtil {
 	}
 
 	public String getMergedDocName() {
-		return docName.substring(0, docName.indexOf(EXT)) + "_" + "MERGED" + EXT;
+		return docName.substring(0, docName.lastIndexOf('_')) + "_" + "MERGED" + EXT;
 	}
 
 	public void saveRecordsToWorkbook(List<Record> records, WritableWorkbook workbook) {
@@ -277,7 +245,40 @@ public class RecordOutputUtil {
 		}
 	}
 
-	private void writeIdToFile(File outputFile, String id) {
+    public boolean splitIntoSheets(String docName, String delimiter, List<List<Record>> recordsListList, Class clazz) {
+        boolean successful = false;
+        Method fieldGetter = null;
+        for (Method method : clazz.getMethods()) {
+            if (method.getName().equalsIgnoreCase("get" + delimiter.replace(" ", ""))) {
+                fieldGetter = method;
+            }
+        }
+        try {
+            createWorkbookCopy(docName, getTempFileName() + EXT);
+            for (int s = 0; s < recordsListList.size(); s++) {
+                try {
+                    String delimitValue = (String) fieldGetter.invoke(recordsListList.get(s).get(0));
+                    WritableSheet excelSheet = copyWorkbook.getSheet(delimitValue);
+                    if (excelSheet == null) {
+                        //append a new sheet for each
+                        excelSheet = copyWorkbook.createSheet(delimitValue == null ? "empty" : delimitValue, s + 1);
+                    }
+                    createColumnHeaders(excelSheet);
+                    for (int r = 0; r < recordsListList.get(s).size(); r++) {
+                        recordsListList.get(s).get(r).addToExcelSheet(r+1, excelSheet);
+                    }
+                } catch (NullPointerException e) {
+                    logger.error("Error trying split workbook into sheets by " + fieldGetter.getName(), e);
+                }
+            }
+            handleBackup(docName, true);
+        } catch (IOException | WriteException | BiffException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            logger.error("Error trying split workbook into sheets", e);
+        }
+        return successful;
+    }
+
+    private void writeIdToFile(File outputFile, String id) {
 		FileWriter fw = null;
 		BufferedWriter bw = null;
 		try {

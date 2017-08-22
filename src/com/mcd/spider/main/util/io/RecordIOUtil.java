@@ -2,13 +2,11 @@ package com.mcd.spider.main.util.io;
 
 import com.mcd.spider.main.entities.record.Record;
 import com.mcd.spider.main.entities.record.State;
-import com.mcd.spider.main.entities.record.filter.RecordFilter;
 import com.mcd.spider.main.entities.site.Site;
 import org.apache.log4j.Logger;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -69,14 +67,13 @@ public class RecordIOUtil {
 		return outputter;
 	}
 
-	public Set<Record> mergeRecordsFromSpreadsheets(File fileOne, File fileTwo, RecordFilter.RecordFilterEnum filter) {
-		List<Set<Record>> storedRecordsOne = inputter.readRecordsFromWorkbook(fileOne);
-        List<Set<Record>> storedRecordsTwo = inputter.readRecordsFromWorkbook(fileTwo);
-        List<Set<Record>> compiledRecords = new ArrayList<>();
-        List<Set<Record>> outerSet = new ArrayList<>(storedRecordsOne);
-        List<Set<Record>> innerSet = new ArrayList<>(storedRecordsTwo);
+	public Set<Record> mergeRecordsFromSheet(File fileOne, File fileTwo, int sheetNumber) {
+		Set<Record> storedRecordsOne = inputter.readRecordsFromSheet(fileOne, sheetNumber);
+		Set<Record> storedRecordsTwo = inputter.readRecordsFromSheet(fileTwo, sheetNumber);
+		Set<Record> compiledRecords = new HashSet<>();
+		Set<Record> outerSet = new HashSet<>(storedRecordsOne);
+		Set<Record> innerSet = new HashSet<>(storedRecordsTwo);
 
-        //TODO need to refactor for merging sheets instead of one single list
 		for (Record recordOne : outerSet) {
 			for (Record recordTwo : innerSet) {
 				if (recordOne.matches(recordTwo)) {
@@ -89,11 +86,7 @@ public class RecordIOUtil {
 			}
 		}
 		compiledRecords.addAll(storedRecordsTwo);
-
-		outputter.createMergedSpreadsheet(new ArrayList<>(compiledRecords));
-
 		return compiledRecords;
 	}
-	
 
 }
