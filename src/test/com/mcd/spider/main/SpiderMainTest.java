@@ -81,8 +81,8 @@ public class SpiderMainTest {
 	//belongs in a different test class 
     public void testRandomConnections(int numberOfTries) {
 //        long time = System.currentTimeMillis();
-//        int trie = 0;
-//        while (trie<numberOfTries) {
+//        int try = 0;
+//        while (try<numberOfTries) {
 //            Document doc = spiderUtil.getHtmlAsDocTest("http://www.whoishostingthis.com/tools/user-agent/");
 //            if (docWasRetrieved(doc)) {
 //                Elements tags = doc.select("#user-agent .user-agent, #user-agent .ip");
@@ -92,7 +92,7 @@ public class SpiderMainTest {
 //            } else {
 //                logger.error("Failed to load html for testing connection");
 //            }
-//            trie++;
+//            try++;
 //        }
 //        time = System.currentTimeMillis() - time;
 //        logger.info("Took " + time + " ms");

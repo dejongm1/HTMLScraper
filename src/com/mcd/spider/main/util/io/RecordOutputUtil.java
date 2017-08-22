@@ -66,10 +66,6 @@ public class RecordOutputUtil {
 	public String getDocName() {
 		return docName;
 	}
-//
-//	public WritableWorkbook getWorkbook() {
-//		return workbook;
-//	}
 	public State getState() {
 		return state;
 	}
@@ -77,9 +73,10 @@ public class RecordOutputUtil {
 		return record;
 	}
 
-	public void createSpreadsheet() {
+	public void createWorkbook() {
 		WritableWorkbook newWorkbook = null;
 		try {
+			//backup existing workbook first
 			createWorkbookCopy(docName,
 					docName.substring(0, docName.indexOf(EXT)) + "_" + (workbookCreateDate.get(Calendar.MONTH) + 1) + "-"
 							+ workbookCreateDate.get(Calendar.DAY_OF_MONTH) + "-"
@@ -87,7 +84,7 @@ public class RecordOutputUtil {
 			workbook = copyWorkbook;
 			handleBackup(docName, false);
 		} catch (BiffException | IOException | WriteException e) {
-			logger.error("Create spreadhseet error", e);
+			logger.error("Create workbook error", e);
 		}
 		try {
 			if (workbook == null) {
@@ -98,13 +95,13 @@ public class RecordOutputUtil {
 				workbook = newWorkbook;
 			}
 		} catch (IOException | WriteException e) {
-			logger.error("Create spreadhseet error", e);
+			logger.error("Create workbook error", e);
 		} finally {
 			if (newWorkbook != null) {
 				try {
 					newWorkbook.close();
 				} catch (IOException | WriteException e) {
-					logger.error("Create spreadhseet error", e);
+					logger.error("Create workbook error", e);
 				}
 			}
 		}

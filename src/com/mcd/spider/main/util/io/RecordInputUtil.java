@@ -84,7 +84,7 @@ public class RecordInputUtil {
                 Workbook workbook = Workbook.getWorkbook(fileToRead);
                 if (workbook!=null) {
                     for (int s=0;s<workbook.getNumberOfSheets();s++) {
-                        //when columns are deleted, "extra rows" are added to sheet
+                        //when columns are deleted, "extra rows" are sometimes added to sheet
                         listOfRecordSets.add(readRecordsFromSheet(fileToRead, s));
                     }
                 }

@@ -208,7 +208,7 @@ public class HarrisCountyDistrictClerkComEngine implements CourtRecordEngine {
         RecordIOUtil recordIOUtil = new RecordIOUtil(state, new CourtRecord(), site);
         try {
             crawledIds = recordIOUtil.getInputter().getPreviousIds();
-            recordIOUtil.getOutputter().createSpreadsheet();
+            recordIOUtil.getOutputter().createWorkbook();
         } catch (ExcelOutputException | IDCheckException e) {
             throw e;
         }

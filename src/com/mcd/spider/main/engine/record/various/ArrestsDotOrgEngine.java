@@ -233,7 +233,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         	spiderWeb.setCrawledIds(ioUtil.getInputter().getPreviousIds());
         	//load records in current spreadsheet into memory
             spiderWeb.setCrawledRecords(ioUtil.getInputter().readRecordsFromSheet(new File(ioUtil.getMainDocName()),0));
-            ioUtil.getOutputter().createSpreadsheet();
+            ioUtil.getOutputter().createWorkbook();
         } catch (ExcelOutputException | IDCheckException e) {
             throw e;
         }

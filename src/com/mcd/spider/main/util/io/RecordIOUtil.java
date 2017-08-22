@@ -82,9 +82,11 @@ public class RecordIOUtil {
 					storedRecordsTwo.remove(recordTwo);
 				} else {
 					compiledRecords.add(recordOne);
+					storedRecordsOne.remove(recordOne);
 				}
 			}
 		}
+		compiledRecords.addAll(storedRecordsOne);
 		compiledRecords.addAll(storedRecordsTwo);
 		return compiledRecords;
 	}

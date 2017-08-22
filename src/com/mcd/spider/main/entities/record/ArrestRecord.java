@@ -1,14 +1,20 @@
 package com.mcd.spider.main.entities.record;
 
+import java.lang.reflect.Field;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Comparator;
+import java.util.List;
+
+import org.apache.log4j.Logger;
+
 import com.google.common.base.CaseFormat;
+
 import jxl.write.Label;
 import jxl.write.WritableSheet;
 import jxl.write.WriteException;
-import org.apache.log4j.Logger;
-
-import java.lang.reflect.Field;
-import java.text.SimpleDateFormat;
-import java.util.*;
 
 
 public class ArrestRecord implements Record, Comparable<ArrestRecord>{
@@ -343,37 +349,112 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 		}
 	}
 
+//	private String formatNoWhitespace(String originalString) {
+//		return originalString!=null?originalString.replaceAll("\\s+", "").trim().toLowerCase():null;
+//	}
+	
+	private String formatLettersOnly(String originalString) {
+		return originalString!=null?originalString.replaceAll("[^a-zA-Z]", "").trim().toLowerCase():null;
+	}
+	
+	private String formatNumbersOnly(String originalString) {
+		return originalString!=null?originalString.replaceAll("[^^0-9]", ""):null;
+	}
+	
 	@Override
 	public boolean matches(Record recordToMatch) {
 		//ranking system, needs testing
 		//score of 6 or higher means a match
 		//one or more points for each element matched
+		
+		//for height and weight, remove special characters, letters and whitespace
+		//for charges remove special characters, whitespace and numbers
+		//can we account for people that are arrested multiple times? look for --- in ID ?
 		int score = 0;
 		ArrestRecord record = (ArrestRecord) recordToMatch;
-		if (this.getFullName()!=null && record.getFullName()!=null && this.getFullName().replace("\\w", "").equalsIgnoreCase(record.getFullName().replace("\\w", ""))
-				|| (this.getFirstName()!=null && record.getFirstName()!=null && this.getFirstName().equalsIgnoreCase(record.getFirstName())
-                    && this.getLastName()!=null && record.getLastName()!=null && this.getLastName().equalsIgnoreCase(record.getLastName()))) {
+		
+		String thisFullName = formatLettersOnly(this.fullName);
+		String matchingFullName = formatLettersOnly(record.getFullName());
+
+		String thisFirstName = formatLettersOnly(this.firstName);
+		String matchingFirstName = formatLettersOnly(record.getFirstName());
+
+		String thisMiddleName = formatLettersOnly(this.middleName);
+		String matchingMiddleName = formatLettersOnly(record.getMiddleName());
+
+		String thisLastName = formatLettersOnly(this.lastName);
+		String matchingLastName = formatLettersOnly(record.getLastName());
+
+		String thisCounty = formatLettersOnly(this.county);
+		String matchingCounty = formatLettersOnly(record.getCounty());
+
+		String thisEyeColor = formatLettersOnly(this.eyeColor);
+		String matchingEyeColor = formatLettersOnly(record.getEyeColor());
+
+		String thisHairColor = formatLettersOnly(this.hairColor);
+		String matchingHairColor = formatLettersOnly(record.getHairColor());
+
+		String thisGender = formatLettersOnly(this.gender);
+		String matchingGender = formatLettersOnly(record.getGender());
+
+		String thisHeight = formatNumbersOnly(this.height);
+		String matchingHeight = formatNumbersOnly(record.getHeight());
+
+		String thisWeight = formatNumbersOnly(this.weight);
+		String matchingWeight = formatNumbersOnly(record.getWeight());
+
+//		int thisArrestAge = this.arrestAge;
+//		int matchingArrestAge = record.getArrestAge();
+//
+//		Calendar thisArrestDate = this.arrestDate;
+//		Calendar matchingArrestDate = record.getArrestDate();
+
+		String[] thisCharges = new String[this.charges.length];
+		String[] matchingCharges = new String[record.getCharges().length];
+		for (int c=0;c<thisCharges.length;c++) {
+			thisCharges[c] = formatLettersOnly(this.charges[c]);
+		}
+		for (int c=0;c<matchingCharges.length;c++) {
+			matchingCharges[c] = formatLettersOnly(record.getCharges()[c]);
+		}
+		
+		if (thisFullName!=null && matchingFullName!=null && thisFullName.equals(matchingFullName)
+				|| (thisFirstName!=null && matchingFirstName!=null && thisFirstName.equals(matchingFirstName)
+                    && thisLastName!=null && matchingLastName!=null && thisLastName.equals(matchingLastName))) {
 			score+=5;
 		}
-		if (this.getMiddleName()!=null && record.getMiddleName()!=null && this.getMiddleName().equalsIgnoreCase(record.getMiddleName())) {
-			score+=1;
+		if (thisMiddleName!=null && matchingMiddleName!=null && thisMiddleName.equals(matchingMiddleName)) {
+			score++;
 		}
-		if (this.getCounty()!=null && record.getCounty()!=null && this.getCounty().equalsIgnoreCase(record.getCounty())) {
-			score+=1;
+		if (thisCounty!=null && matchingCounty!=null && thisCounty.equals(matchingCounty)) {
+			score++;
 		}
-		if (this.getEyeColor()!=null && record.getEyeColor()!=null && this.getEyeColor().equalsIgnoreCase(record.getEyeColor())
-                && this.getHairColor()!=null && record.getHairColor()!=null && this.getHairColor().equalsIgnoreCase(record.getHairColor())) {
-			score+=1;
+		if (thisEyeColor!=null && matchingEyeColor!=null && thisEyeColor.equals(matchingEyeColor)
+                && thisHairColor!=null && matchingHairColor!=null && thisHairColor.equals(matchingHairColor)) {
+			score++;
 		}
-		if (this.getGender()!=null && record.getGender()!=null && this.getGender().equalsIgnoreCase(record.getGender())) {
-			score+=1;
+		if (thisGender!=null && matchingGender!=null && thisGender.equals(matchingGender)) {
+			score++;
+		}
+		if (thisHeight!=null && matchingHeight!=null && thisHeight.equals(matchingHeight)) {
+			score++;
+		}
+		if (thisWeight!=null && matchingWeight!=null && thisWeight.equals(matchingWeight)) {
+			score++;
 		}
 		if (this.getArrestDate()!=null && record.getArrestDate()!=null && this.getArrestDate().equals(record.getArrestDate())) {
-			score+=1;
+			score++;
 		}
 		if (this.getArrestAge()!=0 && record.getArrestAge()!=0 && this.getArrestAge()==(record.getArrestAge())) {
-			score+=1;
+			score++;
 		}
-		return score >= 6;
+		for (String thisCharge : thisCharges) {
+			for (String matchingCharge : matchingCharges) {
+				if (thisCharge.contains(matchingCharge) || matchingCharge.contains(thisCharge)) {
+					score++;
+				}
+			}
+		}
+		return score >= 8;
 	}
 }
