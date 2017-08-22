@@ -7,6 +7,7 @@ import java.util.Set;
 
 public class SpiderWeb {
 	
+	private int attemptCount;
     private Set<String> crawledIds;
     private Set<Record> crawledRecords;
     private Map<String,String> sessionCookies;
@@ -19,12 +20,21 @@ public class SpiderWeb {
     private boolean retrieveMissedRecords;
     
     public SpiderWeb(long maxNumberOfResults, boolean addMisc, boolean retrieveMissedRecords) {
+    	attemptCount = 1;
     	this.maxNumberOfResults = maxNumberOfResults;
 	    offline = System.getProperty("offline").equals("true");
 	    furthestPageToCheck = 9999;
 	    this.addMisc = addMisc;
 	    this.retrieveMissedRecords = retrieveMissedRecords;
     }
+ 
+	public int getAttemptCount() {
+		return attemptCount;
+	}
+
+	public void increaseAttemptCount() {
+		attemptCount++;
+	}
 
 	public Set<String> getCrawledIds() {
 		return crawledIds;

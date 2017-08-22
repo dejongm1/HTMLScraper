@@ -54,7 +54,7 @@ public class RecordOutputUtil {
 	public RecordOutputUtil(RecordIOUtil ioUtil, State state, Site site) {
 		Calendar date = Calendar.getInstance();
 		this.workbookCreateDate = date;
-		this.docName = ioUtil.getDocName();
+		this.docName = ioUtil.getMainDocName();
 		this.state = state;
 		this.record = ioUtil.getRecord();
 		this.site = site;

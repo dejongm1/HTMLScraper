@@ -20,7 +20,7 @@ public class ArrestsDotOrgSite implements SiteHTML {
 	private int totalRecordCount;
 	private static final int[] perRecordSleepRange = new int[]{5000,15000};
 	private Map<String,Document> resultsPageDocuments;
-	private int maxAttempts = 3;
+	private int maxAttempts = 5;
 	private int resultsPerPage = 56;
 
 	public ArrestsDotOrgSite (String[] args) {

@@ -56,7 +56,7 @@ public class StateRouter implements EngineRouter {
 		}
 		for (Thread thread : threads) {
 			try {
-				thread.join(10000);
+				thread.join();
 			} catch (InterruptedException e) {
 				logger.error("Error starting or joining thread", e);
 			}

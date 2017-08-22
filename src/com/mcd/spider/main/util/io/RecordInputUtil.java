@@ -33,7 +33,7 @@ public class RecordInputUtil {
 	private RecordIOUtil ioUtil;
 
 	public RecordInputUtil(RecordIOUtil ioUtil) {
-		this.docName = ioUtil.getDocName();
+		this.docName = ioUtil.getMainDocName();
 		this.record = ioUtil.getRecord();
         this.offline = System.getProperty("offline").equals("true");
         this.idFile = ioUtil.getIdFile();

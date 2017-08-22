@@ -20,7 +20,7 @@ public interface ArrestRecordEngine {
 
 	Site getSite();
 	void getArrestRecords(State state, long maxNumberOfResults, RecordFilter.RecordFilterEnum filter, boolean retrieveMissedRecords) throws SpiderException;
-	void scrapeSite(int attemptCount);
+	void scrapeSite();
 	Map<String,String> parseDocForUrls(Object objectToParse);
 	void scrapeRecords(Map<Object, String> recordsDetailsUrlMap);
 	ArrestRecord populateArrestRecord(Object profileDetailObj);
@@ -31,7 +31,7 @@ public interface ArrestRecordEngine {
 	RecordIOUtil initializeIOUtil(State state) throws SpiderException;
 	List<Record> filterRecords(List<Record> fullArrestRecords);
 	Object initiateConnection(String arg) throws IOException;
-	void formatOutput(List<Record> arrestRecords, RecordOutputUtil recordOutputUtil);
+	void formatOutput(List<Record> arrestRecords);
 	void setCookies(Response response);
 	
 }

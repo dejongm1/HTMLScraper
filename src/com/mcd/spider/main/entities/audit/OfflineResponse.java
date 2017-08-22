@@ -31,6 +31,7 @@ public class OfflineResponse implements Response {
         this.cookies.put("PHPSESSID", getRandomString());
         this.cookies.put("views_session", "1");
         this.cookies.put("views_24", "1");
+        this.cookies.put("__cfduid", getRandomString());
         this.contentType = determineContentType();
     }
     
@@ -40,9 +41,9 @@ public class OfflineResponse implements Response {
         this.headers.put(null, "HTTP/1.1 "+statusCode+" OK");
         this.cookies.put("__uzmc", "1150230450250");
         this.cookies.put("__uzmd", String.valueOf(Calendar.getInstance().getTimeInMillis()));
-        this.cookies.put("PHPSESSID", getRandomString());
+        this.cookies.put("PHPSESSID", cookies.get("PHPSESSID"));
         this.cookies.put("views_session", String.valueOf(Integer.valueOf(cookies.get("views_session"))+1));
-        this.cookies.put("__cfduid", getRandomString());
+        this.cookies.put("__cfduid", cookies.get("__cfduid"));
         this.contentType = determineContentType();
     }
 

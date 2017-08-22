@@ -71,9 +71,9 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
 
 	        int sleepTimeAverage = spiderWeb.isOffline()?0:(site.getPerRecordSleepRange()[0]+site.getPerRecordSleepRange()[1])/2;
 
-	        scrapeSite(1);
+	        scrapeSite();
 
-            formatOutput(new ArrayList<>(recordIOUtil.getInputter().readRecordsFromDefaultWorkbook().get(0)), recordIOUtil.getOutputter());
+            formatOutput(new ArrayList<>(recordIOUtil.getInputter().readRecordsFromDefaultWorkbook().get(0)));
 
 	        //outputUtil.removeColumnsFromSpreadsheet(new int[]{ArrestRecord.RecordColumnEnum.ID_COLUMN.index()});
 
@@ -90,7 +90,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     }
 
     @Override
-    public void scrapeSite(int attemptCount) {
+    public void scrapeSite() {
     	int maxAttempts = site.getMaxAttempts();
         for (String county : site.getCounties()) {
             site.setBaseUrl(new String[]{county});
@@ -100,7 +100,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
             } catch (java.io.IOException e) {
                 logger.error("IOException caught sending http request to " + site.getUrl(), e);
             }
-            if (attemptCount<=maxAttempts) {
+            if (spiderWeb.getAttemptCount()<=maxAttempts) {
                 logger.info("Retrieving details page urls");
                 //build a list of details page urls by parsing results page docs
                 Map<Object,String> recordDetailUrlMap = compileRecordDetailUrlMap(response);
@@ -110,9 +110,9 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
                 spiderUtil.sleep(spiderWeb.isOffline()?0:ConnectionUtil.getSleepTime(site)*2, true);
                 scrapeRecords(recordDetailUrlMap);
             } else {
-            	 logger.error("Failed to load html doc from " + site.getBaseUrl()+ ". Trying again " + (maxAttempts-attemptCount) + " more times");
-                 attemptCount++;
-                 scrapeSite(attemptCount);
+            	 logger.error("Failed to load html doc from " + site.getBaseUrl()+ ". Trying again " + (maxAttempts-spiderWeb.getAttemptCount()) + " more times");
+            	 spiderWeb.increaseAttemptCount();
+                 scrapeSite();
              }
         }
     }
@@ -199,7 +199,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
             //load previously written records IDs into memory
         	spiderWeb.setCrawledIds(ioUtil.getInputter().getPreviousIds());
             //load records in current spreadsheet into memory
-        	spiderWeb.setCrawledRecords(ioUtil.getInputter().readRecordsFromSheet(new File(ioUtil.getDocName()),0));
+        	spiderWeb.setCrawledRecords(ioUtil.getInputter().readRecordsFromSheet(new File(ioUtil.getMainDocName()),0));
             ioUtil.getOutputter().createSpreadsheet();
         } catch (ExcelOutputException | IDCheckException e) {
             throw e;
@@ -247,7 +247,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     }
     
     @Override
-    public void formatOutput(List<Record> arrestRecords, RecordOutputUtil recordOutputUtil) {
+    public void formatOutput(List<Record> arrestRecords) {
     	//format the output
         logger.info("Starting to output the results");
         Collections.sort(arrestRecords, ArrestRecord.CountyComparator);
@@ -261,8 +261,8 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
                 //create a separate sheet with filtered results
                 logger.info(filteredRecords.size()+" "+filter.filterName()+" "+"records were crawled");
                 if (!filteredRecords.isEmpty()) {
-                    recordOutputUtil.createFilteredSpreadsheet(filter, filteredRecords);
-                    recordOutputUtil.splitIntoSheets(recordOutputUtil.getFilteredDocName(filter), delimiter, splitRecords, clazz);
+                    recordIOUtil.getOutputter().createFilteredSpreadsheet(filter, filteredRecords);
+                    recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getOutputter().getFilteredDocName(filter), delimiter, splitRecords, clazz);
                 }
             } catch (Exception e) {
                 logger.error("Error trying to create filtered spreadsheet", e);
@@ -270,7 +270,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
         }
         try {
             List<List<Record>> splitRecords = Record.splitByField(arrestRecords, delimiter, clazz);
-            recordOutputUtil.splitIntoSheets(recordOutputUtil.getDocName(), delimiter, splitRecords, clazz);
+            recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getMainDocName(), delimiter, splitRecords, clazz);
         } catch (Exception e) {
             logger.error("Error trying to split full list of records", e);
         }

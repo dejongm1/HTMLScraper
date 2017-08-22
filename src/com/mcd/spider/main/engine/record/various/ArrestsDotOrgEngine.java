@@ -70,7 +70,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         
         int sleepTimeAverage = spiderWeb.isOffline()?0:(site.getPerRecordSleepRange()[0]+site.getPerRecordSleepRange()[1])/2000;
         
-        scrapeSite(1);
+        scrapeSite();
 
         //outputUtil.removeColumnsFromSpreadsheet(new int[]{ArrestRecord.RecordColumnEnum.ID_COLUMN.index()});
 
@@ -87,44 +87,53 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     }
 
     @Override
-    public void scrapeSite(int attemptCount) {
+    public void scrapeSite() {
     	int maxAttempts = site.getMaxAttempts();
         String firstPageResultsUrl = site.generateResultsPageUrl(1);
         Document mainPageDoc = null;
-        try {
-        	mainPageDoc = (Document) initiateConnection(firstPageResultsUrl);
-        } catch (IOException e) {
-            logger.error("Couldn't make initial connection to site. Trying again " + (maxAttempts-attemptCount) + " more times", e);
-            //if it's a 500, we're probably blocked. Try a new user-agent TODO and IP if possible, else bail
-            if (e instanceof HttpStatusException && ((HttpStatusException) e).getStatusCode()==500) {
-            	connectionUtil = new ConnectionUtil(true);
-            }
-            attemptCount++;
-            scrapeSite(attemptCount);
-        }
-        if (spiderUtil.docWasRetrieved(mainPageDoc) && attemptCount<=maxAttempts) {
-        	spiderWeb.setNumberOfPages(getNumberOfResultsPages(mainPageDoc));
-
-            logger.info("Generating list of results pages for : " + site.getName() + " - " + state.getName());
-        	Map<Object, String> resultsUrlPlusMiscMap = compileResultsUrlMap(mainPageDoc);
-
-            logger.info("Retrieving results page docs");
-            Map<Integer,Document> resultsDocPlusMiscMap = compileResultsDocMap(resultsUrlPlusMiscMap);
-
-            logger.info("Retrieving details page urls");
-            //build a list of details page urls by parsing results page docs
-            Map<Object,String> recordDetailUrlMap = compileRecordDetailUrlMap(mainPageDoc, resultsDocPlusMiscMap);
-
-            logger.info("Gathered links for " + recordDetailUrlMap.size() + " record profiles and misc pages");
-
-            spiderUtil.sleep(spiderWeb.isOffline()?0:ConnectionUtil.getSleepTime(site)*2, true);
-            //****iterate over collection, scraping records and simply opening others
-            scrapeRecords(recordDetailUrlMap);
-
+        if (spiderWeb.getAttemptCount()<=maxAttempts) {
+	        try {
+	        	mainPageDoc = (Document) initiateConnection(firstPageResultsUrl);
+	        } catch (IOException e) {
+	            logger.error("Couldn't make initial connection to site. Trying again " + (maxAttempts-spiderWeb.getAttemptCount()) + " more times", e);
+	            //if it's a 500, we're probably blocked. Try a new user-agent TODO and IP if possible, else bail
+	            if (e instanceof HttpStatusException && ((HttpStatusException) e).getStatusCode()==500) {
+	            	connectionUtil = new ConnectionUtil(true);
+	            }
+	            spiderWeb.increaseAttemptCount();
+	            scrapeSite();
+	        }
+	        if (spiderUtil.docWasRetrieved(mainPageDoc)) {
+	        	spiderWeb.setNumberOfPages(getNumberOfResultsPages(mainPageDoc));
+	
+	            logger.info("Generating list of results pages for : " + site.getName() + " - " + state.getName());
+	        	Map<Object, String> resultsUrlPlusMiscMap = compileResultsUrlMap(mainPageDoc);
+	
+	            logger.info("Retrieving results page docs");
+	            Map<Integer,Document> resultsDocPlusMiscMap = compileResultsDocMap(resultsUrlPlusMiscMap);
+	
+	            if (resultsDocPlusMiscMap.isEmpty()) {
+		            logger.info("No results doc pages were gathered. Quitting");
+		            return;
+	            }
+	            
+	            logger.info("Retrieving details page urls");
+	            //build a list of details page urls by parsing results page docs
+	            Map<Object,String> recordDetailUrlMap = compileRecordDetailUrlMap(mainPageDoc, resultsDocPlusMiscMap);
+	
+	            logger.info("Gathered links for " + recordDetailUrlMap.size() + " record profiles and misc pages");
+	
+	            spiderUtil.sleep(spiderWeb.isOffline()?0:ConnectionUtil.getSleepTime(site)*2, true);
+	            //****iterate over collection, scraping records and simply opening others
+	            scrapeRecords(recordDetailUrlMap);
+	
+	        } else {
+	            logger.error("Failed to load html doc from " + site.getBaseUrl()+ ". Trying again " + (maxAttempts-spiderWeb.getAttemptCount()) + " more times");
+	            spiderWeb.increaseAttemptCount();
+	            scrapeSite();
+	        }
         } else {
-            logger.error("Failed to load html doc from " + site.getBaseUrl()+ ". Trying again " + (maxAttempts-attemptCount) + " more times");
-            attemptCount++;
-            scrapeSite(attemptCount);
+        	logger.error("Too many attempts accessing " + site.getBaseUrl()+ ". Quitting.");
         }
     }
 
@@ -146,7 +155,6 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 	@Override
     public void scrapeRecords(Map<Object,String> recordsDetailsUrlMap) {
     	RecordOutputUtil recordOutputUtil = recordIOUtil.getOutputter();
-    	int failedAttempts = 0;
         List<Record> arrestRecords = new ArrayList<>();
         arrestRecords.addAll(spiderWeb.getCrawledRecords());
         ArrestRecord arrestRecord;
@@ -162,13 +170,14 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 	        	} catch (FileNotFoundException fnfe) {
 	            	logger.error("No html doc found for " + url);
 	            } catch (IOException e) {
-	            	failedAttempts++;
+	            	spiderWeb.increaseAttemptCount();
 	        		logger.error("Failed to get a connection to " + recordsDetailsUrlMap.get(k), e);
-	            	if (failedAttempts>=site.getMaxAttempts()) {
+	            	if (spiderWeb.getAttemptCount()>=site.getMaxAttempts()) {
 	            		//save remaining records to file and exit
 	            		//TODO or retry with new connection/IP?
-	            		logger.info("Hit the limit of failed connections. Saving list of unprocessed records and quitting");
+	            		logger.error("Hit the limit of failed connections. Saving list of unprocessed records, formatting the current output and quitting");
 	            		recordOutputUtil.backupUnCrawledRecords(recordsDetailsUrlMap);
+	            		formatOutput(arrestRecords);
 	            		return;
 	            	}
 	            }
@@ -201,7 +210,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 	            previousKey = String.valueOf(k);
         	}
         }
-        formatOutput(arrestRecords, recordOutputUtil);
+        formatOutput(arrestRecords);
     }
 
     @Override
@@ -223,7 +232,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             //load previously written records IDs into memory
         	spiderWeb.setCrawledIds(ioUtil.getInputter().getPreviousIds());
         	//load records in current spreadsheet into memory
-            spiderWeb.setCrawledRecords(ioUtil.getInputter().readRecordsFromSheet(new File(ioUtil.getDocName()),0));
+            spiderWeb.setCrawledRecords(ioUtil.getInputter().readRecordsFromSheet(new File(ioUtil.getMainDocName()),0));
             ioUtil.getOutputter().createSpreadsheet();
         } catch (ExcelOutputException | IDCheckException e) {
             throw e;
@@ -268,48 +277,57 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     }
     
     public Map<Integer,Document> compileResultsDocMap(Map<Object,String> resultsUrlPlusMiscMap) {
-        //shuffle urls before retrieving docs
-        Map<Integer,Document> resultsDocPlusMiscMap = new HashMap<>();
-        List<Object> keys = new ArrayList<>(resultsUrlPlusMiscMap.keySet());
-        Collections.shuffle(keys);
-        Integer previousKey = (Integer)keys.get(keys.size()-1);
-        for (Object k : keys) {
-            int page = (Integer) k;
-            if (page<=spiderWeb.getFurthestPageToCheck()) {
-                Document docToCheck = null;
-                String url = resultsUrlPlusMiscMap.get(k);
-                try {
-                    //can we guarantee previous is a page that has access to the current?
-                    //TODO also set headers?
-                    Connection.Response response = connectionUtil.retrieveConnectionResponse(url, resultsUrlPlusMiscMap.get(previousKey), spiderWeb.getSessionCookies());
-                    docToCheck = response.parse();
-                    setCookies(response);
-                } catch (FileNotFoundException fnfe) {
-                    logger.error("No html doc found for " + url);
-                } catch (IOException e) {
-                    logger.error("Failed to get a connection to " + url, e);
-                }
-                //if docToCheck contains a crawledId, remember page number and don't add subsequent pages
-                //unless trying to retrieve missed records
-                if (spiderWeb.getFurthestPageToCheck()==9999 && !spiderWeb.retrieveMissedRecords()) {
-                    for (String crawledId : spiderWeb.getCrawledIds()) {
-                        if (docToCheck!=null && site.isAResultsDoc(docToCheck) && docToCheck.html().contains(crawledId)) {
-                            //set as current page number
-                        	spiderWeb.setFurthestPageToCheck(page);
-                        }
-                    }
-                }
-                if (docToCheck!=null) {
-                    resultsDocPlusMiscMap.put((Integer)k, docToCheck);
-                }
-                int sleepTime = ConnectionUtil.getSleepTime(site);
-                logger.debug("Sleeping for " + sleepTime + " after fetching " + resultsUrlPlusMiscMap.get(k));
-                spiderUtil.sleep(sleepTime, false);
+    	//shuffle urls before retrieving docs
+    	Map<Integer,Document> resultsDocPlusMiscMap = new HashMap<>();
+    	List<Object> keys = new ArrayList<>(resultsUrlPlusMiscMap.keySet());
+    	Collections.shuffle(keys);
+    	Integer previousKey = (Integer)keys.get(keys.size()-1);
+    	for (Object k : keys) {
+    		if (spiderWeb.getAttemptCount()<site.getMaxAttempts()) {
+    			int page = (Integer) k;
+    			if (page<=spiderWeb.getFurthestPageToCheck()) {
+    				Document docToCheck = null;
+    				String url = resultsUrlPlusMiscMap.get(k);
+    				try {
+    					//can we guarantee previous is a page that has access to the current?
+    					//TODO also set headers?
+    					Connection.Response response = connectionUtil.retrieveConnectionResponse(url, resultsUrlPlusMiscMap.get(previousKey), spiderWeb.getSessionCookies());
+    					docToCheck = response.parse();
+    					setCookies(response);
+    				} catch (FileNotFoundException fnfe) {
+    					spiderWeb.increaseAttemptCount();
+    					logger.error("No html doc found for " + url);
+    				} catch (IOException e) {
+    					spiderWeb.increaseAttemptCount();
+    					logger.error("Failed to get a connection to " + url, e);
+    				}
+    				//if docToCheck contains a crawledId, remember page number and don't add subsequent pages
+    				//unless trying to retrieve missed records
+    				if (spiderWeb.getFurthestPageToCheck()==9999 && !spiderWeb.retrieveMissedRecords()) {
+    					for (String crawledId : spiderWeb.getCrawledIds()) {
+    						if (docToCheck!=null && site.isAResultsDoc(docToCheck) && docToCheck.html().contains(crawledId)) {
+    							//set as current page number
+    							spiderWeb.setFurthestPageToCheck(page);
+    						}
+    					}
+    				}
+    				if (docToCheck!=null) {
+    					resultsDocPlusMiscMap.put((Integer)k, docToCheck);
+    				}
+    				int sleepTime = ConnectionUtil.getSleepTime(site);
+    				logger.debug("Sleeping for " + sleepTime + " after fetching " + resultsUrlPlusMiscMap.get(k));
+    				spiderUtil.sleep(sleepTime, false);
 
-                previousKey = page;
-            }
-        }
-        return resultsDocPlusMiscMap;
+    				previousKey = page;
+    			}
+
+    		} else {
+    			logger.error("Hit the limit of failed connections trying to compile results doc map");
+    			return new HashMap<>();
+    		}	
+
+    	}
+    	return resultsDocPlusMiscMap;
     }
 
     public Map<Object,String> compileRecordDetailUrlMap(Document mainPageDoc, Map<Integer,Document> resultsDocPlusMiscMap) {
@@ -343,7 +361,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     }
     
     @Override
-    public void formatOutput(List<Record> arrestRecords, RecordOutputUtil recordOutputUtil) {
+    public void formatOutput(List<Record> arrestRecords) {
         //format the output
         logger.info("Starting to output the results");
         Collections.sort(arrestRecords, ArrestRecord.CountyComparator);
@@ -357,8 +375,8 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
                 //create a separate sheet with filtered results
                 logger.info(filteredRecords.size()+" "+filter.filterName()+" "+"records were crawled");
                 if (!filteredRecords.isEmpty()) {
-                    recordOutputUtil.createFilteredSpreadsheet(filter, filteredRecords);
-                    recordOutputUtil.splitIntoSheets(recordOutputUtil.getFilteredDocName(filter), delimiter, splitRecords, clazz);
+                    recordIOUtil.getOutputter().createFilteredSpreadsheet(filter, filteredRecords);
+                    recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getOutputter().getFilteredDocName(filter), delimiter, splitRecords, clazz);
                 }
             } catch (Exception e) {
                 logger.error("Error trying to create filtered spreadsheet", e);
@@ -366,7 +384,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         }
         try {
             List<List<Record>> splitRecords = Record.splitByField(arrestRecords, delimiter, clazz);
-            recordOutputUtil.splitIntoSheets(recordOutputUtil.getDocName(), delimiter, splitRecords, clazz);
+            recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getMainDocName(), delimiter, splitRecords, clazz);
         } catch (Exception e) {
             logger.error("Error trying to split full list of records", e);
         }

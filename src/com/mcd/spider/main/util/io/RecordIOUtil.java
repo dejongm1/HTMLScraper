@@ -21,7 +21,7 @@ public class RecordIOUtil {
     private static final String OUTPUT_DIR = "output/";
     private static final String TRACKING_DIR = "tracking/";
 	
-	private String docName;
+	private String mainDocName;
 	private RecordInputUtil inputter;
 	private RecordOutputUtil outputter;
 	private File idFile;
@@ -29,18 +29,18 @@ public class RecordIOUtil {
 	
 	public RecordIOUtil(State state, Record record, Site site) {
         this.idFile = new File(OUTPUT_DIR + TRACKING_DIR + site.getName() + "_Archive.txt");
-		this.docName = OUTPUT_DIR + state.getName() + "_" + record.getClass().getSimpleName() + "_" + site.getName() + EXT;
+		this.mainDocName = OUTPUT_DIR + state.getName() + "_" + record.getClass().getSimpleName() + "_" + site.getName() + EXT;
 		this.record = record;
 		this.outputter = new RecordOutputUtil(this, state, site);
 		this.inputter = new RecordInputUtil(this);
 	}
 
-	public String getDocName() {
-		return docName;
+	public String getMainDocName() {
+		return mainDocName;
 	}
 
-	public void setDocName(String docName) {
-		this.docName = docName;
+	public void setMainDocName(String mainDocName) {
+		this.mainDocName = mainDocName;
 	}
 
 	public File getIdFile() {
