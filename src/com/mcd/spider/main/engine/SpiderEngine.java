@@ -58,6 +58,8 @@ public class SpiderEngine {
 				router.collectRecordsUsingThreading(maxNumberOfResults, filter, retrieveMissedRecords);
 				RecordIOUtil mainIOutil = new RecordIOUtil(state, new ArrestRecord(), state.getEngines().get(0).getSite());
 				for (int e=1;e<state.getEngines().size();e++) {
+				    //TODO this will likely overwrite _MERGED if more than 2 engine per site
+				    logger.info("Attempting to merge record output from " + state);
 					RecordIOUtil comparingIOUtil = new RecordIOUtil(state, new ArrestRecord(), state.getEngines().get(e).getSite());
 					Set<Record> mergedRecords = mainIOutil.mergeRecordsFromSheet(new File(mainIOutil.getDocName()), new File(comparingIOUtil.getDocName()), 0);
                     mainIOutil.getOutputter().createMergedSpreadsheet(new ArrayList<>(mergedRecords));
