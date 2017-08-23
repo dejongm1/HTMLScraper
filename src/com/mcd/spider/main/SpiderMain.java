@@ -79,10 +79,10 @@ public class SpiderMain {
             		args[0] = ""; //remove first scrapeTypechoice and continue
             	}
 				getSEOAudit(String.join(" ", args));
-            } else if (scrapeTypeChoice.toLowerCase().contains("nemesis")
-					|| scrapeTypeChoice.toLowerCase().contains("enemy")
+            } else if (scrapeTypeChoice.toLowerCase().contains("backdoor")
+					|| scrapeTypeChoice.toLowerCase().contains("debug")
 					|| scrapeTypeChoice.equals("99")) {
-				crackArrestSite(args);
+				backdoor(args);
 			} else if (scrapeTypeChoice.toLowerCase().contains("thread")) {
 				threading(args);
 			} else if (mainInputUtil.quitting(scrapeTypeChoice)) {
@@ -133,17 +133,19 @@ public class SpiderMain {
 	@SuppressWarnings("unchecked")
 	private static void getArrestRecords(String[] args) throws IOException, SpiderException {
 		List<State> states = args.length>=2?mainInputUtil.convertToStates(args[1]):(List<State>) mainInputUtil.getInput("State(s) or \"All\": ", 3, SpiderConstants.STATE_VALIDATION);
-		RecordFilterEnum filter = args.length>=3?mainInputUtil.convertToFilter(args[2]):null;
-		long maxNumberOfResults = args.length>=4?mainInputUtil.convertToNumber(args[3]):999999;
-		engine.getArrestRecordsByState(states, maxNumberOfResults, filter, false);
+        RecordFilterEnum filter = args.length>=3?mainInputUtil.convertToFilter(args[2]):(RecordFilterEnum) mainInputUtil.getInput("Filter: ", 3, SpiderConstants.FILTER_VALIDATION);
+        long maxNumberOfResults = args.length>=4?mainInputUtil.convertToNumber(args[3]):(int) mainInputUtil.getInput("Maximum Number of Records: ", 3, SpiderConstants.NUMBER_VALIDATION);
+        boolean retrieveMissedRecords = args.length>=4?mainInputUtil.convertToBoolean(args[3]):(boolean) mainInputUtil.getInput("Retrieve Missed Records: ", 3, SpiderConstants.BOOLEAN_VALIDATION);
+        engine.getArrestRecordsByState(states, maxNumberOfResults, filter, retrieveMissedRecords);
 	}
 
 	@SuppressWarnings("unchecked")
-	private static void crackArrestSite(String[] args) throws IOException, SpiderException {
+	private static void backdoor(String[] args) throws IOException, SpiderException {
 		List<State> states = args.length>=2?mainInputUtil.convertToStates(args[1]):(List<State>) mainInputUtil.getInput("State(s) or \"All\": ", 3, SpiderConstants.STATE_VALIDATION);
-		RecordFilterEnum filter = args.length>=3?mainInputUtil.convertToFilter(args[2]):null;
-		long maxNumberOfResults = args.length>=4?mainInputUtil.convertToNumber(args[3]):5;
-		engine.getArrestRecordsByStateCrack(states, maxNumberOfResults, filter, false);
+		RecordFilterEnum filter = args.length>=3?mainInputUtil.convertToFilter(args[2]):(RecordFilterEnum) mainInputUtil.getInput("Filter: ", 3, SpiderConstants.FILTER_VALIDATION);
+		long maxNumberOfResults = args.length>=4?mainInputUtil.convertToNumber(args[3]):(int) mainInputUtil.getInput("Maximum Number of Records: ", 3, SpiderConstants.NUMBER_VALIDATION);
+        boolean retrieveMissedRecords = args.length>=4?mainInputUtil.convertToBoolean(args[3]):(boolean) mainInputUtil.getInput("Retrieve Missed Records: ", 3, SpiderConstants.BOOLEAN_VALIDATION);
+        engine.getArrestRecordsThroughTheBackDoor(states, maxNumberOfResults, filter, retrieveMissedRecords);
 	}
 
 	@SuppressWarnings("unchecked")

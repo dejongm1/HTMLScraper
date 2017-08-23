@@ -103,31 +103,39 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 	            spiderWeb.increaseAttemptCount();
 	            scrapeSite();
 	        }
-	        if (spiderUtil.docWasRetrieved(mainPageDoc)) {
-	        	spiderWeb.setNumberOfPages(getNumberOfResultsPages(mainPageDoc));
-	
-	            logger.info("Generating list of results pages for : " + site.getName() + " - " + state.getName());
-	        	Map<Object, String> resultsUrlPlusMiscMap = compileResultsUrlMap(mainPageDoc);
-	
-	            logger.info("Retrieving results page docs");
-	            Map<Integer,Document> resultsDocPlusMiscMap = compileResultsDocMap(resultsUrlPlusMiscMap);
-	
-	            if (resultsDocPlusMiscMap.isEmpty()) {
-		            logger.info("No results doc pages were gathered. Quitting");
-		            return;
-	            }
-	            
-	            logger.info("Retrieving details page urls");
-	            //build a list of details page urls by parsing results page docs
-	            Map<Object,String> recordDetailUrlMap = compileRecordDetailUrlMap(mainPageDoc, resultsDocPlusMiscMap);
-	
-	            logger.info("Gathered links for " + recordDetailUrlMap.size() + " record profiles and misc pages");
-	
-	            spiderUtil.sleep(spiderWeb.isOffline()?0:ConnectionUtil.getSleepTime(site)*2, true);
-	            //****iterate over collection, scraping records and simply opening others
-	            scrapeRecords(recordDetailUrlMap);
-	
-	        } else {
+            if (spiderUtil.docWasRetrieved(mainPageDoc)) {
+                Map<Object, String> recordDetailUrlMap;
+                if  (spiderWeb.retrieveMissedRecords() && !spiderWeb.getUncrawledIds().isEmpty()) {
+                    //create map from uncrawled records
+                    logger.info("Generating details page urls from backup file");
+
+                    //build a list of details page urls by reading in uncrawled ids file
+                    recordDetailUrlMap = compileRecordDetailUrlMap(mainPageDoc, spiderWeb.getUncrawledIds());
+                    logger.info("Gathered links for "+recordDetailUrlMap.size()+" record profiles and misc pages");
+
+                } else {
+                    spiderWeb.setNumberOfPages(getNumberOfResultsPages(mainPageDoc));
+
+                    logger.info("Generating list of results pages for : "+site.getName()+" - "+state.getName());
+                    Map<Object, String> resultsUrlPlusMiscMap = compileResultsUrlMap(mainPageDoc);
+
+                    logger.info("Retrieving results page docs");
+                    Map<Integer, Document> resultsDocPlusMiscMap = compileResultsDocMap(resultsUrlPlusMiscMap);
+
+                    if (resultsDocPlusMiscMap.isEmpty()) {
+                        logger.info("No results doc pages were gathered. Quitting");
+                        return;
+                    }
+
+                    logger.info("Retrieving details page urls");
+                    //build a list of details page urls by parsing results page docs
+                    recordDetailUrlMap = compileRecordDetailUrlMap(mainPageDoc, resultsDocPlusMiscMap);
+                    logger.info("Gathered links for "+recordDetailUrlMap.size()+" record profiles and misc pages");
+                }
+                spiderUtil.sleep(spiderWeb.isOffline()?0:ConnectionUtil.getSleepTime(site)*2, true);
+                //****iterate over collection, scraping records and simply opening others
+                scrapeRecords(recordDetailUrlMap);
+            } else {
 	            logger.error("Failed to load html doc from " + site.getBaseUrl()+ ". Trying again " + (maxAttempts-spiderWeb.getAttemptCount()) + " more times");
 	            spiderWeb.increaseAttemptCount();
 	            scrapeSite();
@@ -197,17 +205,25 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 	            			spiderUtil.sleep(ConnectionUtil.getSleepTime(site), true);//sleep at random interval
 	            		} catch (Exception e) {
 	            			logger.error("Generic exception caught while trying to grab arrest record for " + profileDetailDoc.baseUri(), e);
+                            spiderUtil.sleep(ConnectionUtil.getSleepTime(site)/2, false);
+                            logger.info("Sleeping for half time because no record was crawled");
 	            		}
 
 	            	} else {
 	            		logger.debug("This doc doesn't have any record details: " + profileDetailDoc.baseUri());
+                        spiderUtil.sleep(ConnectionUtil.getSleepTime(site)/2, false);
+                        logger.info("Sleeping for half time because no record was crawled");
 	            	}
 	            } else {
 	            	logger.error("Failed to load html doc from " + url);
+                    spiderUtil.sleep(ConnectionUtil.getSleepTime(site)/2, false);
+                    logger.info("Sleeping for half time because no record was crawled");
 	            }
-	            spiderUtil.sleep(ConnectionUtil.getSleepTime(site)/2, false);
-	        	logger.info("Sleeping for half time because no record was crawled");
-	            previousKey = String.valueOf(k);
+
+                //don't change previous key (referer) if current url is detail page, they're just popups
+                if (!site.isARecordDetailDoc(profileDetailDoc)) {
+                    previousKey = String.valueOf(k);
+                }
         	}
         }
         formatOutput(arrestRecords);
@@ -230,7 +246,8 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     	RecordIOUtil ioUtil = new RecordIOUtil(state, new ArrestRecord(), site);
         try {
             //load previously written records IDs into memory
-        	spiderWeb.setCrawledIds(ioUtil.getInputter().getPreviousIds());
+        	spiderWeb.setCrawledIds(ioUtil.getInputter().getCrawledIds());
+            spiderWeb.setUncrawledIds(ioUtil.getInputter().getUncrawledIds());
         	//load records in current spreadsheet into memory
             spiderWeb.setCrawledRecords(ioUtil.getInputter().readRecordsFromSheet(new File(ioUtil.getMainDocName()),0));
             ioUtil.getOutputter().createWorkbook();
@@ -330,6 +347,40 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     	return resultsDocPlusMiscMap;
     }
 
+    @Override
+    public void formatOutput(List<Record> arrestRecords) {
+        //format the output
+        if (!arrestRecords.isEmpty()) {
+            logger.info("Starting to output the results");
+            Collections.sort(arrestRecords, ArrestRecord.CountyComparator);
+            String delimiter = RecordColumnEnum.COUNTY_COLUMN.getColumnTitle();
+            Class<ArrestRecord> clazz = ArrestRecord.class;
+            if (filter!=null && filter!=RecordFilterEnum.NONE) {
+                try {
+                    logger.info("Outputting filtered results");
+                    List<Record> filteredRecords = filterRecords(arrestRecords);
+                    List<List<Record>> splitRecords = Record.splitByField(filteredRecords, delimiter, clazz);
+                    //create a separate sheet with filtered results
+                    logger.info(filteredRecords.size()+" "+filter.filterName()+" "+"records were crawled");
+                    if (!filteredRecords.isEmpty()) {
+                        recordIOUtil.getOutputter().createFilteredSpreadsheet(filter, filteredRecords);
+                        recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getOutputter().getFilteredDocName(filter), delimiter, splitRecords, clazz);
+                    }
+                } catch (Exception e) {
+                    logger.error("Error trying to create filtered spreadsheet", e);
+                }
+            }
+            try {
+                List<List<Record>> splitRecords = Record.splitByField(arrestRecords, delimiter, clazz);
+                recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getMainDocName(), delimiter, splitRecords, clazz);
+            } catch (Exception e) {
+                logger.error("Error trying to split full list of records", e);
+            }
+        } else {
+            logger.info("There were no records to output!!");
+        }
+    }
+
     public Map<Object,String> compileRecordDetailUrlMap(Document mainPageDoc, Map<Integer,Document> resultsDocPlusMiscMap) {
         Map<Object,String> recordDetailUrlMap = new HashMap<>();
         //TODO parse a page at a time instead of all details at once?
@@ -341,7 +392,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
                 logger.info("Gather complete list of records to scrape from " + doc.baseUri());
                 recordDetailUrlMap.putAll(parseDocForUrls(doc));
 
-                //include some non-detail page links then randomize
+                //include some non-detail page links
                 if (spiderWeb.getMisc()) {
                     recordDetailUrlMap.putAll(site.getMiscSafeUrlsFromDoc(mainPageDoc, recordDetailUrlMap.size()));
                 }
@@ -360,34 +411,18 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     	return response.parse();
     }
     
-    @Override
-    public void formatOutput(List<Record> arrestRecords) {
-        //format the output
-        logger.info("Starting to output the results");
-        Collections.sort(arrestRecords, ArrestRecord.CountyComparator);
-        String delimiter = RecordColumnEnum.COUNTY_COLUMN.getColumnTitle();
-        Class<ArrestRecord> clazz = ArrestRecord.class;
-        if (filter!=null) {
-            try {
-                logger.info("Outputting filtered results");
-                List<Record> filteredRecords = filterRecords(arrestRecords);
-                List<List<Record>> splitRecords = Record.splitByField(filteredRecords, delimiter, clazz);
-                //create a separate sheet with filtered results
-                logger.info(filteredRecords.size()+" "+filter.filterName()+" "+"records were crawled");
-                if (!filteredRecords.isEmpty()) {
-                    recordIOUtil.getOutputter().createFilteredSpreadsheet(filter, filteredRecords);
-                    recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getOutputter().getFilteredDocName(filter), delimiter, splitRecords, clazz);
-                }
-            } catch (Exception e) {
-                logger.error("Error trying to create filtered spreadsheet", e);
-            }
+    public Map<Object,String> compileRecordDetailUrlMap(Document mainPageDoc, Set<String> idList) {
+        Map<Object,String> recordDetailUrlMap = new HashMap<>();
+        for (String id : idList) {
+            recordDetailUrlMap.put(id, site.generateDetailUrl(id));
         }
-        try {
-            List<List<Record>> splitRecords = Record.splitByField(arrestRecords, delimiter, clazz);
-            recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getMainDocName(), delimiter, splitRecords, clazz);
-        } catch (Exception e) {
-            logger.error("Error trying to split full list of records", e);
+        //TODO this working?
+        recordIOUtil.getUncrawledIdFile().delete();
+        //include some non-detail page links
+        if (spiderWeb.getMisc()) {
+            recordDetailUrlMap.putAll(site.getMiscSafeUrlsFromDoc(mainPageDoc, recordDetailUrlMap.size()));
         }
+        return recordDetailUrlMap;
     }
     
     @Override

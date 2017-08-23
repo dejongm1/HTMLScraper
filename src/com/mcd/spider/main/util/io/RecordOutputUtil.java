@@ -40,7 +40,7 @@ public class RecordOutputUtil {
 	private String docName;
 	private WritableWorkbook workbook;
 	private State state;
-	private File idFile;
+	private File crawledIdFile;
 	private File uncrawledIdFile;
 	private Record record;
 	private File oldBook;
@@ -58,14 +58,11 @@ public class RecordOutputUtil {
 		this.state = state;
 		this.record = ioUtil.getRecord();
 		this.site = site;
-		this.idFile = ioUtil.getIdFile();
+		this.crawledIdFile = ioUtil.getCrawledIdFile();
 		this.ioutil = ioUtil;
-		this.uncrawledIdFile = new File(OUTPUT_DIR + TRACKING_DIR + site.getName() + "_Uncrawled.txt");
+        this.uncrawledIdFile = ioUtil.getUncrawledIdFile();
 	}
 
-	public String getDocName() {
-		return docName;
-	}
 	public State getState() {
 		return state;
 	}
@@ -158,7 +155,7 @@ public class RecordOutputUtil {
 			int rowNumber = ioutil.getInputter().getNonEmptyRowCount(copyWorkbook.getSheet(0));
 			WritableSheet sheet = copyWorkbook.getSheet(0);
 			record.addToExcelSheet(rowNumber, sheet);
-			writeIdToFile(idFile, record.getId());
+			writeIdToFile(crawledIdFile, record.getId());
 			handleBackup(docName, true);
 		} catch (IOException | WriteException | IllegalAccessException | BiffException e) {
 			logger.error("Error trying to save record to workbook: " + record.getId(), e);

@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 public class ArrestsDotOrgSite implements SiteHTML {
 
@@ -54,15 +53,6 @@ public class ArrestsDotOrgSite implements SiteHTML {
 		return builtUrl;
 	}
 
-	public void setOnlyResultsPageDocuments(Map<String,Document> resultsPlusMiscDocumentsMap) {
-		Map<String,Document> resultsDocMap = new HashMap<>();
-		for(Entry<String, Document> entry : resultsPlusMiscDocumentsMap.entrySet()) {
-			if (isAResultsDoc( entry.getValue())) {
-				resultsDocMap.put(entry.getKey(), entry.getValue());
-			}
-		}
-		this.resultsPageDocuments = resultsDocMap;
-	}
 	@Override
 	public Map<String, Document> getResultsPageDocuments() {
 		return this.resultsPageDocuments;
@@ -189,6 +179,10 @@ public class ArrestsDotOrgSite implements SiteHTML {
 	public String generateRecordId(String url) {
 		return url.substring(url.indexOf("/Arrests/")+9, url.indexOf("/?d=1"));
 	}
+
+    public String generateDetailUrl(String id) {
+        return baseUrl + "/Arrests/" + id + "/?d=1";
+    }
 
     @Override
     public int getMaxAttempts() {

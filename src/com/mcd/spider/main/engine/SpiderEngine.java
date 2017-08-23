@@ -40,10 +40,11 @@ public class SpiderEngine {
 		}
 	}
 	
-	public void getArrestRecordsByStateCrack(List<State> states, long maxNumberOfResults, RecordFilterEnum filter, boolean retrieveMissedRecords) throws SpiderException {
+	public void getArrestRecordsThroughTheBackDoor(List<State> states, long maxNumberOfResults, RecordFilterEnum filter, boolean retrieveMissedRecords) throws SpiderException {
 		for (State state : states) {
 			state.getEngines().clear();
-			state.addEngine(new ArrestsDotOrgEngine());
+            state.addEngine(new ArrestsDotOrgEngine());
+//			state.addEngine(new DesMoinesRegisterComEngine());
 //			state.addEngine(new MugShotsDotComEngine());
 			StateRouter router = new StateRouter(state);
 			router.collectRecords(maxNumberOfResults, filter, retrieveMissedRecords);

@@ -9,6 +9,7 @@ public class SpiderWeb {
 	
 	private int attemptCount;
     private Set<String> crawledIds;
+    private Set<String> uncrawledIds;
     private Set<Record> crawledRecords;
     private Map<String,String> sessionCookies;
     private boolean offline;
@@ -43,6 +44,14 @@ public class SpiderWeb {
 	public void setCrawledIds(Set<String> set) {
 		this.crawledIds = set;
 	}
+
+    public Set<String> getUncrawledIds() {
+        return uncrawledIds;
+    }
+
+    public void setUncrawledIds(Set<String> set) {
+        this.uncrawledIds = set;
+    }
 
 	public Set<Record> getCrawledRecords() {
 		return crawledRecords;

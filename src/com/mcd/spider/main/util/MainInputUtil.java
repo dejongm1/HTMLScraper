@@ -22,9 +22,13 @@ public class MainInputUtil {
 				result = convertToUrl(input);
 			} else if (validationType!= null && validationType.equals(SpiderConstants.NUMBER_VALIDATION)) {
 				result = convertToNumber(input);
-			} else if (validationType!= null && validationType.equals(SpiderConstants.STATE_VALIDATION)) {
-				result = convertToStates(input);
-			} else {
+            } else if (validationType!= null && validationType.equals(SpiderConstants.STATE_VALIDATION)) {
+                result = convertToStates(input);
+            } else if (validationType!= null && validationType.equals(SpiderConstants.FILTER_VALIDATION)) {
+                result = convertToFilter(input);
+            } else if (validationType!= null && validationType.equals(SpiderConstants.BOOLEAN_VALIDATION)) {
+                result = convertToBoolean(input);
+            } else {
 				result = input;
 			}
 			if (result!=null) {
@@ -48,18 +52,18 @@ public class MainInputUtil {
 		return result;
 		
 	}
-	
-	public Integer convertToNumber(String input) {
-		Integer result = null;
-		try {
-			result = Integer.parseInt(input);
-		} catch (NumberFormatException nfe) {
-			System.err.println("That's not a number\n");
-		}
-		return result;
-	}
-	
-	public List<State> convertToStates(String input) {
+
+    public Integer convertToNumber(String input) {
+        Integer result = null;
+        try {
+            result = Integer.parseInt(input);
+        } catch (NumberFormatException nfe) {
+            System.err.println("That's not a number\n");
+        }
+        return result;
+    }
+
+    public List<State> convertToStates(String input) {
 		List<State> result = new ArrayList<>();
 		if (input.contains(",")) {
 			String[] inputSplit = input.split("\\s*,\\s*");
@@ -72,7 +76,7 @@ public class MainInputUtil {
 				}
 			}
 		} else {
-			result = State.confirmState(input);	
+			result = State.confirmState(input);
 		}
 		if (result!=null && !result.isEmpty()) {
 			return result;
@@ -81,6 +85,16 @@ public class MainInputUtil {
 			return null;
 		}
 	}
+
+    public boolean convertToBoolean(String input) {
+        boolean result = false;
+        try {
+            result = Boolean.parseBoolean(input);
+        } catch (Exception e) {
+            System.err.println("Either true or false\n");
+        }
+        return result;
+    }
 	
 	public RecordFilterEnum convertToFilter(String input) {
 		RecordFilterEnum filter = RecordFilterEnum.findFilter(input);

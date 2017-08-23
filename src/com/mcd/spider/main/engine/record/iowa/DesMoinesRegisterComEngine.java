@@ -197,7 +197,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
         RecordIOUtil ioUtil = new RecordIOUtil(state, new ArrestRecord(), site);
         try {
             //load previously written records IDs into memory
-        	spiderWeb.setCrawledIds(ioUtil.getInputter().getPreviousIds());
+        	spiderWeb.setCrawledIds(ioUtil.getInputter().getCrawledIds());
             //load records in current spreadsheet into memory
         	spiderWeb.setCrawledRecords(ioUtil.getInputter().readRecordsFromSheet(new File(ioUtil.getMainDocName()),0));
             ioUtil.getOutputter().createWorkbook();

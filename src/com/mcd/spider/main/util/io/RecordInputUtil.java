@@ -28,7 +28,8 @@ public class RecordInputUtil {
 
 	private String docName;
 	private boolean offline;
-	private File idFile;
+	private File crawledIdFile;
+	private File uncrawledIdFile;
 	private Record record;
 	private RecordIOUtil ioUtil;
 
@@ -36,23 +37,20 @@ public class RecordInputUtil {
 		this.docName = ioUtil.getMainDocName();
 		this.record = ioUtil.getRecord();
         this.offline = System.getProperty("offline").equals("true");
-        this.idFile = ioUtil.getIdFile();
+        this.crawledIdFile = ioUtil.getCrawledIdFile();
+        this.uncrawledIdFile = ioUtil.getUncrawledIdFile();
         this.ioUtil = ioUtil;
 	}
 
-	public String getDocName() {
-		return docName;
-	}
-
-    public Set<String> getPreviousIds() throws SpiderException {
+    public Set<String> getCrawledIds() throws SpiderException {
         Set<String> ids = new HashSet<>();
         BufferedReader br = null;
         if (!offline) {
             try {
-                if (!idFile.exists()) {
-                    idFile.createNewFile();
+                if (!crawledIdFile.exists()) {
+                    crawledIdFile.createNewFile();
                 }
-                br = new BufferedReader(new FileReader(idFile));
+                br = new BufferedReader(new FileReader(crawledIdFile));
                 String sCurrentLine;
                 while ((sCurrentLine = br.readLine()) != null) {
                     ids.add(sCurrentLine);
@@ -65,7 +63,34 @@ public class RecordInputUtil {
                         br.close();
                     }
                 } catch (IOException ioe) {
-                    logger.error("Error reading previous IDs file", ioe);
+                    logger.error("Error closing previous IDs file", ioe);
+                }
+            }
+        }
+        return ids;
+    }
+
+    public Set<String> getUncrawledIds() throws SpiderException {
+        Set<String> ids = new HashSet<>();
+        BufferedReader br = null;
+        if (!offline) {
+            try {
+                if (uncrawledIdFile.exists()) {
+                    br = new BufferedReader(new FileReader(uncrawledIdFile));
+                    String sCurrentLine;
+                    while ((sCurrentLine = br.readLine())!=null) {
+                        ids.add(sCurrentLine);
+                    }
+                }
+            } catch (IOException e) {
+                throw new IDCheckException();
+            } finally {
+                try {
+                    if (br != null) {
+                        br.close();
+                    }
+                } catch (IOException ioe) {
+                    logger.error("Error closing uncrawled IDs file", ioe);
                 }
             }
         }
@@ -79,7 +104,7 @@ public class RecordInputUtil {
     public List<Set<Record>> readRecordsFromWorkbook(File fileToRead) {
         List<Set<Record>> listOfRecordSets = new ArrayList<>();
     	try {
-    		logger.debug("Attempting to read previous records from " + fileToRead.getName() + " into memory");
+    		logger.debug("Attempting to read previous records from workbook " + fileToRead.getName() + " into memory");
     		if (fileToRead.exists()) {
                 Workbook workbook = Workbook.getWorkbook(fileToRead);
                 if (workbook!=null) {
@@ -109,7 +134,7 @@ public class RecordInputUtil {
             Workbook workbook = Workbook.getWorkbook(fileToRead);
             if (workbook!=null) {
                 Sheet sheetToRead = workbook.getSheet(sheetNumber);
-                logger.debug("Attempting to read previous records from " + fileToRead.getName() + " into memory");
+                logger.debug("Attempting to read previous records from sheet " + sheetToRead.getName() + " into memory");
                 //starting with the first data row, read records into set
                 foundRecordsCount+=getNonEmptyRowCount(sheetToRead);
                 for (int r = 1; r<sheetToRead.getRows(); r++) {

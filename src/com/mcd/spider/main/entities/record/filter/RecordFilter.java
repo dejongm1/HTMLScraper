@@ -6,8 +6,9 @@ import java.util.List;
 public class RecordFilter {
 	public enum RecordFilterEnum {
 		ALCOHOL("Alcohol-related", Arrays.asList("alcohol", "oui", "dui", "owi", "dwi", "bui", "open container", "intox")),
-		TRAFFIC("Traffic-related", Arrays.asList("speed", "traffic"));
-	
+		TRAFFIC("Traffic-related", Arrays.asList("speed", "traffic")),
+        NONE("No-filter", Arrays.asList(""));
+
 		private String filterName;
 		private List<String> keywords;
 		

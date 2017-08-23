@@ -24,11 +24,13 @@ public class RecordIOUtil {
 	private String mainDocName;
 	private RecordInputUtil inputter;
 	private RecordOutputUtil outputter;
-	private File idFile;
+	private File crawledIdFile;
+    private File uncrawledIdFile;
 	private Record record;
 	
 	public RecordIOUtil(State state, Record record, Site site) {
-        this.idFile = new File(OUTPUT_DIR + TRACKING_DIR + site.getName() + "_Archive.txt");
+        this.crawledIdFile = new File(OUTPUT_DIR + TRACKING_DIR + site.getName() + "_Archive.txt");
+        this.uncrawledIdFile = new File(OUTPUT_DIR + TRACKING_DIR + site.getName() + "_Uncrawled.txt");
 		this.mainDocName = OUTPUT_DIR + state.getName() + "_" + record.getClass().getSimpleName() + "_" + site.getName() + EXT;
 		this.record = record;
 		this.outputter = new RecordOutputUtil(this, state, site);
@@ -39,17 +41,13 @@ public class RecordIOUtil {
 		return mainDocName;
 	}
 
-	public void setMainDocName(String mainDocName) {
-		this.mainDocName = mainDocName;
-	}
+    public File getCrawledIdFile() {
+        return crawledIdFile;
+    }
 
-	public File getIdFile() {
-		return idFile;
-	}
-
-	public void setIdFile(File idFile) {
-		this.idFile = idFile;
-	}
+    public File getUncrawledIdFile() {
+        return uncrawledIdFile;
+    }
 
 	public Record getRecord() {
 		return record;
