@@ -1,14 +1,18 @@
 package com.mcd.spider.main.util;
 
-import com.mcd.spider.main.entities.record.State;
-import com.mcd.spider.main.entities.record.filter.RecordFilter.RecordFilterEnum;
-import org.apache.commons.validator.routines.UrlValidator;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import org.apache.commons.validator.routines.UrlValidator;
+
+import com.mcd.spider.main.entities.record.State;
+import com.mcd.spider.main.entities.record.filter.RecordFilter.RecordFilterEnum;
 
 public class MainInputUtil {
 	
@@ -88,12 +92,13 @@ public class MainInputUtil {
 
     public boolean convertToBoolean(String input) {
         boolean result = false;
-        try {
-            result = Boolean.parseBoolean(input);
-        } catch (Exception e) {
-            System.err.println("Either true or false\n");
-        }
-        return result;
+        Set<String> values = new HashSet<>(Arrays.asList("true", "yes", "no", "false"));
+    	if (values.contains(input.toLowerCase())) {
+    		result = input.equalsIgnoreCase("true") || input.equalsIgnoreCase("yes");
+    	} else {
+    		System.err.println("Not sure what that meant, so you get false\n");
+    	}
+    	return result;
     }
 	
 	public RecordFilterEnum convertToFilter(String input) {

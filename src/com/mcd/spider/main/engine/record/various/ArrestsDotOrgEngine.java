@@ -416,7 +416,6 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         for (String id : idList) {
             recordDetailUrlMap.put(id, site.generateDetailUrl(id));
         }
-        //TODO this working?
         recordIOUtil.getUncrawledIdFile().delete();
         //include some non-detail page links
         if (spiderWeb.getMisc()) {
