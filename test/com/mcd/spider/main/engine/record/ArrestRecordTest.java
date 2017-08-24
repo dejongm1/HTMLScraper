@@ -1,24 +1,24 @@
-package test.com.mcd.spider.main.engine.record;
+package com.mcd.spider.main.engine.record;
 
 import java.util.Calendar;
 import java.util.Date;
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
+import org.testng.annotations.AfterTest;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import com.mcd.spider.main.entities.record.ArrestRecord;
 
 public class ArrestRecordTest {
 
-	@BeforeClass
+	@BeforeTest
 	public void setUp() {
 		
 	}
 
-	@AfterClass
-	public void breakDown() {
+	@AfterTest
+	public void tearDown() {
 		
 	}
 

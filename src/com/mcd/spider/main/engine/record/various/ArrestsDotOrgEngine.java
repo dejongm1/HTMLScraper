@@ -312,7 +312,6 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     					docToCheck = response.parse();
     					setCookies(response);
     				} catch (FileNotFoundException fnfe) {
-    					spiderWeb.increaseAttemptCount();
     					logger.error("No html doc found for " + url);
     				} catch (IOException e) {
     					spiderWeb.increaseAttemptCount();
@@ -458,7 +457,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
                     record.setState(state);
                 } else if (label.contains("total bond")) {
                     String bondAmount = extractValue(profileDetailElement);
-                    int totalBond = Integer.parseInt(bondAmount.replace("$", ""));
+                    long totalBond = Integer.parseInt(bondAmount.replace("$", ""));
                     record.setTotalBond(totalBond);
                 } else if (label.contains("height")) {
                     record.setHeight(extractValue(profileDetailElement));

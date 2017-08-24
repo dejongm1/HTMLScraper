@@ -135,7 +135,7 @@ public class SpiderMain {
 		List<State> states = args.length>=2?mainInputUtil.convertToStates(args[1]):(List<State>) mainInputUtil.getInput("State(s) or \"All\": ", 3, SpiderConstants.STATE_VALIDATION);
         RecordFilterEnum filter = args.length>=3?mainInputUtil.convertToFilter(args[2]):(RecordFilterEnum) mainInputUtil.getInput("Filter: ", 3, SpiderConstants.FILTER_VALIDATION);
         long maxNumberOfResults = args.length>=4?mainInputUtil.convertToNumber(args[3]):(int) mainInputUtil.getInput("Maximum Number of Records: ", 3, SpiderConstants.NUMBER_VALIDATION);
-        boolean retrieveMissedRecords = args.length>=4?mainInputUtil.convertToBoolean(args[3]):(boolean) mainInputUtil.getInput("Retrieve Missed Records: ", 3, SpiderConstants.BOOLEAN_VALIDATION);
+        boolean retrieveMissedRecords = args.length>=5?mainInputUtil.convertToBoolean(args[4]):(boolean) mainInputUtil.getInput("Retrieve Missed Records: ", 3, SpiderConstants.BOOLEAN_VALIDATION);
         engine.getArrestRecordsByState(states, maxNumberOfResults, filter, retrieveMissedRecords);
 	}
 
@@ -144,7 +144,7 @@ public class SpiderMain {
 		List<State> states = args.length>=2?mainInputUtil.convertToStates(args[1]):(List<State>) mainInputUtil.getInput("State(s) or \"All\": ", 3, SpiderConstants.STATE_VALIDATION);
 		RecordFilterEnum filter = args.length>=3?mainInputUtil.convertToFilter(args[2]):(RecordFilterEnum) mainInputUtil.getInput("Filter: ", 3, SpiderConstants.FILTER_VALIDATION);
 		long maxNumberOfResults = args.length>=4?mainInputUtil.convertToNumber(args[3]):(int) mainInputUtil.getInput("Maximum Number of Records: ", 3, SpiderConstants.NUMBER_VALIDATION);
-        boolean retrieveMissedRecords = args.length>=4?mainInputUtil.convertToBoolean(args[3]):(boolean) mainInputUtil.getInput("Retrieve Missed Records: ", 3, SpiderConstants.BOOLEAN_VALIDATION);
+        boolean retrieveMissedRecords = args.length>=5?mainInputUtil.convertToBoolean(args[4]):(boolean) mainInputUtil.getInput("Retrieve Missed Records: ", 3, SpiderConstants.BOOLEAN_VALIDATION);
         engine.getArrestRecordsThroughTheBackDoor(states, maxNumberOfResults, filter, retrieveMissedRecords);
 	}
 

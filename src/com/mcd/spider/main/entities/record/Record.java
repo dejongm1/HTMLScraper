@@ -46,8 +46,8 @@ public interface Record {
 				try {
 		    		String cellContents = mainSheet.getCell(c, r).getContents();
 		    		String labelContents = mainSheet.getCell(c, 0).getContents();
-		    		String fieldTitle = ((String)currentEnum.getClass().getMethod("getFieldName").invoke(currentEnum));
-		    		String columnTitle = ((String)currentEnum.getClass().getMethod("getColumnTitle").invoke(currentEnum));
+		    		String fieldTitle = (String)currentEnum.getClass().getMethod("getFieldName").invoke(currentEnum);
+		    		String columnTitle = (String)currentEnum.getClass().getMethod("getColumnTitle").invoke(currentEnum);
 		    		if (cellContents.equals("")) {
                         c++;
                     } else if (columnTitle.equalsIgnoreCase(labelContents)

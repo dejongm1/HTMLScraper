@@ -31,7 +31,7 @@ public class RecordInputUtil {
 	private File crawledIdFile;
 	private File uncrawledIdFile;
 	private Record record;
-	private RecordIOUtil ioUtil;
+//	private RecordIOUtil ioUtil;
 
 	public RecordInputUtil(RecordIOUtil ioUtil) {
 		this.docName = ioUtil.getMainDocName();
@@ -39,7 +39,7 @@ public class RecordInputUtil {
         this.offline = System.getProperty("offline").equals("true");
         this.crawledIdFile = ioUtil.getCrawledIdFile();
         this.uncrawledIdFile = ioUtil.getUncrawledIdFile();
-        this.ioUtil = ioUtil;
+//        this.ioUtil = ioUtil;
 	}
 
     public Set<String> getCrawledIds() throws SpiderException {
@@ -124,6 +124,32 @@ public class RecordInputUtil {
     	return listOfRecordSets;
     }
 
+    public int getSheetIndex(File fileToRead, String sheetName) {
+        Workbook workbook;
+		Integer sheetNumber = null;
+		try {
+			workbook = Workbook.getWorkbook(fileToRead);
+			final Sheet[] sheets = workbook.getSheets();            
+			for(int i=0;i<sheets.length && sheetNumber == null; i++) {
+				if(sheets[i].getName().equals(sheetName)) {
+					sheetNumber = i;                  
+				}
+			}    
+		} catch (BiffException | IOException e) {
+			logger.error("Couldn't find a sheet named " + sheetName, e);
+		}
+    	return (Integer) sheetNumber;
+    }
+    
+    public Set<Record> readRecordsFromSheet(File fileToRead, String sheetName) {
+    	int sheetNumber = getSheetIndex(fileToRead, sheetName);
+    	if (sheetNumber==-1) {
+    		return new HashSet<Record>();
+    	} else {
+    		return readRecordsFromSheet(fileToRead, sheetNumber);
+    	}
+    }
+    
     public Set<Record> readRecordsFromSheet(File fileToRead, int sheetNumber) {
         Set<Record> storedRecords = new HashSet<>();
         Class<?> clazz = Record.getRecordClass(record);
@@ -152,7 +178,7 @@ public class RecordInputUtil {
             }
 
         } catch (BiffException | IOException e) {
-            logger.error("Exception caught reading sheet into records - " + fileToRead.getName() + " sheet " + sheetNumber);
+            logger.error("Exception caught reading sheet into records - " + fileToRead.getName() + " sheet " + sheetNumber, e);
         }
         logger.debug("Found " +  (foundRecordsCount-1) + " and retrieved " + retrievedRecordsCount);
         return storedRecords;

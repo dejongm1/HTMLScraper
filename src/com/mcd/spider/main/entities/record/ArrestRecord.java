@@ -29,8 +29,8 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 	private String middleName;			
 	private String lastName;			
 	private Calendar arrestDate;		
-	private long totalBond;				
-	private int arrestAge;				
+	private Long totalBond;				
+	private Integer arrestAge;				
 	private String gender;				
 	private String city;				
 	private String state;				
@@ -90,13 +90,13 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 	public void setArrestDate(Calendar arrestDate) {
 		this.arrestDate = arrestDate;
 	}
-	public long getTotalBond() {
+	public Long getTotalBond() {
 		return totalBond;
 	}
 	public void setTotalBond(long totalBond) {
 		this.totalBond = totalBond;
 	}
-	public int getArrestAge() {
+	public Integer getArrestAge() {
 		return arrestAge;
 	}
 	public void setArrestAge(int arrestAge) {
@@ -299,7 +299,7 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 				} else if (fieldValue instanceof Calendar) {
 					SimpleDateFormat formatter=new SimpleDateFormat("MMM-dd-yyyy hh:mm a"); 
 					fieldValueString.append(formatter.format(((Calendar)field.get(this)).getTime()));
-				} else if (fieldValue instanceof Integer) {
+				} else if (fieldValue instanceof Integer || fieldValue instanceof Long) {
 					fieldValueString.append(String.valueOf(field.get(this)));
 				}
 				try {

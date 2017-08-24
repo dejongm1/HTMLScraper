@@ -1,4 +1,4 @@
-package test.com.mcd.spider.main;
+package com.mcd.spider.main;
 
 import com.mcd.spider.main.SpiderMain;
 import com.mcd.spider.main.util.SpiderUtil;
