@@ -109,9 +109,11 @@ public class SpiderUtil {
 			// load a properties file
 			if (Boolean.valueOf(System.getProperty("runInEclipse"))) {
                 ClassLoader loader = Thread.currentThread().getContextClassLoader();
-				input = loader.getResourceAsStream("config.properties");
+                input = loader.getResourceAsStream("config.properties");
 			} else {
+//            if (input==null) {
 				input = SpiderUtil.class.getResourceAsStream("/resources/config.properties");
+//            }
 			}
 //			tempProperties.load(input);
 			properties.load(input);

@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project default="create_run_jar" name="Create Runnable Jar for Project Spider">
-    <!--ANT 1.7 is required-->
-	
 	<!-- TODO
 	     run tests before building
 	     package blacklist of common words
@@ -39,7 +37,7 @@
     <target name="create_run_jar" depends="backup, compile, prepare">
         <buildnumber/>
 
-    	<path id="dep.runtime">
+    	<path id="classpath.list">
     		<fileset dir="./resources">
     	        <include name="**/*.*" />
     	    </fileset>
@@ -50,11 +48,9 @@
     	    </fileset>
     	</path>
     	
-    	<manifestclasspath jarfile="Spider-${version}.${build.number}.jar" property="manifest_cp">
-	        <classpath refid="dep.runtime" />
+    	<manifestclasspath property="manifest_cp" jarfile="Spider-${version}.${build.number}.jar">
+	        <classpath refid="classpath.list" />
 	    </manifestclasspath>
-    	
-    	<property name="dep_cp" value="${toString:dep.runtime}" />
 
         <jar jarfile="Spider-${version}.${build.number}.jar">
             <manifest>
@@ -64,8 +60,7 @@
         	<fileset dir="${dir.buildfile}/${dir.build}" />
         	<fileset dir="${dir.buildfile}/${dir.src}" />
             <zipfileset dir="${dir.buildfile}/lib" includes="*.jar" excludes="*javadoc*.jar *sources*.jar" prefix="lib"/>
-            <!--<zipfileset dir="${dir.buildfile}/resources" includes="*.*" prefix="resources"/>-->
-            <zipfileset dir="${dir.buildfile}/resources" includes="*.*"/>
+            <zipfileset dir="${dir.buildfile}/resources" includes="*.*" prefix="resources"/>
         </jar>
     	<antcall target="cleanup"/>
     </target>
