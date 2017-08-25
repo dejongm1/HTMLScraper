@@ -247,13 +247,55 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     }
     
     @Override
+    public void matchPropertyToField(ArrestRecord record, Object profileDetail) {
+    	Element profileDetailElement = (Element) profileDetail;
+        String label = profileDetailElement.select("strong").text().toLowerCase();
+        if (!label.equals("")) {
+            try {
+                if (label.contains("booked")) {
+                    formatArrestTime(record, profileDetailElement);
+                } else if (label.contains("age")) {
+                    record.setArrestAge(Integer.parseInt(extractValue(profileDetailElement)));
+                } else if (label.contains("charges")) {
+                    record.setCharges(extractValue(profileDetailElement).split(";"));
+                } else if (label.contains("sex")) {
+                    if (!extractValue(profileDetailElement).equalsIgnoreCase("N/A")) {
+                        record.setGender(extractValue(profileDetailElement));
+                    }
+                } else if (label.contains("city")) {
+//					record.setCity(city);
+					record.setState("IA");
+                } else if (label.contains("bond")) {
+                    String bondAmount = extractValue(profileDetailElement);
+                    Integer totalBond = Integer.parseInt(bondAmount.replace("$", "").replace(",", ""));
+                    record.setTotalBond(totalBond);
+                } else if (label.contains("height")) {
+                    record.setHeight(extractValue(profileDetailElement));
+                } else if (label.contains("weight")) {
+                    record.setWeight(extractValue(profileDetailElement));
+                } else if (label.contains("hair")) {
+                    record.setHairColor(extractValue(profileDetailElement));
+                } else if (label.contains("eye")) {
+                    record.setEyeColor(extractValue(profileDetailElement).replace("Eye color ", ""));
+                } else if (label.contains("county")) {
+                    record.setCounty(extractValue(profileDetailElement));
+                }
+            } catch (NumberFormatException nfe) {
+                logger.error("Couldn't parse a numeric value from " + profileDetailElement.text());
+            }
+        } else if (profileDetailElement.select("h1").hasText()) {
+            record.setFullName(profileDetailElement.select("h1").text().trim());
+        }
+    }
+    
+    @Override
     public void formatOutput(List<Record> arrestRecords) {
     	//format the output
         logger.info("Starting to output the results");
         Collections.sort(arrestRecords, ArrestRecord.CountyComparator);
         String delimiter = RecordColumnEnum.COUNTY_COLUMN.getColumnTitle();
         Class<ArrestRecord> clazz = ArrestRecord.class;
-        if (filter!=null) {
+        if (filter!=null && filter!=RecordFilterEnum.NONE) {
             try {
                 logger.info("Outputting filtered results");
                 List<Record> filteredRecords = filterRecords(arrestRecords);
@@ -277,46 +319,6 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
             }
         } catch (Exception e) {
             logger.error("Error trying to split full list of records", e);
-        }
-    }
-    
-    @Override
-    public void matchPropertyToField(ArrestRecord record, Object profileDetail) {
-    	Element profileDetailElement = (Element) profileDetail;
-        String label = profileDetailElement.select("strong").text().toLowerCase();
-        if (!label.equals("")) {
-            try {
-                if (label.contains("booked")) {
-                    formatArrestTime(record, profileDetailElement);
-                } else if (label.contains("age")) {
-                    record.setArrestAge(Integer.parseInt(extractValue(profileDetailElement)));
-                } else if (label.contains("charges")) {
-                    record.setCharges(extractValue(profileDetailElement).split(";"));
-                } else if (label.contains("sex")) {
-                    record.setGender(extractValue(profileDetailElement));
-                } else if (label.contains("city")) {
-//					record.setCity(city);
-					record.setState("IA");
-                } else if (label.contains("bond")) {
-                    String bondAmount = extractValue(profileDetailElement);
-                    int totalBond = Integer.parseInt(bondAmount.replace("$", "").replace(",", ""));
-                    record.setTotalBond(totalBond);
-                } else if (label.contains("height")) {
-                    record.setHeight(extractValue(profileDetailElement));
-                } else if (label.contains("weight")) {
-                    record.setWeight(extractValue(profileDetailElement));
-                } else if (label.contains("hair")) {
-                    record.setHairColor(extractValue(profileDetailElement));
-                } else if (label.contains("eye")) {
-                    record.setEyeColor(extractValue(profileDetailElement).replace("Eye color ", ""));
-                } else if (label.contains("county")) {
-                    record.setCounty(extractValue(profileDetailElement));
-                }
-            } catch (NumberFormatException nfe) {
-                logger.error("Couldn't parse a numeric value from " + profileDetailElement.text());
-            }
-        } else if (profileDetailElement.select("h1").hasText()) {
-            record.setFullName(profileDetailElement.select("h1").text().trim());
         }
     }
 

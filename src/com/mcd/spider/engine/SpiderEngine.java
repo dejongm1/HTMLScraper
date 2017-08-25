@@ -1,7 +1,7 @@
 package com.mcd.spider.engine;
 
 import com.mcd.spider.engine.audit.AuditEngine;
-import com.mcd.spider.engine.record.various.ArrestsDotOrgEngine;
+import com.mcd.spider.engine.record.iowa.DesMoinesRegisterComEngine;
 import com.mcd.spider.engine.router.StateRouter;
 import com.mcd.spider.entities.audit.AuditParameters;
 import com.mcd.spider.entities.record.ArrestRecord;
@@ -43,8 +43,8 @@ public class SpiderEngine {
 	public void getArrestRecordsThroughTheBackDoor(List<State> states, long maxNumberOfResults, RecordFilterEnum filter, boolean retrieveMissedRecords) throws SpiderException {
 		for (State state : states) {
 			state.getEngines().clear();
-            state.addEngine(new ArrestsDotOrgEngine());
-//			state.addEngine(new DesMoinesRegisterComEngine());
+//            state.addEngine(new ArrestsDotOrgEngine());
+			state.addEngine(new DesMoinesRegisterComEngine());
 //			state.addEngine(new MugShotsDotComEngine());
 			StateRouter router = new StateRouter(state);
 			router.collectRecords(maxNumberOfResults, filter, retrieveMissedRecords);

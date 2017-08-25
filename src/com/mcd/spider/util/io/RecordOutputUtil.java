@@ -191,7 +191,7 @@ public class RecordOutputUtil {
 			} else {
 				// making sure we don't lose data or override good data
                 logger.error("Can't save record to current workbook, is it open? Starting a new workbook for future processing");
-                this.docName = docName + System.currentTimeMillis();
+                this.docName = docName.substring(0, docName.indexOf(EXT)) + "_" + System.currentTimeMillis() + EXT;
                 ioutil.setMainDocName(this.docName);
 				newBook.renameTo(new File(this.docName));
 			}
