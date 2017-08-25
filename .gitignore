@@ -2,8 +2,9 @@
 /logs/
 /output/
 /jxl exploded/
-/test-output/
+/test-output/*
 /Spider.iml
 /Spider*.jar
 /.idea/
 /backup/
+/.project
