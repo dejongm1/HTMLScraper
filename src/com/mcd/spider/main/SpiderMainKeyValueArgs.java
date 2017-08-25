@@ -1,14 +1,14 @@
 package com.mcd.spider.main;
 
-import com.mcd.spider.main.engine.SpiderEngine;
-import com.mcd.spider.main.entities.audit.AuditParameters;
-import com.mcd.spider.main.entities.record.State;
-import com.mcd.spider.main.entities.record.filter.RecordFilter.RecordFilterEnum;
-import com.mcd.spider.main.exception.ExcelOutputException;
-import com.mcd.spider.main.exception.SpiderException;
-import com.mcd.spider.main.exception.StateNotReadyException;
-import com.mcd.spider.main.util.MainInputUtil;
-import com.mcd.spider.main.util.SpiderConstants;
+import com.mcd.spider.engine.SpiderEngine;
+import com.mcd.spider.entities.audit.AuditParameters;
+import com.mcd.spider.entities.record.State;
+import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
+import com.mcd.spider.exception.ExcelOutputException;
+import com.mcd.spider.exception.SpiderException;
+import com.mcd.spider.exception.StateNotReadyException;
+import com.mcd.spider.util.MainInputUtil;
+import com.mcd.spider.util.SpiderConstants;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
