@@ -21,7 +21,7 @@ import java.util.Date;
 public class RecordTest {
 
 	private File testReadInputFile = new File("test/resources/RecordInputTest.xls");
-	Sheet mainSheet;
+	static Sheet mainSheet;
 	
 	@BeforeClass
 	public void setUpClass() throws BiffException, IOException {
@@ -34,7 +34,7 @@ public class RecordTest {
 	}
 
 
-	@Test
+	@Test(groups={"RecordTest"})
 	public void readRowIntoRecord_ArrestRecordComplete() {
 		ArrestRecord record1 = new ArrestRecord();
 		Record.readRowIntoRecord(ArrestRecord.class, mainSheet, record1, 1);
@@ -65,7 +65,7 @@ public class RecordTest {
 
 	}
 
-	@Test
+	@Test(groups={"RecordTest"})
 	public void readRowIntoRecord_ArrestRecordMissingData() {
 		ArrestRecord record4 = new ArrestRecord();
 		Record.readRowIntoRecord(ArrestRecord.class, mainSheet, record4, 4);

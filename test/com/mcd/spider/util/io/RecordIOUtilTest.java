@@ -50,7 +50,7 @@ public class RecordIOUtilTest {
 	@Test
 	public void testMergeRecordsFromSheet() throws IOException {
 		Set<Record> mergedRecords = ioUtil.mergeRecordsFromSheet(testArrestOrgOutput, testDesMoinesRegisterComOutput, 0);
-		Assert.assertEquals(mergedRecords.size(), 10); //11 if I can make this work for name suffixes
+		Assert.assertEquals(mergedRecords.size(), 12); //11 if I can make this work for name suffixes
 	}
 
 

@@ -355,6 +355,17 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 		return originalString!=null?originalString.replaceAll("[^^0-9]", ""):null;
 	}
 	
+	private String[] formatArray(String[] stringArray) {
+		String[] resultCharges = null;
+		if (stringArray!=null && stringArray.length>0) {
+			resultCharges = new String[stringArray.length];
+			for (int c=0;c<resultCharges.length;c++) {
+				resultCharges[c] = formatLettersOnly(stringArray[c]);
+			}
+		}
+		return resultCharges;
+	}
+	
 	@Override
 	public boolean matches(Record recordToMatch) {
 		//ranking system, needs testing
@@ -403,14 +414,8 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 //		Calendar thisArrestDate = this.arrestDate;
 //		Calendar matchingArrestDate = record.getArrestDate();
 
-		String[] thisCharges = new String[this.charges.length];
-		String[] matchingCharges = new String[record.getCharges().length];
-		for (int c=0;c<thisCharges.length;c++) {
-			thisCharges[c] = formatLettersOnly(this.charges[c]);
-		}
-		for (int c=0;c<matchingCharges.length;c++) {
-			matchingCharges[c] = formatLettersOnly(record.getCharges()[c]);
-		}
+		String[] thisCharges = formatArray(this.charges);
+		String[] matchingCharges = formatArray(record.getCharges());
 		
 		if (thisFullName!=null && matchingFullName!=null && thisFullName.equals(matchingFullName)
 				|| (thisFirstName!=null && matchingFirstName!=null && thisFirstName.equals(matchingFirstName)
@@ -439,13 +444,18 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 		if (this.getArrestDate()!=null && record.getArrestDate()!=null && this.getArrestDate().equals(record.getArrestDate())) {
 			score++;
 		}
-		if (this.getArrestAge()!=0 && record.getArrestAge()!=0 && this.getArrestAge()==(record.getArrestAge())) {
+		if (this.getArrestAge()!=null && record.getArrestAge()!=null && this.getArrestAge()==(record.getArrestAge())) {
 			score++;
 		}
-		for (String thisCharge : thisCharges) {
-			for (String matchingCharge : matchingCharges) {
-				if (thisCharge.contains(matchingCharge) || matchingCharge.contains(thisCharge)) {
-					score++;
+		if (this.getTotalBond()!=null && record.getTotalBond()!=null && this.getTotalBond()==(record.getTotalBond())) {
+			score++;
+		}
+		if (thisCharges!=null && matchingCharges!=null){
+			for (String thisCharge : thisCharges) {
+				for (String matchingCharge : matchingCharges) {
+					if (thisCharge.contains(matchingCharge) || matchingCharge.contains(thisCharge)) {
+						score++;
+					}
 				}
 			}
 		}
