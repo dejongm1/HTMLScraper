@@ -4,6 +4,7 @@ import com.mcd.spider.entities.record.Record;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class SpiderWeb {
 	
@@ -19,6 +20,7 @@ public class SpiderWeb {
     private int numberOfPages;
     private boolean addMisc;
     private boolean retrieveMissedRecords;
+    private int recordCap;
     
     public SpiderWeb(long maxNumberOfResults, boolean addMisc, boolean retrieveMissedRecords) {
     	attemptCount = 1;
@@ -27,6 +29,7 @@ public class SpiderWeb {
 	    furthestPageToCheck = 9999;
 	    this.addMisc = addMisc;
 	    this.retrieveMissedRecords = retrieveMissedRecords;
+	    recordCap = offline?3:ThreadLocalRandom.current().nextInt(150, 250);
     }
  
 	public int getAttemptCount() {
@@ -116,5 +119,8 @@ public class SpiderWeb {
 	public boolean retrieveMissedRecords() {
         return retrieveMissedRecords;
     }
-	
+
+    public int getRecordCap() {
+        return recordCap;
+    }
 }

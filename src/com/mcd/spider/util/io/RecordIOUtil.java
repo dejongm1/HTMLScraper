@@ -19,8 +19,8 @@ public class RecordIOUtil {
 	
 	public static final Logger logger = Logger.getLogger(RecordIOUtil.class);
 	private static final String EXT = ".xls";
-    private static final String OUTPUT_DIR = "output/";
-    private static final String TRACKING_DIR = "tracking/";
+    private static String OUTPUT_DIR = "output/";
+    private static String TRACKING_DIR = OUTPUT_DIR + "tracking/";
 	
 	private String mainDocName;
 	private RecordInputUtil inputter;
@@ -30,13 +30,21 @@ public class RecordIOUtil {
 	private Record record;
 	
 	public RecordIOUtil(State state, Record record, Site site) {
-        this.crawledIdFile = new File(OUTPUT_DIR + TRACKING_DIR + site.getName() + "_Archive.txt");
-        this.uncrawledIdFile = new File(OUTPUT_DIR + TRACKING_DIR + site.getName() + "_Uncrawled.txt");
-		this.mainDocName = OUTPUT_DIR + state.getName() + "_" + record.getClass().getSimpleName() + "_" + site.getName() + EXT;
-		this.record = record;
-		this.outputter = new RecordOutputUtil(this, state, site);
-		this.inputter = new RecordInputUtil(this);
+        this(state, record, site, false);
 	}
+
+    public RecordIOUtil(State state, Record record, Site site, boolean testing) {
+	    if (testing) {
+            OUTPUT_DIR = "testing/"+OUTPUT_DIR;
+            TRACKING_DIR = "testing/"+TRACKING_DIR;
+        }
+        this.crawledIdFile = new File(TRACKING_DIR + site.getName() + "_Archive.txt");
+        this.uncrawledIdFile = new File(TRACKING_DIR + site.getName() + "_Uncrawled.txt");
+        this.mainDocName = OUTPUT_DIR + state.getName() + "_" + record.getClass().getSimpleName() + "_" + site.getName() + EXT;
+        this.record = record;
+        this.outputter = new RecordOutputUtil(this, state, site);
+        this.inputter = new RecordInputUtil(this);
+    }
 
 	public String getMainDocName() {
 		return mainDocName;
@@ -70,7 +78,15 @@ public class RecordIOUtil {
 		return outputter;
 	}
 
-	public Set<Record> mergeRecordsFromSheet(File fileOne, File fileTwo, int sheetNumber) {
+    public static String getEXT() {
+        return EXT;
+    }
+
+    public static String getOUTPUT_DIR() {
+        return OUTPUT_DIR;
+    }
+
+    public Set<Record> mergeRecordsFromSheet(File fileOne, File fileTwo, int sheetNumber) {
 		Set<Record> storedRecordsOne = inputter.readRecordsFromSheet(fileOne, sheetNumber);
 		Set<Record> storedRecordsTwo = inputter.readRecordsFromSheet(fileTwo, sheetNumber);
 		Set<Record> compiledRecords = new HashSet<>();

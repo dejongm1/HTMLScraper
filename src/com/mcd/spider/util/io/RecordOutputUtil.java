@@ -32,10 +32,11 @@ import java.util.Map;
 public class RecordOutputUtil {
 
 	public static final Logger logger = Logger.getLogger(RecordOutputUtil.class);
-	private static final String TEMP = "temp_copy";
 	private static final String EXT = ".xls";
-    private static final String OUTPUT_DIR = "output/";
-    private static final String TRACKING_DIR = "tracking/";
+    private static final Calendar WORKBOOK_CREATE_DATE = Calendar.getInstance();
+    private static final String BACKUP_SUFFIX = "_" + (WORKBOOK_CREATE_DATE.get(Calendar.MONTH) + 1) + "-"
+                                                    + WORKBOOK_CREATE_DATE.get(Calendar.DAY_OF_MONTH) + "-"
+                                                    + WORKBOOK_CREATE_DATE.get(Calendar.YEAR);
 
 	private String docName;
 	private WritableWorkbook workbook;
@@ -48,13 +49,10 @@ public class RecordOutputUtil {
 	private Site site;
 	private Workbook currentWorkbook;
 	private WritableWorkbook copyWorkbook;
-	private Calendar workbookCreateDate;
 	private RecordIOUtil ioutil;
 
 	public RecordOutputUtil(RecordIOUtil ioUtil, State state, Site site) {
-		Calendar date = Calendar.getInstance();
-		this.workbookCreateDate = date;
-		this.docName = ioUtil.getMainDocName();
+        this.docName = ioUtil.getMainDocName();
 		this.state = state;
 		this.record = ioUtil.getRecord();
 		this.site = site;
@@ -70,14 +68,16 @@ public class RecordOutputUtil {
 		return record;
 	}
 
-	public void createWorkbook() {
+    public static String getBackupSuffix() {
+        return BACKUP_SUFFIX;
+    }
+
+    public void createWorkbook() {
 		WritableWorkbook newWorkbook = null;
 		try {
 			//backup existing workbook first
 			createWorkbookCopy(docName,
-					docName.substring(0, docName.indexOf(EXT)) + "_" + (workbookCreateDate.get(Calendar.MONTH) + 1) + "-"
-							+ workbookCreateDate.get(Calendar.DAY_OF_MONTH) + "-"
-							+ workbookCreateDate.get(Calendar.YEAR) + EXT);
+					docName.substring(0, docName.indexOf(EXT)) + BACKUP_SUFFIX + EXT);
 			workbook = copyWorkbook;
 			handleBackup(docName, false);
 		} catch (BiffException | IOException | WriteException e) {
@@ -105,7 +105,7 @@ public class RecordOutputUtil {
 	}
 
     public String getTempFileName() {
-        return OUTPUT_DIR + TEMP + "_" + Calendar.getInstance().getTimeInMillis();
+        return RecordIOUtil.getOUTPUT_DIR() + "temp_copy" + "_" + Calendar.getInstance().getTimeInMillis();
     }
 
 	private void createWorkbookCopy(String oldBookName, String backupBookName) throws BiffException, IOException {
