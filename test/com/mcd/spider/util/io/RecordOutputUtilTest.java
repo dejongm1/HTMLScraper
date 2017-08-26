@@ -17,37 +17,49 @@ public class RecordOutputUtilTest {
     private RecordIOUtil ioUtil;
     private RecordOutputUtil outputter;
     private boolean mainDocAlreadyExists;
+    private File backUpDoc;
+    private File mainDoc;
+    private File mainDocRenamed;
 
     @BeforeClass
     public void setUp() throws IOException {
         ioUtil = new RecordIOUtil(State.getState("IA"), new ArrestRecord(), new ArrestsDotOrgSite(new String[]{"iowa"}), true);
         outputter = ioUtil.getOutputter();
-        mainDocAlreadyExists = new File(ioUtil.getMainDocName()).exists();
+        backUpDoc = new File(ioUtil.getMainDocName().substring(0, ioUtil.getMainDocName().indexOf(RecordIOUtil.getEXT())) + RecordOutputUtil.getBackupSuffix() + RecordIOUtil.getEXT());
+        mainDoc = new File(ioUtil.getMainDocName());
+        mainDocRenamed = new File("tempForTesting" + mainDoc.getName());
     }
 
     @AfterClass
     public void tearDown() {
-        //delete backup file created
+        mainDocRenamed.delete();
+        backUpDoc.delete();
         //delete merged and/or filtered file
     }
 
 
     @Test
     public void testCreateWorkbook_mainDocExists() throws Exception {
-        File backUp = new File(ioUtil.getMainDocName().substring(0, ioUtil.getMainDocName().indexOf(RecordIOUtil.getEXT())) + RecordOutputUtil.getBackupSuffix() + RecordIOUtil.getEXT());
-        File mainDoc = new File(ioUtil.getMainDocName());
+        Workbook mainWorkbook = Workbook.getWorkbook(mainDoc);
+        Workbook backupWorkbook = Workbook.getWorkbook(backUpDoc);
         outputter.createWorkbook();
-        if (mainDocAlreadyExists) {
-            Assert.assertTrue(backUp.exists());
-        } else {
-            Workbook workbook = Workbook.getWorkbook(mainDoc);
-            Assert.assertEquals(workbook.getSheet(0).getRows(), 1);
-        }
+        Assert.assertTrue(mainDoc.exists());
+        Assert.assertTrue(backUpDoc.exists());
+        Assert.assertEquals(mainWorkbook.getNumberOfSheets(), backupWorkbook.getNumberOfSheets());
+        Assert.assertEquals(mainWorkbook.getSheet(0).getRows(), backupWorkbook.getSheet(0).getRows());
+        Assert.assertEquals(mainWorkbook.getSheet(0).getName(), backupWorkbook.getSheet(0).getName());
+    }
 
-        //backup should have same size/rows as mainDoc
-        //maindoc should only have header row if !mainDocAlreadyExists
-        //sheetCount should be the same
-
+    @Test
+    public void testCreateWorkbook_mainDocDoesntExist() throws Exception {
+        mainDoc.renameTo(mainDocRenamed);
+        outputter.createWorkbook();
+        Workbook mainWorkbook = Workbook.getWorkbook(mainDoc);
+        Assert.assertFalse(mainDoc.exists());
+        Assert.assertFalse(backUpDoc.exists());
+        Assert.assertEquals(mainWorkbook.getSheet(0).getRows(), 1);
+        Assert.assertEquals(mainWorkbook.getNumberOfSheets(), 1);
+        Assert.assertEquals(mainWorkbook.getSheet(0).getName(), outputter.getState().getName());
     }
 
     @Test
