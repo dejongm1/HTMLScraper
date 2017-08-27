@@ -1,23 +1,18 @@
-package com.mcd.spider.engine.record;
+package com.mcd.spider.entities.record;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Calendar;
-import java.util.Date;
-
+import jxl.Sheet;
+import jxl.Workbook;
+import jxl.read.biff.BiffException;
 import org.testng.Assert;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
-import com.mcd.spider.entities.record.ArrestRecord;
-import com.mcd.spider.entities.record.Record;
-import com.mcd.spider.entities.record.RecordTest;
-
-import jxl.Sheet;
-import jxl.Workbook;
-import jxl.read.biff.BiffException;
+import java.io.File;
+import java.io.IOException;
+import java.util.Calendar;
+import java.util.Date;
 
 /**
  *
@@ -143,6 +138,28 @@ public class ArrestRecordTest {
         Assert.assertFalse(one.matches(two));
         Assert.assertFalse(two.matches(one));
 	}
-	
+
+    @Test(dependsOnGroups={"RecordTest"})
+    public void testConvertToInches() {
+	    ArrestRecord arrestRecord = new ArrestRecord();
+	    int heightOne = arrestRecord.convertToInches("5'04\"");
+        int heightTwo = arrestRecord.convertToInches("5'4\"");
+        int heightThree = arrestRecord.convertToInches("05'4\"");
+        int heightFour = arrestRecord.convertToInches("05'04\"");
+
+        int heightFive = arrestRecord.convertToInches("5feet4inches");
+        int heightSix = arrestRecord.convertToInches("5 feet 4 inches");
+        int heightSeven = arrestRecord.convertToInches("5ft 4 inches");
+        int heightEight = arrestRecord.convertToInches("5 foot and 04 inches");
+
+        Assert.assertEquals(heightOne, 64);
+        Assert.assertEquals(heightTwo, 64);
+        Assert.assertEquals(heightThree, 64);
+        Assert.assertEquals(heightFour, 64);
+        Assert.assertEquals(heightFive, 64);
+        Assert.assertEquals(heightSix, 64);
+        Assert.assertEquals(heightSeven, 64);
+        Assert.assertEquals(heightEight, 64);
+    }
 
 }

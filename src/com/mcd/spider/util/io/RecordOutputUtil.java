@@ -298,12 +298,12 @@ public class RecordOutputUtil {
 	}
 
 	public void backupUnCrawledRecords(Map<Object, String> recordsDetailsUrlMap) {
-		// save, at minimum IDs, to a file
-		// wipe out file first?
 		for (Map.Entry<Object, String> entry : recordsDetailsUrlMap.entrySet()) {
 			try {
-				String id = site.generateRecordId(entry.getValue());
-				writeIdToFile(uncrawledIdFile, id);
+			    if (!entry.getValue().startsWith("CRAWLED")) {
+                    String id = site.generateRecordId(entry.getValue());
+                    writeIdToFile(uncrawledIdFile, id);
+                }
 			} catch (ArrayIndexOutOfBoundsException | StringIndexOutOfBoundsException e) {
 				// not a record detail url so ID could not be parsed
 			}

@@ -347,15 +347,128 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 //		return originalString!=null?originalString.replaceAll("\\s+", "").trim().toLowerCase():null;
 //	}
 	
-	private String formatLettersOnly(String originalString) {
+	@Override
+	public boolean matches(Record recordToMatch) {
+		//ranking system, needs testing
+		//score of 6 or higher means a match
+		//one or more points for each element matched
+
+		//for height and weight, remove special characters, letters and whitespace
+		//for charges remove special characters, whitespace and numbers
+		//can we account for people that are arrested multiple times? look for --- in ID ?
+        int score = 0;
+        ArrestRecord record = (ArrestRecord) recordToMatch;
+        try {
+            String thisFullName = formatLettersOnly(this.fullName);
+            String matchingFullName = formatLettersOnly(record.getFullName());
+
+            String thisFirstName = formatLettersOnly(this.firstName);
+            String matchingFirstName = formatLettersOnly(record.getFirstName());
+
+            String thisMiddleName = formatLettersOnly(this.middleName);
+            String matchingMiddleName = formatLettersOnly(record.getMiddleName());
+
+            String thisLastName = formatLettersOnly(this.lastName);
+            String matchingLastName = formatLettersOnly(record.getLastName());
+
+            String thisCounty = formatLettersOnly(this.county);
+            String matchingCounty = formatLettersOnly(record.getCounty());
+
+            String thisEyeColor = formatLettersOnly(this.eyeColor);
+            String matchingEyeColor = formatLettersOnly(record.getEyeColor());
+
+            String thisHairColor = formatLettersOnly(this.hairColor);
+            String matchingHairColor = formatLettersOnly(record.getHairColor());
+
+            String thisGender = formatLettersOnly(this.gender);
+            String matchingGender = formatLettersOnly(record.getGender());
+
+            int thisHeight = convertToInches(this.height);
+            int matchingHeight = convertToInches(record.getHeight());
+
+            String thisWeight = formatNumbersOnly(this.weight);
+            String matchingWeight = formatNumbersOnly(record.getWeight());
+
+//		int thisArrestAge = this.arrestAge;
+//		int matchingArrestAge = record.getArrestAge();
+//
+//		Calendar thisArrestDate = this.arrestDate;
+//		Calendar matchingArrestDate = record.getArrestDate();
+
+            String[] thisCharges = formatArray(this.charges);
+            String[] matchingCharges = formatArray(record.getCharges());
+
+            if (neitherIsNull(thisFullName, matchingFullName) && thisFullName.equals(matchingFullName)
+                    || (neitherIsNull(thisFirstName, matchingFirstName) && thisFirstName.equals(matchingFirstName)
+                    && neitherIsNull(thisLastName, matchingLastName) && thisLastName.equals(matchingLastName))) {
+                score += 5;
+            }
+            if (neitherIsNull(thisMiddleName, matchingMiddleName) && thisMiddleName.equals(matchingMiddleName)) {
+                score++;
+            }
+            if (neitherIsNull(thisCounty,  matchingCounty) && thisCounty.equals(matchingCounty)) {
+                score++;
+            }
+            if (neitherIsNull(thisEyeColor, matchingEyeColor) && thisEyeColor.equals(matchingEyeColor)
+                    && neitherIsNull(thisHairColor, matchingHairColor) && thisHairColor.equals(matchingHairColor)) {
+                score++;
+            }
+            if (neitherIsNull(thisGender, matchingGender) && thisGender.equals(matchingGender)) {
+                score++;
+            }
+            if (thisHeight!=0 && matchingHeight!=0 && thisHeight==matchingHeight) {
+                score++;
+            }
+            if (neitherIsNull(thisWeight, matchingWeight) && thisWeight.equals(matchingWeight)) {
+                score++;
+            }
+            if (neitherIsNull(this.getArrestDate(), record.getArrestDate()) && this.getArrestDate().equals(record.getArrestDate())) {
+                score++;
+            }
+            if (neitherIsNull(this.getTotalBond(), record.getTotalBond()) && this.getTotalBond()==(record.getTotalBond())) {
+                score++;
+            }
+            if (thisCharges!=null && matchingCharges!=null) {
+                for (String thisCharge : thisCharges) {
+                    for (String matchingCharge : matchingCharges) {
+                        if (thisCharge.contains(matchingCharge) || matchingCharge.contains(thisCharge)) {
+                            score++;
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Exception caught trying to match records " + this.getId() + " and " + record.getId() + ". Considering it a non-match", e);
+        }
+		return score >= 8;
+	}
+
+	protected String formatLettersOnly(String originalString) {
 		return originalString!=null?originalString.replaceAll("[^a-zA-Z]", "").trim().toLowerCase():null;
 	}
-	
-	private String formatNumbersOnly(String originalString) {
+
+    protected int convertToInches(String heightString) {
+	    String numberString = formatNumbersOnly(heightString);
+	    if (numberString!=null && !numberString.equals("")) {
+            int feet = 0;
+            int inches = 0;
+            //if starts with 0, get first two digita, else get first digits
+            //multiply by 12
+            //add to rest of string
+            int inchIndex = numberString.startsWith("0")?2:1;
+            feet = Integer.parseInt(numberString.substring(0, inchIndex));
+            inches = Integer.parseInt(numberString.substring(inchIndex));
+            return feet*12 + inches;
+        } else {
+            return 0;
+        }
+    }
+
+    protected String formatNumbersOnly(String originalString) {
 		return originalString!=null?originalString.replaceAll("[^^0-9]", ""):null;
 	}
 	
-	private String[] formatArray(String[] stringArray) {
+    protected String[] formatArray(String[] stringArray) {
 		String[] resultCharges = null;
 		if (stringArray!=null && stringArray.length>0) {
 			resultCharges = new String[stringArray.length];
@@ -365,100 +478,8 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 		}
 		return resultCharges;
 	}
-	
-	@Override
-	public boolean matches(Record recordToMatch) {
-		//ranking system, needs testing
-		//score of 6 or higher means a match
-		//one or more points for each element matched
-		
-		//for height and weight, remove special characters, letters and whitespace
-		//for charges remove special characters, whitespace and numbers
-		//can we account for people that are arrested multiple times? look for --- in ID ?
-		int score = 0;
-		ArrestRecord record = (ArrestRecord) recordToMatch;
-		
-		String thisFullName = formatLettersOnly(this.fullName);
-		String matchingFullName = formatLettersOnly(record.getFullName());
 
-		String thisFirstName = formatLettersOnly(this.firstName);
-		String matchingFirstName = formatLettersOnly(record.getFirstName());
-
-		String thisMiddleName = formatLettersOnly(this.middleName);
-		String matchingMiddleName = formatLettersOnly(record.getMiddleName());
-
-		String thisLastName = formatLettersOnly(this.lastName);
-		String matchingLastName = formatLettersOnly(record.getLastName());
-
-		String thisCounty = formatLettersOnly(this.county);
-		String matchingCounty = formatLettersOnly(record.getCounty());
-
-		String thisEyeColor = formatLettersOnly(this.eyeColor);
-		String matchingEyeColor = formatLettersOnly(record.getEyeColor());
-
-		String thisHairColor = formatLettersOnly(this.hairColor);
-		String matchingHairColor = formatLettersOnly(record.getHairColor());
-
-		String thisGender = formatLettersOnly(this.gender);
-		String matchingGender = formatLettersOnly(record.getGender());
-
-		String thisHeight = formatNumbersOnly(this.height);
-		String matchingHeight = formatNumbersOnly(record.getHeight());
-
-		String thisWeight = formatNumbersOnly(this.weight);
-		String matchingWeight = formatNumbersOnly(record.getWeight());
-
-//		int thisArrestAge = this.arrestAge;
-//		int matchingArrestAge = record.getArrestAge();
-//
-//		Calendar thisArrestDate = this.arrestDate;
-//		Calendar matchingArrestDate = record.getArrestDate();
-
-		String[] thisCharges = formatArray(this.charges);
-		String[] matchingCharges = formatArray(record.getCharges());
-		
-		if (thisFullName!=null && matchingFullName!=null && thisFullName.equals(matchingFullName)
-				|| (thisFirstName!=null && matchingFirstName!=null && thisFirstName.equals(matchingFirstName)
-                    && thisLastName!=null && matchingLastName!=null && thisLastName.equals(matchingLastName))) {
-			score+=5;
-		}
-		if (thisMiddleName!=null && matchingMiddleName!=null && thisMiddleName.equals(matchingMiddleName)) {
-			score++;
-		}
-		if (thisCounty!=null && matchingCounty!=null && thisCounty.equals(matchingCounty)) {
-			score++;
-		}
-		if (thisEyeColor!=null && matchingEyeColor!=null && thisEyeColor.equals(matchingEyeColor)
-                && thisHairColor!=null && matchingHairColor!=null && thisHairColor.equals(matchingHairColor)) {
-			score++;
-		}
-		if (thisGender!=null && matchingGender!=null && thisGender.equals(matchingGender)) {
-			score++;
-		}
-		if (thisHeight!=null && matchingHeight!=null && thisHeight.equals(matchingHeight)) {
-			score++;
-		}
-		if (thisWeight!=null && matchingWeight!=null && thisWeight.equals(matchingWeight)) {
-			score++;
-		}
-		if (this.getArrestDate()!=null && record.getArrestDate()!=null && this.getArrestDate().equals(record.getArrestDate())) {
-			score++;
-		}
-		if (this.getArrestAge()!=null && record.getArrestAge()!=null && this.getArrestAge()==(record.getArrestAge())) {
-			score++;
-		}
-		if (this.getTotalBond()!=null && record.getTotalBond()!=null && this.getTotalBond()==(record.getTotalBond())) {
-			score++;
-		}
-		if (thisCharges!=null && matchingCharges!=null){
-			for (String thisCharge : thisCharges) {
-				for (String matchingCharge : matchingCharges) {
-					if (thisCharge.contains(matchingCharge) || matchingCharge.contains(thisCharge)) {
-						score++;
-					}
-				}
-			}
-		}
-		return score >= 8;
-	}
+	private boolean neitherIsNull(Object first, Object second) {
+	    return first!=null && second!=null;
+    }
 }
