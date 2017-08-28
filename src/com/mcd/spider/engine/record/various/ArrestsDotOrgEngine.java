@@ -200,24 +200,26 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 	            				arrestRecords.add(arrestRecord);
 	            				//save each record in case of failures mid-crawling
 	            				recordOutputUtil.addRecordToMainWorkbook(arrestRecord);
+	            				//"remove" record from recordsDetailUrlMap
+                                recordsDetailsUrlMap.replace(k, "CRAWLED" + recordsDetailsUrlMap.get(k));
 	            				logger.debug("Record " + spiderWeb.getRecordsProcessed() + " saved");
 	            			}
 	            			spiderUtil.sleep(ConnectionUtil.getSleepTime(site), true);//sleep at random interval
 	            		} catch (Exception e) {
 	            			logger.error("Generic exception caught while trying to grab arrest record for " + profileDetailDoc.baseUri(), e);
-                            spiderUtil.sleep(ConnectionUtil.getSleepTime(site)/2, false);
                             logger.info("Sleeping for half time because no record was crawled");
+                            spiderUtil.sleep(ConnectionUtil.getSleepTime(site)/2, false);
 	            		}
 
 	            	} else {
 	            		logger.debug("This doc doesn't have any record details: " + profileDetailDoc.baseUri());
-                        spiderUtil.sleep(ConnectionUtil.getSleepTime(site)/2, false);
                         logger.info("Sleeping for half time because no record was crawled");
+                        spiderUtil.sleep(ConnectionUtil.getSleepTime(site)/2, false);
 	            	}
 	            } else {
 	            	logger.error("Failed to load html doc from " + url);
-                    spiderUtil.sleep(ConnectionUtil.getSleepTime(site)/2, false);
                     logger.info("Sleeping for half time because no record was crawled");
+                    spiderUtil.sleep(ConnectionUtil.getSleepTime(site)/2, false);
 	            }
 
                 //don't change previous key (referer) if current url is detail page, they're just popups
@@ -410,17 +412,26 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     	return response.parse();
     }
     
-    public Map<Object,String> compileRecordDetailUrlMap(Document mainPageDoc, Set<String> idList) {
-        Map<Object,String> recordDetailUrlMap = new HashMap<>();
-        for (String id : idList) {
-            recordDetailUrlMap.put(id, site.generateDetailUrl(id));
+    @Override
+    public void setCookies(Connection.Response response) {
+    	for (Map.Entry<String,String> cookieEntry : response.cookies().entrySet()) {
+    		spiderWeb.addSessionCookie(cookieEntry.getKey(), cookieEntry.getValue());
+            logger.debug(cookieEntry.getKey() + "=" + cookieEntry.getValue());
+		}
+
+		if (spiderWeb.getRecordsProcessed() % spiderWeb.getRecordCap() == 0 && spiderWeb.getRecordsProcessed() != 0) {
+    	    Map<String,String> sessionCookies = spiderWeb.getSessionCookies();
+            sessionCookies.remove("PHPSESSID");
+            //"__cfduid"? WTF does override security information mean?
+            sessionCookies.remove("__cfduid");
+			//every 200 or so records, cycle back to 1
+			//TODO change IP?
+			//these should only increment with results page views or new details pages, not layover details
+			response.cookie("views_24", "1");
+			response.cookie("views_session", "1");
+			response.cookie("starttime_24", String.valueOf(Calendar.getInstance().getTime().getTime()));
+			connectionUtil.changeUserAgent();
         }
-        recordIOUtil.getUncrawledIdFile().delete();
-        //include some non-detail page links
-        if (spiderWeb.getMisc()) {
-            recordDetailUrlMap.putAll(site.getMiscSafeUrlsFromDoc(mainPageDoc, recordDetailUrlMap.size()));
-        }
-        return recordDetailUrlMap;
     }
     
     @Override
@@ -530,22 +541,19 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     	return filteredArrestRecords;
     }
     
-    @Override
-    public void setCookies(Connection.Response response) {
-    	for (Map.Entry<String,String> cookieEntry : response.cookies().entrySet()) {
-    		spiderWeb.addSessionCookie(cookieEntry.getKey(), cookieEntry.getValue());
-            logger.debug(cookieEntry.getKey() + "=" + cookieEntry.getValue());
-		}
-
-    	int recordCap = spiderWeb.isOffline()?3:330;
-		if (spiderWeb.getRecordsProcessed() % recordCap == 0 && spiderWeb.getRecordsProcessed() != 0) {
-			//every 330 records, cycle back to 1
-			//TODO change IP?
-			//these should only increment with results page views or new details pages, not layover details
-			response.cookie("views_24", "1");
-			response.cookie("views_session", "1");
-			response.cookie("starttime_24", String.valueOf(Calendar.getInstance().getTime().getTime()));
-			connectionUtil.changeUserAgent();
+    public Map<Object,String> compileRecordDetailUrlMap(Document mainPageDoc, Set<String> idList) {
+        Map<Object,String> recordDetailUrlMap = new HashMap<>();
+        for (String id : idList) {
+            //list should only have uncrawled records but adding this check to be safe
+            if (!spiderWeb.getCrawledIds().contains(id)) {
+                recordDetailUrlMap.put(id, site.generateDetailUrl(id));
+            }
         }
+        recordIOUtil.getUncrawledIdFile().delete();
+        //include some non-detail page links
+        if (spiderWeb.getMisc()) {
+            recordDetailUrlMap.putAll(site.getMiscSafeUrlsFromDoc(mainPageDoc, recordDetailUrlMap.size()));
+        }
+        return recordDetailUrlMap;
     }
 }

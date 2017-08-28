@@ -259,16 +259,16 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
                 } else if (label.contains("charges")) {
                     record.setCharges(extractValue(profileDetailElement).split(";"));
                 } else if (label.contains("sex")) {
-                    if (!extractValue(profileDetailElement).equalsIgnoreCase("N/A")) {
-                        record.setGender(extractValue(profileDetailElement));
-                    }
+                    record.setGender(extractValue(profileDetailElement));
                 } else if (label.contains("city")) {
 //					record.setCity(city);
 					record.setState("IA");
                 } else if (label.contains("bond")) {
                     String bondAmount = extractValue(profileDetailElement);
                     Integer totalBond = Integer.parseInt(bondAmount.replace("$", "").replace(",", ""));
-                    record.setTotalBond(totalBond);
+                    if (totalBond!=0) {
+                        record.setTotalBond(totalBond);
+                    }
                 } else if (label.contains("height")) {
                     record.setHeight(extractValue(profileDetailElement));
                 } else if (label.contains("weight")) {
@@ -329,7 +329,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
 
     @Override
     public String extractValue(Element profileDetail) {
-        return profileDetail.text().substring(profileDetail.text().indexOf(':')+1).trim();
+        return profileDetail.text().equalsIgnoreCase("N/A")?profileDetail.text().substring(profileDetail.text().indexOf(':')+1).trim():null;
     }
 
     @Override
