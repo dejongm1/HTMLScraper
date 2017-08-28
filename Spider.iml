@@ -27,7 +27,7 @@
       <excludeFolder url="file://$MODULE_DIR$/bin_nope" />
       <excludeFolder url="file://$MODULE_DIR$/htmls" />
       <excludeFolder url="file://$MODULE_DIR$/logs" />
-      <excludeFolder url="file://$MODULE_DIR$/output" />
+      <excludeFolder url="file://$MODULE_DIR$/output/tracking" />
       <excludeFolder url="file://$MODULE_DIR$/test-output" />
       <excludeFolder url="file://$MODULE_DIR$/zz-misc-files" />
     </content>
