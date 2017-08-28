@@ -16,7 +16,6 @@ public class RecordOutputUtilTest {
 
     private RecordIOUtil ioUtil;
     private RecordOutputUtil outputter;
-    private boolean mainDocAlreadyExists;
     private File backUpDoc;
     private File mainDoc;
     private File mainDocRenamed;

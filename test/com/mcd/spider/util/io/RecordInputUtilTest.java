@@ -25,14 +25,13 @@ import java.util.Set;
 
 public class RecordInputUtilTest {
 
-	private File testReadInputFile = new File("test/resources/RecordInputTest.xls");
+	private File testReadInputFile = new File("output/testing/RecordInputTest.xls");
 	private RecordIOUtil ioUtil;
 	RecordInputUtil inputter;
 	Sheet sheet;
 	
 	@BeforeClass
 	public void setUpClass() throws BiffException, IOException {
-		System.setProperty("runInEclipse", "true");
 		ioUtil = new RecordIOUtil(State.getState("IA"), new ArrestRecord(), new ArrestsDotOrgSite(new String[]{"iowa"}));
 		inputter = ioUtil.getInputter();
 		Assert.assertTrue(testReadInputFile.exists());
@@ -53,7 +52,7 @@ public class RecordInputUtilTest {
 		
 	}
 	
-	@Test
+	@Test(dependsOnGroups={"ReadRowsIn"}, groups={"Inputter"})
 	public void testReadRecordsFromSheet() {
 		Set<Record> readRecords = inputter.readRecordsFromSheet(testReadInputFile, "readRecordsIn");
 		Record[] readRecordArray = new Record[readRecords.size()];
@@ -63,7 +62,7 @@ public class RecordInputUtilTest {
 		Assert.assertEquals(readRecords.size(), 3);
 	}
 	
-	@Test
+	@Test(groups={"Inputter"})
 	public void testGetSheetIndex() {
 		int sheetNumber0 = inputter.getSheetIndex(testReadInputFile, "Sheet0");
 		int sheetNumber2 = inputter.getSheetIndex(testReadInputFile, "Sheet2");

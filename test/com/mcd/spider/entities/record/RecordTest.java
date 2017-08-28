@@ -1,16 +1,25 @@
 package com.mcd.spider.entities.record;
 
-import jxl.Sheet;
-import jxl.Workbook;
-import jxl.read.biff.BiffException;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Calendar;
-import java.util.Date;
+import com.mcd.spider.entities.record.ArrestRecord.RecordColumnEnum;
+import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
+import com.mcd.spider.util.io.RecordIOUtil;
+
+import jxl.Sheet;
+import jxl.Workbook;
+import jxl.read.biff.BiffException;
 
 /**
  *
@@ -20,21 +29,38 @@ import java.util.Date;
 
 public class RecordTest {
 
-	private File testReadInputFile = new File("test/resources/RecordInputTest.xls");
+	private File testReadInputFile = new File("output/testing/RecordInputTest.xls");
 	static Sheet mainSheet;
+	private RecordIOUtil ioUtil;
+	private Workbook workbook;
 	
 	@BeforeClass
 	public void setUpClass() throws BiffException, IOException {
 		Assert.assertTrue(testReadInputFile.exists());
-		Workbook workbook = Workbook.getWorkbook(testReadInputFile);
+		workbook = Workbook.getWorkbook(testReadInputFile);
         if (workbook!=null) {
             mainSheet = workbook.getSheet("readRecordsIn");
         }
         Assert.assertNotNull(mainSheet);
+        ioUtil = new RecordIOUtil(State.getState("IA"), new ArrestRecord(), new ArrestsDotOrgSite(new String[]{"iowa"}), true);
 	}
 
+	@Test(groups={"ColumnOrder"})
+	public void getColumnOrder_AllColumns() {
+		
+	}
 
-	@Test(groups={"RecordTest"})
+	@Test(groups={"ColumnOrder"})
+	public void getColumnOrder_MissingColumns() {
+		
+	}
+
+	@Test(groups={"ColumnOrder"})
+	public void getColumnOrder_ExtraColumns() {
+		
+	}
+	
+	@Test(groups={"ReadRowsIn"}, dependsOnGroups={"ColumnOrder"})
 	public void readRowIntoRecord_ArrestRecordComplete() {
 		ArrestRecord record1 = new ArrestRecord();
 		Record.readRowIntoRecord(ArrestRecord.class, mainSheet, record1, 1);
@@ -65,16 +91,47 @@ public class RecordTest {
 
 	}
 
-	@Test(groups={"RecordTest"})
-	public void readRowIntoRecord_ArrestRecordMissingData() {
+	@Test(groups={"ReadRowsIn"}, dependsOnGroups={"ColumnOrder"})
+	public void readRowIntoRecord_ArrestRecordDifferentNamedColumns() {
+		ArrestRecord record1 = new ArrestRecord();
+		Sheet diffColumnsSheet = workbook.getSheet("readRecordsInDiffColumns");
+		Record.readUnorderedRowIntoRecord(ArrestRecord.class, diffColumnsSheet, record1, 1, Record.getColumnOrder(ArrestRecord.class, diffColumnsSheet, record1));
+
+		Calendar testCalendar = convertStringToCalendar("Aug-20-2017 04:09 AM");
+		
+		Assert.assertEquals(record1.getId(), "Arlena_Ramirez_34029315");
+		Assert.assertEquals(record1.getMiddleName(), null);
+		Assert.assertEquals(record1.getFullName(), "Arlena  Ramirez");
+		Assert.assertEquals(record1.getLastName(), "Ramirez");
+		Assert.assertEquals(record1.getArrestDate().get(Calendar.MONTH), testCalendar.get(Calendar.MONTH));
+		Assert.assertEquals(record1.getArrestDate().get(Calendar.DAY_OF_MONTH), testCalendar.get(Calendar.DAY_OF_MONTH));
+		Assert.assertEquals(record1.getArrestDate().get(Calendar.YEAR), testCalendar.get(Calendar.YEAR));
+		Assert.assertEquals(record1.getArrestDate().get(Calendar.HOUR), testCalendar.get(Calendar.HOUR));
+		Assert.assertEquals(record1.getArrestDate().get(Calendar.MINUTE), testCalendar.get(Calendar.MINUTE));
+		Assert.assertEquals(record1.getTotalBond(), new Long(800));
+		Assert.assertEquals(record1.getArrestAge(), new Integer(28));
+		Assert.assertEquals(record1.getGender(), "Female");
+		Assert.assertEquals(record1.getCity(), "Urbandale");
+		Assert.assertEquals(record1.getHeight(), "5'05\"");
+		Assert.assertEquals(record1.getWeight(), "200 lbs");
+		Assert.assertEquals(record1.getCounty(), "Polk");
+		Assert.assertEquals(record1.getHairColor(), "Black");
+		Assert.assertEquals(record1.getEyeColor(), "Brown");
+		Assert.assertEquals(record1.getBirthPlace(), "Mars");
+		Assert.assertEquals(record1.getCharges()[0], "#1 ASSAULT CAUSING BODILY INJURY OR MENTAL ILLNESS STATUTE: SR308623 BOND: $1000");
+
+	}
+	@Test(groups={"ReadRowsIn"})
+	public void readRowIntoRecord_ArrestRecordMissingAndBadData() {
 		ArrestRecord record4 = new ArrestRecord();
 		Record.readRowIntoRecord(ArrestRecord.class, mainSheet, record4, 4);
 
-		Assert.assertEquals(record4.getId(), "Fatima_Kenjar_34021731");
-		Assert.assertEquals(record4.getFirstName(), "Fatima");
-		Assert.assertEquals(record4.getFullName(), "Fatima  Kenjar");
-		Assert.assertEquals(record4.getLastName(), "Kenjar");
+		Assert.assertEquals(record4.getId(), "BadMissing_Data_34021731");
+		Assert.assertEquals(record4.getFirstName(), "BadMissing");
+		Assert.assertEquals(record4.getFullName(), "BadMissing Record Data");
+		Assert.assertEquals(record4.getLastName(), "Data");
 		Assert.assertEquals(record4.getGender(), "Female");
+		Assert.assertNull(record4.getArrestDate());
 		Assert.assertNull(record4.getTotalBond());
 		Assert.assertNull(record4.getArrestAge());
 		Assert.assertNull(record4.getState());
@@ -87,14 +144,42 @@ public class RecordTest {
 		
 	}
 
-	@Test
-	public void splitByField_HappyPath() {
-		throw new RuntimeException("Test not implemented");
+	@Test(dependsOnGroups={"ReadRowsIn", "Inputter"})
+	public void splitByField_ArrestRecordsByCounty() throws InterruptedException {
+		List<Record> records = new ArrayList<>(ioUtil.getInputter().readRecordsFromSheet(testReadInputFile, "readRecordsIn"));
+        Collections.sort(records, ArrestRecord.CountyComparator);
+		List<List<Record>> splitRecords = Record.splitByField(new ArrayList<>(records), RecordColumnEnum.COUNTY_COLUMN.getColumnTitle(), ArrestRecord.class);
+		int polkCountyIndex = 0;
+		int johnsonCountyIndex = 0;
+		if (((ArrestRecord)splitRecords.get(0).get(0)).getCounty().equals("Polk")) {
+			polkCountyIndex = 0;
+			johnsonCountyIndex = 1;
+		} else {
+			polkCountyIndex = 1;
+			johnsonCountyIndex = 0;
+		}
+
+		System.out.println("SplitRecords size: " + splitRecords.size());
+		Assert.assertEquals(splitRecords.size(), 2);
+		Assert.assertEquals(splitRecords.get(polkCountyIndex).size(), 2);
+		Assert.assertEquals(splitRecords.get(johnsonCountyIndex).size(), 1);
+		Assert.assertEquals(((ArrestRecord)splitRecords.get(polkCountyIndex).get(0)).getCounty(), ((ArrestRecord)splitRecords.get(polkCountyIndex).get(1)).getCounty());
+		Assert.assertNotEquals(((ArrestRecord)splitRecords.get(polkCountyIndex).get(0)).getCounty(), ((ArrestRecord)splitRecords.get(johnsonCountyIndex).get(0)).getCounty());
 	}
 
-	@Test
-	public void splitByField_NullDelimiter() {
-		throw new RuntimeException("Test not implemented");
+	@Test(dependsOnGroups={"ReadRowsIn", "Inputter"})
+	public void splitByField_ArrestRecordsByCity_NullDelimiter() {
+		List<Record> records = new ArrayList<>(ioUtil.getInputter().readRecordsFromSheet(testReadInputFile, "readRecordsIn"));
+        Collections.sort(records, ArrestRecord.CityComparator);
+		List<List<Record>> splitRecords = Record.splitByField(new ArrayList<>(records), RecordColumnEnum.CITY_COLUMN.getColumnTitle(), ArrestRecord.class);
+		
+		Assert.assertEquals(splitRecords.size(), 3);
+		Assert.assertEquals(splitRecords.get(0).size(), 1);
+		Assert.assertEquals(splitRecords.get(1).size(), 1);
+		Assert.assertEquals(splitRecords.get(2).size(), 1);
+		Assert.assertNotEquals(((ArrestRecord)splitRecords.get(0).get(0)).getCity(), ((ArrestRecord)splitRecords.get(1).get(0)).getCity());
+		Assert.assertNotEquals(((ArrestRecord)splitRecords.get(1).get(0)).getCity(), ((ArrestRecord)splitRecords.get(2).get(0)).getCity());
+		
 	}
 
 

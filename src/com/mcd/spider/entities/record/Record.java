@@ -36,15 +36,17 @@ public interface Record {
     Record merge(Record record);
     
     boolean matches(Record record);
+
+    CaseFormat getColumnCaseFormat();
     
     @SuppressWarnings({ "unchecked", "rawtypes" })
-	static Record readRowIntoRecord(Class clazz, Sheet mainSheet, Object rowRecord, int r) {
+	static Record readRowIntoRecord(Class clazz, Sheet sheet, Object rowRecord, int r) {
     	int c = 0;
     	try {
 	    	for (Object currentEnum : (List<Object>) clazz.getMethod("getColumnEnums").invoke(rowRecord)) {
 				try {
-		    		String cellContents = mainSheet.getCell(c, r).getContents();
-		    		String labelContents = mainSheet.getCell(c, 0).getContents();
+		    		String cellContents = sheet.getCell(c, r).getContents();
+		    		String labelContents = sheet.getCell(c, 0).getContents().replaceAll("\\s+", "");
 		    		String fieldTitle = (String)currentEnum.getClass().getMethod("getFieldName").invoke(currentEnum);
 		    		String columnTitle = (String)currentEnum.getClass().getMethod("getColumnTitle").invoke(currentEnum);
 		    		if (cellContents.equals("")) {
@@ -60,10 +62,11 @@ public interface Record {
                             Calendar calendar = Calendar.getInstance();
                             try {
                                 calendar.setTime(formatter.parse(cellContents));
+                                fieldSetter.invoke(rowRecord, fieldType.cast(calendar));
                             } catch (ParseException e) {
-                                logger.error("Error parsing date string: "+cellContents, e);
+                                logger.error("Error parsing date string: "+cellContents);
+                                fieldSetter.invoke(rowRecord, fieldType.cast(null));
                             }
-                            fieldSetter.invoke(rowRecord, fieldType.cast(calendar));
                         } else if (fieldType.getSimpleName().equalsIgnoreCase(long.class.getSimpleName())) {
                             fieldSetter.invoke(rowRecord, Long.parseLong(cellContents));
                         } else if (fieldType.getSimpleName().equalsIgnoreCase(int.class.getSimpleName())) {
@@ -79,11 +82,83 @@ public interface Record {
 		    	} catch (InvocationTargetException | IllegalAccessException | IllegalArgumentException | SecurityException e) {
 		    		logger.error("Error trying to read cell into record object, column " + c + " row " + r, e);
 		    	} catch (Exception e) {
-		    		logger.error("Some uhandled exception was cuaght while trying to parse record at column " + c + " row " + r, e);
+		    		logger.error("Some uhandled exception was caught while trying to parse record at column " + c + " row " + r, e);
 		    	}
 			}
     	} catch (NoSuchMethodException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException e) {
     		logger.error("Error getting list of record enums", e);
+    	}
+    	return (Record) rowRecord;
+    }
+    
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+	static List<Object> getColumnOrder(Class clazz, Sheet sheet, Object rowRecord) {
+    	List<Object> columnEnums = new ArrayList<>();
+    	for (int c=0;c<sheet.getColumns();c++) {
+	    	String labelContents = sheet.getCell(c, 0).getContents().replaceAll("\\s+", "");
+			try {
+				boolean matchingColumnFound = false;
+				for (Object currentEnum : (List<Object>) clazz.getMethod("getColumnEnums").invoke(rowRecord)) {
+					if (!matchingColumnFound) {
+						String fieldTitle = (String)currentEnum.getClass().getMethod("getFieldName").invoke(currentEnum);
+						String columnTitle = (String)currentEnum.getClass().getMethod("getColumnTitle").invoke(currentEnum);
+						if (columnTitle.equalsIgnoreCase(labelContents) || fieldTitle.equalsIgnoreCase(labelContents)) {
+							columnEnums.add(currentEnum);
+							matchingColumnFound = true;
+						}
+					}
+				}
+				if (!matchingColumnFound) {
+					//TODO create a new EXTRA_COLUMN ENUM??
+					columnEnums.add("EXTRA_COLUMN");
+				}
+			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
+					| NoSuchMethodException | SecurityException e) {
+				logger.error("Excpetion trying to get order of columns from sheet " + sheet.getName(), e);
+			}
+    	}
+		return columnEnums;
+    }
+    
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    static Record readUnorderedRowIntoRecord(Class clazz, Sheet sheet, Object rowRecord, int rowNumber, List<Object> columnOrder) {
+    	int c = 0;
+    	for (Object column : columnOrder) {
+    		try {
+    			String cellContents = sheet.getCell(c, rowNumber).getContents();
+    			if (!column.equals("EXTRA_COLUMN") && !cellContents.equals("")) {
+    				//TODO split this into another method
+    				Method enumSetter = column.getClass().getMethod("getSetterName");
+    				String setterName = (String) enumSetter.invoke(column);
+    				Class fieldType = (Class) column.getClass().getMethod("getType").invoke(column);
+    				Method fieldSetter = clazz.getMethod(setterName, fieldType);
+    				if (fieldType.getSimpleName().equalsIgnoreCase(Calendar.class.getSimpleName())) {
+    					DateFormat formatter = new SimpleDateFormat("MMM-dd-yyyy hh:mm a");
+    					Calendar calendar = Calendar.getInstance();
+    					try {
+    						calendar.setTime(formatter.parse(cellContents));
+    						fieldSetter.invoke(rowRecord, fieldType.cast(calendar));
+    					} catch (ParseException e) {
+    						logger.error("Error parsing date string: "+cellContents);
+    						fieldSetter.invoke(rowRecord, fieldType.cast(null));
+    					}
+    				} else if (fieldType.getSimpleName().equalsIgnoreCase(long.class.getSimpleName())) {
+    					fieldSetter.invoke(rowRecord, Long.parseLong(cellContents));
+    				} else if (fieldType.getSimpleName().equalsIgnoreCase(int.class.getSimpleName())) {
+    					fieldSetter.invoke(rowRecord, Integer.parseInt(cellContents));
+    				} else if (fieldType.getSimpleName().equalsIgnoreCase(String[].class.getSimpleName())) {
+    					String[] charges = cellContents.split("; ");
+    					fieldSetter.invoke(rowRecord, fieldType.cast(charges));
+    				} else {
+    					fieldSetter.invoke(rowRecord, fieldType.cast(cellContents));
+    				}
+    			}
+    			c++;
+    		} catch (InvocationTargetException | IllegalAccessException | IllegalArgumentException | SecurityException e) {
+    			logger.error("Error trying to read cell into record object, column " + c + " row " + rowNumber, e);
+    		} catch (Exception e) {
+    			logger.error("Some uhandled exception was caught while trying to parse record at column " + c + " row " + rowNumber, e);
+    		}
     	}
     	return (Record) rowRecord;
     }
@@ -100,18 +175,18 @@ public interface Record {
 		List<Record> delimiterList = new ArrayList<>();
 		for (Record record : records) {
 			try {
-				//TODO not catching case where delimiter value is null
-				Object delimiterValue = fieldGetter.invoke(record);
-				if (groupingDelimiter == null && delimiterValue!= null) {
-					groupingDelimiter = delimiterValue;
-				}
-				if (groupingDelimiter!=null && delimiterValue!= null && delimiterValue.equals(groupingDelimiter)) {
+				Object delimiterValue = fieldGetter.invoke(record)==null?"":fieldGetter.invoke(record);
+//				//to set the initial group
+//				if (groupingDelimiter == null) {
+//					groupingDelimiter = delimiterValue;
+//				}
+				if (groupingDelimiter!=null && delimiterValue.equals(groupingDelimiter)) {
 					delimiterList.add(record);
 				} else {
 					if (!delimiterList.isEmpty()) {
 						recordListList.add(delimiterList);
 					}
-					groupingDelimiter = fieldGetter.invoke(record);
+					groupingDelimiter = delimiterValue;
 					delimiterList = new ArrayList<>();
 					delimiterList.add(record);
 				}
@@ -144,5 +219,4 @@ public interface Record {
     	return null;
     }
     
-    CaseFormat getColumnCaseFormat();
 }

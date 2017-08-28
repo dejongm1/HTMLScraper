@@ -24,8 +24,8 @@ public class ArrestRecordTest {
 
 	ArrestRecord mockRecordOne = new ArrestRecord();
 	ArrestRecord mockRecordTwo = new ArrestRecord();
-	private File testMergeFileOne = new File("test/resources/testOutputFileOne.xls");
-	private File testMergeFileTwo = new File("test/resources/testOutputFileTwo.xls");
+	private File testMergeFileOne = new File("output/testing/testOutputFileOne.xls");
+	private File testMergeFileTwo = new File("output/testing/testOutputFileTwo.xls");
 	static Sheet sheetOne;
 	static Sheet sheetTwo;
 	
@@ -104,7 +104,7 @@ public class ArrestRecordTest {
 		//multiple of these
 	}
 	
-	@Test(dependsOnGroups={"RecordTest"})
+	@Test(dependsOnGroups={"ReadRowsIn"})
 	public void testMatch() {
 		//this test must pass before attempting testMatch()
 		RecordTest recordTester = new RecordTest();
@@ -122,7 +122,7 @@ public class ArrestRecordTest {
 	}
 	
 	
-	@Test(dependsOnGroups={"RecordTest"})
+	@Test(dependsOnGroups={"ReadRowsIn"})
 	public void testMatchOnlyFullName() {
 		//this test must pass before attempting testMatch()
 		RecordTest recordTester = new RecordTest();
@@ -139,7 +139,7 @@ public class ArrestRecordTest {
         Assert.assertFalse(two.matches(one));
 	}
 
-    @Test(dependsOnGroups={"RecordTest"})
+    @Test(dependsOnGroups={"ReadRowsIn"})
     public void testConvertToInches() {
 	    ArrestRecord arrestRecord = new ArrestRecord();
 	    int heightOne = arrestRecord.convertToInches("5'04\"");

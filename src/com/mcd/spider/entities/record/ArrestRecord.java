@@ -277,6 +277,16 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 		}
 	};
 	
+	public static Comparator<Record> CityComparator = new Comparator<Record>() {
+		@Override
+		public int compare(Record record1, Record record2) {
+			String recordCity1 = ((ArrestRecord) record1).getCity()!=null?((ArrestRecord) record1).getCity().toUpperCase():"No City";
+			String recordCity2 = ((ArrestRecord) record2).getCity()!=null?((ArrestRecord) record2).getCity().toUpperCase():"No City";
+			//ascending order
+			return recordCity1.compareTo(recordCity2);
+		}
+	};
+	
 	@Override
 	public WritableSheet addToExcelSheet(int rowNumber, WritableSheet sheet) throws IllegalAccessException {
 		int columnNumber = 0;
