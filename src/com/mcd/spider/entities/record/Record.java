@@ -38,7 +38,8 @@ public interface Record {
     boolean matches(Record record);
 
     CaseFormat getColumnCaseFormat();
-    
+
+    //TODO remove this method in lieu of unordered version
     @SuppressWarnings({ "unchecked", "rawtypes" })
 	static Record readRowIntoRecord(Class clazz, Sheet sheet, Object rowRecord, int r) {
     	int c = 0;
@@ -122,6 +123,9 @@ public interface Record {
     
     @SuppressWarnings({ "unchecked", "rawtypes" })
     static Record readUnorderedRowIntoRecord(Class clazz, Sheet sheet, Object recordInstance, int rowNumber, List<Object> columnOrder) {
+        if (columnOrder==null) {
+            columnOrder = getColumnOrder(clazz, sheet, recordInstance);
+        }
     	int c = 0;
     	for (Object column : columnOrder) {
     		try {

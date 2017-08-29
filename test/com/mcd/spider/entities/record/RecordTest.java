@@ -117,26 +117,26 @@ public class RecordTest {
 		Assert.assertEquals(record1.getCharges()[0], "#1 ASSAULT CAUSING BODILY INJURY OR MENTAL ILLNESS STATUTE: SR308623 BOND: $1000");
 
 //        Christopher_Haney_34027045	Christopher	Jason	Haney	Christopher Jason Haney	Aug-20-2017 12:00 AM	do not read in		22	Male	Des Moines	Polk	Brown	6'05"	230 lbs	Black		#1 TRESPASS BOND: $300;
-        Assert.assertEquals(record1.getId(), "");
-        Assert.assertEquals(record1.getMiddleName(), "");
-        Assert.assertEquals(record1.getFullName(), "");
-        Assert.assertEquals(record1.getLastName(), "");
-        Assert.assertEquals(record1.getArrestDate().get(Calendar.MONTH), testCalendar.get(Calendar.MONTH));
-        Assert.assertEquals(record1.getArrestDate().get(Calendar.DAY_OF_MONTH), testCalendar.get(Calendar.DAY_OF_MONTH));
-        Assert.assertEquals(record1.getArrestDate().get(Calendar.YEAR), testCalendar.get(Calendar.YEAR));
-        Assert.assertEquals(record1.getArrestDate().get(Calendar.HOUR), testCalendar.get(Calendar.HOUR));
-        Assert.assertEquals(record1.getArrestDate().get(Calendar.MINUTE), testCalendar.get(Calendar.MINUTE));
-        Assert.assertEquals(record1.getTotalBond(), new Long(0));
-        Assert.assertEquals(record1.getArrestAge(), new Integer(0));
-        Assert.assertEquals(record1.getGender(), "");
-        Assert.assertEquals(record1.getCity(), "");
-        Assert.assertEquals(record1.getHeight(), "");
-        Assert.assertEquals(record1.getWeight(), "");
-        Assert.assertEquals(record1.getCounty(), "");
-        Assert.assertEquals(record1.getHairColor(), "");
-        Assert.assertEquals(record1.getEyeColor(), "");
-        Assert.assertEquals(record1.getBirthPlace(), "");
-        Assert.assertEquals(record1.getCharges()[0], "");
+        Assert.assertEquals(record2.getId(), "");
+        Assert.assertEquals(record2.getMiddleName(), "");
+        Assert.assertEquals(record2.getFullName(), "");
+        Assert.assertEquals(record2.getLastName(), "");
+        Assert.assertEquals(record2.getArrestDate().get(Calendar.MONTH), testCalendar.get(Calendar.MONTH));
+        Assert.assertEquals(record2.getArrestDate().get(Calendar.DAY_OF_MONTH), testCalendar.get(Calendar.DAY_OF_MONTH));
+        Assert.assertEquals(record2.getArrestDate().get(Calendar.YEAR), testCalendar.get(Calendar.YEAR));
+        Assert.assertEquals(record2.getArrestDate().get(Calendar.HOUR), testCalendar.get(Calendar.HOUR));
+        Assert.assertEquals(record2.getArrestDate().get(Calendar.MINUTE), testCalendar.get(Calendar.MINUTE));
+        Assert.assertEquals(record2.getTotalBond(), new Long(0));
+        Assert.assertEquals(record2.getArrestAge(), new Integer(0));
+        Assert.assertEquals(record2.getGender(), "");
+        Assert.assertEquals(record2.getCity(), "");
+        Assert.assertEquals(record2.getHeight(), "");
+        Assert.assertEquals(record2.getWeight(), "");
+        Assert.assertEquals(record2.getCounty(), "");
+        Assert.assertEquals(record2.getHairColor(), "");
+        Assert.assertEquals(record2.getEyeColor(), "");
+        Assert.assertEquals(record2.getBirthPlace(), "");
+        Assert.assertEquals(record2.getCharges()[0], "");
 
     }
 	@Test(groups={"ReadRowsIn"})
