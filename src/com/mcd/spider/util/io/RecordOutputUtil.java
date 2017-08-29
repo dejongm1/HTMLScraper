@@ -136,19 +136,6 @@ public class RecordOutputUtil {
 		}
 	}
 
-	public void saveRecordsToMainWorkbook(List<Record> records) {
-		try {
-			int rowNumber = 0;
-			for (Record currentRecord : records) {
-				WritableSheet sheet = workbook.getSheet(0);
-				currentRecord.addToExcelSheet(rowNumber, sheet);
-				rowNumber++;
-			}
-		} catch (IllegalAccessException e) {
-			logger.error("Error trying to save data to workbook", e);
-		}
-	}
-
 	public void addRecordToMainWorkbook(Record record) {
 		try {
 			createWorkbookCopy(docName, getTempFileName() + EXT);
@@ -186,61 +173,82 @@ public class RecordOutputUtil {
 		currentWorkbook.close();
 
 		if (deleteBackup) {
-			if (oldBook.delete()) {
-				newBook.renameTo(new File(docName));
-			} else {
+			if (!oldBook.delete()) {
 				// making sure we don't lose data or override good data
-                logger.error("Can't save record to current workbook, is it open? Starting a new workbook for future processing");
+                logger.error("Can't save record to current workbook, is it open? Starting a new workbook to finish processing");
                 this.docName = docName.substring(0, docName.indexOf(EXT)) + "_" + System.currentTimeMillis() + EXT;
                 ioutil.setMainDocName(this.docName);
-				newBook.renameTo(new File(this.docName));
 			}
+			newBook.renameTo(new File(this.docName));
 		}
 	}
 
-	public void createFilteredSpreadsheet(RecordFilterEnum filter, List<Record> records) {
+
+	public void createSpreadsheetWithRecords(String workbookName, List<Record> records) {
 		WritableWorkbook newWorkbook = null;
 		try {
-			newWorkbook = Workbook.createWorkbook(new File(getFilteredDocName(filter)));
+			newWorkbook = Workbook.createWorkbook(new File(workbookName));
 
 			WritableSheet excelSheet = newWorkbook.createSheet(state.getName(), 0);
 			createColumnHeaders(excelSheet);
 			saveRecordsToWorkbook(records, newWorkbook);
 			newWorkbook.write();
 		} catch (IOException | WriteException e) {
-			logger.error("Create filtered spreadhseet error", e);
+			logger.error("Create " + workbookName + "spreadsheet error", e);
 		} finally {
 			if (newWorkbook != null) {
 				try {
 					newWorkbook.close();
 				} catch (IOException | WriteException e) {
-					logger.error("Create filtered spreadhseet error", e);
+					logger.error("Close " + workbookName + "spreadsheet error", e);
 				}
 			}
 		}
 	}
-	
-	public void createMergedSpreadsheet(List<Record> records) {
-		WritableWorkbook newWorkbook = null;
-		try {
-			newWorkbook = Workbook.createWorkbook(new File(getMergedDocName()));
-
-			WritableSheet excelSheet = newWorkbook.createSheet(state.getName(), 0);
-			createColumnHeaders(excelSheet);
-			saveRecordsToWorkbook(records, newWorkbook);
-			newWorkbook.write();
-		} catch (IOException | WriteException e) {
-			logger.error("Create filtered spreadhseet error", e);
-		} finally {
-			if (newWorkbook != null) {
-				try {
-					newWorkbook.close();
-				} catch (IOException | WriteException e) {
-					logger.error("Create filtered spreadhseet error", e);
-				}
-			}
-		}
-	}
+//	
+//	public void createFilteredSpreadsheet(RecordFilterEnum filter, List<Record> records) {
+//		WritableWorkbook newWorkbook = null;
+//		try {
+//			newWorkbook = Workbook.createWorkbook(new File(getFilteredDocName(filter)));
+//
+//			WritableSheet excelSheet = newWorkbook.createSheet(state.getName(), 0);
+//			createColumnHeaders(excelSheet);
+//			saveRecordsToWorkbook(records, newWorkbook);
+//			newWorkbook.write();
+//		} catch (IOException | WriteException e) {
+//			logger.error("Create filtered spreadhseet error", e);
+//		} finally {
+//			if (newWorkbook != null) {
+//				try {
+//					newWorkbook.close();
+//				} catch (IOException | WriteException e) {
+//					logger.error("Create filtered spreadhseet error", e);
+//				}
+//			}
+//		}
+//	}
+//	
+//	public void createMergedSpreadsheet(List<Record> records) {
+//		WritableWorkbook newWorkbook = null;
+//		try {
+//			newWorkbook = Workbook.createWorkbook(new File(getMergedDocName()));
+//
+//			WritableSheet excelSheet = newWorkbook.createSheet(state.getName(), 0);
+//			createColumnHeaders(excelSheet);
+//			saveRecordsToWorkbook(records, newWorkbook);
+//			newWorkbook.write();
+//		} catch (IOException | WriteException e) {
+//			logger.error("Create merged spreadhseet error", e);
+//		} finally {
+//			if (newWorkbook != null) {
+//				try {
+//					newWorkbook.close();
+//				} catch (IOException | WriteException e) {
+//					logger.error("Create merged spreadhseet error", e);
+//				}
+//			}
+//		}
+//	}
 
     public boolean splitIntoSheets(String docName, String delimiter, List<List<Record>> recordsListList, Class clazz) {
         boolean successful = false;

@@ -101,7 +101,15 @@ public class ArrestRecordTest {
 
 	@Test
 	public void testMerge() {
-		//multiple of these
+		Assert.fail();
+	}
+	
+	@Test
+	public void testAddToExcelSheet() {
+		//addToExcelSheet()
+		//read row back in and confirm data matches
+		Assert.fail();
+		
 	}
 	
 	@Test(dependsOnGroups={"ReadRowsIn"})
@@ -112,8 +120,8 @@ public class ArrestRecordTest {
 		ArrestRecord one = new ArrestRecord();
 		ArrestRecord two = new ArrestRecord();
 		
-		Record.readRowIntoRecord(ArrestRecord.class, sheetOne, one, 1);
-		Record.readRowIntoRecord(ArrestRecord.class, sheetTwo, two, 1);
+		Record.readRowIntoRecord(ArrestRecord.class, sheetOne, one, 1, null);
+		Record.readRowIntoRecord(ArrestRecord.class, sheetTwo, two, 1, null);
 
 		Assert.assertEquals(one.getFullName(), "Arlena  Ramirez");
 		Assert.assertEquals(two.getFullName(), "ARLENA RAMIREZ");
@@ -130,8 +138,8 @@ public class ArrestRecordTest {
 		ArrestRecord one = new ArrestRecord();
 		ArrestRecord two = new ArrestRecord();
 		
-		Record.readRowIntoRecord(ArrestRecord.class, sheetOne, one, 8);
-		Record.readRowIntoRecord(ArrestRecord.class, sheetTwo, two, 9);
+		Record.readRowIntoRecord(ArrestRecord.class, sheetOne, one, 8, null);
+		Record.readRowIntoRecord(ArrestRecord.class, sheetTwo, two, 9, null);
 		
 		Assert.assertEquals(one.getFullName(), "Michael De Jong");
 		Assert.assertEquals(two.getFullName(), "MICHAEL DE JONG");

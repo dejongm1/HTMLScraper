@@ -13,6 +13,7 @@
             <class name="com.mcd.spider.entities.record.RecordTest" />
             <class name="com.mcd.spider.util.io.RecordIOUtilTest" />
             <class name="com.mcd.spider.util.io.RecordInputUtilTest" />
+            <class name="com.mcd.spider.util.io.RecordOutputUtilTest" />
         </classes>
     </test>
 

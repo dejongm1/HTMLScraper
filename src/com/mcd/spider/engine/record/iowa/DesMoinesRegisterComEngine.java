@@ -307,7 +307,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
 	                //create a separate sheet with filtered results
 	                logger.info(filteredRecords.size()+" "+filter.filterName()+" "+"records were crawled");
 	                if (!filteredRecords.isEmpty()) {
-	                    recordIOUtil.getOutputter().createFilteredSpreadsheet(filter, filteredRecords);
+	                    recordIOUtil.getOutputter().createSpreadsheetWithRecords(recordIOUtil.getOutputter().getFilteredDocName(filter), filteredRecords);
 	                }
 	                recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getOutputter().getFilteredDocName(filter), delimiter, splitRecords, clazz);
                 }

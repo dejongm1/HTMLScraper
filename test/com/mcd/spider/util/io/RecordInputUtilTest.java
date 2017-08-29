@@ -25,7 +25,7 @@ import java.util.Set;
 
 public class RecordInputUtilTest {
 
-	private File testReadInputFile = new File("output/testing/RecordInputTest.xls");
+	private File testReadInputFile = new File("output/testing/ArrestRecordInputTest.xls");
 	private RecordIOUtil ioUtil;
 	RecordInputUtil inputter;
 	Sheet sheet;
@@ -71,7 +71,11 @@ public class RecordInputUtilTest {
 		Assert.assertEquals(sheetNumber0, 0);
 		Assert.assertEquals(sheetNumber2, 2);
 		Assert.assertEquals(sheetNumber3, 3);
-		
+	}
+	
+	@Test
+	public void testGetEmptyRowCount() {
+		Assert.fail();
 	}
 
 }

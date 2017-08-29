@@ -166,11 +166,10 @@ public class RecordInputUtil {
                 Object rowRecord = constructor.newInstance();
                 List<Object> columnOrder = Record.getColumnOrder(clazz, sheetToRead, rowRecord);
                 for (int r = 1; r<sheetToRead.getRows(); r++) {
-                    //loop over columnEnums for each row
                     if (rowIsNotEmpty(sheetToRead.getRow(r))) {
                         try {
-                            //pass in new instance of rowRecord for each row to read in
-                            storedRecords.add(Record.readUnorderedRowIntoRecord(clazz, sheetToRead, constructor.newInstance(), r, columnOrder));
+                            //pass in new instance of rowRecord contructor for each row to read in
+                            storedRecords.add(Record.readRowIntoRecord(clazz, sheetToRead, constructor.newInstance(), r, columnOrder));
                         } catch (IllegalArgumentException e) {
                             logger.error("Error trying to read row into record object, row "+r, e);
                         }

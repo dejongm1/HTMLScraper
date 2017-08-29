@@ -22,7 +22,7 @@ import java.util.*;
 
 public class RecordTest {
 
-	private File testReadInputFile = new File("output/testing/RecordInputTest.xls");
+	private File testReadInputFile = new File("output/testing/ArrestRecordInputTest.xls");
 	static Sheet mainSheet;
 	private RecordIOUtil ioUtil;
 	private Workbook workbook;
@@ -39,24 +39,55 @@ public class RecordTest {
 	}
 
 	@Test(groups={"ColumnOrder"})
-	public void getColumnOrder_AllColumns() {
+	public void getColumnOrder_AllArrestRecordColumnsInOrder() {
+		Sheet sheet = workbook.getSheet("readRecordsIn");
+		List<Object> columnOrder = Record.getColumnOrder(ArrestRecord.class, sheet, new ArrestRecord());
+		RecordColumnEnum[] arrestRecordColumnEnums = ArrestRecord.RecordColumnEnum.values();
 		
+		for (int c=0;c<columnOrder.size();c++) {
+			Assert.assertEquals(columnOrder.get(c), arrestRecordColumnEnums[c]);
+		}
 	}
 
 	@Test(groups={"ColumnOrder"})
-	public void getColumnOrder_MissingColumns() {
+	public void getColumnOrder_MissingArrestRecordColumns() {
+		Sheet sheet = workbook.getSheet("missingColumns");
+		List<Object> columnOrder = Record.getColumnOrder(ArrestRecord.class, sheet, new ArrestRecord());
 		
+		Assert.assertEquals(columnOrder.size(), 5);
+		Assert.assertEquals(columnOrder.get(0), ArrestRecord.RecordColumnEnum.ID_COLUMN);
+		Assert.assertEquals(columnOrder.get(3), ArrestRecord.RecordColumnEnum.COUNTY_COLUMN);
+		for (Object column : columnOrder) {
+			Assert.assertNotEquals(column, ArrestRecord.RecordColumnEnum.FIRSTNAME_COLUMN);
+		}
 	}
 
 	@Test(groups={"ColumnOrder"})
-	public void getColumnOrder_ExtraColumns() {
+	public void getColumnOrder_ExtraArrestRecordColumns() {
+		Sheet sheet = workbook.getSheet("extraColumns");
+		List<Object> columnOrder = Record.getColumnOrder(ArrestRecord.class, sheet, new ArrestRecord());
+
+		Assert.assertEquals(columnOrder.size(), 23);
+		Assert.assertEquals(columnOrder.get(0), "EXTRA_COLUMN");
+		Assert.assertEquals(columnOrder.get(1), ArrestRecord.RecordColumnEnum.ID_COLUMN);
+		Assert.assertEquals(columnOrder.get(22), ArrestRecord.RecordColumnEnum.RACE);
+	}
+
+	@Test(groups={"ColumnOrder"})
+	public void getColumnOrder_AllArrestRecordColumnsRearranged() {
+		Sheet sheet = workbook.getSheet("columnsShuffled");
+		List<Object> columnOrder = Record.getColumnOrder(ArrestRecord.class, sheet, new ArrestRecord());
+		
+		Assert.assertEquals(columnOrder.size(), 20);
+		Assert.assertEquals(columnOrder.get(0), ArrestRecord.RecordColumnEnum.FULLNAME_COLUMN);
+		Assert.assertEquals(columnOrder.get(19), ArrestRecord.RecordColumnEnum.RACE);
 		
 	}
-	
+
 	@Test(groups={"ReadRowsIn"}, dependsOnGroups={"ColumnOrder"})
 	public void readRowIntoRecord_ArrestRecordComplete() {
 		ArrestRecord record1 = new ArrestRecord();
-		Record.readRowIntoRecord(ArrestRecord.class, mainSheet, record1, 1);
+		Record.readRowIntoRecord(ArrestRecord.class, mainSheet, record1, 1, null);
 
 		Calendar testCalendar = convertStringToCalendar("Aug-20-2017 04:09 AM");
 		
@@ -81,7 +112,6 @@ public class RecordTest {
 		Assert.assertEquals(record1.getEyeColor(), "Brown");
 		Assert.assertEquals(record1.getBirthPlace(), "Mars");
 		Assert.assertEquals(record1.getCharges()[0], "#1 ASSAULT CAUSING BODILY INJURY OR MENTAL ILLNESS STATUTE: SR308623 BOND: $1000");
-
 	}
 
 	@Test(groups={"ReadRowsIn"}, dependsOnGroups={"ColumnOrder"})
@@ -90,20 +120,21 @@ public class RecordTest {
         ArrestRecord record2 = new ArrestRecord();
 		Sheet diffColumnsSheet = workbook.getSheet("readRecordsInDiffColumns");
 		List<Object> columnOrder = Record.getColumnOrder(ArrestRecord.class, diffColumnsSheet, record1);
-		Record.readUnorderedRowIntoRecord(ArrestRecord.class, diffColumnsSheet, record1, 1, columnOrder);
-        Record.readUnorderedRowIntoRecord(ArrestRecord.class, diffColumnsSheet, record2, 2, columnOrder);
+		Record.readRowIntoRecord(ArrestRecord.class, diffColumnsSheet, record1, 1, columnOrder);
+        Record.readRowIntoRecord(ArrestRecord.class, diffColumnsSheet, record2, 2, columnOrder);
 
-		Calendar testCalendar = convertStringToCalendar("Aug-20-2017 04:09 AM");
+		Calendar testCalendar1 = convertStringToCalendar("Aug-20-2017 04:09 AM");
+		Calendar testCalendar2 = convertStringToCalendar("Aug-20-2017 12:00 AM");
 		
 		Assert.assertEquals(record1.getId(), "Arlena_Ramirez_34029315");
 		Assert.assertEquals(record1.getMiddleName(), null);
 		Assert.assertEquals(record1.getFullName(), "Arlena  Ramirez");
 		Assert.assertEquals(record1.getLastName(), "Ramirez");
-		Assert.assertEquals(record1.getArrestDate().get(Calendar.MONTH), testCalendar.get(Calendar.MONTH));
-		Assert.assertEquals(record1.getArrestDate().get(Calendar.DAY_OF_MONTH), testCalendar.get(Calendar.DAY_OF_MONTH));
-		Assert.assertEquals(record1.getArrestDate().get(Calendar.YEAR), testCalendar.get(Calendar.YEAR));
-		Assert.assertEquals(record1.getArrestDate().get(Calendar.HOUR), testCalendar.get(Calendar.HOUR));
-		Assert.assertEquals(record1.getArrestDate().get(Calendar.MINUTE), testCalendar.get(Calendar.MINUTE));
+		Assert.assertEquals(record1.getArrestDate().get(Calendar.MONTH), testCalendar1.get(Calendar.MONTH));
+		Assert.assertEquals(record1.getArrestDate().get(Calendar.DAY_OF_MONTH), testCalendar1.get(Calendar.DAY_OF_MONTH));
+		Assert.assertEquals(record1.getArrestDate().get(Calendar.YEAR), testCalendar1.get(Calendar.YEAR));
+		Assert.assertEquals(record1.getArrestDate().get(Calendar.HOUR), testCalendar1.get(Calendar.HOUR));
+		Assert.assertEquals(record1.getArrestDate().get(Calendar.MINUTE), testCalendar1.get(Calendar.MINUTE));
 		Assert.assertEquals(record1.getTotalBond(), new Long(800));
 		Assert.assertEquals(record1.getArrestAge(), new Integer(28));
 		Assert.assertEquals(record1.getGender(), "Female");
@@ -116,33 +147,34 @@ public class RecordTest {
 		Assert.assertEquals(record1.getBirthPlace(), "Mars");
 		Assert.assertEquals(record1.getCharges()[0], "#1 ASSAULT CAUSING BODILY INJURY OR MENTAL ILLNESS STATUTE: SR308623 BOND: $1000");
 
-//        Christopher_Haney_34027045	Christopher	Jason	Haney	Christopher Jason Haney	Aug-20-2017 12:00 AM	do not read in		22	Male	Des Moines	Polk	Brown	6'05"	230 lbs	Black		#1 TRESPASS BOND: $300;
-        Assert.assertEquals(record2.getId(), "");
-        Assert.assertEquals(record2.getMiddleName(), "");
-        Assert.assertEquals(record2.getFullName(), "");
-        Assert.assertEquals(record2.getLastName(), "");
-        Assert.assertEquals(record2.getArrestDate().get(Calendar.MONTH), testCalendar.get(Calendar.MONTH));
-        Assert.assertEquals(record2.getArrestDate().get(Calendar.DAY_OF_MONTH), testCalendar.get(Calendar.DAY_OF_MONTH));
-        Assert.assertEquals(record2.getArrestDate().get(Calendar.YEAR), testCalendar.get(Calendar.YEAR));
-        Assert.assertEquals(record2.getArrestDate().get(Calendar.HOUR), testCalendar.get(Calendar.HOUR));
-        Assert.assertEquals(record2.getArrestDate().get(Calendar.MINUTE), testCalendar.get(Calendar.MINUTE));
-        Assert.assertEquals(record2.getTotalBond(), new Long(0));
-        Assert.assertEquals(record2.getArrestAge(), new Integer(0));
-        Assert.assertEquals(record2.getGender(), "");
-        Assert.assertEquals(record2.getCity(), "");
-        Assert.assertEquals(record2.getHeight(), "");
-        Assert.assertEquals(record2.getWeight(), "");
-        Assert.assertEquals(record2.getCounty(), "");
-        Assert.assertEquals(record2.getHairColor(), "");
-        Assert.assertEquals(record2.getEyeColor(), "");
-        Assert.assertEquals(record2.getBirthPlace(), "");
-        Assert.assertEquals(record2.getCharges()[0], "");
-
+        Assert.assertEquals(record2.getId(), "Christopher_Haney_34027045");
+        Assert.assertEquals(record2.getFirstName(), "Christopher");
+        Assert.assertEquals(record2.getMiddleName(), "Jason");
+        Assert.assertEquals(record2.getFullName(), "Christopher Jason Haney");
+        Assert.assertEquals(record2.getLastName(), "Haney");
+        Assert.assertEquals(record2.getArrestDate().get(Calendar.MONTH), testCalendar2.get(Calendar.MONTH));
+        Assert.assertEquals(record2.getArrestDate().get(Calendar.DAY_OF_MONTH), testCalendar2.get(Calendar.DAY_OF_MONTH));
+        Assert.assertEquals(record2.getArrestDate().get(Calendar.YEAR), testCalendar2.get(Calendar.YEAR));
+        Assert.assertEquals(record2.getArrestDate().get(Calendar.HOUR), testCalendar2.get(Calendar.HOUR));
+        Assert.assertEquals(record2.getArrestDate().get(Calendar.MINUTE), testCalendar2.get(Calendar.MINUTE));
+        Assert.assertNotEquals(record2.getTotalBond(), "do not read in");
+        Assert.assertNull(record2.getTotalBond());
+        Assert.assertEquals(record2.getArrestAge(), new Integer(22));
+        Assert.assertEquals(record2.getGender(), "Male");
+        Assert.assertEquals(record2.getCity(), "Des Moines");
+        Assert.assertEquals(record2.getHeight(), "6'05\"");
+        Assert.assertEquals(record2.getWeight(), "230 lbs");
+        Assert.assertEquals(record2.getCounty(), "Polk");
+        Assert.assertEquals(record2.getHairColor(), "Black");
+        Assert.assertEquals(record2.getEyeColor(), "Brown");
+        Assert.assertNull(record2.getBirthPlace());
+        Assert.assertEquals(record2.getCharges()[0], "#1 TRESPASS BOND: $300");
     }
+	
 	@Test(groups={"ReadRowsIn"})
 	public void readRowIntoRecord_ArrestRecordMissingAndBadData() {
 		ArrestRecord record4 = new ArrestRecord();
-		Record.readRowIntoRecord(ArrestRecord.class, mainSheet, record4, 4);
+		Record.readRowIntoRecord(ArrestRecord.class, mainSheet, record4, 4, null);
 
 		Assert.assertEquals(record4.getId(), "BadMissing_Data_34021731");
 		Assert.assertEquals(record4.getFirstName(), "BadMissing");
@@ -159,7 +191,6 @@ public class RecordTest {
 		Assert.assertNull(record4.getWeight());
 		Assert.assertEquals(record4.getCounty(), "Johnson");
 		Assert.assertEquals(record4.getEyeColor(), null);
-		
 	}
 
 	@Test(dependsOnGroups={"ReadRowsIn", "Inputter"})
@@ -197,7 +228,6 @@ public class RecordTest {
 		Assert.assertEquals(splitRecords.get(2).size(), 1);
 		Assert.assertNotEquals(((ArrestRecord)splitRecords.get(0).get(0)).getCity(), ((ArrestRecord)splitRecords.get(1).get(0)).getCity());
 		Assert.assertNotEquals(((ArrestRecord)splitRecords.get(1).get(0)).getCity(), ((ArrestRecord)splitRecords.get(2).get(0)).getCity());
-		
 	}
 
 

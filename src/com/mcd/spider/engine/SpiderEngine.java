@@ -38,6 +38,7 @@ public class SpiderEngine {
 				throw new StateNotReadyException(state);
 			}
 		}
+		logger.info("Spider has finished crawling. Shutting down.");
 	}
 	
 	public void getArrestRecordsThroughTheBackDoor(List<State> states, long maxNumberOfResults, RecordFilterEnum filter, boolean retrieveMissedRecords) throws SpiderException {
@@ -49,7 +50,7 @@ public class SpiderEngine {
 			StateRouter router = new StateRouter(state);
 			router.collectRecords(maxNumberOfResults, filter, retrieveMissedRecords);
 		}
-		
+		logger.info("Spider has finished crawling. Shutting down.");
 	}
 	
 	public void getArrestRecordsByThreading(List<State> states, long maxNumberOfResults, RecordFilterEnum filter, boolean retrieveMissedRecords) throws SpiderException {
@@ -66,12 +67,13 @@ public class SpiderEngine {
 				    logger.info("Attempting to merge record output from " + state);
 					RecordIOUtil comparingIOUtil = new RecordIOUtil(state, new ArrestRecord(), state.getEngines().get(e).getSite());
 					Set<Record> mergedRecords = mainIOutil.mergeRecordsFromSheet(new File(mainIOutil.getMainDocName()), new File(comparingIOUtil.getMainDocName()), 0);
-                    mainIOutil.getOutputter().createMergedSpreadsheet(new ArrayList<>(mergedRecords));
+                    mainIOutil.getOutputter().createSpreadsheetWithRecords(mainIOutil.getOutputter().getMergedDocName(), new ArrayList<>(mergedRecords));
 				}
 			} else {
 				throw new StateNotReadyException(state);
 			}
 		}
+		logger.info("Spider has finished crawling. Shutting down.");
 	}
 	
 	public void performSEOAudit(AuditParameters auditParams) {
