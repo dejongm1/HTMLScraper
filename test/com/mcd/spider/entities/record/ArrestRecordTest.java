@@ -101,7 +101,15 @@ public class ArrestRecordTest {
 
 	@Test
 	public void testMerge() {
-		//multiple of these
+		Assert.fail();
+	}
+	
+	@Test
+	public void testAddToExcelSheet() {
+		//addToExcelSheet()
+		//read row back in and confirm data matches
+		Assert.fail();
+		
 	}
 	
 	@Test(dependsOnGroups={"ReadRowsIn"})

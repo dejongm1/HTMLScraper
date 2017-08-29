@@ -71,7 +71,11 @@ public class RecordInputUtilTest {
 		Assert.assertEquals(sheetNumber0, 0);
 		Assert.assertEquals(sheetNumber2, 2);
 		Assert.assertEquals(sheetNumber3, 3);
-		
+	}
+	
+	@Test
+	public void testGetEmptyRowCount() {
+		Assert.fail();
 	}
 
 }

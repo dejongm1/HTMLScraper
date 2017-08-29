@@ -1,16 +1,21 @@
 package com.mcd.spider.util.io;
 
-import com.mcd.spider.entities.record.ArrestRecord;
-import com.mcd.spider.entities.record.State;
-import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
-import jxl.Workbook;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.io.File;
-import java.io.IOException;
+import com.mcd.spider.entities.record.ArrestRecord;
+import com.mcd.spider.entities.record.Record;
+import com.mcd.spider.entities.record.State;
+import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
+
+import jxl.Workbook;
 
 public class RecordOutputUtilTest {
 
@@ -70,34 +75,66 @@ public class RecordOutputUtilTest {
 
     @Test
     public void testSaveRecordsToWorkbook() throws Exception {
-    }
-
-    @Test
-    public void testSaveRecordsToMainWorkbook() throws Exception {
+    	//create list of records with basic data
+    	List<Record> mockedRecords = new ArrayList<>(); 
+    	
+    	//saveRecordsToWorkbook(records, tempworkbook)
+    	//check sizes(rows vs list size) match
     }
 
     @Test
     public void testAddRecordToMainWorkbook() throws Exception {
+    	//create a temp workbook or a new one for adding records to just build on 
+    	//check current number of rows
+    	//addRecordToWorkbook()
+    	//check that row was inserted where it should've been
+    	//check that file create, copy, delete, rename didn't leave extra files??
     }
 
     @Test
     public void testRemoveColumnsFromSpreadsheet() throws Exception {
+    	//new temp workbook
+    	//check column count before
+    	//remove columns
+    	//check after
+    	//clean up workbook
     }
 
     @Test
     public void testCreateFilteredSpreadsheet() throws Exception {
+    	//create a list of filtered records
+    	//createspreadsheetwithRecords()
+    	//TODO future - confirm it creates a backup, if one already exists
+    	//confirm it exists, name is correct and row count matches list
+    	//delete workbook
     }
 
     @Test
     public void testCreateMergedSpreadsheet() throws Exception {
+    	//create a list of merged records
+    	//createspreadsheetwithRecords()
+    	//TODO future - confirm it creates a backup, if one already exists
+    	//confirm it exists, name is correct and row count matches list
+    	//delete workbook
     }
 
     @Test
     public void testSplitIntoSheets() throws Exception {
+    	//either create list of List<> or use methods to read it in
+    	//create baseDoc to use?
+    	//count of List<Record> should match sheet count
+    	//check sheet names
+    	//row count in each sheet should match list<record>.size()
+    	//sum of row counts should match sum of records
+    	//delete new sheets?
     }
 
     @Test
     public void testBackupUnCrawledRecords() throws Exception {
+    	//mock a list of ids
+    	//backupUncrawledRecords()
+    	//size of mocked list should match rows in file
+    	//delete file
     }
 
 }
