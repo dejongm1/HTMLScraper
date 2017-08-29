@@ -1,25 +1,18 @@
 package com.mcd.spider.entities.record;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-
+import com.mcd.spider.entities.record.ArrestRecord.RecordColumnEnum;
+import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
+import com.mcd.spider.util.io.RecordIOUtil;
+import jxl.Sheet;
+import jxl.Workbook;
+import jxl.read.biff.BiffException;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import com.mcd.spider.entities.record.ArrestRecord.RecordColumnEnum;
-import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
-import com.mcd.spider.util.io.RecordIOUtil;
-
-import jxl.Sheet;
-import jxl.Workbook;
-import jxl.read.biff.BiffException;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 
 /**
  *
@@ -94,8 +87,11 @@ public class RecordTest {
 	@Test(groups={"ReadRowsIn"}, dependsOnGroups={"ColumnOrder"})
 	public void readRowIntoRecord_ArrestRecordDifferentNamedColumns() {
 		ArrestRecord record1 = new ArrestRecord();
+        ArrestRecord record2 = new ArrestRecord();
 		Sheet diffColumnsSheet = workbook.getSheet("readRecordsInDiffColumns");
-		Record.readUnorderedRowIntoRecord(ArrestRecord.class, diffColumnsSheet, record1, 1, Record.getColumnOrder(ArrestRecord.class, diffColumnsSheet, record1));
+		List<Object> columnOrder = Record.getColumnOrder(ArrestRecord.class, diffColumnsSheet, record1);
+		Record.readUnorderedRowIntoRecord(ArrestRecord.class, diffColumnsSheet, record1, 1, columnOrder);
+        Record.readUnorderedRowIntoRecord(ArrestRecord.class, diffColumnsSheet, record2, 2, columnOrder);
 
 		Calendar testCalendar = convertStringToCalendar("Aug-20-2017 04:09 AM");
 		
@@ -120,7 +116,29 @@ public class RecordTest {
 		Assert.assertEquals(record1.getBirthPlace(), "Mars");
 		Assert.assertEquals(record1.getCharges()[0], "#1 ASSAULT CAUSING BODILY INJURY OR MENTAL ILLNESS STATUTE: SR308623 BOND: $1000");
 
-	}
+//        Christopher_Haney_34027045	Christopher	Jason	Haney	Christopher Jason Haney	Aug-20-2017 12:00 AM	do not read in		22	Male	Des Moines	Polk	Brown	6'05"	230 lbs	Black		#1 TRESPASS BOND: $300;
+        Assert.assertEquals(record1.getId(), "");
+        Assert.assertEquals(record1.getMiddleName(), "");
+        Assert.assertEquals(record1.getFullName(), "");
+        Assert.assertEquals(record1.getLastName(), "");
+        Assert.assertEquals(record1.getArrestDate().get(Calendar.MONTH), testCalendar.get(Calendar.MONTH));
+        Assert.assertEquals(record1.getArrestDate().get(Calendar.DAY_OF_MONTH), testCalendar.get(Calendar.DAY_OF_MONTH));
+        Assert.assertEquals(record1.getArrestDate().get(Calendar.YEAR), testCalendar.get(Calendar.YEAR));
+        Assert.assertEquals(record1.getArrestDate().get(Calendar.HOUR), testCalendar.get(Calendar.HOUR));
+        Assert.assertEquals(record1.getArrestDate().get(Calendar.MINUTE), testCalendar.get(Calendar.MINUTE));
+        Assert.assertEquals(record1.getTotalBond(), new Long(0));
+        Assert.assertEquals(record1.getArrestAge(), new Integer(0));
+        Assert.assertEquals(record1.getGender(), "");
+        Assert.assertEquals(record1.getCity(), "");
+        Assert.assertEquals(record1.getHeight(), "");
+        Assert.assertEquals(record1.getWeight(), "");
+        Assert.assertEquals(record1.getCounty(), "");
+        Assert.assertEquals(record1.getHairColor(), "");
+        Assert.assertEquals(record1.getEyeColor(), "");
+        Assert.assertEquals(record1.getBirthPlace(), "");
+        Assert.assertEquals(record1.getCharges()[0], "");
+
+    }
 	@Test(groups={"ReadRowsIn"})
 	public void readRowIntoRecord_ArrestRecordMissingAndBadData() {
 		ArrestRecord record4 = new ArrestRecord();

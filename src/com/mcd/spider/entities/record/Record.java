@@ -121,7 +121,7 @@ public interface Record {
     }
     
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    static Record readUnorderedRowIntoRecord(Class clazz, Sheet sheet, Object rowRecord, int rowNumber, List<Object> columnOrder) {
+    static Record readUnorderedRowIntoRecord(Class clazz, Sheet sheet, Object recordInstance, int rowNumber, List<Object> columnOrder) {
     	int c = 0;
     	for (Object column : columnOrder) {
     		try {
@@ -137,20 +137,20 @@ public interface Record {
     					Calendar calendar = Calendar.getInstance();
     					try {
     						calendar.setTime(formatter.parse(cellContents));
-    						fieldSetter.invoke(rowRecord, fieldType.cast(calendar));
+    						fieldSetter.invoke(recordInstance, fieldType.cast(calendar));
     					} catch (ParseException e) {
     						logger.error("Error parsing date string: "+cellContents);
-    						fieldSetter.invoke(rowRecord, fieldType.cast(null));
+    						fieldSetter.invoke(recordInstance, fieldType.cast(null));
     					}
     				} else if (fieldType.getSimpleName().equalsIgnoreCase(long.class.getSimpleName())) {
-    					fieldSetter.invoke(rowRecord, Long.parseLong(cellContents));
+    					fieldSetter.invoke(recordInstance, Long.parseLong(cellContents));
     				} else if (fieldType.getSimpleName().equalsIgnoreCase(int.class.getSimpleName())) {
-    					fieldSetter.invoke(rowRecord, Integer.parseInt(cellContents));
+    					fieldSetter.invoke(recordInstance, Integer.parseInt(cellContents));
     				} else if (fieldType.getSimpleName().equalsIgnoreCase(String[].class.getSimpleName())) {
     					String[] charges = cellContents.split("; ");
-    					fieldSetter.invoke(rowRecord, fieldType.cast(charges));
+    					fieldSetter.invoke(recordInstance, fieldType.cast(charges));
     				} else {
-    					fieldSetter.invoke(rowRecord, fieldType.cast(cellContents));
+    					fieldSetter.invoke(recordInstance, fieldType.cast(cellContents));
     				}
     			}
     			c++;
@@ -160,7 +160,7 @@ public interface Record {
     			logger.error("Some uhandled exception was caught while trying to parse record at column " + c + " row " + rowNumber, e);
     		}
     	}
-    	return (Record) rowRecord;
+    	return (Record) recordInstance;
     }
 
     static <T> List<List<Record>> splitByField(List<Record> records, String fieldName, Class<T> clazz) {

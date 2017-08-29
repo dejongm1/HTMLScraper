@@ -169,9 +169,8 @@ public class RecordInputUtil {
                     //loop over columnEnums for each row
                     if (rowIsNotEmpty(sheetToRead.getRow(r))) {
                         try {
-                            storedRecords.add(Record.readRowIntoRecord(clazz, sheetToRead, rowRecord, r));
-                            //TODO start using this once tested
-//                            storedRecords.add(Record.readUnorderedRowIntoRecord(clazz, sheetToRead, rowRecord, r, columnOrder));
+                            //pass in new instance of rowRecord for each row to read in
+                            storedRecords.add(Record.readUnorderedRowIntoRecord(clazz, sheetToRead, constructor.newInstance(), r, columnOrder));
                         } catch (IllegalArgumentException e) {
                             logger.error("Error trying to read row into record object, row "+r, e);
                         }
