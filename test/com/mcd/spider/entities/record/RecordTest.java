@@ -87,7 +87,7 @@ public class RecordTest {
 	@Test(groups={"ReadRowsIn"}, dependsOnGroups={"ColumnOrder"})
 	public void readRowIntoRecord_ArrestRecordComplete() {
 		ArrestRecord record1 = new ArrestRecord();
-		Record.readRowIntoRecord(ArrestRecord.class, mainSheet, record1, 1);
+		Record.readRowIntoRecord(ArrestRecord.class, mainSheet, record1, 1, null);
 
 		Calendar testCalendar = convertStringToCalendar("Aug-20-2017 04:09 AM");
 		
@@ -120,8 +120,8 @@ public class RecordTest {
         ArrestRecord record2 = new ArrestRecord();
 		Sheet diffColumnsSheet = workbook.getSheet("readRecordsInDiffColumns");
 		List<Object> columnOrder = Record.getColumnOrder(ArrestRecord.class, diffColumnsSheet, record1);
-		Record.readUnorderedRowIntoRecord(ArrestRecord.class, diffColumnsSheet, record1, 1, columnOrder);
-        Record.readUnorderedRowIntoRecord(ArrestRecord.class, diffColumnsSheet, record2, 2, columnOrder);
+		Record.readRowIntoRecord(ArrestRecord.class, diffColumnsSheet, record1, 1, columnOrder);
+        Record.readRowIntoRecord(ArrestRecord.class, diffColumnsSheet, record2, 2, columnOrder);
 
 		Calendar testCalendar1 = convertStringToCalendar("Aug-20-2017 04:09 AM");
 		Calendar testCalendar2 = convertStringToCalendar("Aug-20-2017 12:00 AM");
@@ -174,7 +174,7 @@ public class RecordTest {
 	@Test(groups={"ReadRowsIn"})
 	public void readRowIntoRecord_ArrestRecordMissingAndBadData() {
 		ArrestRecord record4 = new ArrestRecord();
-		Record.readRowIntoRecord(ArrestRecord.class, mainSheet, record4, 4);
+		Record.readRowIntoRecord(ArrestRecord.class, mainSheet, record4, 4, null);
 
 		Assert.assertEquals(record4.getId(), "BadMissing_Data_34021731");
 		Assert.assertEquals(record4.getFirstName(), "BadMissing");
