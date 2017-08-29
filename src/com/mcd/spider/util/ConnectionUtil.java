@@ -49,25 +49,9 @@ public class ConnectionUtil {
         return Jsoup.parse(buffer.toString());
     }
 
-	public Connection getConnection(String url, String referrer, Map<String,String> cookies, Map<String, String> headers) throws IOException {
-	    if (referrer==null) {
-            referrer = "https://google.com";
-        }
-	    if (cookies==null){
-	    	cookies = new HashMap<>();
-	    }
-	    if (headers==null){
-	    	//headers = //get default headers
-	    }
-	    logger.trace("UserAgent: " + userAgent);
-		return Jsoup.connect(url)
-				.userAgent(userAgent!=null?userAgent:getRandomUserAgent())
-				.referrer(referrer)
-				.maxBodySize(0)
-				.cookies(cookies)
-				//.headers(headers)
-				.timeout(30000);
-	}
+    public Connection.Response retrieveConnectionResponse(String url, String refferer) throws IOException {
+    	return retrieveConnectionResponse(url, refferer, null, null);
+    }
 	public Connection getConnection(String url, String referrer) throws IOException {
 		return getConnection(url, referrer, null, null);
 	}
@@ -99,9 +83,9 @@ public class ConnectionUtil {
 		}
 	}
 	
-    public Connection.Response retrieveConnectionResponse(String url, String refferer, Map<String,String> cookies) throws IOException {
+    public Connection.Response retrieveConnectionResponse(String url, String refferer, Map<String,String> cookies, Map<String,String> headers) throws IOException {
     	Connection.Response response;
-    	Connection conn = getConnection(url, refferer, cookies, null);
+    	Connection conn = getConnection(url, refferer, cookies, headers);
 		if (offline) {
 			if (cookies!=null) {
 				response = new OfflineResponse(200, url, cookies);
@@ -114,8 +98,26 @@ public class ConnectionUtil {
 		}
 		return response;
     }
-    public Connection.Response retrieveConnectionResponse(String url, String refferer) throws IOException {
-    	return retrieveConnectionResponse(url, refferer, null);
-    }
+
+	public Connection getConnection(String url, String referrer, Map<String,String> cookies, Map<String, String> headers) throws IOException {
+	    if (referrer==null) {
+            referrer = "https://google.com";
+        }
+	    if (cookies==null){
+	    	cookies = new HashMap<>();
+	    }
+	    if (headers==null){
+	        headers = new HashMap<>();
+	        headers.put("Connection", "keep-alive");
+	    }
+	    logger.trace("UserAgent: " + userAgent);
+		return Jsoup.connect(url)
+				.userAgent(userAgent!=null?userAgent:getRandomUserAgent())
+				.referrer(referrer)
+				.maxBodySize(0)
+				.cookies(cookies)
+				.headers(headers)
+				.timeout(30000);
+	}
     
 }

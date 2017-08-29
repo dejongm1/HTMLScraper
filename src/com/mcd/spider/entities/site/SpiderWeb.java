@@ -13,6 +13,7 @@ public class SpiderWeb {
     private Set<String> uncrawledIds;
     private Set<Record> crawledRecords;
     private Map<String,String> sessionCookies;
+    private Map<String,String> headers;
     private boolean offline;
     private int furthestPageToCheck;
     private long recordsProcessed;
@@ -122,5 +123,13 @@ public class SpiderWeb {
 
     public int getRecordCap() {
         return recordCap;
+    }
+
+    public Map<String, String> getHeaders() {
+        return headers;
+    }
+
+    public void setHeaders(Map<String,String> headers) {
+        this.headers = headers;
     }
 }

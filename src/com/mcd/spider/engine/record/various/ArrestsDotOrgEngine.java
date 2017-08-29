@@ -261,11 +261,19 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 
     @Override
     public Object initiateConnection(String firstPageResults) throws IOException {
-        //TODO also set headers?
         Connection.Response response = connectionUtil.retrieveConnectionResponse(firstPageResults, "www.google.com");
         for (Map.Entry<String,String> cookieEntry : response.cookies().entrySet()){
             logger.debug(cookieEntry.getKey() + "=" + cookieEntry.getValue());
         }
+        Map<String,String> headers = new HashMap<>();
+        headers.put("Host", "iowa.arrests.org");
+        headers.put("Accept", "text/html, */*; q=0.01");
+        headers.put("Accept-Language", "en-US,en;q=0.5  ");
+        headers.put("Accept-Encoding", "gzip, deflate, br");
+        headers.put("X-fancyBox", "true");
+        headers.put("X-Requested-With", "XMLHttpRequest");
+        headers.put("Connection", "keep-alive");
+        spiderWeb.setHeaders(headers);
         spiderWeb.setSessionCookies(response.cookies());
         return response.parse();
     }
@@ -309,8 +317,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     				String url = resultsUrlPlusMiscMap.get(k);
     				try {
     					//can we guarantee previous is a page that has access to the current?
-    					//TODO also set headers?
-    					Connection.Response response = connectionUtil.retrieveConnectionResponse(url, resultsUrlPlusMiscMap.get(previousKey), spiderWeb.getSessionCookies());
+    					Connection.Response response = connectionUtil.retrieveConnectionResponse(url, resultsUrlPlusMiscMap.get(previousKey), spiderWeb.getSessionCookies(), spiderWeb.getHeaders());
     					docToCheck = response.parse();
     					setCookies(response);
     				} catch (FileNotFoundException fnfe) {
@@ -405,9 +412,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     }
 
     public Document obtainRecordDetailDoc(String url, String referer) throws IOException {
-		//can we guarantee previous is a page that has access to the current?
-    	//TODO also set headers?
-		Connection.Response response = connectionUtil.retrieveConnectionResponse(url, referer, spiderWeb.getSessionCookies());
+		Connection.Response response = connectionUtil.retrieveConnectionResponse(url, referer, spiderWeb.getSessionCookies(), spiderWeb.getHeaders());
 		setCookies(response);
     	return response.parse();
     }

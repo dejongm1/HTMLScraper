@@ -276,12 +276,15 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
                 } else if (label.contains("hair")) {
                     record.setHairColor(extractValue(profileDetailElement));
                 } else if (label.contains("eye")) {
-                    record.setEyeColor(extractValue(profileDetailElement).replace("Eye color ", ""));
+                    String eyeColorText = extractValue(profileDetailElement);
+                    record.setEyeColor(eyeColorText!=null?eyeColorText.replace("Eye color ", ""):eyeColorText);
                 } else if (label.contains("county")) {
                     record.setCounty(extractValue(profileDetailElement));
                 }
             } catch (NumberFormatException nfe) {
                 logger.error("Couldn't parse a numeric value from " + profileDetailElement.text());
+            } catch (NullPointerException npe) {
+                logger.error("Nullpointer while trying to parse parse out record details");
             }
         } else if (profileDetailElement.select("h1").hasText()) {
             record.setFullName(profileDetailElement.select("h1").text().trim());
