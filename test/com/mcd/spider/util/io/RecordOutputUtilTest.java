@@ -26,7 +26,7 @@ public class RecordOutputUtilTest {
         outputter = ioUtil.getOutputter();
         backUpDoc = new File(ioUtil.getMainDocName().substring(0, ioUtil.getMainDocName().indexOf(RecordIOUtil.getEXT())) + RecordOutputUtil.getBackupSuffix() + RecordIOUtil.getEXT());
         mainDoc = new File(ioUtil.getMainDocName());
-        mainDocRenamed = new File("tempForTesting" + mainDoc.getName());
+        mainDocRenamed = new File(mainDoc.getPath() + "tempForTesting");
     }
 
     @AfterClass
@@ -39,10 +39,12 @@ public class RecordOutputUtilTest {
 
     @Test
     public void testCreateWorkbook_mainDocExists() throws Exception {
+        Assert.assertTrue(mainDoc.exists());
+        
+        outputter.createWorkbook();
         Workbook mainWorkbook = Workbook.getWorkbook(mainDoc);
         Workbook backupWorkbook = Workbook.getWorkbook(backUpDoc);
-        outputter.createWorkbook();
-        Assert.assertTrue(mainDoc.exists());
+        
         Assert.assertTrue(backUpDoc.exists());
         Assert.assertEquals(mainWorkbook.getNumberOfSheets(), backupWorkbook.getNumberOfSheets());
         Assert.assertEquals(mainWorkbook.getSheet(0).getRows(), backupWorkbook.getSheet(0).getRows());
@@ -52,13 +54,18 @@ public class RecordOutputUtilTest {
     @Test
     public void testCreateWorkbook_mainDocDoesntExist() throws Exception {
         mainDoc.renameTo(mainDocRenamed);
+        Assert.assertFalse(mainDoc.exists());
+        
         outputter.createWorkbook();
         Workbook mainWorkbook = Workbook.getWorkbook(mainDoc);
-        Assert.assertFalse(mainDoc.exists());
+        
         Assert.assertFalse(backUpDoc.exists());
         Assert.assertEquals(mainWorkbook.getSheet(0).getRows(), 1);
         Assert.assertEquals(mainWorkbook.getNumberOfSheets(), 1);
         Assert.assertEquals(mainWorkbook.getSheet(0).getName(), outputter.getState().getName());
+        
+        mainDocRenamed.renameTo(mainDoc);
+        Assert.assertTrue(mainDoc.exists());
     }
 
     @Test

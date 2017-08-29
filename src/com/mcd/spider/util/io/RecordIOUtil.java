@@ -19,8 +19,8 @@ public class RecordIOUtil {
 	
 	public static final Logger logger = Logger.getLogger(RecordIOUtil.class);
 	private static final String EXT = ".xls";
-    private static String OUTPUT_DIR = "output/";
-    private static String TRACKING_DIR = OUTPUT_DIR + "tracking/";
+    private static final String OUTPUT_DIR = "output/";
+    private static final String TRACKING_DIR = OUTPUT_DIR + "tracking/";
 	
 	private String mainDocName;
 	private RecordInputUtil inputter;
@@ -35,12 +35,14 @@ public class RecordIOUtil {
 
     public RecordIOUtil(State state, Record record, Site site, boolean testing) {
 	    if (testing) {
-            OUTPUT_DIR = "testing/"+OUTPUT_DIR;
-            TRACKING_DIR = "testing/"+TRACKING_DIR;
+	        this.crawledIdFile = new File("output/testing/tracking/" + site.getName() + "_Archive.txt");
+	        this.uncrawledIdFile = new File("output/testing/tracking/" + site.getName() + "_Uncrawled.txt");
+	        this.mainDocName = "output/testing/" + state.getName() + "_" + record.getClass().getSimpleName() + "_" + site.getName() + EXT;
+        } else {
+	        this.crawledIdFile = new File(TRACKING_DIR + site.getName() + "_Archive.txt");
+	        this.uncrawledIdFile = new File(TRACKING_DIR + site.getName() + "_Uncrawled.txt");
+	        this.mainDocName = OUTPUT_DIR + state.getName() + "_" + record.getClass().getSimpleName() + "_" + site.getName() + EXT;
         }
-        this.crawledIdFile = new File(TRACKING_DIR + site.getName() + "_Archive.txt");
-        this.uncrawledIdFile = new File(TRACKING_DIR + site.getName() + "_Uncrawled.txt");
-        this.mainDocName = OUTPUT_DIR + state.getName() + "_" + record.getClass().getSimpleName() + "_" + site.getName() + EXT;
         this.record = record;
         this.outputter = new RecordOutputUtil(this, state, site);
         this.inputter = new RecordInputUtil(this);
