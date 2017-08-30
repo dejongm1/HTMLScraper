@@ -119,9 +119,10 @@ public class RecordOutputUtilTest {
     	//addRecordToWorkbook()
     	//check that row was inserted where it should've been
     	//check that file create, copy, delete, rename didn't leave extra files??
+        Assert.fail();
     }
 
-   /* @Test(groups = {"tempOutputFile"})
+   @Test(groups = {"tempOutputFile"})
     public void testRemoveColumnsFromSpreadsheet() throws Exception {
         renameMainDoc();
 
@@ -155,6 +156,7 @@ public class RecordOutputUtilTest {
 
     @Test
     public void testSplitIntoSheets() throws Exception {
+    	//TODO this is currently duplicating that have been split
     	//either create list of List<> or use methods to read it in
     	//create baseDoc to use?
     	//count of List<Record> should match sheet count
@@ -172,5 +174,5 @@ public class RecordOutputUtilTest {
     	//size of mocked list should match rows in file
     	//delete file
         Assert.fail();
-    }*/
+    }
 }

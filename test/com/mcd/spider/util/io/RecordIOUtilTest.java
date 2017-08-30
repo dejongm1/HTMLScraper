@@ -21,8 +21,8 @@ import java.util.Set;
 public class RecordIOUtilTest {
 
 	//get test-named files and rename them to site specific books for the test, delete after
-	private File testMergeFileOne = new File("output/testing/testOutputFileOne.xls");
-	private File testMergeFileTwo = new File("output/testing/testOutputFileTwo.xls");
+	private File testMergeFileOne = new File("output/testing/testMergeFileOne.xls");
+	private File testMergeFileTwo = new File("output/testing/testMergeFileTwo.xls");
 	private File testArrestOrgOutput = new File("output/testing/Iowa_ArrestRecord_ArrestsOrg-test.xls");
 	private File testDesMoinesRegisterComOutput = new File("output/testing/Iowa_ArrestRecord_DesMoinesRegisterCom-test.xls");
 	

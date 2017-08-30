@@ -186,6 +186,7 @@ public class RecordInputUtil {
     }
 
     public int getNonEmptyRowCount(Sheet sheet) {
+    	//includes header row
 	    int foundRecordCount = 0;
 	    for (int r=0; r<sheet.getRows(); r++) {
 	        if (rowIsNotEmpty(sheet.getRow(r))) {

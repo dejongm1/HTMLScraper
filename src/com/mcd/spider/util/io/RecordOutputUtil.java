@@ -1,18 +1,5 @@
 package com.mcd.spider.util.io;
 
-import com.google.common.base.CaseFormat;
-import com.mcd.spider.entities.record.Record;
-import com.mcd.spider.entities.record.State;
-import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
-import com.mcd.spider.entities.site.Site;
-import jxl.Workbook;
-import jxl.read.biff.BiffException;
-import jxl.write.Label;
-import jxl.write.WritableSheet;
-import jxl.write.WritableWorkbook;
-import jxl.write.WriteException;
-import org.apache.log4j.Logger;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -23,6 +10,22 @@ import java.lang.reflect.Method;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import org.apache.log4j.Logger;
+
+import com.google.common.base.CaseFormat;
+import com.mcd.spider.entities.record.Record;
+import com.mcd.spider.entities.record.State;
+import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
+import com.mcd.spider.entities.site.Site;
+
+import jxl.Workbook;
+import jxl.read.biff.BiffException;
+import jxl.write.Label;
+import jxl.write.WritableSheet;
+import jxl.write.WritableWorkbook;
+import jxl.write.WriteException;
 
 /**
  * 
@@ -79,7 +82,7 @@ public class RecordOutputUtil {
             if (new File(docName).exists()) {
                 createWorkbookCopy(docName,
                         docName.substring(0, docName.indexOf(EXT))+BACKUP_SUFFIX+EXT);
-                workbook = copyWorkbook;
+//                workbook = copyWorkbook;
                 handleBackup(docName, false);
             }
 		} catch (BiffException | IOException | WriteException e) {
@@ -142,6 +145,7 @@ public class RecordOutputUtil {
 		try {
 			createWorkbookCopy(docName, getTempFileName() + EXT);
 			int rowNumber = ioutil.getInputter().getNonEmptyRowCount(copyWorkbook.getSheet(0));
+			//TODO this will overwrite records if there are any empty rows
 			WritableSheet sheet = copyWorkbook.getSheet(0);
 			record.addToExcelSheet(rowNumber, sheet);
 			writeIdToFile(crawledIdFile, record.getId());
@@ -252,7 +256,7 @@ public class RecordOutputUtil {
 //		}
 //	}
 
-    public boolean splitIntoSheets(String docName, String delimiter, List<List<Record>> recordsListList, Class clazz) {
+    public boolean splitIntoSheets(String docName, String delimiter, List<Set<Record>> recordsListList, Class clazz) {
         boolean successful = false;
         Method fieldGetter = null;
         for (Method method : clazz.getMethods()) {
@@ -264,15 +268,16 @@ public class RecordOutputUtil {
             createWorkbookCopy(docName, getTempFileName() + EXT);
             for (int s = 0; s < recordsListList.size(); s++) {
                 try {
-                    String delimitValue = (String) fieldGetter.invoke(recordsListList.get(s).get(0));
+                    String delimitValue = (String) fieldGetter.invoke(recordsListList.get(s).toArray()[0]);
                     WritableSheet excelSheet = copyWorkbook.getSheet(delimitValue);
                     if (excelSheet == null) {
                         //append a new sheet for each
                         excelSheet = copyWorkbook.createSheet(delimitValue == null ? "empty" : delimitValue, s + 1);
                     }
                     createColumnHeaders(excelSheet);
-                    for (int r = 0; r < recordsListList.get(s).size(); r++) {
-                        recordsListList.get(s).get(r).addToExcelSheet(r+1, excelSheet);
+                    Record[] recordArray = recordsListList.get(s).toArray(new Record[recordsListList.get(s).size()]);
+                    for (int r = 0; r < recordArray.length; r++) {
+                    	recordArray[r].addToExcelSheet(r+1, excelSheet);
                     }
                 } catch (NullPointerException e) {
                     logger.error("Error trying split workbook into sheets by " + fieldGetter.getName(), e);

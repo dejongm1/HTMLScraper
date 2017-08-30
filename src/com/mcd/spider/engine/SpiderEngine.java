@@ -33,7 +33,19 @@ public class SpiderEngine {
 		for (State state : states) {
 			if (!state.getEngines().isEmpty()) {
 				StateRouter router = new StateRouter(state);
-				router.collectRecords(maxNumberOfResults, filter, retrieveMissedRecords);
+				router.collectRecordsUsingThreading(maxNumberOfResults, filter, retrieveMissedRecords);
+				RecordIOUtil mainIOutil = new RecordIOUtil(state, new ArrestRecord(), state.getEngines().get(0).getSite());
+				//start with the second engine and iterate over the rest
+				for (int e=1;e<state.getEngines().size();e++) {
+				    //TODO this will likely overwrite _MERGED if more than 2 engine per site
+                    //TODO once confirmed that merge is working well, merge additional sheets
+                    //TODO merge filtered workbooks?
+				    logger.info("Attempting to merge record output from " + state);
+					RecordIOUtil comparingIOUtil = new RecordIOUtil(state, new ArrestRecord(), state.getEngines().get(e).getSite());
+					Set<Record> mergedRecords = mainIOutil.mergeRecordsFromSheet(new File(mainIOutil.getMainDocName()), new File(comparingIOUtil.getMainDocName()), 0);
+                    mainIOutil.getOutputter().createSpreadsheetWithRecords(mainIOutil.getOutputter().getMergedDocName(), new ArrayList<>(mergedRecords));
+            		logger.info("Merge Complete.");
+				}
 			} else {
 				throw new StateNotReadyException(state);
 			}
@@ -49,29 +61,6 @@ public class SpiderEngine {
 //			state.addEngine(new MugShotsDotComEngine());
 			StateRouter router = new StateRouter(state);
 			router.collectRecords(maxNumberOfResults, filter, retrieveMissedRecords);
-		}
-		logger.info("Spider has finished crawling. Shutting down.");
-	}
-	
-	public void getArrestRecordsByThreading(List<State> states, long maxNumberOfResults, RecordFilterEnum filter, boolean retrieveMissedRecords) throws SpiderException {
-		for (State state : states) {
-			if (!state.getEngines().isEmpty()) {
-				StateRouter router = new StateRouter(state);
-				router.collectRecordsUsingThreading(maxNumberOfResults, filter, retrieveMissedRecords);
-				RecordIOUtil mainIOutil = new RecordIOUtil(state, new ArrestRecord(), state.getEngines().get(0).getSite());
-				//start with the second engine and iterate over the rest
-				for (int e=1;e<state.getEngines().size();e++) {
-				    //TODO this will likely overwrite _MERGED if more than 2 engine per site
-                    //TODO once confirmed that merge is working well, merge additional sheets
-                    //TODO merge filtered workbooks?
-				    logger.info("Attempting to merge record output from " + state);
-					RecordIOUtil comparingIOUtil = new RecordIOUtil(state, new ArrestRecord(), state.getEngines().get(e).getSite());
-					Set<Record> mergedRecords = mainIOutil.mergeRecordsFromSheet(new File(mainIOutil.getMainDocName()), new File(comparingIOUtil.getMainDocName()), 0);
-                    mainIOutil.getOutputter().createSpreadsheetWithRecords(mainIOutil.getOutputter().getMergedDocName(), new ArrayList<>(mergedRecords));
-				}
-			} else {
-				throw new StateNotReadyException(state);
-			}
 		}
 		logger.info("Spider has finished crawling. Shutting down.");
 	}

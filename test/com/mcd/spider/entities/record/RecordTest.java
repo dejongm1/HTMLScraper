@@ -197,10 +197,10 @@ public class RecordTest {
 	public void splitByField_ArrestRecordsByCounty() throws InterruptedException {
 		List<Record> records = new ArrayList<>(ioUtil.getInputter().readRecordsFromSheet(testReadInputFile, "readRecordsIn"));
         Collections.sort(records, ArrestRecord.CountyComparator);
-		List<List<Record>> splitRecords = Record.splitByField(new ArrayList<>(records), RecordColumnEnum.COUNTY_COLUMN.getColumnTitle(), ArrestRecord.class);
+		List<Set<Record>> splitRecords = Record.splitByField(new ArrayList<>(records), RecordColumnEnum.COUNTY_COLUMN.getColumnTitle(), ArrestRecord.class);
 		int polkCountyIndex = 0;
 		int johnsonCountyIndex = 0;
-		if (((ArrestRecord)splitRecords.get(0).get(0)).getCounty().equals("Polk")) {
+		if (((ArrestRecord)splitRecords.get(0).toArray()[0]).getCounty().equals("Polk")) {
 			polkCountyIndex = 0;
 			johnsonCountyIndex = 1;
 		} else {
@@ -212,22 +212,22 @@ public class RecordTest {
 		Assert.assertEquals(splitRecords.size(), 2);
 		Assert.assertEquals(splitRecords.get(polkCountyIndex).size(), 2);
 		Assert.assertEquals(splitRecords.get(johnsonCountyIndex).size(), 1);
-		Assert.assertEquals(((ArrestRecord)splitRecords.get(polkCountyIndex).get(0)).getCounty(), ((ArrestRecord)splitRecords.get(polkCountyIndex).get(1)).getCounty());
-		Assert.assertNotEquals(((ArrestRecord)splitRecords.get(polkCountyIndex).get(0)).getCounty(), ((ArrestRecord)splitRecords.get(johnsonCountyIndex).get(0)).getCounty());
+		Assert.assertEquals(((ArrestRecord)splitRecords.get(polkCountyIndex).toArray()[0]).getCounty(), ((ArrestRecord)splitRecords.get(polkCountyIndex).toArray()[1]).getCounty());
+		Assert.assertNotEquals(((ArrestRecord)splitRecords.get(polkCountyIndex).toArray()[0]).getCounty(), ((ArrestRecord)splitRecords.get(johnsonCountyIndex).toArray()[0]).getCounty());
 	}
 
 	@Test(dependsOnGroups={"ReadRowsIn", "Inputter"})
 	public void splitByField_ArrestRecordsByCity_NullDelimiter() {
 		List<Record> records = new ArrayList<>(ioUtil.getInputter().readRecordsFromSheet(testReadInputFile, "readRecordsIn"));
         Collections.sort(records, ArrestRecord.CityComparator);
-		List<List<Record>> splitRecords = Record.splitByField(new ArrayList<>(records), RecordColumnEnum.CITY_COLUMN.getColumnTitle(), ArrestRecord.class);
+		List<Set<Record>> splitRecords = Record.splitByField(new ArrayList<>(records), RecordColumnEnum.CITY_COLUMN.getColumnTitle(), ArrestRecord.class);
 		
 		Assert.assertEquals(splitRecords.size(), 3);
 		Assert.assertEquals(splitRecords.get(0).size(), 1);
 		Assert.assertEquals(splitRecords.get(1).size(), 1);
 		Assert.assertEquals(splitRecords.get(2).size(), 1);
-		Assert.assertNotEquals(((ArrestRecord)splitRecords.get(0).get(0)).getCity(), ((ArrestRecord)splitRecords.get(1).get(0)).getCity());
-		Assert.assertNotEquals(((ArrestRecord)splitRecords.get(1).get(0)).getCity(), ((ArrestRecord)splitRecords.get(2).get(0)).getCity());
+		Assert.assertNotEquals(((ArrestRecord)splitRecords.get(0).toArray()[0]).getCity(), ((ArrestRecord)splitRecords.get(1).toArray()[0]).getCity());
+		Assert.assertNotEquals(((ArrestRecord)splitRecords.get(1).toArray()[0]).getCity(), ((ArrestRecord)splitRecords.get(2).toArray()[0]).getCity());
 	}
 
 

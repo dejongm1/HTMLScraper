@@ -30,7 +30,7 @@ public class SpiderWeb {
 	    furthestPageToCheck = 9999;
 	    this.addMisc = addMisc;
 	    this.retrieveMissedRecords = retrieveMissedRecords;
-	    recordCap = offline?3:ThreadLocalRandom.current().nextInt(150, 250);
+	    recordCap = ThreadLocalRandom.current().nextInt(150, 250);
     }
  
 	public int getAttemptCount() {

@@ -367,7 +367,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
                 try {
                     logger.info("Outputting filtered results");
                     List<Record> filteredRecords = filterRecords(arrestRecords);
-                    List<List<Record>> splitRecords = Record.splitByField(filteredRecords, delimiter, clazz);
+                    List<Set<Record>> splitRecords = Record.splitByField(filteredRecords, delimiter, clazz);
                     //create a separate sheet with filtered results
                     logger.info(filteredRecords.size()+" "+filter.filterName()+" "+"records were crawled");
                     if (!filteredRecords.isEmpty()) {
@@ -379,7 +379,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
                 }
             }
             try {
-                List<List<Record>> splitRecords = Record.splitByField(arrestRecords, delimiter, clazz);
+                List<Set<Record>> splitRecords = Record.splitByField(arrestRecords, delimiter, clazz);
                 recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getMainDocName(), delimiter, splitRecords, clazz);
             } catch (Exception e) {
                 logger.error("Error trying to split full list of records", e);

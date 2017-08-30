@@ -302,7 +302,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
             try {
                 logger.info("Outputting filtered results");
                 List<Record> filteredRecords = filterRecords(arrestRecords);
-                List<List<Record>> splitRecords = Record.splitByField(filteredRecords, delimiter, clazz);
+                List<Set<Record>> splitRecords = Record.splitByField(filteredRecords, delimiter, clazz);
                 if (!splitRecords.isEmpty()) {
 	                //create a separate sheet with filtered results
 	                logger.info(filteredRecords.size()+" "+filter.filterName()+" "+"records were crawled");
@@ -316,7 +316,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
             }
         }
         try {
-            List<List<Record>> splitRecords = Record.splitByField(arrestRecords, delimiter, clazz);
+            List<Set<Record>> splitRecords = Record.splitByField(arrestRecords, delimiter, clazz);
             if (!splitRecords.isEmpty()) {
             	recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getMainDocName(), delimiter, splitRecords, clazz);
             }

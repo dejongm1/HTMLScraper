@@ -29,13 +29,14 @@ public class RecordInputUtilTest {
 	private RecordIOUtil ioUtil;
 	RecordInputUtil inputter;
 	Sheet sheet;
+	Workbook workbook;
 	
 	@BeforeClass
 	public void setUpClass() throws BiffException, IOException {
 		ioUtil = new RecordIOUtil(State.getState("IA"), new ArrestRecord(), new ArrestsDotOrgSite(new String[]{"iowa"}));
 		inputter = ioUtil.getInputter();
 		Assert.assertTrue(testReadInputFile.exists());
-		Workbook workbook = Workbook.getWorkbook(testReadInputFile);
+		workbook = Workbook.getWorkbook(testReadInputFile);
         if (workbook!=null) {
             sheet = workbook.getSheet("readRecordsIn");
         }
@@ -74,8 +75,13 @@ public class RecordInputUtilTest {
 	}
 	
 	@Test
-	public void testGetEmptyRowCount() {
-		Assert.fail();
+	public void testGetNonEmptyRowCount() {
+		Sheet testSheet = null;
+		if (workbook!=null) {
+			testSheet = workbook.getSheet("readRecordsIn");
+        }
+		Assert.assertEquals(inputter.getNonEmptyRowCount(testSheet), 4);
+		Assert.assertEquals(testSheet.getRows(), 16);
 	}
 
 }
