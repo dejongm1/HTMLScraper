@@ -1,21 +1,24 @@
 package com.mcd.spider.util.io;
 
-import com.mcd.spider.entities.record.ArrestRecord;
-import com.mcd.spider.entities.record.Record;
-import com.mcd.spider.entities.record.State;
-import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
-import jxl.Workbook;
-import jxl.write.WritableWorkbook;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import com.mcd.spider.entities.record.ArrestRecord;
+import com.mcd.spider.entities.record.Record;
+import com.mcd.spider.entities.record.State;
+import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
+
+import jxl.Cell;
+import jxl.Workbook;
+import jxl.write.WritableWorkbook;
 
 public class RecordOutputUtilTest {
 
@@ -28,7 +31,9 @@ public class RecordOutputUtilTest {
 
     @BeforeClass
     public void setUp() throws IOException {
+    	System.setProperty("offline", "false");
         ioUtil = new RecordIOUtil(State.getState("IA"), new ArrestRecord(), new ArrestsDotOrgSite(new String[]{"iowa"}), true);
+    	System.setProperty("offline", "true");
         backUpDoc = new File(ioUtil.getMainDocName().substring(0, ioUtil.getMainDocName().indexOf(RecordIOUtil.getEXT())) + RecordOutputUtil.getBackupSuffix() + RecordIOUtil.getEXT());
         mainDoc = new File(ioUtil.getMainDocName());
         outputter = ioUtil.getOutputter();
@@ -107,19 +112,25 @@ public class RecordOutputUtilTest {
         Assert.assertEquals(mockedRecords.size(), testWorkbook.getSheet(0).getRows()-1);
     }
 
-    @Test(groups = {"tempOutputFile"})
+    @Test
     public void testAddRecordToMainWorkbook() throws Exception {
-        renameMainDoc();
-
-    	//check current number of rows
-        int currentRowCount = testWorkbook.getSheet(0).getRows();
+    	Workbook mainWorkbook = Workbook.getWorkbook(mainDoc);
+    	int idFileLength = ioUtil.getInputter().getCrawledIds().size();
+        int currentRowCount = mainWorkbook.getSheet(0).getRows();
         ArrestRecord arrestRecord = new ArrestRecord();
         arrestRecord.setId("1233afsasf");
         outputter.addRecordToMainWorkbook(arrestRecord);
-    	//addRecordToWorkbook()
-    	//check that row was inserted where it should've been
-    	//check that file create, copy, delete, rename didn't leave extra files??
-        Assert.fail();
+
+        //read workbook back in to get inserted row
+    	mainWorkbook = Workbook.getWorkbook(mainDoc);
+        Cell[] rowInserted = mainWorkbook.getSheet(0).getRow(currentRowCount);
+        
+        Assert.assertEquals(mainWorkbook.getSheet(0).getRows(), currentRowCount+1);
+        Assert.assertEquals(rowInserted[0].getContents(), "1233afsasf");
+        Assert.assertEquals(idFileLength+1, ioUtil.getInputter().getCrawledIds().size());
+
+        ioUtil.getCrawledIdFile().delete();
+        mainWorkbook.close();
     }
 
    @Test(groups = {"tempOutputFile"})
