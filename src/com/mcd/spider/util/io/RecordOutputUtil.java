@@ -7,7 +7,9 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -155,20 +157,22 @@ public class RecordOutputUtil {
 		}
 	}
 
-	public boolean removeColumnsFromSpreadsheet(int[] args) {
+	public boolean removeColumnsFromSpreadsheet(Integer[] args, String docName) {
 		boolean successful = false;
 		try {
 			createWorkbookCopy(docName, getTempFileName() + EXT);
 
 			WritableSheet sheet = copyWorkbook.getSheet(0);
 
+			//need to do this in reverse order
+			Arrays.sort(args, Collections.reverseOrder());
 			for (int c = 0; c < args.length; c++) {
 				sheet.removeColumn(args[c]);
 			}
 
 			handleBackup(docName, true);
 		} catch (IOException | WriteException | BiffException e) {
-			logger.error("Error trying to remove ID column from workbook", e);
+			logger.error("Error trying to remove column(s) from workbook", e);
 		}
 		return successful;
 	}
@@ -316,8 +320,8 @@ public class RecordOutputUtil {
 		for (Map.Entry<Object, String> entry : recordsDetailsUrlMap.entrySet()) {
 			try {
 			    if (!entry.getValue().startsWith("CRAWLED")) {
-                    String id = site.generateRecordId(entry.getValue());
-                    writeIdToFile(uncrawledIdFile, id);
+//                    String id = site.generateRecordId(entry.getValue());
+                    writeIdToFile(uncrawledIdFile, (String)entry.getKey());
                 }
 			} catch (ArrayIndexOutOfBoundsException | StringIndexOutOfBoundsException e) {
 				// not a record detail url so ID could not be parsed
@@ -325,7 +329,7 @@ public class RecordOutputUtil {
 		}
 	}
 
-	private void createColumnHeaders(WritableSheet excelSheet) throws WriteException {
+	protected void createColumnHeaders(WritableSheet excelSheet) throws WriteException {
 		// create columns based on Record.getFieldsToOutput()
 		int columnNumber = 0;
 		for (Field recordField : record.getFieldsToOutput()) {

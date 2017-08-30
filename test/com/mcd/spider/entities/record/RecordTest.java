@@ -70,7 +70,7 @@ public class RecordTest {
 		Assert.assertEquals(columnOrder.size(), 23);
 		Assert.assertEquals(columnOrder.get(0), "EXTRA_COLUMN");
 		Assert.assertEquals(columnOrder.get(1), ArrestRecord.RecordColumnEnum.ID_COLUMN);
-		Assert.assertEquals(columnOrder.get(22), ArrestRecord.RecordColumnEnum.RACE);
+		Assert.assertEquals(columnOrder.get(22), ArrestRecord.RecordColumnEnum.RACE_COLUMN);
 	}
 
 	@Test(groups={"ColumnOrder"})
@@ -80,7 +80,7 @@ public class RecordTest {
 		
 		Assert.assertEquals(columnOrder.size(), 20);
 		Assert.assertEquals(columnOrder.get(0), ArrestRecord.RecordColumnEnum.FULLNAME_COLUMN);
-		Assert.assertEquals(columnOrder.get(19), ArrestRecord.RecordColumnEnum.RACE);
+		Assert.assertEquals(columnOrder.get(19), ArrestRecord.RecordColumnEnum.RACE_COLUMN);
 		
 	}
 

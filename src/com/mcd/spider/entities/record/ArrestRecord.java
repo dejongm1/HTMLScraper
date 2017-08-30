@@ -215,7 +215,7 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 		BIRTHPLACE_COLUMN(16, "Birth Place", String.class),
 		CHARGES_COLUMN(17, "Charges", String[].class),
 		OFFENDERID_COLUMN(18, "Offender ID", String.class),
-		RACE(19, "Race", String.class);
+		RACE_COLUMN(19, "Race", String.class);
 
 		private int columnIndex;
 		private String columnTitle;

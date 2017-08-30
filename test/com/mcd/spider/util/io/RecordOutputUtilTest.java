@@ -3,12 +3,13 @@ package com.mcd.spider.util.io;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import com.mcd.spider.entities.record.ArrestRecord;
@@ -17,8 +18,11 @@ import com.mcd.spider.entities.record.State;
 import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
 
 import jxl.Cell;
+import jxl.Sheet;
 import jxl.Workbook;
+import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
+import jxl.write.WriteException;
 
 public class RecordOutputUtilTest {
 
@@ -29,30 +33,31 @@ public class RecordOutputUtilTest {
     private File mainDocRenamed;
     private WritableWorkbook testWorkbook;
 
-    @BeforeClass
-    public void setUp() throws IOException {
+    @BeforeMethod
+    public void setUp() throws IOException, WriteException {
     	System.setProperty("offline", "false");
         ioUtil = new RecordIOUtil(State.getState("IA"), new ArrestRecord(), new ArrestsDotOrgSite(new String[]{"iowa"}), true);
     	System.setProperty("offline", "true");
-        backUpDoc = new File(ioUtil.getMainDocName().substring(0, ioUtil.getMainDocName().indexOf(RecordIOUtil.getEXT())) + RecordOutputUtil.getBackupSuffix() + RecordIOUtil.getEXT());
-        mainDoc = new File(ioUtil.getMainDocName());
         outputter = ioUtil.getOutputter();
         outputter.createWorkbook();
+    	backUpDoc = new File(ioUtil.getMainDocName().substring(0, ioUtil.getMainDocName().indexOf(RecordIOUtil.getEXT())) + RecordOutputUtil.getBackupSuffix() + RecordIOUtil.getEXT());
+        mainDoc = new File(ioUtil.getMainDocName());
         mainDocRenamed = new File(mainDoc.getPath() + "tempForTesting");
+        testWorkbook = Workbook.createWorkbook(mainDoc);
+        WritableSheet sheet = testWorkbook.createSheet(outputter.getState().getName(), 0);
+        outputter.createColumnHeaders(sheet);
+        testWorkbook.write();
+        testWorkbook.close();
     }
 
-    @AfterClass
+    @AfterMethod
     public void tearDown() {
         mainDocRenamed.delete();
         mainDoc.delete();
         backUpDoc.delete();
+        ioUtil.getCrawledIdFile().delete();
+        ioUtil.getUncrawledIdFile().delete();
         //delete merged and/or filtered file
-    }
-
-    @AfterMethod(groups = {"tempOutputFile"})
-    public void tearDownTemp() {
-        mainDocRenamed.renameTo(mainDoc);
-        Assert.assertTrue(mainDoc.exists());
     }
 
     @Test
@@ -69,7 +74,7 @@ public class RecordOutputUtilTest {
         Assert.assertEquals(mainWorkbook.getSheet(0).getName(), backupWorkbook.getSheet(0).getName());
     }
 
-    @Test(groups = {"tempOutputFile"})
+    @Test
     public void testCreateWorkbook_mainDocDoesntExist() throws Exception {
         renameMainDoc();
 
@@ -85,19 +90,8 @@ public class RecordOutputUtilTest {
         Assert.assertEquals(mainWorkbook.getSheet(0).getName(), outputter.getState().getName());
     }
 
-    private void renameMainDoc() throws Exception {
-        mainDoc.renameTo(mainDocRenamed);
-        Assert.assertTrue(mainDocRenamed.exists());
-        testWorkbook = Workbook.createWorkbook(mainDocRenamed);
-        testWorkbook.createSheet(outputter.getState().getName(), 0);
-        testWorkbook.write();
-        testWorkbook.close();
-    }
-
-    @Test(groups = {"tempOutputFile"})
+    @Test
     public void testSaveRecordsToWorkbook() throws Exception {
-        renameMainDoc();
-
         //create list of records with basic data
     	List<Record> mockedRecords = new ArrayList<>();
     	for (int r=0;r<15;r++) {
@@ -128,21 +122,23 @@ public class RecordOutputUtilTest {
         Assert.assertEquals(mainWorkbook.getSheet(0).getRows(), currentRowCount+1);
         Assert.assertEquals(rowInserted[0].getContents(), "1233afsasf");
         Assert.assertEquals(idFileLength+1, ioUtil.getInputter().getCrawledIds().size());
-
-        ioUtil.getCrawledIdFile().delete();
-        mainWorkbook.close();
     }
 
-   @Test(groups = {"tempOutputFile"})
+    @Test
     public void testRemoveColumnsFromSpreadsheet() throws Exception {
-        renameMainDoc();
-
-    	//new temp workbook
-    	//check column count before
-    	//remove columns
-    	//check after
-    	//clean up workbook
-        Assert.fail();
+        Integer[] columnsToRemove = new Integer[]{ArrestRecord.RecordColumnEnum.ID_COLUMN.getColumnIndex(),ArrestRecord.RecordColumnEnum.OFFENDERID_COLUMN.getColumnIndex(),ArrestRecord.RecordColumnEnum.RACE_COLUMN.getColumnIndex()};
+        outputter.removeColumnsFromSpreadsheet(columnsToRemove, mainDoc.getPath());
+    	
+        Workbook workbook = Workbook.getWorkbook(mainDoc);
+        Sheet sheet = workbook.getSheet(0);
+        Cell[] headerRow = sheet.getRow(0);
+        
+        Assert.assertEquals(sheet.getColumns(), ArrestRecord.RecordColumnEnum.values().length-columnsToRemove.length);
+        for (int c=0;c<headerRow.length;c++) {
+        	Assert.assertNotEquals(headerRow[c].getContents(), ArrestRecord.RecordColumnEnum.ID_COLUMN.getColumnTitle());
+        	Assert.assertNotEquals(headerRow[c].getContents(), ArrestRecord.RecordColumnEnum.OFFENDERID_COLUMN.getColumnTitle());
+        	Assert.assertNotEquals(headerRow[c].getContents(), ArrestRecord.RecordColumnEnum.RACE_COLUMN.getColumnTitle());
+        }
     }
 
     @Test
@@ -181,9 +177,30 @@ public class RecordOutputUtilTest {
     @Test
     public void testBackupUnCrawledRecords() throws Exception {
     	//mock a list of ids
-    	//backupUncrawledRecords()
+    	Map<Object, String> urlsMap = new HashMap<>();
+    	urlsMap.put("123", "www.google.com/123");
+    	urlsMap.put("234", "www.google.com/234");
+    	urlsMap.put("345", "www.google.com/345");
+    	urlsMap.put("456", "www.google.com/456");
+    	outputter.backupUnCrawledRecords(urlsMap);
+    	String[] ids = ioUtil.getInputter().getUncrawledIds().toArray(new String[urlsMap.size()]);
     	//size of mocked list should match rows in file
-    	//delete file
-        Assert.fail();
+    	Assert.assertEquals(urlsMap.size(), ids.length);
+    	int e = 0;
+    	for (Map.Entry<Object, String> entry : urlsMap.entrySet()) {
+    		Assert.assertEquals(ids[e], (String) entry.getKey());
+    		e++;
+    	}
     }
+    
+    private void renameMainDoc() throws Exception {
+        mainDoc.renameTo(mainDocRenamed);
+        Assert.assertTrue(mainDocRenamed.exists());
+        testWorkbook = Workbook.createWorkbook(mainDocRenamed);
+        WritableSheet sheet = testWorkbook.createSheet(outputter.getState().getName(), 0);
+        outputter.createColumnHeaders(sheet);
+        testWorkbook.write();
+        testWorkbook.close();
+    }
+
 }
