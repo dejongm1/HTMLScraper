@@ -76,10 +76,12 @@ public class RecordOutputUtil {
 		WritableWorkbook newWorkbook = null;
 		try {
 			//backup existing workbook first
-			createWorkbookCopy(docName,
-					docName.substring(0, docName.indexOf(EXT)) + BACKUP_SUFFIX + EXT);
-			workbook = copyWorkbook;
-			handleBackup(docName, false);
+            if (new File(docName).exists()) {
+                createWorkbookCopy(docName,
+                        docName.substring(0, docName.indexOf(EXT))+BACKUP_SUFFIX+EXT);
+                workbook = copyWorkbook;
+                handleBackup(docName, false);
+            }
 		} catch (BiffException | IOException | WriteException e) {
 			logger.error("Create workbook error", e);
 		}

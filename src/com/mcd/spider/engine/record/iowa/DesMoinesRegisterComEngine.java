@@ -332,7 +332,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
 
     @Override
     public String extractValue(Element profileDetail) {
-        return profileDetail.text().equalsIgnoreCase("N/A")?profileDetail.text().substring(profileDetail.text().indexOf(':')+1).trim():null;
+        return profileDetail.text().contains("N/A")?null:profileDetail.text().substring(profileDetail.text().indexOf(':')+1).trim();
     }
 
     @Override
