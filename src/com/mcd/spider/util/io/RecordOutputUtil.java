@@ -20,7 +20,6 @@ import com.google.common.base.CaseFormat;
 import com.mcd.spider.entities.record.Record;
 import com.mcd.spider.entities.record.State;
 import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
-import com.mcd.spider.entities.site.Site;
 
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
@@ -43,7 +42,7 @@ public class RecordOutputUtil {
                                                     + WORKBOOK_CREATE_DATE.get(Calendar.DAY_OF_MONTH) + "-"
                                                     + WORKBOOK_CREATE_DATE.get(Calendar.YEAR);
 
-	private String docName;
+	private String docPath;
 	private WritableWorkbook workbook;
 	private State state;
 	private File crawledIdFile;
@@ -51,16 +50,14 @@ public class RecordOutputUtil {
 	private Record record;
 	private File oldBook;
 	private File newBook;
-	private Site site;
 	private Workbook currentWorkbook;
 	private WritableWorkbook copyWorkbook;
 	private RecordIOUtil ioutil;
 
-	public RecordOutputUtil(RecordIOUtil ioUtil, State state, Site site) {
-        this.docName = ioUtil.getMainDocName();
+	public RecordOutputUtil(RecordIOUtil ioUtil, State state) {
+        this.docPath = ioUtil.getMainDocPath();
 		this.state = state;
 		this.record = ioUtil.getRecord();
-		this.site = site;
 		this.crawledIdFile = ioUtil.getCrawledIdFile();
 		this.ioutil = ioUtil;
         this.uncrawledIdFile = ioUtil.getUncrawledIdFile();
@@ -69,10 +66,6 @@ public class RecordOutputUtil {
 	public State getState() {
 		return state;
 	}
-	public Record getRecord() {
-		return record;
-	}
-
     public static String getBackupSuffix() {
         return BACKUP_SUFFIX;
     }
@@ -81,18 +74,18 @@ public class RecordOutputUtil {
 		WritableWorkbook newWorkbook = null;
 		try {
 			//backup existing workbook first
-            if (new File(docName).exists()) {
-                createWorkbookCopy(docName,
-                        docName.substring(0, docName.indexOf(EXT))+BACKUP_SUFFIX+EXT);
+            if (new File(docPath).exists()) {
+                createWorkbookCopy(docPath,
+                        docPath.substring(0, docPath.indexOf(EXT))+BACKUP_SUFFIX+EXT);
 //                workbook = copyWorkbook;
-                handleBackup(docName, false);
+                handleBackup(docPath, false);
             }
 		} catch (BiffException | IOException | WriteException e) {
 			logger.error("Create workbook error", e);
 		}
 		try {
 			if (workbook == null) {
-				newWorkbook = Workbook.createWorkbook(new File(docName));
+				newWorkbook = Workbook.createWorkbook(new File(docPath));
 				WritableSheet excelSheet = newWorkbook.createSheet(state.getName(), 0);
 				createColumnHeaders(excelSheet);
 				newWorkbook.write();
@@ -122,12 +115,12 @@ public class RecordOutputUtil {
 		copyWorkbook = Workbook.createWorkbook(newBook, currentWorkbook);
 	}
 
-	public String getFilteredDocName(RecordFilterEnum filter) {
-		return docName.substring(0, docName.indexOf(EXT)) + "_" + filter.filterName() + EXT;
+	public String getFilteredDocPath(RecordFilterEnum filter) {
+		return docPath.substring(0, docPath.indexOf(EXT)) + "_" + filter.filterName() + EXT;
 	}
 
-	public String getMergedDocName() {
-		return docName.substring(0, docName.lastIndexOf('_')) + "_" + "MERGED" + EXT;
+	public String getMergedDocPath() {
+		return docPath.substring(0, docPath.lastIndexOf('_')) + "_" + "MERGED" + EXT;
 	}
 
 	public void saveRecordsToWorkbook(List<Record> records, WritableWorkbook workbook) {
@@ -145,13 +138,13 @@ public class RecordOutputUtil {
 
 	public void addRecordToMainWorkbook(Record record) {
 		try {
-			createWorkbookCopy(docName, getTempFileName() + EXT);
+			createWorkbookCopy(docPath, getTempFileName() + EXT);
 			int rowNumber = ioutil.getInputter().getNonEmptyRowCount(copyWorkbook.getSheet(0));
 			//TODO this will overwrite records if there are any empty rows
 			WritableSheet sheet = copyWorkbook.getSheet(0);
 			record.addToExcelSheet(rowNumber, sheet);
 			writeIdToFile(crawledIdFile, record.getId());
-			handleBackup(docName, true);
+			handleBackup(docPath, true);
 		} catch (IOException | WriteException | IllegalAccessException | BiffException e) {
 			logger.error("Error trying to save record to workbook: " + record.getId(), e);
 		}
@@ -164,7 +157,7 @@ public class RecordOutputUtil {
 
 			WritableSheet sheet = copyWorkbook.getSheet(0);
 
-			//need to do this in reverse order
+			//need to do this in reverse order or removing columns will change the index of all following columns
 			Arrays.sort(args, Collections.reverseOrder());
 			for (int c = 0; c < args.length; c++) {
 				sheet.removeColumn(args[c]);
@@ -186,10 +179,10 @@ public class RecordOutputUtil {
 			if (!oldBook.delete()) {
 				// making sure we don't lose data or override good data
                 logger.error("Can't save record to current workbook, is it open? Starting a new workbook to finish processing");
-                this.docName = docName.substring(0, docName.indexOf(EXT)) + "_" + System.currentTimeMillis() + EXT;
-                ioutil.setMainDocName(this.docName);
+                this.docPath = docName.substring(0, docName.indexOf(EXT)) + "_" + System.currentTimeMillis() + EXT;
+                ioutil.setMainDocPath(this.docPath);
 			}
-			newBook.renameTo(new File(this.docName));
+			newBook.renameTo(new File(this.docPath));
 		}
 	}
 
@@ -215,50 +208,6 @@ public class RecordOutputUtil {
 			}
 		}
 	}
-//	
-//	public void createFilteredSpreadsheet(RecordFilterEnum filter, List<Record> records) {
-//		WritableWorkbook newWorkbook = null;
-//		try {
-//			newWorkbook = Workbook.createWorkbook(new File(getFilteredDocName(filter)));
-//
-//			WritableSheet excelSheet = newWorkbook.createSheet(state.getName(), 0);
-//			createColumnHeaders(excelSheet);
-//			saveRecordsToWorkbook(records, newWorkbook);
-//			newWorkbook.write();
-//		} catch (IOException | WriteException e) {
-//			logger.error("Create filtered spreadhseet error", e);
-//		} finally {
-//			if (newWorkbook != null) {
-//				try {
-//					newWorkbook.close();
-//				} catch (IOException | WriteException e) {
-//					logger.error("Create filtered spreadhseet error", e);
-//				}
-//			}
-//		}
-//	}
-//	
-//	public void createMergedSpreadsheet(List<Record> records) {
-//		WritableWorkbook newWorkbook = null;
-//		try {
-//			newWorkbook = Workbook.createWorkbook(new File(getMergedDocName()));
-//
-//			WritableSheet excelSheet = newWorkbook.createSheet(state.getName(), 0);
-//			createColumnHeaders(excelSheet);
-//			saveRecordsToWorkbook(records, newWorkbook);
-//			newWorkbook.write();
-//		} catch (IOException | WriteException e) {
-//			logger.error("Create merged spreadhseet error", e);
-//		} finally {
-//			if (newWorkbook != null) {
-//				try {
-//					newWorkbook.close();
-//				} catch (IOException | WriteException e) {
-//					logger.error("Create merged spreadhseet error", e);
-//				}
-//			}
-//		}
-//	}
 
     public boolean splitIntoSheets(String docName, String delimiter, List<Set<Record>> recordsListList, Class clazz) {
         boolean successful = false;
@@ -320,17 +269,15 @@ public class RecordOutputUtil {
 		for (Map.Entry<Object, String> entry : recordsDetailsUrlMap.entrySet()) {
 			try {
 			    if (!entry.getValue().startsWith("CRAWLED")) {
-//                    String id = site.generateRecordId(entry.getValue());
                     writeIdToFile(uncrawledIdFile, (String)entry.getKey());
                 }
-			} catch (ArrayIndexOutOfBoundsException | StringIndexOutOfBoundsException e) {
-				// not a record detail url so ID could not be parsed
+			} catch (Exception e) {
+				logger.error("Error backing up " + entry.getKey() + "=" + entry.getValue() + "-" + e.getMessage());
 			}
 		}
 	}
 
 	protected void createColumnHeaders(WritableSheet excelSheet) throws WriteException {
-		// create columns based on Record.getFieldsToOutput()
 		int columnNumber = 0;
 		for (Field recordField : record.getFieldsToOutput()) {
 			// ********extract to createLabelMethod????

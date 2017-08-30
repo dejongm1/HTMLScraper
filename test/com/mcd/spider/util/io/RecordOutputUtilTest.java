@@ -3,18 +3,22 @@ package com.mcd.spider.util.io;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import com.mcd.spider.entities.record.ArrestRecord;
 import com.mcd.spider.entities.record.Record;
 import com.mcd.spider.entities.record.State;
+import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
 import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
 
 import jxl.Cell;
@@ -30,19 +34,57 @@ public class RecordOutputUtilTest {
     private RecordOutputUtil outputter;
     private File backUpDoc;
     private File mainDoc;
+    private File mergedDoc;
+    private File filteredDoc;
     private File mainDocRenamed;
     private WritableWorkbook testWorkbook;
+    private ArrestRecord mockRecordOne = new ArrestRecord();
+    private ArrestRecord mockRecordTwo = new ArrestRecord();
+    
+    @BeforeClass
+    public void setUpClass() {
+    	mockRecordOne.setId("Ashley_Graves_34029315");
+		mockRecordOne.setFullName("Ashley  Graves");
+		mockRecordOne.setFirstName("Ashley");
+		mockRecordOne.setLastName("Graves");
+		Calendar arrestDate = Calendar.getInstance();
+		arrestDate.setTime(new Date("Aug-21-2017"));
+        mockRecordOne.setArrestDate(arrestDate);
+        mockRecordOne.setArrestAge(28);
+        mockRecordOne.setGender("Female");
+        mockRecordOne.setCity("Urbandale");
+        mockRecordOne.setState("Iowa");
+        mockRecordOne.setCounty("Polk");
+        mockRecordOne.setWeight("200 lbs");
+        mockRecordOne.setCharges(new String[]{"#1 ASSAULT CAUSING BODILY INJURY OR MENTAL ILLNESS STATUTE: SR308623 BOND: $1000"});
+		
+		mockRecordTwo.setId("115922");
+		mockRecordTwo.setFullName("Michael De Jong");
+		arrestDate = Calendar.getInstance();
+		arrestDate.setTime(new Date("Aug-20-2017"));
+        mockRecordTwo.setArrestDate(arrestDate);
+        mockRecordTwo.setArrestAge(28);
+        mockRecordTwo.setGender("MALE");
+        mockRecordTwo.setCounty("Johnson");
+        mockRecordTwo.setHeight("5 foot, 6 inches");
+        mockRecordTwo.setWeight("200 pounds");
+        mockRecordTwo.setHairColor("black");
+        mockRecordTwo.setEyeColor("brown");
+        mockRecordTwo.setCharges(new String[]{"MURDER"});
+    }
 
     @BeforeMethod
-    public void setUp() throws IOException, WriteException {
+    public void setUpMethod() throws IOException, WriteException {
     	System.setProperty("offline", "false");
         ioUtil = new RecordIOUtil(State.getState("IA"), new ArrestRecord(), new ArrestsDotOrgSite(new String[]{"iowa"}), true);
     	System.setProperty("offline", "true");
         outputter = ioUtil.getOutputter();
         outputter.createWorkbook();
-    	backUpDoc = new File(ioUtil.getMainDocName().substring(0, ioUtil.getMainDocName().indexOf(RecordIOUtil.getEXT())) + RecordOutputUtil.getBackupSuffix() + RecordIOUtil.getEXT());
-        mainDoc = new File(ioUtil.getMainDocName());
+    	backUpDoc = new File(ioUtil.getMainDocPath().substring(0, ioUtil.getMainDocPath().indexOf(RecordIOUtil.getEXT())) + RecordOutputUtil.getBackupSuffix() + RecordIOUtil.getEXT());
+        mainDoc = new File(ioUtil.getMainDocPath());
         mainDocRenamed = new File(mainDoc.getPath() + "tempForTesting");
+        mergedDoc = new File(outputter.getMergedDocPath());
+        filteredDoc = new File(outputter.getFilteredDocPath(RecordFilterEnum.findFilter("alcohol")));
         testWorkbook = Workbook.createWorkbook(mainDoc);
         WritableSheet sheet = testWorkbook.createSheet(outputter.getState().getName(), 0);
         outputter.createColumnHeaders(sheet);
@@ -51,12 +93,14 @@ public class RecordOutputUtilTest {
     }
 
     @AfterMethod
-    public void tearDown() {
+    public void tearDownMethod() {
         mainDocRenamed.delete();
         mainDoc.delete();
         backUpDoc.delete();
         ioUtil.getCrawledIdFile().delete();
         ioUtil.getUncrawledIdFile().delete();
+        mergedDoc.delete();
+        filteredDoc.delete();
         //delete merged and/or filtered file
     }
 
@@ -142,28 +186,40 @@ public class RecordOutputUtilTest {
     }
 
     @Test
-    public void testCreateFilteredSpreadsheet() throws Exception {
-    	//create a list of filtered records
-    	//createspreadsheetwithRecords()
+    public void testCreateAlcoholFilteredSpreadsheet() throws Exception {
+    	//create a list of merged records
+    	List<Record> records = new ArrayList<>();
+    	records.add(mockRecordOne);
+    	records.add(mockRecordTwo);
+    	outputter.createSpreadsheetWithRecords(filteredDoc.getPath(), records);
+    	Workbook filteredWorkbook = Workbook.getWorkbook(filteredDoc);
+    	
     	//TODO future - confirm it creates a backup, if one already exists
     	//confirm it exists, name is correct and row count matches list
-    	//delete workbook
-        Assert.fail();
+    	Assert.assertTrue(filteredDoc.exists());
+    	Assert.assertEquals(filteredWorkbook.getSheet(0).getRows(), records.size()+1);
+    	Assert.assertEquals(filteredDoc.getPath(), outputter.getFilteredDocPath(RecordFilterEnum.ALCOHOL));
     }
 
     @Test
     public void testCreateMergedSpreadsheet() throws Exception {
     	//create a list of merged records
-    	//createspreadsheetwithRecords()
+    	List<Record> records = new ArrayList<>();
+    	records.add(mockRecordOne);
+    	records.add(mockRecordTwo);
+    	outputter.createSpreadsheetWithRecords(mergedDoc.getPath(), records);
+    	Workbook mergedWorkbook = Workbook.getWorkbook(mergedDoc);
+    	
     	//TODO future - confirm it creates a backup, if one already exists
     	//confirm it exists, name is correct and row count matches list
-    	//delete workbook
-        Assert.fail();
+    	Assert.assertTrue(mergedDoc.exists());
+    	Assert.assertEquals(mergedWorkbook.getSheet(0).getRows(), records.size()+1);
+    	Assert.assertEquals(mergedDoc.getPath(), outputter.getMergedDocPath());
     }
 
     @Test
     public void testSplitIntoSheets() throws Exception {
-    	//TODO this is currently duplicating that have been split
+    	//TODO this is currently duplicating records that have been split
     	//either create list of List<> or use methods to read it in
     	//create baseDoc to use?
     	//count of List<Record> should match sheet count

@@ -42,8 +42,8 @@ public class SpiderEngine {
                     //TODO merge filtered workbooks?
 				    logger.info("Attempting to merge record output from " + state);
 					RecordIOUtil comparingIOUtil = new RecordIOUtil(state, new ArrestRecord(), state.getEngines().get(e).getSite());
-					Set<Record> mergedRecords = mainIOutil.mergeRecordsFromSheet(new File(mainIOutil.getMainDocName()), new File(comparingIOUtil.getMainDocName()), 0);
-                    mainIOutil.getOutputter().createSpreadsheetWithRecords(mainIOutil.getOutputter().getMergedDocName(), new ArrayList<>(mergedRecords));
+					Set<Record> mergedRecords = mainIOutil.mergeRecordsFromSheet(new File(mainIOutil.getMainDocPath()), new File(comparingIOUtil.getMainDocPath()), 0);
+                    mainIOutil.getOutputter().createSpreadsheetWithRecords(mainIOutil.getOutputter().getMergedDocPath(), new ArrayList<>(mergedRecords));
             		logger.info("Merge Complete.");
 				}
 			} else {

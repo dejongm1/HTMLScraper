@@ -251,7 +251,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         	spiderWeb.setCrawledIds(ioUtil.getInputter().getCrawledIds());
             spiderWeb.setUncrawledIds(ioUtil.getInputter().getUncrawledIds());
         	//load records in current spreadsheet into memory
-            spiderWeb.setCrawledRecords(ioUtil.getInputter().readRecordsFromSheet(new File(ioUtil.getMainDocName()),0));
+            spiderWeb.setCrawledRecords(ioUtil.getInputter().readRecordsFromSheet(new File(ioUtil.getMainDocPath()),0));
             ioUtil.getOutputter().createWorkbook();
         } catch (ExcelOutputException | IDCheckException e) {
             throw e;
@@ -371,8 +371,8 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
                     //create a separate sheet with filtered results
                     logger.info(filteredRecords.size()+" "+filter.filterName()+" "+"records were crawled");
                     if (!filteredRecords.isEmpty()) {
-                        recordIOUtil.getOutputter().createSpreadsheetWithRecords(recordIOUtil.getOutputter().getFilteredDocName(filter), filteredRecords);
-                        recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getOutputter().getFilteredDocName(filter), delimiter, splitRecords, clazz);
+                        recordIOUtil.getOutputter().createSpreadsheetWithRecords(recordIOUtil.getOutputter().getFilteredDocPath(filter), filteredRecords);
+                        recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getOutputter().getFilteredDocPath(filter), delimiter, splitRecords, clazz);
                     }
                 } catch (Exception e) {
                     logger.error("Error trying to create filtered spreadsheet", e);
@@ -380,7 +380,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             }
             try {
                 List<Set<Record>> splitRecords = Record.splitByField(arrestRecords, delimiter, clazz);
-                recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getMainDocName(), delimiter, splitRecords, clazz);
+                recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getMainDocPath(), delimiter, splitRecords, clazz);
             } catch (Exception e) {
                 logger.error("Error trying to split full list of records", e);
             }
