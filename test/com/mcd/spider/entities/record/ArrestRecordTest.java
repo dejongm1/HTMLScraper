@@ -196,7 +196,7 @@ public class ArrestRecordTest {
 		
 	}
 	
-	@Test(dependsOnGroups={"ReadRowsIn"})
+	@Test
 	public void testMatch() {
 		//this test must pass before attempting testMatch()
 		RecordTest recordTester = new RecordTest();
@@ -214,7 +214,7 @@ public class ArrestRecordTest {
 	}
 	
 	
-	@Test(dependsOnGroups={"ReadRowsIn"})
+	@Test
 	public void testMatchOnlyFullName() {
 		//this test must pass before attempting testMatch()
 		RecordTest recordTester = new RecordTest();
@@ -231,7 +231,7 @@ public class ArrestRecordTest {
         Assert.assertFalse(two.matches(one));
 	}
 
-    @Test(dependsOnGroups={"ReadRowsIn"})
+    @Test
     public void testConvertToInches() {
 	    ArrestRecord arrestRecord = new ArrestRecord();
 	    int heightOne = arrestRecord.convertToInches("5'04\"");

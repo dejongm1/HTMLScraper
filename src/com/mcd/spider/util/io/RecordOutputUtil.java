@@ -202,7 +202,7 @@ public class RecordOutputUtil {
 		}
 	}
 
-    public boolean splitIntoSheets(String docName, String delimiterColumn, List<Set<Record>> recordsListList, Class clazz) {
+    public boolean splitIntoSheets(String docName, String delimiterColumn, List<Set<Record>> recordsSetList, Class clazz) {
     	//TODO this is appending split records, not overriding
         boolean successful = false;
         Method fieldGetter = null;
@@ -213,16 +213,16 @@ public class RecordOutputUtil {
         }
         try {
             createWorkbookCopy(docName, getTempFileName() + EXT);
-            for (int s = 0; s < recordsListList.size(); s++) {
+            for (int s = 0; s < recordsSetList.size(); s++) {
                 try {
-                    String delimitValue = (String) fieldGetter.invoke(recordsListList.get(s).toArray()[0]);
+                    String delimitValue = (String) fieldGetter.invoke(recordsSetList.get(s).toArray()[0]);
                     WritableSheet excelSheet = copyWorkbook.getSheet(delimitValue);
                     if (excelSheet == null) {
                         //append a new sheet for each
                         excelSheet = copyWorkbook.createSheet(delimitValue == null ? "empty" : delimitValue, s + 1);
                     }
                     createColumnHeaders(excelSheet);
-                    Record[] recordArray = recordsListList.get(s).toArray(new Record[recordsListList.get(s).size()]);
+                    Record[] recordArray = recordsSetList.get(s).toArray(new Record[recordsSetList.get(s).size()]);
                     for (int r = 0; r < recordArray.length; r++) {
                     	recordArray[r].addToExcelSheet(r+1, excelSheet);
                     }

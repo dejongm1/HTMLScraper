@@ -193,7 +193,7 @@ public class RecordTest {
 		Assert.assertEquals(record4.getEyeColor(), null);
 	}
 
-	@Test(dependsOnGroups={"ReadRowsIn", "Inputter"})
+	@Test
 	public void splitByField_ArrestRecordsByCounty() throws InterruptedException {
 		List<Record> records = new ArrayList<>(ioUtil.getInputter().readRecordsFromSheet(testReadInputFile, "readRecordsIn"));
         Collections.sort(records, ArrestRecord.CountyComparator);
@@ -216,7 +216,7 @@ public class RecordTest {
 		Assert.assertNotEquals(((ArrestRecord)splitRecords.get(polkCountyIndex).toArray()[0]).getCounty(), ((ArrestRecord)splitRecords.get(johnsonCountyIndex).toArray()[0]).getCounty());
 	}
 
-	@Test(dependsOnGroups={"ReadRowsIn", "Inputter"})
+	@Test
 	public void splitByField_ArrestRecordsByCity_NullDelimiter() {
 		List<Record> records = new ArrayList<>(ioUtil.getInputter().readRecordsFromSheet(testReadInputFile, "readRecordsIn"));
         Collections.sort(records, ArrestRecord.CityComparator);

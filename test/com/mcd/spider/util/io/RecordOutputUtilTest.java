@@ -212,9 +212,7 @@ public class RecordOutputUtilTest {
 
     @Test
     public void testSplitIntoSheets_ArrestRecord() throws Exception {
-    	//TODO this is currently duplicating records that have been split
-    	//either create list of List<> or use methods to read it in
-        List<Set<Record>> recordsListList = new ArrayList<>();
+        List<Set<Record>> recordsSetList = new ArrayList<>();
         Set<Record> recordsListOne = new HashSet<>();
         Set<Record> recordsListTwo = new HashSet<>();
         Record mockRecordThree = new ArrestRecord();
@@ -224,10 +222,10 @@ public class RecordOutputUtilTest {
         recordsListOne.add(mockRecordOne);
         recordsListTwo.add(mockRecordTwo);
         recordsListOne.add(mockRecordThree);
-        recordsListList.add(recordsListOne);
-        recordsListList.add(recordsListTwo);
+        recordsSetList.add(recordsListOne);
+        recordsSetList.add(recordsListTwo);
 
-        outputter.splitIntoSheets(mainDoc.getPath(), ArrestRecord.RecordColumnEnum.COUNTY_COLUMN.getColumnTitle(), recordsListList, ArrestRecord.class);
+        outputter.splitIntoSheets(mainDoc.getPath(), ArrestRecord.RecordColumnEnum.COUNTY_COLUMN.getColumnTitle(), recordsSetList, ArrestRecord.class);
 
         Workbook splitworkWorkbook = Workbook.getWorkbook(mainDoc);
         Sheet sheetOne = splitworkWorkbook.getSheet("Polk");
@@ -238,7 +236,7 @@ public class RecordOutputUtilTest {
         Assert.assertNotNull(sheetTwo);
         Assert.assertEquals(sheetOne.getRows(), recordsListOne.size()+1);//+1 for columnHeaders
         Assert.assertEquals(sheetTwo.getRows(), recordsListTwo.size()+1);//+1 for columnHeaders
-        Assert.assertEquals(splitworkWorkbook.getNumberOfSheets(), recordsListList.size()+1);//+1 for mainsheet
+        Assert.assertEquals(splitworkWorkbook.getNumberOfSheets(), recordsSetList.size()+1);//+1 for mainsheet
         for (int r=1;r<sheetOne.getRows();r++) {
         	Assert.assertTrue(sheetOne.getRow(r)[ArrestRecord.RecordColumnEnum.COUNTY_COLUMN.getColumnIndex()].getContents().equalsIgnoreCase("Polk"));
         }        
@@ -249,17 +247,45 @@ public class RecordOutputUtilTest {
 
     @Test
     public void testSplitIntoSheets_NullDelimiter() throws Exception {
-        //TODO this is currently duplicating records that have been split
-        //either create list of List<> or use methods to read it in
-        List<List<ArrestRecord>> recordsListList = new ArrayList<>();
+        List<Set<Record>> recordsSetList = new ArrayList<>();
+        Set<Record> recordsListOne = new HashSet<>();
+        Set<Record> recordsListTwo = new HashSet<>();
+        Set<Record> recordsListThree = new HashSet<>();
+        Record mockRecordThree = new ArrestRecord();
+        mockRecordThree.setId("123sdf");
+        ((ArrestRecord)mockRecordThree).setFullName("Third record");
+        ((ArrestRecord)mockRecordThree).setCounty(null);
+        recordsListOne.add(mockRecordOne);
+        recordsListTwo.add(mockRecordTwo);
+        recordsListThree.add(mockRecordThree);
+        recordsSetList.add(recordsListOne);
+        recordsSetList.add(recordsListTwo);
+        recordsSetList.add(recordsListThree);
 
-        //create baseDoc to use?
-        //count of List<Record> should match sheet count
-        //check sheet names
-        //row count in each sheet should match list<record>.size()
-        //sum of row counts should match sum of records
-        //delete new sheets?
-        Assert.fail();
+        outputter.splitIntoSheets(mainDoc.getPath(), ArrestRecord.RecordColumnEnum.COUNTY_COLUMN.getColumnTitle(), recordsSetList, ArrestRecord.class);
+
+        Workbook splitworkWorkbook = Workbook.getWorkbook(mainDoc);
+        Sheet sheetOne = splitworkWorkbook.getSheet("Polk");
+        Sheet sheetTwo = splitworkWorkbook.getSheet("Johnson");
+        Sheet sheetThree = splitworkWorkbook.getSheet("empty");
+        Sheet mainSheet = splitworkWorkbook.getSheet(outputter.getState().getName());
+
+        Assert.assertNotNull(sheetOne);
+        Assert.assertNotNull(sheetTwo);
+        Assert.assertNotNull(sheetThree);
+        Assert.assertEquals(sheetOne.getRows(), recordsListOne.size()+1);//+1 for columnHeaders
+        Assert.assertEquals(sheetTwo.getRows(), recordsListTwo.size()+1);//+1 for columnHeaders
+        Assert.assertEquals(sheetThree.getRows(), recordsListThree.size()+1);//+1 for columnHeaders
+        Assert.assertEquals(splitworkWorkbook.getNumberOfSheets(), recordsSetList.size()+1);//+1 for mainsheet
+        for (int r=1;r<sheetOne.getRows();r++) {
+        	Assert.assertTrue(sheetOne.getRow(r)[ArrestRecord.RecordColumnEnum.COUNTY_COLUMN.getColumnIndex()].getContents().equalsIgnoreCase("Polk"));
+        }        
+        for (int r=1;r<sheetTwo.getRows();r++) {
+        	Assert.assertTrue(sheetTwo.getRow(r)[ArrestRecord.RecordColumnEnum.COUNTY_COLUMN.getColumnIndex()].getContents().equalsIgnoreCase("Johnson"));
+        }
+        for (int r=1;r<sheetThree.getRows();r++) {
+        	Assert.assertTrue(sheetThree.getRow(r)[ArrestRecord.RecordColumnEnum.COUNTY_COLUMN.getColumnIndex()].getContents().equalsIgnoreCase(""));
+        }
     }
 
     @Test
