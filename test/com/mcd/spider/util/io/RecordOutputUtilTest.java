@@ -1,32 +1,25 @@
 package com.mcd.spider.util.io;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.testng.Assert;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-
 import com.mcd.spider.entities.record.ArrestRecord;
 import com.mcd.spider.entities.record.Record;
 import com.mcd.spider.entities.record.State;
 import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
 import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
-
 import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
+import org.testng.Assert;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 
 public class RecordOutputUtilTest {
 
@@ -218,15 +211,50 @@ public class RecordOutputUtilTest {
     }
 
     @Test
-    public void testSplitIntoSheets() throws Exception {
+    public void testSplitIntoSheets_ArrestRecord() throws Exception {
     	//TODO this is currently duplicating records that have been split
     	//either create list of List<> or use methods to read it in
-    	//create baseDoc to use?
-    	//count of List<Record> should match sheet count
-    	//check sheet names
-    	//row count in each sheet should match list<record>.size()
-    	//sum of row counts should match sum of records
-    	//delete new sheets?
+        List<Set<Record>> recordsListList = new ArrayList<>();
+        Set<Record> recordsListOne = new HashSet<>();
+        Set<Record> recordsListTwo = new HashSet<>();
+        Record mockRecordThree = new ArrestRecord();
+        mockRecordThree.setId("123sdf");
+        ((ArrestRecord)mockRecordThree).setFullName("Third record");
+        ((ArrestRecord)mockRecordThree).setCounty("POLK");
+        recordsListOne.add(mockRecordOne);
+        recordsListTwo.add(mockRecordTwo);
+        recordsListOne.add(mockRecordThree);
+        recordsListList.add(recordsListOne);
+        recordsListList.add(recordsListTwo);
+
+        outputter.splitIntoSheets(mainDoc.getPath(), ArrestRecord.RecordColumnEnum.COUNTY_COLUMN.getColumnTitle(), recordsListList, ArrestRecord.class);
+
+        Workbook splitworkWorkbook = Workbook.getWorkbook(mainDoc);
+        Sheet sheetOne = splitworkWorkbook.getSheet("Polk");
+        Sheet sheetTwo = splitworkWorkbook.getSheet("Johnson");
+        Sheet mainSheet = splitworkWorkbook.getSheet(outputter.getState().getName());
+
+        Assert.assertNotNull(sheetOne);
+        Assert.assertNotNull(sheetTwo);
+        Assert.assertEquals(sheetOne.getRows(), recordsListOne.size()+1);//+1 for columnHeaders
+        Assert.assertEquals(sheetTwo.getRows(), recordsListTwo.size()+1);//+1 for columnHeaders
+        Assert.assertEquals(splitworkWorkbook.getNumberOfSheets(), recordsListList.size()+1);//+1 for mainsheet
+        //check each row in the sheets for county
+        Assert.fail();
+    }
+
+    @Test
+    public void testSplitIntoSheets_NullDelimiter() throws Exception {
+        //TODO this is currently duplicating records that have been split
+        //either create list of List<> or use methods to read it in
+        List<List<ArrestRecord>> recordsListList = new ArrayList<>();
+
+        //create baseDoc to use?
+        //count of List<Record> should match sheet count
+        //check sheet names
+        //row count in each sheet should match list<record>.size()
+        //sum of row counts should match sum of records
+        //delete new sheets?
         Assert.fail();
     }
 

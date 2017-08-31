@@ -361,26 +361,26 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         if (!arrestRecords.isEmpty()) {
             logger.info("Starting to output the results");
             Collections.sort(arrestRecords, ArrestRecord.CountyComparator);
-            String delimiter = RecordColumnEnum.COUNTY_COLUMN.getColumnTitle();
+            String columnDelimiter = RecordColumnEnum.COUNTY_COLUMN.getFieldName();
             Class<ArrestRecord> clazz = ArrestRecord.class;
             if (filter!=null && filter!=RecordFilterEnum.NONE) {
                 try {
                     logger.info("Outputting filtered results");
                     List<Record> filteredRecords = filterRecords(arrestRecords);
-                    List<Set<Record>> splitRecords = Record.splitByField(filteredRecords, delimiter, clazz);
+                    List<Set<Record>> splitRecords = Record.splitByField(filteredRecords, columnDelimiter, clazz);
                     //create a separate sheet with filtered results
                     logger.info(filteredRecords.size()+" "+filter.filterName()+" "+"records were crawled");
                     if (!filteredRecords.isEmpty()) {
                         recordIOUtil.getOutputter().createSpreadsheetWithRecords(recordIOUtil.getOutputter().getFilteredDocPath(filter), filteredRecords);
-                        recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getOutputter().getFilteredDocPath(filter), delimiter, splitRecords, clazz);
+                        recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getOutputter().getFilteredDocPath(filter), columnDelimiter, splitRecords, clazz);
                     }
                 } catch (Exception e) {
                     logger.error("Error trying to create filtered spreadsheet", e);
                 }
             }
             try {
-                List<Set<Record>> splitRecords = Record.splitByField(arrestRecords, delimiter, clazz);
-                recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getMainDocPath(), delimiter, splitRecords, clazz);
+                List<Set<Record>> splitRecords = Record.splitByField(arrestRecords, columnDelimiter, clazz);
+                recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getMainDocPath(), columnDelimiter, splitRecords, clazz);
             } catch (Exception e) {
                 logger.error("Error trying to split full list of records", e);
             }

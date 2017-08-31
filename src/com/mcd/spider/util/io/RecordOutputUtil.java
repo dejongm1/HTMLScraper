@@ -1,5 +1,17 @@
 package com.mcd.spider.util.io;
 
+import com.google.common.base.CaseFormat;
+import com.mcd.spider.entities.record.Record;
+import com.mcd.spider.entities.record.State;
+import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
+import jxl.Workbook;
+import jxl.read.biff.BiffException;
+import jxl.write.Label;
+import jxl.write.WritableSheet;
+import jxl.write.WritableWorkbook;
+import jxl.write.WriteException;
+import org.apache.log4j.Logger;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -7,26 +19,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.log4j.Logger;
-
-import com.google.common.base.CaseFormat;
-import com.mcd.spider.entities.record.Record;
-import com.mcd.spider.entities.record.State;
-import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
-
-import jxl.Workbook;
-import jxl.read.biff.BiffException;
-import jxl.write.Label;
-import jxl.write.WritableSheet;
-import jxl.write.WritableWorkbook;
-import jxl.write.WriteException;
+import java.util.*;
 
 /**
  * 
@@ -209,11 +202,11 @@ public class RecordOutputUtil {
 		}
 	}
 
-    public boolean splitIntoSheets(String docName, String delimiter, List<Set<Record>> recordsListList, Class clazz) {
+    public boolean splitIntoSheets(String docName, String delimiterColumn, List<Set<Record>> recordsListList, Class clazz) {
         boolean successful = false;
         Method fieldGetter = null;
         for (Method method : clazz.getMethods()) {
-            if (method.getName().equalsIgnoreCase("get" + delimiter.replace(" ", ""))) {
+            if (method.getName().equalsIgnoreCase("get" + delimiterColumn)) {
                 fieldGetter = method;
             }
         }

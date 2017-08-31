@@ -1,5 +1,10 @@
 package com.mcd.spider.entities.record;
 
+import com.google.common.base.CaseFormat;
+import jxl.Sheet;
+import jxl.write.WritableSheet;
+import org.apache.log4j.Logger;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -7,18 +12,7 @@ import java.lang.reflect.Method;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.log4j.Logger;
-
-import com.google.common.base.CaseFormat;
-
-import jxl.Sheet;
-import jxl.write.WritableSheet;
+import java.util.*;
 
 /**
  * Created by MikeyDizzle on 7/18/2017.
@@ -124,7 +118,7 @@ public interface Record {
 		List<Set<Record>> recordListList = new ArrayList<>();
 		Method fieldGetter = null;
 		for (Method method : clazz.getMethods()) {
-			if (method.getName().equalsIgnoreCase("get" + fieldName.replace(" ", ""))) {
+			if (method.getName().equalsIgnoreCase("get" + fieldName)) {
 				fieldGetter = method;
 			}
 		}
