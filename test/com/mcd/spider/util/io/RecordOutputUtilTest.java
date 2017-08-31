@@ -239,8 +239,12 @@ public class RecordOutputUtilTest {
         Assert.assertEquals(sheetOne.getRows(), recordsListOne.size()+1);//+1 for columnHeaders
         Assert.assertEquals(sheetTwo.getRows(), recordsListTwo.size()+1);//+1 for columnHeaders
         Assert.assertEquals(splitworkWorkbook.getNumberOfSheets(), recordsListList.size()+1);//+1 for mainsheet
-        //check each row in the sheets for county
-        Assert.fail();
+        for (int r=1;r<sheetOne.getRows();r++) {
+        	Assert.assertTrue(sheetOne.getRow(r)[ArrestRecord.RecordColumnEnum.COUNTY_COLUMN.getColumnIndex()].getContents().equalsIgnoreCase("Polk"));
+        }        
+        for (int r=1;r<sheetTwo.getRows();r++) {
+        	Assert.assertTrue(sheetTwo.getRow(r)[ArrestRecord.RecordColumnEnum.COUNTY_COLUMN.getColumnIndex()].getContents().equalsIgnoreCase("Johnson"));
+        }
     }
 
     @Test

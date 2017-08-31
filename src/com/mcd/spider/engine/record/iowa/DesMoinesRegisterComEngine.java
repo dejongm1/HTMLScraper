@@ -73,7 +73,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
 
 	        scrapeSite();
 
-            formatOutput(new ArrayList<>(recordIOUtil.getInputter().readRecordsFromDefaultWorkbook().get(0)));
+            finalizeOutput(new ArrayList<>(recordIOUtil.getInputter().readRecordsFromDefaultWorkbook().get(0)));
 
 	        //outputUtil.removeColumnsFromSpreadsheet(new int[]{ArrestRecord.RecordColumnEnum.ID_COLUMN.index()});
 
@@ -140,6 +140,10 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     public void scrapeRecords(Map<Object, String> recordsDetailsUrlMap){
         List<Record> arrestRecords = new ArrayList<>();
         ArrestRecord arrestRecord;
+        //TODO test these next two lines
+        arrestRecords.addAll(spiderWeb.getCrawledRecords());
+        outputPreviouslyCrawledRecords(arrestRecords);
+        
         RecordOutputUtil recordOutputUtil = recordIOUtil.getOutputter();
         String referer = "";
         for (Entry<Object, String> entry : recordsDetailsUrlMap.entrySet()) {
@@ -290,11 +294,18 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
             record.setFullName(profileDetailElement.select("h1").text().trim());
         }
     }
+
+    @Override
+    public void outputPreviouslyCrawledRecords(List<Record> arrestRecords) {
+    	for (Record arrestRecord : arrestRecords) {
+			recordIOUtil.getOutputter().addRecordToMainWorkbook(arrestRecord);
+    	}
+    }
     
     @Override
-    public void formatOutput(List<Record> arrestRecords) {
+    public void finalizeOutput(List<Record> arrestRecords) {
     	//format the output
-        logger.info("Starting to output the results");
+        logger.info("Starting to finalize the result output");
         Collections.sort(arrestRecords, ArrestRecord.CountyComparator);
         String delimiter = RecordColumnEnum.COUNTY_COLUMN.getColumnTitle();
         Class<ArrestRecord> clazz = ArrestRecord.class;

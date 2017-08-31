@@ -165,6 +165,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     	RecordOutputUtil recordOutputUtil = recordIOUtil.getOutputter();
         List<Record> arrestRecords = new ArrayList<>();
         arrestRecords.addAll(spiderWeb.getCrawledRecords());
+        outputPreviouslyCrawledRecords(arrestRecords);
         ArrestRecord arrestRecord;
         List<Object> keys = new ArrayList<>(recordsDetailsUrlMap.keySet());
         Collections.shuffle(keys);
@@ -185,7 +186,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 	            		//TODO or retry with new connection/IP?
 	            		logger.error("Hit the limit of failed connections. Saving list of unprocessed records, formatting the current output and quitting");
 	            		recordOutputUtil.backupUnCrawledRecords(recordsDetailsUrlMap);
-	            		formatOutput(arrestRecords);
+	            		finalizeOutput(arrestRecords);
 	            		return;
 	            	}
 	            }
@@ -228,7 +229,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
                 }
         	}
         }
-        formatOutput(arrestRecords);
+        finalizeOutput(arrestRecords);
     }
 
     @Override
@@ -356,10 +357,17 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     }
 
     @Override
-    public void formatOutput(List<Record> arrestRecords) {
+    public void outputPreviouslyCrawledRecords(List<Record> arrestRecords) {
+    	for (Record arrestRecord : arrestRecords) {
+			recordIOUtil.getOutputter().addRecordToMainWorkbook(arrestRecord);
+    	}
+    }
+    
+    @Override
+    public void finalizeOutput(List<Record> arrestRecords) {
         //format the output
         if (!arrestRecords.isEmpty()) {
-            logger.info("Starting to output the results");
+            logger.info("Starting to finalize the result output");
             Collections.sort(arrestRecords, ArrestRecord.CountyComparator);
             String columnDelimiter = RecordColumnEnum.COUNTY_COLUMN.getFieldName();
             Class<ArrestRecord> clazz = ArrestRecord.class;

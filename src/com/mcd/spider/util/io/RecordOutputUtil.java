@@ -203,6 +203,7 @@ public class RecordOutputUtil {
 	}
 
     public boolean splitIntoSheets(String docName, String delimiterColumn, List<Set<Record>> recordsListList, Class clazz) {
+    	//TODO this is appending split records, not overriding
         boolean successful = false;
         Method fieldGetter = null;
         for (Method method : clazz.getMethods()) {

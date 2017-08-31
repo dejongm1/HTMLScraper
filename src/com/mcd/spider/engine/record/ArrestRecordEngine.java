@@ -29,7 +29,8 @@ public interface ArrestRecordEngine {
 	RecordIOUtil initializeIOUtil(State state) throws SpiderException;
 	List<Record> filterRecords(List<Record> fullArrestRecords);
 	Object initiateConnection(String arg) throws IOException;
-	void formatOutput(List<Record> arrestRecords);
+	void finalizeOutput(List<Record> arrestRecords);
 	void setCookies(Response response);
+	void outputPreviouslyCrawledRecords(List<Record> arrestRecords);
 	
 }
