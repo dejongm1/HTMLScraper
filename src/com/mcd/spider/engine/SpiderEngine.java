@@ -43,8 +43,15 @@ public class SpiderEngine {
 				    logger.info("Attempting to merge record output from " + state);
 					RecordIOUtil comparingIOUtil = new RecordIOUtil(state, new ArrestRecord(), state.getEngines().get(e).getSite());
 					Set<Record> mergedRecords = mainIOutil.mergeRecordsFromSheet(new File(mainIOutil.getMainDocPath()), new File(comparingIOUtil.getMainDocPath()), 0);
-					//TODO pass in List<Set<Record> to create a spreadsheet with multiple sheets 
                     mainIOutil.getOutputter().createSpreadsheetWithRecords(mainIOutil.getOutputter().getMergedDocPath(), mergedRecords);
+					/**
+					 * For each sheet in MainWorkbook
+						 * merge with sheet from comparingWorkbook
+						 * add merged Set to List of sets
+					 		* refactor mergeRecordsFromSheet to allow a blank sheet to be passed in??
+					 * 
+					 * pass List of Sets to createSpreadsheetWithRecords to create a sheet for each set
+					 */
             		logger.info("Merge Complete.");
 				}
 			} else {
