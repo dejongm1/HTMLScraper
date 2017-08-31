@@ -96,7 +96,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 	        	mainPageDoc = (Document) initiateConnection(firstPageResultsUrl);
 	        } catch (IOException e) {
 	            logger.error("Couldn't make initial connection to site. Trying again " + (maxAttempts-spiderWeb.getAttemptCount()) + " more times", e);
-	            //if it's a 500, we're probably blocked. Try a new user-agent TODO and IP if possible, else bail
+	            //if it's a 500, we're probably blocked. TODO Try a new user-agent and IP if possible, else bail
 	            if (e instanceof HttpStatusException && ((HttpStatusException) e).getStatusCode()==500) {
 	            	connectionUtil = new ConnectionUtil(true);
 	            }
@@ -379,7 +379,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
                     //create a separate sheet with filtered results
                     logger.info(filteredRecords.size()+" "+filter.filterName()+" "+"records were crawled");
                     if (!filteredRecords.isEmpty()) {
-                        recordIOUtil.getOutputter().createSpreadsheetWithRecords(recordIOUtil.getOutputter().getFilteredDocPath(filter), filteredRecords);
+                        recordIOUtil.getOutputter().createSpreadsheetWithRecords(recordIOUtil.getOutputter().getFilteredDocPath(filter), new HashSet<>(filteredRecords));
                         recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getOutputter().getFilteredDocPath(filter), columnDelimiter, splitRecords, clazz);
                     }
                 } catch (Exception e) {
@@ -399,7 +399,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 
     public Map<Object,String> compileRecordDetailUrlMap(Document mainPageDoc, Map<Integer,Document> resultsDocPlusMiscMap) {
         Map<Object,String> recordDetailUrlMap = new HashMap<>();
-        //TODO parse a page at a time instead of all details at once?
+        //TODO parse a page at a time instead or all details at once?
         for (Map.Entry<Integer, Document> entry : resultsDocPlusMiscMap.entrySet()) {
             Document doc = entry.getValue();
             //only crawl for records if document was retrieved, is a results doc and has not already been crawled

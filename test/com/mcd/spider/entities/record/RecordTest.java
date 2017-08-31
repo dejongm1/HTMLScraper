@@ -197,7 +197,7 @@ public class RecordTest {
 	public void splitByField_ArrestRecordsByCounty() throws InterruptedException {
 		List<Record> records = new ArrayList<>(ioUtil.getInputter().readRecordsFromSheet(testReadInputFile, "readRecordsIn"));
         Collections.sort(records, ArrestRecord.CountyComparator);
-		List<Set<Record>> splitRecords = Record.splitByField(new ArrayList<>(records), RecordColumnEnum.COUNTY_COLUMN.getColumnTitle(), ArrestRecord.class);
+		List<Set<Record>> splitRecords = Record.splitByField(records, RecordColumnEnum.COUNTY_COLUMN.getColumnTitle(), ArrestRecord.class);
 		int polkCountyIndex = 0;
 		int johnsonCountyIndex = 0;
 		if (((ArrestRecord)splitRecords.get(0).toArray()[0]).getCounty().equals("Polk")) {
@@ -208,7 +208,6 @@ public class RecordTest {
 			johnsonCountyIndex = 0;
 		}
 
-		System.out.println("SplitRecords size: " + splitRecords.size());
 		Assert.assertEquals(splitRecords.size(), 2);
 		Assert.assertEquals(splitRecords.get(polkCountyIndex).size(), 2);
 		Assert.assertEquals(splitRecords.get(johnsonCountyIndex).size(), 1);
@@ -220,7 +219,7 @@ public class RecordTest {
 	public void splitByField_ArrestRecordsByCity_NullDelimiter() {
 		List<Record> records = new ArrayList<>(ioUtil.getInputter().readRecordsFromSheet(testReadInputFile, "readRecordsIn"));
         Collections.sort(records, ArrestRecord.CityComparator);
-		List<Set<Record>> splitRecords = Record.splitByField(new ArrayList<>(records), RecordColumnEnum.CITY_COLUMN.getColumnTitle(), ArrestRecord.class);
+		List<Set<Record>> splitRecords = Record.splitByField(records, RecordColumnEnum.CITY_COLUMN.getColumnTitle(), ArrestRecord.class);
 		
 		Assert.assertEquals(splitRecords.size(), 3);
 		Assert.assertEquals(splitRecords.get(0).size(), 1);

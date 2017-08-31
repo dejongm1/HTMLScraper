@@ -116,7 +116,7 @@ public class RecordOutputUtil {
 		return docPath.substring(0, docPath.lastIndexOf('_')) + "_" + "MERGED" + EXT;
 	}
 
-	public void saveRecordsToWorkbook(List<Record> records, WritableWorkbook workbook) {
+	public void saveRecordsToWorkbook(Set<Record> records, WritableWorkbook workbook) {
 		try {
 			int rowNumber = 1;
 			for (Record currentRecord : records) {
@@ -180,7 +180,7 @@ public class RecordOutputUtil {
 	}
 
 
-	public void createSpreadsheetWithRecords(String workbookName, List<Record> records) {
+	public void createSpreadsheetWithRecords(String workbookName, Set<Record> records) {
 		WritableWorkbook newWorkbook = null;
 		try {
 			newWorkbook = Workbook.createWorkbook(new File(workbookName));

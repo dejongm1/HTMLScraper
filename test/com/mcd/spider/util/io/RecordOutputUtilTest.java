@@ -130,7 +130,7 @@ public class RecordOutputUtilTest {
     @Test
     public void testSaveRecordsToWorkbook() throws Exception {
         //create list of records with basic data
-    	List<Record> mockedRecords = new ArrayList<>();
+    	Set<Record> mockedRecords = new HashSet<>();
     	for (int r=0;r<15;r++) {
             ArrestRecord record = new ArrestRecord();
             record.setId(String.valueOf(r));
@@ -181,7 +181,7 @@ public class RecordOutputUtilTest {
     @Test
     public void testCreateAlcoholFilteredSpreadsheet() throws Exception {
     	//create a list of merged records
-    	List<Record> records = new ArrayList<>();
+    	Set<Record> records = new HashSet<>();
     	records.add(mockRecordOne);
     	records.add(mockRecordTwo);
     	outputter.createSpreadsheetWithRecords(filteredDoc.getPath(), records);
@@ -197,7 +197,7 @@ public class RecordOutputUtilTest {
     @Test
     public void testCreateMergedSpreadsheet() throws Exception {
     	//create a list of merged records
-    	List<Record> records = new ArrayList<>();
+    	Set<Record> records = new HashSet<>();
     	records.add(mockRecordOne);
     	records.add(mockRecordTwo);
     	outputter.createSpreadsheetWithRecords(mergedDoc.getPath(), records);
@@ -218,7 +218,7 @@ public class RecordOutputUtilTest {
         Record mockRecordThree = new ArrestRecord();
         mockRecordThree.setId("123sdf");
         ((ArrestRecord)mockRecordThree).setFullName("Third record");
-        ((ArrestRecord)mockRecordThree).setCounty("POLK");
+        ((ArrestRecord)mockRecordThree).setCounty("Polk");
         recordsListOne.add(mockRecordOne);
         recordsListTwo.add(mockRecordTwo);
         recordsListOne.add(mockRecordThree);

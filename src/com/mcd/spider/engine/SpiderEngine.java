@@ -43,7 +43,8 @@ public class SpiderEngine {
 				    logger.info("Attempting to merge record output from " + state);
 					RecordIOUtil comparingIOUtil = new RecordIOUtil(state, new ArrestRecord(), state.getEngines().get(e).getSite());
 					Set<Record> mergedRecords = mainIOutil.mergeRecordsFromSheet(new File(mainIOutil.getMainDocPath()), new File(comparingIOUtil.getMainDocPath()), 0);
-                    mainIOutil.getOutputter().createSpreadsheetWithRecords(mainIOutil.getOutputter().getMergedDocPath(), new ArrayList<>(mergedRecords));
+					//TODO pass in List<Set<Record> to create a spreadsheet with multiple sheets 
+                    mainIOutil.getOutputter().createSpreadsheetWithRecords(mainIOutil.getOutputter().getMergedDocPath(), mergedRecords);
             		logger.info("Merge Complete.");
 				}
 			} else {
