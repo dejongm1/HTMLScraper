@@ -1,4 +1,4 @@
-package com.mcd.spider.engine.record;
+/*package com.mcd.spider.engine.record;
 
 import com.mcd.spider.entities.record.CourtRecord;
 import com.mcd.spider.entities.record.Record;
@@ -16,3 +16,4 @@ public interface CourtRecordEngine {
 
     List<Record> filterRecords(List<CourtRecord> fullCourtRecords);
 }
+*/

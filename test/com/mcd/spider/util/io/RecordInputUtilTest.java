@@ -83,14 +83,14 @@ public class RecordInputUtilTest {
 		}
 		Assert.assertEquals(recordsSetList.size(), workbook.getNumberOfSheets());
 	}
-
-	@Test(groups={"Inputter"})
-	public void testReadRecordsFromDefaultWorkbook() {
-		//readRecordsFromDefaultWorkbook();
-		
-		Assert.fail();
-	}
-	
+//
+//	@Test(groups={"Inputter"})
+//	public void testReadRecordsFromDefaultWorkbook() {
+//		//readRecordsFromDefaultWorkbook();
+//		
+//		Assert.fail();
+//	}
+//	
 	@Test(groups={"Inputter"})
 	public void testGetSheetIndex() {
 		int sheetNumber0 = inputter.getSheetIndex(testReadInputFile, "Sheet0");

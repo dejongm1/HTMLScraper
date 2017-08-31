@@ -224,6 +224,8 @@ public class RecordOutputUtilTest {
         recordsListOne.add(mockRecordThree);
         recordsSetList.add(recordsListOne);
         recordsSetList.add(recordsListTwo);
+        
+        Assert.assertTrue(mainDoc.exists());
 
         outputter.splitIntoSheets(mainDoc.getPath(), ArrestRecord.RecordColumnEnum.COUNTY_COLUMN.getColumnTitle(), recordsSetList, ArrestRecord.class);
 
