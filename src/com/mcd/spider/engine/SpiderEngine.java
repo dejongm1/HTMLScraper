@@ -33,6 +33,8 @@ public class SpiderEngine {
 			if (!state.getEngines().isEmpty()) {
 				StateRouter router = new StateRouter(state);
 				router.collectRecordsUsingThreading(maxNumberOfResults, filter, retrieveMissedRecords);
+				
+				//TODO split this into it's own method
 				RecordIOUtil mainIOutil = new RecordIOUtil(state, new ArrestRecord(), state.getEngines().get(0).getSite());
 				//start with the second engine and iterate over the rest
 				for (int e=1;e<state.getEngines().size();e++) {
@@ -40,10 +42,27 @@ public class SpiderEngine {
                     //TODO merge filtered workbooks?
 				    logger.info("Attempting to merge record output from " + state);
 					RecordIOUtil comparingIOUtil = new RecordIOUtil(state, new ArrestRecord(), state.getEngines().get(e).getSite());
+					List<Set<Record>> mergedRecords = mainIOutil.mergeRecordsFromWorkbooks(new File(mainIOutil.getMainDocPath()), new File(comparingIOUtil.getMainDocPath()));
+					String[] sheetNames = new String[mergedRecords.size()];
+					//TODO fix sheetNames (first one should be state.getName())
+					for (int mrs=0;mrs<sheetNames.length;mrs++) {
+						sheetNames[mrs] = ((ArrestRecord)mergedRecords.get(mrs).toArray()[0]).getCounty();
+					}
+					if (!mergedRecords.isEmpty()) {
+						mainIOutil.getOutputter().createWorkbook(mainIOutil.getOutputter().getMergedDocPath(), mergedRecords, false, sheetNames);
+						logger.info("Merge Complete.");
+					} else {
+						logger.info("Nothing found to merge");
+					}
+					
 					//TODO convert to using mergeRecordsFromWorkbooks after test cases are written
-					Set<Record> mergedRecords = mainIOutil.mergeRecordsFromSheets(new File(mainIOutil.getMainDocPath()), new File(comparingIOUtil.getMainDocPath()), 0, 0);
-                    mainIOutil.getOutputter().createWorkbook(mainIOutil.getOutputter().getMergedDocPath(), mergedRecords, false);
-            		logger.info("Merge Complete.");
+//					Set<Record> mergedRecords = mainIOutil.mergeRecordsFromSheets(new File(mainIOutil.getMainDocPath()), new File(comparingIOUtil.getMainDocPath()), 0, 0);
+//					if (!mergedRecords.isEmpty()) {
+//	                    mainIOutil.getOutputter().createWorkbook(mainIOutil.getOutputter().getMergedDocPath(), mergedRecords, false);
+//	            		logger.info("Merge Complete.");
+//					} else {
+//						logger.info("Nothing found to merge");
+//					}
 				}
 			} else {
 				throw new StateNotReadyException(state);

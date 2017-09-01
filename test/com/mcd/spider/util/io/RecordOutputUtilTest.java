@@ -3,6 +3,7 @@ package com.mcd.spider.util.io;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -116,7 +117,7 @@ public class RecordOutputUtilTest {
     }
 
     @Test
-    public void testCreateWorkbook_mainDocExists() throws Exception {
+    public void testCreateWorkbook_MainDocExistsNullRecordsPassedIn() throws Exception {
         outputter.createWorkbook(mainDoc.getPath(), null, true);
         Assert.assertTrue(mainDoc.exists());
         Assert.assertTrue(backUpDoc.exists());
@@ -130,7 +131,34 @@ public class RecordOutputUtilTest {
     }
 
     @Test
-    public void testCreateWorkbook_mainDocDoesntExist() throws Exception {
+    public void testCreateWorkbook_MultipleSheets() throws Exception {
+    	List<Set<Record>> recordSetList = new ArrayList<>();
+    	Set<Record> recordSetOne = new HashSet<>(Arrays.asList(mockRecordOne));
+    	Set<Record> recordSetTwo = new HashSet<>(Arrays.asList(mockRecordTwo));
+    	recordSetList.add(recordSetOne);
+    	recordSetList.add(recordSetTwo);
+    	String[] sheetNames = new String[recordSetList.size()];
+    	int s = 0;
+    	for (Set<Record> recordSet : recordSetList) {
+    		sheetNames[s] = ((ArrestRecord)recordSet.toArray()[0]).getCounty();
+    		s++;
+    	}
+    	
+        outputter.createWorkbook(mainDoc.getPath(), recordSetList, true, sheetNames);
+        Assert.assertTrue(mainDoc.exists());
+
+        Workbook mainWorkbook = Workbook.getWorkbook(mainDoc);
+        
+        Assert.assertEquals(mainWorkbook.getNumberOfSheets(), recordSetList.size());
+        Assert.assertEquals(mainWorkbook.getSheet(0).getRows(), recordSetList.get(0).size()+1); //+1 for header row
+        Assert.assertEquals(mainWorkbook.getSheet(1).getRows(), recordSetList.get(1).size()+1); //+1 for header row
+        Assert.assertEquals(mainWorkbook.getSheet(0).getName(), sheetNames[0]);
+        Assert.assertEquals(mainWorkbook.getSheet(1).getName(), sheetNames[1]);
+        Assert.fail();//until the first sheet name gets State
+    }
+
+    @Test
+    public void testCreateWorkbook_MainDocDoesntExist() throws Exception {
         renameMainDoc();
 
         ioUtil = new RecordIOUtil(State.getState("IA"), new ArrestRecord(), new ArrestsDotOrgSite(new String[]{"iowa"}), true);

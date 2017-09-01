@@ -1,17 +1,5 @@
 package com.mcd.spider.util.io;
 
-import com.google.common.base.CaseFormat;
-import com.mcd.spider.entities.record.Record;
-import com.mcd.spider.entities.record.State;
-import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
-import jxl.Workbook;
-import jxl.read.biff.BiffException;
-import jxl.write.Label;
-import jxl.write.WritableSheet;
-import jxl.write.WritableWorkbook;
-import jxl.write.WriteException;
-import org.apache.log4j.Logger;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -19,7 +7,28 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.log4j.Logger;
+
+import com.google.common.base.CaseFormat;
+import com.mcd.spider.entities.record.Record;
+import com.mcd.spider.entities.record.State;
+import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
+
+import jxl.Workbook;
+import jxl.read.biff.BiffException;
+import jxl.write.Label;
+import jxl.write.WritableSheet;
+import jxl.write.WritableWorkbook;
+import jxl.write.WriteException;
 
 /**
  * 
@@ -62,22 +71,31 @@ public class RecordOutputUtil {
         return BACKUP_SUFFIX;
     }
 
-    //TODO needs to accept List<Set<Record>>
-    public void createWorkbook(String workbookName, Set<Record> records, boolean backUpExisting) {
+    public void createWorkbook(String workbookName, Set<Record> recordSet, boolean backUpExisting) {
+        List<Set<Record>> recordSetList = new ArrayList<>();
+        recordSetList.add(recordSet==null?new HashSet<>():recordSet);
+        createWorkbook(workbookName, recordSetList, backUpExisting, new String[]{state.getName()});
+    }
+    
+    public void createWorkbook(String workbookName, List<Set<Record>> recordSetList, boolean backUpExisting, String[] sheetNames) {
         WritableWorkbook newWorkbook = null;
         try {
             //backup existing workbook first
+            if (backUpExisting) logger.info("Backing up " + workbookName + " as " + docPath.substring(0, docPath.indexOf(EXT))+BACKUP_SUFFIX+EXT + " and starting a new workbook");
             if (new File(docPath).exists() && backUpExisting) {
                 createWorkbookCopy(docPath,
                         docPath.substring(0, docPath.indexOf(EXT))+BACKUP_SUFFIX+EXT);
                 handleBackup(docPath, false);
             }
             newWorkbook = Workbook.createWorkbook(new File(workbookName));
-
-            WritableSheet excelSheet = newWorkbook.createSheet(state.getName(), 0);
-            createColumnHeaders(excelSheet);
-            if (records!=null) {
-                saveRecordsToWorkbook(records, newWorkbook);
+            
+            logger.info("Creating " + sheetNames.length + " sheets in workbook " + workbookName);
+            for (int rs = 0;rs<recordSetList.size();rs++) {
+	            WritableSheet excelSheet = newWorkbook.createSheet(sheetNames[rs], rs);
+	            createColumnHeaders(excelSheet);
+            }
+            if (!recordSetList.isEmpty() && !recordSetList.get(0).isEmpty()) {
+                saveRecordsToWorkbook(recordSetList, newWorkbook);
             }
             newWorkbook.write();
         } catch (IOException | WriteException | BiffException e) {
@@ -117,17 +135,25 @@ public class RecordOutputUtil {
 		return docPath.substring(0, docPath.lastIndexOf('_')) + "_" + "MERGED" + EXT;
 	}
 
-	//TODO needs to accept List<Set<Record>>
 	public void saveRecordsToWorkbook(Set<Record> records, WritableWorkbook workbook) {
+		List<Set<Record>> recordSetList = new ArrayList<>();
+		recordSetList.add(records);
+		saveRecordsToWorkbook(recordSetList, workbook);
+	}
+
+	public void saveRecordsToWorkbook(List<Set<Record>> recordSetList, WritableWorkbook workbook) {
 		try {
-			//TODO loop across all Sets in List
-			//TODO change sheetindex of logging statement
-			logger.info("Beginning to add " + records.size() + " to " + workbook.getSheet(0));
-			int rowNumber = 1;
-			WritableSheet sheet = workbook.getSheet(0); //pass index
-			for (Record currentRecord : records) {
-				currentRecord.addToExcelSheet(rowNumber, sheet);
-				rowNumber++;
+			logger.info("Beginning to add " + recordSetList.size() + " sheets to workbook");
+			int rs = 0;
+			for (Set<Record> recordSet : recordSetList) {
+				int rowNumber = 1;
+				WritableSheet sheet = workbook.getSheet(rs);
+				logger.info(recordSet.size() + " records in sheet " + rs);
+				for (Record currentRecord : recordSet) {
+					currentRecord.addToExcelSheet(rowNumber, sheet);
+					rowNumber++;
+				}
+				rs++;
 			}
 		} catch (IllegalAccessException e) {
 			logger.error("Error trying to save data to workbook", e);
@@ -138,7 +164,6 @@ public class RecordOutputUtil {
 		try {
 			createWorkbookCopy(docPath, getTempFileName() + EXT);
 			int rowNumber = ioutil.getInputter().getNonEmptyRowCount(copyWorkbook.getSheet(0));
-			//TODO this will overwrite records if there are any empty rows
 			WritableSheet sheet = copyWorkbook.getSheet(0);
 			record.addToExcelSheet(rowNumber, sheet);
 			writeIdToFile(crawledIdFile, record.getId());

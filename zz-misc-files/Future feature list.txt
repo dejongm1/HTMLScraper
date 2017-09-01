@@ -56,6 +56,9 @@ getRecords()
 						?from=2015-03-15+02%3A18%3A43.462779&from=93962588
 						?from=2014-11-22+10%3A59%3A17.265412&from=84809507
 
+	Create an entity for spreadsheet data
+		-save some coding when passing around List<Set<Record>> as a representation of sheets of rows
+
 	Add parameter to choose county
 
 	Send e-mail when finished
