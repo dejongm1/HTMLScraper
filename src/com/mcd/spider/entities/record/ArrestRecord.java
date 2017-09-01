@@ -274,8 +274,6 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 			String recordCounty2 = ((ArrestRecord) record2).getCounty()!=null?((ArrestRecord) record2).getCounty().toUpperCase():"No County";
 			//ascending order
 			int result = recordCounty1.compareTo(recordCounty2);
-			//Temp logging
-			System.out.println(recordCounty1 + " compareTo(" + recordCounty2 + ") returns " + result);
 			return result;
 		}
 	};

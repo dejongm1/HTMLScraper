@@ -13,7 +13,6 @@ import org.jsoup.nodes.Element;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public interface ArrestRecordEngine {
 
@@ -32,6 +31,5 @@ public interface ArrestRecordEngine {
 	Object initiateConnection(String arg) throws IOException;
 	void finalizeOutput(List<Record> arrestRecords);
 	void setCookies(Response response);
-	void outputPreviouslyCrawledRecords(List<Record> arrestRecords);
 	
 }

@@ -14,7 +14,6 @@ import com.mcd.spider.util.io.RecordIOUtil;
 import org.apache.log4j.Logger;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -43,7 +42,7 @@ public class SpiderEngine {
 				    logger.info("Attempting to merge record output from " + state);
 					RecordIOUtil comparingIOUtil = new RecordIOUtil(state, new ArrestRecord(), state.getEngines().get(e).getSite());
 					Set<Record> mergedRecords = mainIOutil.mergeRecordsFromSheet(new File(mainIOutil.getMainDocPath()), new File(comparingIOUtil.getMainDocPath()), 0);
-                    mainIOutil.getOutputter().createSpreadsheetWithRecords(mainIOutil.getOutputter().getMergedDocPath(), mergedRecords);
+                    mainIOutil.getOutputter().createSpreadsheetWithRecords(mainIOutil.getOutputter().getMergedDocPath(), mergedRecords, false);
 					/**
 					 * For each sheet in MainWorkbook
 						 * merge with sheet from comparingWorkbook

@@ -184,7 +184,7 @@ public class RecordOutputUtilTest {
     	Set<Record> records = new HashSet<>();
     	records.add(mockRecordOne);
     	records.add(mockRecordTwo);
-    	outputter.createSpreadsheetWithRecords(filteredDoc.getPath(), records);
+    	outputter.createSpreadsheetWithRecords(filteredDoc.getPath(), records, false);
     	Workbook filteredWorkbook = Workbook.getWorkbook(filteredDoc);
     	
     	//TODO future - confirm it creates a backup, if one already exists
@@ -200,7 +200,7 @@ public class RecordOutputUtilTest {
     	Set<Record> records = new HashSet<>();
     	records.add(mockRecordOne);
     	records.add(mockRecordTwo);
-    	outputter.createSpreadsheetWithRecords(mergedDoc.getPath(), records);
+    	outputter.createSpreadsheetWithRecords(mergedDoc.getPath(), records, false);
     	Workbook mergedWorkbook = Workbook.getWorkbook(mergedDoc);
     	
     	//TODO future - confirm it creates a backup, if one already exists

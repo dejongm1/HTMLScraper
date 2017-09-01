@@ -98,7 +98,12 @@ public class RecordOutputUtil {
 	}
 
     public String getTempFileName() {
-        return RecordIOUtil.getOUTPUT_DIR() + "temp_copy" + "_" + Calendar.getInstance().getTimeInMillis();
+	    String tempFileName = RecordIOUtil.getOUTPUT_DIR() + "temp_copy" + "_" + Calendar.getInstance().getTimeInMillis();
+	    if (new File(tempFileName).exists()) {
+	        return tempFileName + "different";
+        } else {
+            return tempFileName;
+        }
     }
 
 	private void createWorkbookCopy(String oldBookName, String backupBookName) throws BiffException, IOException {
@@ -163,6 +168,35 @@ public class RecordOutputUtil {
 		return successful;
 	}
 
+	public void createSpreadsheetWithRecords(String workbookName, Set<Record> records, boolean backUpExisting) {
+		WritableWorkbook newWorkbook = null;
+		try {
+            //backup existing workbook first
+            if (new File(docPath).exists() && backUpExisting) {
+                createWorkbookCopy(docPath,
+                        docPath.substring(0, docPath.indexOf(EXT))+BACKUP_SUFFIX+EXT);
+//                workbook = copyWorkbook;
+                handleBackup(docPath, false);
+            }
+			newWorkbook = Workbook.createWorkbook(new File(workbookName));
+
+			WritableSheet excelSheet = newWorkbook.createSheet(state.getName(), 0);
+			createColumnHeaders(excelSheet);
+			saveRecordsToWorkbook(records, newWorkbook);
+			newWorkbook.write();
+		} catch (IOException | WriteException | BiffException e) {
+			logger.error("Create " + workbookName + "spreadsheet error", e);
+        } finally {
+			if (newWorkbook != null) {
+				try {
+					newWorkbook.close();
+				} catch (IOException | WriteException e) {
+					logger.error("Close " + workbookName + "spreadsheet error", e);
+				}
+			}
+		}
+	}
+
 	private void handleBackup(String docName, boolean deleteBackup) throws IOException, WriteException {
 		copyWorkbook.write();
 		copyWorkbook.close();
@@ -175,30 +209,7 @@ public class RecordOutputUtil {
                 this.docPath = docName.substring(0, docName.indexOf(EXT)) + "_" + System.currentTimeMillis() + EXT;
                 ioutil.setMainDocPath(this.docPath);
 			}
-			newBook.renameTo(new File(this.docPath));
-		}
-	}
-
-
-	public void createSpreadsheetWithRecords(String workbookName, Set<Record> records) {
-		WritableWorkbook newWorkbook = null;
-		try {
-			newWorkbook = Workbook.createWorkbook(new File(workbookName));
-
-			WritableSheet excelSheet = newWorkbook.createSheet(state.getName(), 0);
-			createColumnHeaders(excelSheet);
-			saveRecordsToWorkbook(records, newWorkbook);
-			newWorkbook.write();
-		} catch (IOException | WriteException e) {
-			logger.error("Create " + workbookName + "spreadsheet error", e);
-		} finally {
-			if (newWorkbook != null) {
-				try {
-					newWorkbook.close();
-				} catch (IOException | WriteException e) {
-					logger.error("Close " + workbookName + "spreadsheet error", e);
-				}
-			}
+			newBook.renameTo(new File(docName));
 		}
 	}
 

@@ -1,32 +1,5 @@
 package com.mcd.spider.engine.record.iowa;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.jsoup.Connection.Response;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
 import com.mcd.spider.engine.record.ArrestRecordEngine;
 import com.mcd.spider.entities.record.ArrestRecord;
 import com.mcd.spider.entities.record.ArrestRecord.RecordColumnEnum;
@@ -44,6 +17,20 @@ import com.mcd.spider.util.ConnectionUtil;
 import com.mcd.spider.util.SpiderUtil;
 import com.mcd.spider.util.io.RecordIOUtil;
 import com.mcd.spider.util.io.RecordOutputUtil;
+import org.apache.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.jsoup.Connection.Response;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  *
@@ -155,7 +142,6 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
         ArrestRecord arrestRecord;
         //TODO test these next two lines
         arrestRecords.addAll(spiderWeb.getCrawledRecords());
-        outputPreviouslyCrawledRecords(arrestRecords);
         
         RecordOutputUtil recordOutputUtil = recordIOUtil.getOutputter();
         String referer = "";
@@ -217,7 +203,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
         	spiderWeb.setCrawledIds(ioUtil.getInputter().getCrawledIds());
             //load records in current spreadsheet into memory
         	spiderWeb.setCrawledRecords(ioUtil.getInputter().readRecordsFromSheet(new File(ioUtil.getMainDocPath()),0));
-            ioUtil.getOutputter().createWorkbook();
+            ioUtil.getOutputter().createSpreadsheetWithRecords(ioUtil.getMainDocPath(), spiderWeb.getCrawledRecords(), true);
         } catch (ExcelOutputException | IDCheckException e) {
             throw e;
         }
@@ -309,13 +295,6 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     }
 
     @Override
-    public void outputPreviouslyCrawledRecords(List<Record> arrestRecords) {
-    	for (Record arrestRecord : arrestRecords) {
-			recordIOUtil.getOutputter().addRecordToMainWorkbook(arrestRecord);
-    	}
-    }
-    
-    @Override
     public void finalizeOutput(List<Record> arrestRecords) {
     	//format the output
         logger.info("Starting to finalize the result output");
@@ -331,7 +310,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
 	                //create a separate sheet with filtered results
 	                logger.info(filteredRecords.size()+" "+filter.filterName()+" "+"records were crawled");
 	                if (!filteredRecords.isEmpty()) {
-	                    recordIOUtil.getOutputter().createSpreadsheetWithRecords(recordIOUtil.getOutputter().getFilteredDocPath(filter), new HashSet<>(filteredRecords));
+	                    recordIOUtil.getOutputter().createSpreadsheetWithRecords(recordIOUtil.getOutputter().getFilteredDocPath(filter), new HashSet<>(filteredRecords), false);
 	                }
 	                recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getOutputter().getFilteredDocPath(filter), delimiter, splitRecords, clazz);
                 }

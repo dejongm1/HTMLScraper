@@ -22,6 +22,7 @@
         <mkdir dir="${dir.dist}"/>
     </target>
 
+    <!--TODO need to build and compile to catch errors??-->
     <target name="compile" depends="prepare">
     	<path id="dir.classpath">
     	    <fileset dir="lib">

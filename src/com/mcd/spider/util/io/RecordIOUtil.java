@@ -19,8 +19,8 @@ public class RecordIOUtil {
 	
 	public static final Logger logger = Logger.getLogger(RecordIOUtil.class);
 	private static final String EXT = ".xls";
-    private static final String OUTPUT_DIR = "output/";
-    private static final String TRACKING_DIR = OUTPUT_DIR + "tracking/";
+    private static final String OUTPUT_DIR = "output\\";
+    private static final String TRACKING_DIR = OUTPUT_DIR + "tracking\\";
 	
 	private String mainDocPath;
 	private RecordInputUtil inputter;

@@ -100,6 +100,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 	            if (e instanceof HttpStatusException && ((HttpStatusException) e).getStatusCode()==500) {
 	            	connectionUtil = new ConnectionUtil(true);
 	            }
+                spiderUtil.sleep(2000, true);
 	            spiderWeb.increaseAttemptCount();
 	            scrapeSite();
 	        }
@@ -165,7 +166,6 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     	RecordOutputUtil recordOutputUtil = recordIOUtil.getOutputter();
         List<Record> arrestRecords = new ArrayList<>();
         arrestRecords.addAll(spiderWeb.getCrawledRecords());
-        outputPreviouslyCrawledRecords(arrestRecords);
         ArrestRecord arrestRecord;
         List<Object> keys = new ArrayList<>(recordsDetailsUrlMap.keySet());
         Collections.shuffle(keys);
@@ -253,7 +253,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             spiderWeb.setUncrawledIds(ioUtil.getInputter().getUncrawledIds());
         	//load records in current spreadsheet into memory
             spiderWeb.setCrawledRecords(ioUtil.getInputter().readRecordsFromSheet(new File(ioUtil.getMainDocPath()),0));
-            ioUtil.getOutputter().createWorkbook();
+            ioUtil.getOutputter().createSpreadsheetWithRecords(ioUtil.getMainDocPath(), spiderWeb.getCrawledRecords(), true);
         } catch (ExcelOutputException | IDCheckException e) {
             throw e;
         }
@@ -357,13 +357,6 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     }
 
     @Override
-    public void outputPreviouslyCrawledRecords(List<Record> arrestRecords) {
-    	for (Record arrestRecord : arrestRecords) {
-			recordIOUtil.getOutputter().addRecordToMainWorkbook(arrestRecord);
-    	}
-    }
-    
-    @Override
     public void finalizeOutput(List<Record> arrestRecords) {
         //format the output
         if (!arrestRecords.isEmpty()) {
@@ -379,7 +372,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
                     //create a separate sheet with filtered results
                     logger.info(filteredRecords.size()+" "+filter.filterName()+" "+"records were crawled");
                     if (!filteredRecords.isEmpty()) {
-                        recordIOUtil.getOutputter().createSpreadsheetWithRecords(recordIOUtil.getOutputter().getFilteredDocPath(filter), new HashSet<>(filteredRecords));
+                        recordIOUtil.getOutputter().createSpreadsheetWithRecords(recordIOUtil.getOutputter().getFilteredDocPath(filter), new HashSet<>(filteredRecords), false);
                         recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getOutputter().getFilteredDocPath(filter), columnDelimiter, splitRecords, clazz);
                     }
                 } catch (Exception e) {
