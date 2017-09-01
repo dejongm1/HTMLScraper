@@ -11,6 +11,8 @@ import jxl.Workbook;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
+
+import org.apache.log4j.Logger;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -23,6 +25,7 @@ import java.util.*;
 
 public class RecordOutputUtilTest {
 
+	private static Logger logger = Logger.getLogger(RecordOutputUtilTest.class);
     private RecordIOUtil ioUtil;
     private RecordOutputUtil outputter;
     private File backUpDoc;
@@ -36,6 +39,7 @@ public class RecordOutputUtilTest {
     
     @BeforeClass
     public void setUpClass() {
+		logger.info("********** Starting Test cases for RecordOutputUtil *****************");
     	mockRecordOne.setId("Ashley_Graves_34029315");
 		mockRecordOne.setFullName("Ashley  Graves");
 		mockRecordOne.setFirstName("Ashley");
@@ -64,6 +68,11 @@ public class RecordOutputUtilTest {
         mockRecordTwo.setHairColor("black");
         mockRecordTwo.setEyeColor("brown");
         mockRecordTwo.setCharges(new String[]{"MURDER"});
+    }
+    
+    @AfterClass
+    public void tearDown() {
+		logger.info("********** Finishing Test cases for RecordOutputUtil *****************");
     }
 
     @BeforeMethod

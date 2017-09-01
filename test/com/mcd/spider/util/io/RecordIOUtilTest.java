@@ -5,6 +5,8 @@ import com.mcd.spider.entities.record.ArrestRecord;
 import com.mcd.spider.entities.record.Record;
 import com.mcd.spider.entities.record.State;
 import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
+
+import org.apache.log4j.Logger;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -20,6 +22,7 @@ import java.util.Set;
 
 public class RecordIOUtilTest {
 
+	private static Logger logger = Logger.getLogger(RecordIOUtilTest.class);
 	//get test-named files and rename them to site specific books for the test, delete after
 	private File testMergeFileOne = new File("output/testing/testMergeFileOne.xls");
 	private File testMergeFileTwo = new File("output/testing/testMergeFileTwo.xls");
@@ -30,6 +33,7 @@ public class RecordIOUtilTest {
 	
 	@BeforeClass
 	public void setUp() throws IOException {
+		logger.info("********** Starting Test cases for RecordIOUtil *****************");
 		Assert.assertTrue(testMergeFileOne.exists());
 		Assert.assertTrue(testMergeFileTwo.exists());
 		Files.copy(testMergeFileOne, testArrestOrgOutput);
@@ -45,6 +49,7 @@ public class RecordIOUtilTest {
 		testDesMoinesRegisterComOutput.delete();
 		Assert.assertTrue(!testArrestOrgOutput.exists());
 		Assert.assertTrue(!testDesMoinesRegisterComOutput.exists());
+		logger.info("********** Finishing Test cases for RecordIOUtil *****************");
 	}
 
 	@Test

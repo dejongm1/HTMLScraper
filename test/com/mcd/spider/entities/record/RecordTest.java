@@ -1,18 +1,27 @@
 package com.mcd.spider.entities.record;
 
-import com.mcd.spider.entities.record.ArrestRecord.RecordColumnEnum;
-import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
-import com.mcd.spider.util.io.RecordIOUtil;
-import jxl.Sheet;
-import jxl.Workbook;
-import jxl.read.biff.BiffException;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+
+import org.apache.log4j.Logger;
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
+import com.mcd.spider.entities.record.ArrestRecord.RecordColumnEnum;
+import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
+import com.mcd.spider.util.io.RecordIOUtil;
+
+import jxl.Sheet;
+import jxl.Workbook;
+import jxl.read.biff.BiffException;
 
 /**
  *
@@ -22,6 +31,8 @@ import java.util.*;
 
 public class RecordTest {
 
+	private static Logger logger = Logger.getLogger(RecordTest.class);
+	
 	private File testReadInputFile = new File("output/testing/ArrestRecordInputTest.xls");
 	static Sheet mainSheet;
 	private RecordIOUtil ioUtil;
@@ -29,6 +40,7 @@ public class RecordTest {
 	
 	@BeforeClass
 	public void setUpClass() throws BiffException, IOException {
+		logger.info("********** Starting Test cases for Record *****************");
 		Assert.assertTrue(testReadInputFile.exists());
 		workbook = Workbook.getWorkbook(testReadInputFile);
         if (workbook!=null) {
@@ -36,6 +48,11 @@ public class RecordTest {
         }
         Assert.assertNotNull(mainSheet);
         ioUtil = new RecordIOUtil(State.getState("IA"), new ArrestRecord(), new ArrestsDotOrgSite(new String[]{"iowa"}), true);
+	}
+	
+	@AfterClass
+	public void tearDown() {
+		logger.info("********** Finishing Test cases for Record *****************");
 	}
 
 	@Test(groups={"ColumnOrder"})

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.apache.log4j.Logger;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -27,6 +28,8 @@ import jxl.write.WritableWorkbook;
  */
 
 public class ArrestRecordTest {
+	
+	private static Logger logger = Logger.getLogger(ArrestRecordTest.class);
 
 	ArrestRecord mockRecordOne = new ArrestRecord();
 	ArrestRecord mockRecordTwo = new ArrestRecord();
@@ -40,6 +43,7 @@ public class ArrestRecordTest {
 	
 	@BeforeClass
 	public void setUpClass() throws BiffException, IOException {
+		logger.info("********** Starting Test cases for ArrestRecord *****************");
 		Assert.assertTrue(testMergeFileOne.exists());
 		Files.copy(testMergeFileOne, testOutputFile);
 		Workbook workbook = Workbook.getWorkbook(testMergeFileOne);
@@ -112,6 +116,7 @@ public class ArrestRecordTest {
 	public void tearDown() {
 		testOutputFile.delete();
 		Assert.assertTrue(!testOutputFile.exists());
+		logger.info("********** Finishing Test cases for ArrestRecord *****************");
 	}
 
 	@Test

@@ -1,6 +1,9 @@
 package com.mcd.spider.main;
 
+import com.mcd.spider.entities.record.RecordTest;
 import com.mcd.spider.util.SpiderUtil;
+
+import org.apache.log4j.Logger;
 import org.mockito.Mock;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -19,6 +22,8 @@ import java.io.PrintStream;
 
 public class SpiderMainTest {
 	
+	private static Logger logger = Logger.getLogger(SpiderMainTest.class);
+	
 	@Mock
 	SpiderUtil spiderUtil;
 	
@@ -27,6 +32,7 @@ public class SpiderMainTest {
 
 	@BeforeClass
 	public void setUpStreams() {
+		logger.info("********** Starting Test cases for SpiderMain *****************");
 	    System.setOut(new PrintStream(outContent));
 	    System.setErr(new PrintStream(errContent));
 	    System.getProperties().setProperty("runInEclipse", "true");
@@ -36,6 +42,7 @@ public class SpiderMainTest {
 	public void cleanUpStreams() {
 	    System.setOut(null);
 	    System.setErr(null);
+		logger.info("********** Finishing Test cases for SpiderMain *****************");
 	}
 	
 	@Test(enabled=false)
