@@ -14,27 +14,41 @@
     <property name="version" value="1.0"/>
     <property name="dir.src" value="src"/>
     <property name="dir.test" value="test"/>
+    <property name="dir.lib" value="lib"/>
     <property name="dir.build" value="build"/>
-    <property name="dir.dist" value="dist"/>
+    <!--<property name="dir.dist" value="dist"/>-->
 
     <path id="dir.classpath">
-        <fileset dir="lib">
-            <include name="*.jar"/>
-            <exclude name="testng-5.0.jar"/>
+        <fileset dir="./resources">
+            <include name="**/*.*" />
         </fileset>
-        <fileset dir="test">
+        <fileset dir="./lib">
+            <include name="**/*.jar" />
+            <exclude name="jmeter/"/>
+            <exclude name="selenium/"/>
         </fileset>
+        <fileset dir="./build"/>
     </path>
+
+    <pathconvert property="classpathProp" refid="dir.classpath"/>
+
+    <echo>Classpath is ${classpathProp}</echo>
 
     <!-- Creates the output directories -->
     <target name="prepare">
         <mkdir dir="${dir.build}"/>
-        <mkdir dir="${dir.dist}"/>
+        <!--<mkdir dir="${dir.dist}"/>-->
     </target>
 
     <target name="compile" depends="prepare">
         <javac srcdir="${dir.src}" destdir="${dir.build}">
-    		<classpath refid="dir.classpath" />
+            <classpath refid="dir.classpath" />
+        </javac>
+    </target>
+
+    <target name="compiletests" depends="prepare">
+        <javac srcdir="${dir.test}" destdir="${dir.build}">
+            <classpath refid="dir.classpath" />
         </javac>
     </target>
 
@@ -42,35 +56,44 @@
         <classpath location="lib/testng.jar" />
     </taskdef>
 
-    <target name="testng" depends="compile">
-        <testng classpathref="dir.classpath" haltOnFailure="true">
-            <classpath location="${dir.test}" />
+    <target name="testng" depends="compiletests">
+        <testng haltOnFailure="true">
+            <classpath location="dir.classpath" />
             <xmlfileset dir="${dir.test}/resources" includes="test-all.xml"/>
         </testng>
     </target>
 
-    <target name="create_run_jar" depends="backup, compile, testng, prepare">
+    <target name="create_run_jar_with_tests" depends="backup, compile, testng, prepare">
         <buildnumber/>
 
-    	<path id="classpath.list">
-    		<fileset dir="./resources">
-    	        <include name="**/*.*" />
-    	    </fileset>
-    	    <fileset dir="./lib">
-    	        <include name="**/*.jar" />
-    	    	<exclude name="jmeter/"/>
-    	    	<exclude name="selenium/"/>
-    	    </fileset>
-    	</path>
-    	
+        <manifestclasspath property="manifest_cp" jarfile="Spider-${version}.${build.number}.jar">
+            <classpath refid="dir.classpath" />
+        </manifestclasspath>
+
+        <jar jarfile="Spider-${version}.${build.number}.jar">
+            <manifest>
+                <attribute name="Main-Class" value="com.mcd.spider.main.SpiderMain"/>
+                <attribute name="Class-Path" value="manifest_cp"/>
+            </manifest>
+            <fileset dir="${dir.buildfile}/${dir.build}" />
+            <fileset dir="${dir.buildfile}/${dir.src}" />
+            <zipfileset dir="${dir.buildfile}/lib" includes="*.jar" excludes="*javadoc*.jar *sources*.jar" prefix="lib"/>
+            <zipfileset dir="${dir.buildfile}/resources" includes="*.*" prefix="resources"/>
+        </jar>
+        <antcall target="cleanup"/>
+    </target>
+
+    <target name="create_run_jar" depends="backup, compile, prepare">
+        <buildnumber/>
+
     	<manifestclasspath property="manifest_cp" jarfile="Spider-${version}.${build.number}.jar">
-	        <classpath refid="classpath.list" />
+	        <classpath refid="dir.classpath" />
 	    </manifestclasspath>
 
         <jar jarfile="Spider-${version}.${build.number}.jar">
             <manifest>
                 <attribute name="Main-Class" value="com.mcd.spider.main.SpiderMain"/>
-                <attribute name="Class-Path" value="${manifest_cp}"/>
+                <attribute name="Class-Path" value="manifest_cp"/>
             </manifest>
         	<fileset dir="${dir.buildfile}/${dir.build}" />
         	<fileset dir="${dir.buildfile}/${dir.src}" />
@@ -82,7 +105,7 @@
 	
 	<target name="cleanup" description="Remove all generated files.">
 		<delete dir="${dir.build}"/>
-		<delete dir="${dir.dist}"/>
+		<!--<delete dir="${dir.dist}"/>-->
 	</target>
 	
     <target name="backup">
