@@ -1,13 +1,18 @@
 package com.mcd.spider.util.io;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.apache.log4j.Logger;
+
 import com.mcd.spider.entities.record.Record;
 import com.mcd.spider.entities.record.State;
 import com.mcd.spider.entities.site.Site;
-import org.apache.log4j.Logger;
 
-import java.io.File;
-import java.util.HashSet;
-import java.util.Set;
+import jxl.Sheet;
 
 /**
  * 
@@ -88,19 +93,61 @@ public class RecordIOUtil {
         return OUTPUT_DIR;
     }
 
-    public Set<Record> mergeRecordsFromSheet(File fileOne, File fileTwo, int sheetNumber) {
-		Set<Record> storedRecordsOne = inputter.readRecordsFromSheet(fileOne, sheetNumber);
-		Set<Record> storedRecordsTwo = inputter.readRecordsFromSheet(fileTwo, sheetNumber);
+    public List<Set<Record>> mergeRecordsFromWorkbooks(File fileOne, File fileTwo) {
+    	List<Set<Record>> mergedResults = new ArrayList<>();
+    	Sheet[] sheetsFromFileOne = inputter.getSheets(fileOne);
+    	Sheet[] sheetsFromFileTwo = inputter.getSheets(fileTwo);
+    	
+    	for (Sheet sheetFromOne : sheetsFromFileOne) {
+    		boolean sheetNotAdded = true;
+    		for (Sheet sheetFromTwo : sheetsFromFileTwo) {
+    			if (sheetNotAdded && sheetFromOne.getName().equalsIgnoreCase(sheetFromTwo.getName())) {
+    				logger.info("Attempting to merge sheets " + sheetFromOne.getName() + " from " + fileOne.getName() + " and " + fileTwo.getName());
+    				mergedResults.add(mergeRecordsFromSheets(fileOne, fileTwo, inputter.getSheetIndex(fileOne, sheetFromOne.getName()), inputter.getSheetIndex(fileTwo, sheetFromTwo.getName())));
+    				sheetNotAdded = false;
+    			}
+    		}
+    		if (sheetNotAdded) {
+				//send sheet one without sheet two
+				logger.info("No matching sheet was found for " + sheetFromOne.getName() + ". Only outputting files from " + fileOne.getName());
+				mergedResults.add(mergeRecordsFromSheets(fileOne, null, inputter.getSheetIndex(fileOne, sheetFromOne.getName()), -1));
+    		}
+    	}
+    	
+    	//add any sheets from two that were missed
+    	for (Sheet sheetFromTwo : sheetsFromFileTwo) {
+    		boolean matchFound = false;
+        	for (Sheet sheetFromOne : sheetsFromFileOne) {
+				if (sheetFromOne.getName().equalsIgnoreCase(sheetFromTwo.getName())) {
+					matchFound = true;
+				}
+			}
+        	if (!matchFound) {
+        		//send sheet two without sheet one
+				logger.info("No matching sheet was found for " + sheetFromTwo.getName() + ". Only outputting files from " + fileTwo.getName());
+				mergedResults.add(mergeRecordsFromSheets(fileTwo, null, inputter.getSheetIndex(fileTwo, sheetFromTwo.getName()), -1));
+        	}
+    	}
+    	
+    	return mergedResults;
+    }
+    
+    public Set<Record> mergeRecordsFromSheets(File fileOne, File fileTwo, int sheetNumberOne, int sheetNumberTwo) {
+		Set<Record> storedRecordsOne = inputter.readRecordsFromSheet(fileOne, sheetNumberOne);
+		Set<Record> storedRecordsTwo = inputter.readRecordsFromSheet(fileTwo, sheetNumberTwo);
 		Set<Record> compiledRecords = new HashSet<>();
-		Set<Record> outerSet = new HashSet<>(storedRecordsOne);
-		Set<Record> innerSet = new HashSet<>(storedRecordsTwo);
+		
+		Set<Record> outerSet = storedRecordsOne==null?new HashSet<>():new HashSet<>(storedRecordsOne);
+		Set<Record> innerSet = storedRecordsTwo==null?new HashSet<>():new HashSet<>(storedRecordsTwo);
 
+		int mergedCount = 0;
 		for (Record recordOne : outerSet) {
 			for (Record recordTwo : innerSet) {
 				if (recordOne.matches(recordTwo)) {
 					recordOne.merge(recordTwo);
 					compiledRecords.add(recordOne);
 					storedRecordsTwo.remove(recordTwo);
+					mergedCount++;
 				} else {
 					compiledRecords.add(recordOne);
 					storedRecordsOne.remove(recordOne);
@@ -109,6 +156,8 @@ public class RecordIOUtil {
 		}
 		compiledRecords.addAll(storedRecordsOne);
 		compiledRecords.addAll(storedRecordsTwo);
+		logger.info(mergedCount + " records were merged");
+		logger.info(compiledRecords.size() + " total records as a result of the merge");
 		return compiledRecords;
 	}
 }

@@ -124,20 +124,30 @@ public class RecordInputUtil {
     	return listOfRecordSets;
     }
 
+    public Sheet[] getSheets(File fileToRead) {
+        Workbook workbook;
+        Sheet[] sheets = new Sheet[0];
+		try {
+			workbook = Workbook.getWorkbook(fileToRead);
+			sheets = workbook.getSheets();            
+			
+		} catch (BiffException | IOException e) {
+			logger.error("Couldn't gather sheets from " + fileToRead.getName(), e);
+		}
+    	return sheets;
+    }
+    
     public int getSheetIndex(File fileToRead, String sheetName) {
         Workbook workbook;
 		Integer sheetNumber = null;
-		try {
-			workbook = Workbook.getWorkbook(fileToRead);
-			final Sheet[] sheets = workbook.getSheets();            
+		final Sheet[] sheets = getSheets(fileToRead);  
+		if (sheets!=null) {
 			for(int i=0;i<sheets.length && sheetNumber == null; i++) {
 				if(sheets[i].getName().equals(sheetName)) {
 					sheetNumber = i;                  
 				}
-			}    
-		} catch (BiffException | IOException e) {
-			logger.error("Couldn't find a sheet named " + sheetName, e);
-		}
+			}
+	    }
     	return sheetNumber;
     }
     
@@ -156,30 +166,33 @@ public class RecordInputUtil {
         Constructor<?> constructor = Record.getConstructorForRecord(clazz, record);
         int foundRecordsCount = 0;
         int retrievedRecordsCount = 0;
-        try {
-            Workbook workbook = Workbook.getWorkbook(fileToRead);
-            if (workbook!=null) {
-                Sheet sheetToRead = workbook.getSheet(sheetNumber);
-                logger.debug("Attempting to read previous records from sheet " + sheetToRead.getName() + " into memory");
-                //starting with the first data row, read records into set
-                foundRecordsCount+=getNonEmptyRowCount(sheetToRead);
-                Object rowRecord = constructor.newInstance();
-                List<Object> columnOrder = Record.getColumnOrder(clazz, sheetToRead, rowRecord);
-                for (int r = 1; r<sheetToRead.getRows(); r++) {
-                    if (rowIsNotEmpty(sheetToRead.getRow(r))) {
-                        try {
-                            //pass in new instance of rowRecord contructor for each row to read in
-                            storedRecords.add(Record.readRowIntoRecord(clazz, sheetToRead, constructor.newInstance(), r, columnOrder));
-                        } catch (IllegalArgumentException e) {
-                            logger.error("Error trying to read row into record object, row "+r, e);
-                        }
-                    }
-                }
-                retrievedRecordsCount+=storedRecords.size();
-            }
-
-        } catch (BiffException | IOException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            logger.error("Exception caught reading sheet into records - " + fileToRead.getName() + " sheet " + sheetNumber, e);
+        //don't try to readRecords if -1 is passed
+        if (sheetNumber!=-1) {
+	        try {
+	            Workbook workbook = Workbook.getWorkbook(fileToRead);
+	            if (workbook!=null) {
+	                Sheet sheetToRead = workbook.getSheet(sheetNumber);
+	                logger.debug("Attempting to read previous records from sheet " + sheetToRead.getName() + " into memory");
+	                //starting with the first data row, read records into set
+	                foundRecordsCount+=getNonEmptyRowCount(sheetToRead);
+	                Object rowRecord = constructor.newInstance();
+	                List<Object> columnOrder = Record.getColumnOrder(clazz, sheetToRead, rowRecord);
+	                for (int r = 1; r<sheetToRead.getRows(); r++) {
+	                    if (rowIsNotEmpty(sheetToRead.getRow(r))) {
+	                        try {
+	                            //pass in new instance of rowRecord contructor for each row to read in
+	                            storedRecords.add(Record.readRowIntoRecord(clazz, sheetToRead, constructor.newInstance(), r, columnOrder));
+	                        } catch (IllegalArgumentException e) {
+	                            logger.error("Error trying to read row into record object, row "+r, e);
+	                        }
+	                    }
+	                }
+	                retrievedRecordsCount+=storedRecords.size();
+	            }
+	
+	        } catch (BiffException | IOException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+	            logger.error("Exception caught reading sheet into records - " + fileToRead.getName() + " sheet " + sheetNumber, e);
+	        }
         }
         logger.debug("Found " +  (foundRecordsCount-1) + " and retrieved " + retrievedRecordsCount);
         return storedRecords;

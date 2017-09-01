@@ -36,21 +36,13 @@ public class SpiderEngine {
 				RecordIOUtil mainIOutil = new RecordIOUtil(state, new ArrestRecord(), state.getEngines().get(0).getSite());
 				//start with the second engine and iterate over the rest
 				for (int e=1;e<state.getEngines().size();e++) {
-				    //TODO this will likely overwrite _MERGED if more than 2 engine per site
-                    //TODO once confirmed that merge is working well, merge additional sheets
+				    //TODO this will overwrite _MERGED if more than 2 engine per site
                     //TODO merge filtered workbooks?
 				    logger.info("Attempting to merge record output from " + state);
 					RecordIOUtil comparingIOUtil = new RecordIOUtil(state, new ArrestRecord(), state.getEngines().get(e).getSite());
-					Set<Record> mergedRecords = mainIOutil.mergeRecordsFromSheet(new File(mainIOutil.getMainDocPath()), new File(comparingIOUtil.getMainDocPath()), 0);
+					//TODO convert to using mergeRecordsFromWorkbooks after test cases are written
+					Set<Record> mergedRecords = mainIOutil.mergeRecordsFromSheets(new File(mainIOutil.getMainDocPath()), new File(comparingIOUtil.getMainDocPath()), 0, 0);
                     mainIOutil.getOutputter().createWorkbook(mainIOutil.getOutputter().getMergedDocPath(), mergedRecords, false);
-					/**
-					 * For each sheet in MainWorkbook
-						 * merge with sheet from comparingWorkbook
-						 * add merged Set to List of sets
-					 		* refactor mergeRecordsFromSheet to allow a blank sheet to be passed in??
-					 * 
-					 * pass List of Sets to createWorkbook to create a sheet for each set
-					 */
             		logger.info("Merge Complete.");
 				}
 			} else {

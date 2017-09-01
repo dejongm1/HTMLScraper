@@ -62,6 +62,7 @@ public class RecordOutputUtil {
         return BACKUP_SUFFIX;
     }
 
+    //TODO needs to accept List<Set<Record>>
     public void createWorkbook(String workbookName, Set<Record> records, boolean backUpExisting) {
         WritableWorkbook newWorkbook = null;
         try {
@@ -116,11 +117,15 @@ public class RecordOutputUtil {
 		return docPath.substring(0, docPath.lastIndexOf('_')) + "_" + "MERGED" + EXT;
 	}
 
+	//TODO needs to accept List<Set<Record>>
 	public void saveRecordsToWorkbook(Set<Record> records, WritableWorkbook workbook) {
 		try {
+			//TODO loop across all Sets in List
+			//TODO change sheetindex of logging statement
+			logger.info("Beginning to add " + records.size() + " to " + workbook.getSheet(0));
 			int rowNumber = 1;
+			WritableSheet sheet = workbook.getSheet(0); //pass index
 			for (Record currentRecord : records) {
-				WritableSheet sheet = workbook.getSheet(0);
 				currentRecord.addToExcelSheet(rowNumber, sheet);
 				rowNumber++;
 			}
