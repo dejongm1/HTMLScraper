@@ -208,7 +208,7 @@
 //        RecordIOUtil recordIOUtil = new RecordIOUtil(state, new CourtRecord(), site);
 //        try {
 //            crawledIds = recordIOUtil.getInputter().getCrawledIds();
-//            recordIOUtil.getOutputter().createWorkbook();
+//            recordIOUtil.getOutputter().createEmptyWorbook();
 //        } catch (ExcelOutputException | IDCheckException e) {
 //            throw e;
 //        }

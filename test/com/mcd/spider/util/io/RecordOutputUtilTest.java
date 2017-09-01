@@ -72,12 +72,12 @@ public class RecordOutputUtilTest {
         ioUtil = new RecordIOUtil(State.getState("IA"), new ArrestRecord(), new ArrestsDotOrgSite(new String[]{"iowa"}), true);
     	System.setProperty("offline", "true");
         outputter = ioUtil.getOutputter();
-        outputter.createWorkbook();
     	backUpDoc = new File(ioUtil.getMainDocPath().substring(0, ioUtil.getMainDocPath().indexOf(RecordIOUtil.getEXT())) + RecordOutputUtil.getBackupSuffix() + RecordIOUtil.getEXT());
         mainDoc = new File(ioUtil.getMainDocPath());
         mainDocRenamed = new File(mainDoc.getPath() + "tempForTesting");
         mergedDoc = new File(outputter.getMergedDocPath());
         filteredDoc = new File(outputter.getFilteredDocPath(RecordFilterEnum.findFilter("alcohol")));
+        outputter.createWorkbook(mainDoc.getPath(), null, true);
         testWorkbook = Workbook.createWorkbook(mainDoc);
         WritableSheet sheet = testWorkbook.createSheet(outputter.getState().getName(), 0);
         outputter.createColumnHeaders(sheet);
@@ -99,7 +99,7 @@ public class RecordOutputUtilTest {
 
     @Test
     public void testCreateWorkbook_mainDocExists() throws Exception {
-        outputter.createWorkbook();
+        outputter.createWorkbook(mainDoc.getPath(), null, true);
         Assert.assertTrue(mainDoc.exists());
         Assert.assertTrue(backUpDoc.exists());
 
@@ -118,7 +118,7 @@ public class RecordOutputUtilTest {
         ioUtil = new RecordIOUtil(State.getState("IA"), new ArrestRecord(), new ArrestsDotOrgSite(new String[]{"iowa"}), true);
         outputter = ioUtil.getOutputter();
 
-        outputter.createWorkbook();
+        outputter.createWorkbook(mainDoc.getPath(), null, true);
         Workbook mainWorkbook = Workbook.getWorkbook(mainDoc);
 
         Assert.assertFalse(backUpDoc.exists());
@@ -137,7 +137,6 @@ public class RecordOutputUtilTest {
             record.setFullName("name" + r);
             mockedRecords.add(record);
         }
-    	//saveRecordsToWorkbook(records, tempworkbook)
         outputter.saveRecordsToWorkbook(mockedRecords, testWorkbook);
     	//check sizes(rows (minus header) vs list size) match
         Assert.assertEquals(mockedRecords.size(), testWorkbook.getSheet(0).getRows()-1);
@@ -184,7 +183,7 @@ public class RecordOutputUtilTest {
     	Set<Record> records = new HashSet<>();
     	records.add(mockRecordOne);
     	records.add(mockRecordTwo);
-    	outputter.createSpreadsheetWithRecords(filteredDoc.getPath(), records, false);
+    	outputter.createWorkbook(filteredDoc.getPath(), records, false);
     	Workbook filteredWorkbook = Workbook.getWorkbook(filteredDoc);
     	
     	//TODO future - confirm it creates a backup, if one already exists
@@ -200,7 +199,7 @@ public class RecordOutputUtilTest {
     	Set<Record> records = new HashSet<>();
     	records.add(mockRecordOne);
     	records.add(mockRecordTwo);
-    	outputter.createSpreadsheetWithRecords(mergedDoc.getPath(), records, false);
+    	outputter.createWorkbook(mergedDoc.getPath(), records, false);
     	Workbook mergedWorkbook = Workbook.getWorkbook(mergedDoc);
     	
     	//TODO future - confirm it creates a backup, if one already exists

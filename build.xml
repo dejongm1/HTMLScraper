@@ -13,8 +13,18 @@
     <property name="dir.backup" value="backup"/>
     <property name="version" value="1.0"/>
     <property name="dir.src" value="src"/>
+    <property name="dir.test" value="test"/>
     <property name="dir.build" value="build"/>
     <property name="dir.dist" value="dist"/>
+
+    <path id="dir.classpath">
+        <fileset dir="lib">
+            <include name="*.jar"/>
+            <exclude name="testng-5.0.jar"/>
+        </fileset>
+        <fileset dir="test">
+        </fileset>
+    </path>
 
     <!-- Creates the output directories -->
     <target name="prepare">
@@ -22,20 +32,24 @@
         <mkdir dir="${dir.dist}"/>
     </target>
 
-    <!--TODO need to build and compile to catch errors??-->
     <target name="compile" depends="prepare">
-    	<path id="dir.classpath">
-    	    <fileset dir="lib">
-    	        <include name="*.jar"/>
-    	    	<exclude name="testng-5.0.jar"/>
-    	    </fileset>
-    	</path>
         <javac srcdir="${dir.src}" destdir="${dir.build}">
     		<classpath refid="dir.classpath" />
         </javac>
     </target>
 
-    <target name="create_run_jar" depends="backup, compile, prepare">
+    <taskdef name="testng" classname="org.testng.TestNGAntTask">
+        <classpath location="lib/testng.jar" />
+    </taskdef>
+
+    <target name="testng" depends="compile">
+        <testng classpathref="dir.classpath" haltOnFailure="true">
+            <classpath location="${dir.test}" />
+            <xmlfileset dir="${dir.test}/resources" includes="test-all.xml"/>
+        </testng>
+    </target>
+
+    <target name="create_run_jar" depends="backup, compile, testng, prepare">
         <buildnumber/>
 
     	<path id="classpath.list">

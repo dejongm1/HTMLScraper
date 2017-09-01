@@ -36,7 +36,6 @@ public class RecordOutputUtil {
                                                     + WORKBOOK_CREATE_DATE.get(Calendar.YEAR);
 
 	private String docPath;
-	private WritableWorkbook workbook;
 	private State state;
 	private File crawledIdFile;
 	private File uncrawledIdFile;
@@ -63,39 +62,35 @@ public class RecordOutputUtil {
         return BACKUP_SUFFIX;
     }
 
-    public void createWorkbook() {
-		WritableWorkbook newWorkbook = null;
-		try {
-			//backup existing workbook first
-            if (new File(docPath).exists()) {
+    public void createWorkbook(String workbookName, Set<Record> records, boolean backUpExisting) {
+        WritableWorkbook newWorkbook = null;
+        try {
+            //backup existing workbook first
+            if (new File(docPath).exists() && backUpExisting) {
                 createWorkbookCopy(docPath,
                         docPath.substring(0, docPath.indexOf(EXT))+BACKUP_SUFFIX+EXT);
-//                workbook = copyWorkbook;
                 handleBackup(docPath, false);
             }
-		} catch (BiffException | IOException | WriteException e) {
-			logger.error("Create workbook error", e);
-		}
-		try {
-			if (workbook == null) {
-				newWorkbook = Workbook.createWorkbook(new File(docPath));
-				WritableSheet excelSheet = newWorkbook.createSheet(state.getName(), 0);
-				createColumnHeaders(excelSheet);
-				newWorkbook.write();
-				workbook = newWorkbook;
-			}
-		} catch (IOException | WriteException e) {
-			logger.error("Create workbook error", e);
-		} finally {
-			if (newWorkbook != null) {
-				try {
-					newWorkbook.close();
-				} catch (IOException | WriteException e) {
-					logger.error("Create workbook error", e);
-				}
-			}
-		}
-	}
+            newWorkbook = Workbook.createWorkbook(new File(workbookName));
+
+            WritableSheet excelSheet = newWorkbook.createSheet(state.getName(), 0);
+            createColumnHeaders(excelSheet);
+            if (records!=null) {
+                saveRecordsToWorkbook(records, newWorkbook);
+            }
+            newWorkbook.write();
+        } catch (IOException | WriteException | BiffException e) {
+            logger.error("Create " + workbookName + "spreadsheet error", e);
+        } finally {
+            if (newWorkbook != null) {
+                try {
+                    newWorkbook.close();
+                } catch (IOException | WriteException e) {
+                    logger.error("Close " + workbookName + "spreadsheet error", e);
+                }
+            }
+        }
+    }
 
     public String getTempFileName() {
 	    String tempFileName = RecordIOUtil.getOUTPUT_DIR() + "temp_copy" + "_" + Calendar.getInstance().getTimeInMillis();
@@ -166,35 +161,6 @@ public class RecordOutputUtil {
 			logger.error("Error trying to remove column(s) from workbook", e);
 		}
 		return successful;
-	}
-
-	public void createSpreadsheetWithRecords(String workbookName, Set<Record> records, boolean backUpExisting) {
-		WritableWorkbook newWorkbook = null;
-		try {
-            //backup existing workbook first
-            if (new File(docPath).exists() && backUpExisting) {
-                createWorkbookCopy(docPath,
-                        docPath.substring(0, docPath.indexOf(EXT))+BACKUP_SUFFIX+EXT);
-//                workbook = copyWorkbook;
-                handleBackup(docPath, false);
-            }
-			newWorkbook = Workbook.createWorkbook(new File(workbookName));
-
-			WritableSheet excelSheet = newWorkbook.createSheet(state.getName(), 0);
-			createColumnHeaders(excelSheet);
-			saveRecordsToWorkbook(records, newWorkbook);
-			newWorkbook.write();
-		} catch (IOException | WriteException | BiffException e) {
-			logger.error("Create " + workbookName + "spreadsheet error", e);
-        } finally {
-			if (newWorkbook != null) {
-				try {
-					newWorkbook.close();
-				} catch (IOException | WriteException e) {
-					logger.error("Close " + workbookName + "spreadsheet error", e);
-				}
-			}
-		}
 	}
 
 	private void handleBackup(String docName, boolean deleteBackup) throws IOException, WriteException {

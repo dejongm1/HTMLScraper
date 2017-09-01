@@ -253,7 +253,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             spiderWeb.setUncrawledIds(ioUtil.getInputter().getUncrawledIds());
         	//load records in current spreadsheet into memory
             spiderWeb.setCrawledRecords(ioUtil.getInputter().readRecordsFromSheet(new File(ioUtil.getMainDocPath()),0));
-            ioUtil.getOutputter().createSpreadsheetWithRecords(ioUtil.getMainDocPath(), spiderWeb.getCrawledRecords(), true);
+            ioUtil.getOutputter().createWorkbook(ioUtil.getMainDocPath(), spiderWeb.getCrawledRecords(), true);
         } catch (ExcelOutputException | IDCheckException e) {
             throw e;
         }
@@ -372,7 +372,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
                     //create a separate sheet with filtered results
                     logger.info(filteredRecords.size()+" "+filter.filterName()+" "+"records were crawled");
                     if (!filteredRecords.isEmpty()) {
-                        recordIOUtil.getOutputter().createSpreadsheetWithRecords(recordIOUtil.getOutputter().getFilteredDocPath(filter), new HashSet<>(filteredRecords), false);
+                        recordIOUtil.getOutputter().createWorkbook(recordIOUtil.getOutputter().getFilteredDocPath(filter), new HashSet<>(filteredRecords), false);
                         recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getOutputter().getFilteredDocPath(filter), columnDelimiter, splitRecords, clazz);
                     }
                 } catch (Exception e) {
