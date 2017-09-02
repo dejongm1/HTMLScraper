@@ -29,7 +29,58 @@ public interface Record {
 
 	List<ArrestRecord.RecordColumnEnum> getColumnEnums();
 
-	WritableSheet addToExcelSheet(int rowNumber, WritableSheet sheet) throws IllegalAccessException;
+    static <T extends Comparable<? super T>> List<Record> getAsSortedList(Collection<Record> c, Comparator comparator) {
+        List<Record> list = new ArrayList<Record>(c);
+        if (comparator!=null) {
+            java.util.Collections.sort(list, comparator);
+        }
+        return list;
+    }
+
+	static void getValueFromColumn(Object column, Class<?> clazz, Object recordInstance, Sheet sheet, int rowNumber, int c) {
+		try {
+			String cellContents = sheet.getCell(c, rowNumber).getContents();
+			if (!column.equals("EXTRA_COLUMN") && !cellContents.equals("")) {
+				Method enumSetter = column.getClass().getMethod("getSetterName");
+				String setterName = (String) enumSetter.invoke(column);
+				Class<?> fieldType = (Class<?>) column.getClass().getMethod("getType").invoke(column);
+				Method fieldSetter = clazz.getMethod(setterName, fieldType);
+                if (fieldType.getSimpleName().equalsIgnoreCase(Date.class.getSimpleName())) {
+                    DateFormat formatter = new SimpleDateFormat("MMM-dd-yyyy");
+                    try {
+                        Date date = formatter.parse(cellContents);
+                        fieldSetter.invoke(recordInstance, fieldType.cast(date));
+                    } catch (ParseException e) {
+                        logger.error("Error parsing date string: "+cellContents);
+                        fieldSetter.invoke(recordInstance, fieldType.cast(null));
+                    }
+                } else if (fieldType.getSimpleName().equalsIgnoreCase(Calendar.class.getSimpleName())) {
+					DateFormat formatter = new SimpleDateFormat("MMM-dd-yyyy hh:mm a");
+					Calendar calendar = Calendar.getInstance();
+					try {
+						calendar.setTime(formatter.parse(cellContents));
+						fieldSetter.invoke(recordInstance, fieldType.cast(calendar));
+					} catch (ParseException e) {
+						logger.error("Error parsing date string: "+cellContents);
+						fieldSetter.invoke(recordInstance, fieldType.cast(null));
+					}
+				} else if (fieldType.getSimpleName().equalsIgnoreCase(long.class.getSimpleName())) {
+					fieldSetter.invoke(recordInstance, Long.parseLong(cellContents));
+				} else if (fieldType.getSimpleName().equalsIgnoreCase(int.class.getSimpleName())) {
+					fieldSetter.invoke(recordInstance, Integer.parseInt(cellContents));
+				} else if (fieldType.getSimpleName().equalsIgnoreCase(String[].class.getSimpleName())) {
+					String[] charges = cellContents.split("; ");
+					fieldSetter.invoke(recordInstance, fieldType.cast(charges));
+				} else {
+					fieldSetter.invoke(recordInstance, fieldType.cast(cellContents));
+				}
+			}
+		} catch (InvocationTargetException | IllegalAccessException | IllegalArgumentException | SecurityException e) {
+			logger.error("Error trying to read cell into record object, column " + c + " row " + rowNumber, e);
+		} catch (Exception e) {
+			logger.error("Some uhandled exception was caught while trying to parse record at column " + c + " row " + rowNumber, e);
+		}
+	}
 
 	Record merge(Record record);
 
@@ -78,41 +129,7 @@ public interface Record {
 		return (Record) recordInstance;
 	}
 
-	static void getValueFromColumn(Object column, Class<?> clazz, Object recordInstance, Sheet sheet, int rowNumber, int c) {
-		try {
-			String cellContents = sheet.getCell(c, rowNumber).getContents();
-			if (!column.equals("EXTRA_COLUMN") && !cellContents.equals("")) {
-				Method enumSetter = column.getClass().getMethod("getSetterName");
-				String setterName = (String) enumSetter.invoke(column);
-				Class<?> fieldType = (Class<?>) column.getClass().getMethod("getType").invoke(column);
-				Method fieldSetter = clazz.getMethod(setterName, fieldType);
-				if (fieldType.getSimpleName().equalsIgnoreCase(Calendar.class.getSimpleName())) {
-					DateFormat formatter = new SimpleDateFormat("MMM-dd-yyyy hh:mm a");
-					Calendar calendar = Calendar.getInstance();
-					try {
-						calendar.setTime(formatter.parse(cellContents));
-						fieldSetter.invoke(recordInstance, fieldType.cast(calendar));
-					} catch (ParseException e) {
-						logger.error("Error parsing date string: "+cellContents);
-						fieldSetter.invoke(recordInstance, fieldType.cast(null));
-					}
-				} else if (fieldType.getSimpleName().equalsIgnoreCase(long.class.getSimpleName())) {
-					fieldSetter.invoke(recordInstance, Long.parseLong(cellContents));
-				} else if (fieldType.getSimpleName().equalsIgnoreCase(int.class.getSimpleName())) {
-					fieldSetter.invoke(recordInstance, Integer.parseInt(cellContents));
-				} else if (fieldType.getSimpleName().equalsIgnoreCase(String[].class.getSimpleName())) {
-					String[] charges = cellContents.split("; ");
-					fieldSetter.invoke(recordInstance, fieldType.cast(charges));
-				} else {
-					fieldSetter.invoke(recordInstance, fieldType.cast(cellContents));
-				}
-			}
-		} catch (InvocationTargetException | IllegalAccessException | IllegalArgumentException | SecurityException e) {
-			logger.error("Error trying to read cell into record object, column " + c + " row " + rowNumber, e);
-		} catch (Exception e) {
-			logger.error("Some uhandled exception was caught while trying to parse record at column " + c + " row " + rowNumber, e);
-		}
-	}
+    WritableSheet addToExcelSheet(int rowNumber, WritableSheet sheet) throws IllegalAccessException;
 
 	static <T> List<Set<Record>> splitByField(List<Record> records, String fieldName, Class<T> clazz) {
 		List<Set<Record>> recordListList = new ArrayList<>();

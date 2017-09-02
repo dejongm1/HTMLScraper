@@ -1,37 +1,25 @@
 package com.mcd.spider.util.io;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.log4j.Logger;
-import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-
 import com.mcd.spider.entities.record.ArrestRecord;
 import com.mcd.spider.entities.record.Record;
 import com.mcd.spider.entities.record.State;
 import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
 import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
-
 import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
+import org.apache.log4j.Logger;
+import org.testng.Assert;
+import org.testng.annotations.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+
+import static com.mcd.spider.entities.record.ArrestRecord.ArrestDateComparator;
 
 public class RecordOutputUtilTest {
 
@@ -96,7 +84,7 @@ public class RecordOutputUtilTest {
         mainDocRenamed = new File(mainDoc.getPath() + "tempForTesting");
         mergedDoc = new File(outputter.getMergedDocPath());
         filteredDoc = new File(outputter.getFilteredDocPath(RecordFilterEnum.findFilter("alcohol")));
-        outputter.createWorkbook(mainDoc.getPath(), null, true);
+        outputter.createWorkbook(mainDoc.getPath(), null, true, null);
         testWorkbook = Workbook.createWorkbook(mainDoc);
         WritableSheet sheet = testWorkbook.createSheet(outputter.getState().getName(), 0);
         outputter.createColumnHeaders(sheet);
@@ -118,7 +106,7 @@ public class RecordOutputUtilTest {
 
     @Test
     public void testCreateWorkbook_MainDocExistsNullRecordsPassedIn() throws Exception {
-        outputter.createWorkbook(mainDoc.getPath(), null, true);
+        outputter.createWorkbook(mainDoc.getPath(), null, true, null);
         Assert.assertTrue(mainDoc.exists());
         Assert.assertTrue(backUpDoc.exists());
 
@@ -138,13 +126,12 @@ public class RecordOutputUtilTest {
     	recordSetList.add(recordSetOne);
     	recordSetList.add(recordSetTwo);
     	String[] sheetNames = new String[recordSetList.size()];
-    	int s = 0;
-    	for (Set<Record> recordSet : recordSetList) {
-    		sheetNames[s] = ((ArrestRecord)recordSet.toArray()[0]).getCounty();
-    		s++;
+        sheetNames[0] = ioUtil.getOutputter().getState().getName();
+        for (int mrs=1;mrs<sheetNames.length;mrs++) {
+    		sheetNames[mrs] = ((ArrestRecord)recordSetList.get(mrs).toArray()[0]).getCounty();
     	}
     	
-        outputter.createWorkbook(mainDoc.getPath(), recordSetList, true, sheetNames);
+        outputter.createWorkbook(mainDoc.getPath(), recordSetList, true, sheetNames, null);
         Assert.assertTrue(mainDoc.exists());
 
         Workbook mainWorkbook = Workbook.getWorkbook(mainDoc);
@@ -153,8 +140,8 @@ public class RecordOutputUtilTest {
         Assert.assertEquals(mainWorkbook.getSheet(0).getRows(), recordSetList.get(0).size()+1); //+1 for header row
         Assert.assertEquals(mainWorkbook.getSheet(1).getRows(), recordSetList.get(1).size()+1); //+1 for header row
         Assert.assertEquals(mainWorkbook.getSheet(0).getName(), sheetNames[0]);
+        Assert.assertEquals(mainWorkbook.getSheet(0).getName(), ioUtil.getOutputter().getState().getName());
         Assert.assertEquals(mainWorkbook.getSheet(1).getName(), sheetNames[1]);
-        Assert.fail();//until the first sheet name gets State
     }
 
     @Test
@@ -164,7 +151,7 @@ public class RecordOutputUtilTest {
         ioUtil = new RecordIOUtil(State.getState("IA"), new ArrestRecord(), new ArrestsDotOrgSite(new String[]{"iowa"}), true);
         outputter = ioUtil.getOutputter();
 
-        outputter.createWorkbook(mainDoc.getPath(), null, true);
+        outputter.createWorkbook(mainDoc.getPath(), null, true, null);
         Workbook mainWorkbook = Workbook.getWorkbook(mainDoc);
 
         Assert.assertFalse(backUpDoc.exists());
@@ -183,7 +170,7 @@ public class RecordOutputUtilTest {
             record.setFullName("name" + r);
             mockedRecords.add(record);
         }
-        outputter.saveRecordsToWorkbook(mockedRecords, testWorkbook);
+        outputter.saveRecordsToWorkbook(mockedRecords, testWorkbook, ArrestDateComparator);
     	//check sizes(rows (minus header) vs list size) match
         Assert.assertEquals(mockedRecords.size(), testWorkbook.getSheet(0).getRows()-1);
     }
@@ -229,7 +216,7 @@ public class RecordOutputUtilTest {
     	Set<Record> records = new HashSet<>();
     	records.add(mockRecordOne);
     	records.add(mockRecordTwo);
-    	outputter.createWorkbook(filteredDoc.getPath(), records, false);
+    	outputter.createWorkbook(filteredDoc.getPath(), records, false, ArrestDateComparator);
     	Workbook filteredWorkbook = Workbook.getWorkbook(filteredDoc);
     	
     	//TODO future - confirm it creates a backup, if one already exists
@@ -245,7 +232,7 @@ public class RecordOutputUtilTest {
     	Set<Record> records = new HashSet<>();
     	records.add(mockRecordOne);
     	records.add(mockRecordTwo);
-    	outputter.createWorkbook(mergedDoc.getPath(), records, false);
+    	outputter.createWorkbook(mergedDoc.getPath(), records, false, ArrestDateComparator);
     	Workbook mergedWorkbook = Workbook.getWorkbook(mergedDoc);
     	
     	//TODO future - confirm it creates a backup, if one already exists

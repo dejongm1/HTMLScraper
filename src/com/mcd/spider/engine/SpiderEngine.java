@@ -17,6 +17,8 @@ import java.io.File;
 import java.util.List;
 import java.util.Set;
 
+import static com.mcd.spider.entities.record.ArrestRecord.ArrestDateComparator;
+
 /**
  * 
  * @author U569220
@@ -44,25 +46,16 @@ public class SpiderEngine {
 					RecordIOUtil comparingIOUtil = new RecordIOUtil(state, new ArrestRecord(), state.getEngines().get(e).getSite());
 					List<Set<Record>> mergedRecords = mainIOutil.mergeRecordsFromWorkbooks(new File(mainIOutil.getMainDocPath()), new File(comparingIOUtil.getMainDocPath()));
 					String[] sheetNames = new String[mergedRecords.size()];
-					//TODO fix sheetNames (first one should be state.getName())
-					for (int mrs=0;mrs<sheetNames.length;mrs++) {
+					sheetNames[0] = state.getName();
+					for (int mrs=1;mrs<sheetNames.length;mrs++) {
 						sheetNames[mrs] = ((ArrestRecord)mergedRecords.get(mrs).toArray()[0]).getCounty();
 					}
 					if (!mergedRecords.isEmpty()) {
-						mainIOutil.getOutputter().createWorkbook(mainIOutil.getOutputter().getMergedDocPath(), mergedRecords, false, sheetNames);
+						mainIOutil.getOutputter().createWorkbook(mainIOutil.getOutputter().getMergedDocPath(), mergedRecords, false, sheetNames, ArrestDateComparator);
 						logger.info("Merge Complete.");
 					} else {
 						logger.info("Nothing found to merge");
 					}
-					
-					//TODO convert to using mergeRecordsFromWorkbooks after test cases are written
-//					Set<Record> mergedRecords = mainIOutil.mergeRecordsFromSheets(new File(mainIOutil.getMainDocPath()), new File(comparingIOUtil.getMainDocPath()), 0, 0);
-//					if (!mergedRecords.isEmpty()) {
-//	                    mainIOutil.getOutputter().createWorkbook(mainIOutil.getOutputter().getMergedDocPath(), mergedRecords, false);
-//	            		logger.info("Merge Complete.");
-//					} else {
-//						logger.info("Nothing found to merge");
-//					}
 				}
 			} else {
 				throw new StateNotReadyException(state);

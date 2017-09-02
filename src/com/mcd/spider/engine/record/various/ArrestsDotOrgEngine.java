@@ -30,6 +30,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
 
+import static com.mcd.spider.entities.record.ArrestRecord.ArrestDateComparator;
+
 /**
  *
  * @author Michael De Jong
@@ -100,7 +102,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 	            if (e instanceof HttpStatusException && ((HttpStatusException) e).getStatusCode()==500) {
 	            	connectionUtil = new ConnectionUtil(true);
 	            }
-                spiderUtil.sleep(2000, true);
+                spiderUtil.sleep(3000, true);
 	            spiderWeb.increaseAttemptCount();
 	            scrapeSite();
 	        }
@@ -245,19 +247,65 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     }
 
     @Override
-    public RecordIOUtil initializeIOUtil(State state) throws SpiderException {
-    	RecordIOUtil ioUtil = new RecordIOUtil(state, new ArrestRecord(), site);
-        try {
-            //load previously written records IDs into memory
-        	spiderWeb.setCrawledIds(ioUtil.getInputter().getCrawledIds());
-            spiderWeb.setUncrawledIds(ioUtil.getInputter().getUncrawledIds());
-        	//load records in current spreadsheet into memory
-            spiderWeb.setCrawledRecords(ioUtil.getInputter().readRecordsFromSheet(new File(ioUtil.getMainDocPath()),0));
-            ioUtil.getOutputter().createWorkbook(ioUtil.getMainDocPath(), spiderWeb.getCrawledRecords(), true);
-        } catch (ExcelOutputException | IDCheckException e) {
-            throw e;
+    @SuppressWarnings("deprecation")
+    public void matchPropertyToField(ArrestRecord record, Object profileDetail) {
+    	Element profileDetailElement = (Element) profileDetail;
+        String label = profileDetailElement.select("b").text().toLowerCase();
+        Elements charges = profileDetailElement.select(".charges li");
+        if (!charges.isEmpty()) {
+            String[] chargeStrings = new String[charges.size()];
+            for (int c = 0; c < charges.size(); c++) {
+                chargeStrings[c] = charges.get(c).text();
+            }
+            record.setCharges(chargeStrings);
+        } else if (!label.equals("")) {
+            try {
+                if (label.contains("full name")) {
+                    formatName(record, profileDetailElement);
+                } else if (label.contains("birthdate")) { //needs to be first to avoid arrest date getting put here
+                    Date date = new Date(extractValue(profileDetailElement));
+                    record.setDob(date);
+                } else if (label.contains("date")) {
+                    Date date = new Date(extractValue(profileDetailElement));
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTime(date);
+                    record.setArrestDate(calendar);
+                } else if (label.contains("time")) {
+                    formatArrestTime(record, profileDetailElement);
+                } else if (label.contains("arrest age")) {
+                    record.setArrestAge(Integer.parseInt(extractValue(profileDetailElement)));
+                } else if (label.contains("gender")) {
+                    record.setGender(extractValue(profileDetailElement));
+                } else if (label.contains("city")) {
+                    String city = profileDetailElement.select("span[itemProp=\"addressLocality\"]").text();
+                    String state = profileDetailElement.select("span[itemprop=\"addressRegion\"]").text();
+                    record.setCity(city);
+                    record.setState(state);
+                } else if (label.contains("total bond")) {
+                    String bondAmount = extractValue(profileDetailElement);
+                    long totalBond = Integer.parseInt(bondAmount.replace("$", ""));
+                    record.setTotalBond(totalBond);
+                } else if (label.contains("height")) {
+                    record.setHeight(extractValue(profileDetailElement));
+                } else if (label.contains("weight")) {
+                    record.setWeight(extractValue(profileDetailElement));
+                } else if (label.contains("hair color")) {
+                    record.setHairColor(extractValue(profileDetailElement));
+                } else if (label.contains("eye color")) {
+                    record.setEyeColor(extractValue(profileDetailElement));
+                } else if (label.contains("birth")) {
+                    record.setBirthPlace(extractValue(profileDetailElement));
+                }
+            } catch (NumberFormatException nfe) {
+                logger.error("Couldn't parse a numeric value from " + profileDetailElement.text());
+            }
+        //trying it twice as the data seems inconsistent for county
+        } else if (profileDetailElement.select("h3").hasText()) {
+            record.setCounty(profileDetailElement.select("h3").text().replaceAll("(?i)county", "").trim());
+        } else if (profileDetailElement.hasAttr("src") && profileDetailElement.attr("src").contains("/mugs")) {
+        	String srcPath = profileDetailElement.attr("src").replaceAll("/mugs/", "");
+            record.setCounty(srcPath.substring(0, srcPath.indexOf('/')));
         }
-        return ioUtil;
     }
 
     @Override
@@ -357,37 +405,19 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     }
 
     @Override
-    public void finalizeOutput(List<Record> arrestRecords) {
-        //format the output
-        if (!arrestRecords.isEmpty()) {
-            logger.info("Starting to finalize the result output");
-            Collections.sort(arrestRecords, ArrestRecord.CountyComparator);
-            String columnDelimiter = RecordColumnEnum.COUNTY_COLUMN.getFieldName();
-            Class<ArrestRecord> clazz = ArrestRecord.class;
-            if (filter!=null && filter!=RecordFilterEnum.NONE) {
-                try {
-                    logger.info("Outputting filtered results");
-                    List<Record> filteredRecords = filterRecords(arrestRecords);
-                    List<Set<Record>> splitRecords = Record.splitByField(filteredRecords, columnDelimiter, clazz);
-                    //create a separate sheet with filtered results
-                    logger.info(filteredRecords.size()+" "+filter.filterName()+" "+"records were crawled");
-                    if (!filteredRecords.isEmpty()) {
-                        recordIOUtil.getOutputter().createWorkbook(recordIOUtil.getOutputter().getFilteredDocPath(filter), new HashSet<>(filteredRecords), false);
-                        recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getOutputter().getFilteredDocPath(filter), columnDelimiter, splitRecords, clazz);
-                    }
-                } catch (Exception e) {
-                    logger.error("Error trying to create filtered spreadsheet", e);
-                }
-            }
-            try {
-                List<Set<Record>> splitRecords = Record.splitByField(arrestRecords, columnDelimiter, clazz);
-                recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getMainDocPath(), columnDelimiter, splitRecords, clazz);
-            } catch (Exception e) {
-                logger.error("Error trying to split full list of records", e);
-            }
-        } else {
-            logger.info("There were no records to output!!");
+    public RecordIOUtil initializeIOUtil(State state) throws SpiderException {
+    	RecordIOUtil ioUtil = new RecordIOUtil(state, new ArrestRecord(), site);
+        try {
+            //load previously written records IDs into memory
+        	spiderWeb.setCrawledIds(ioUtil.getInputter().getCrawledIds());
+            spiderWeb.setUncrawledIds(ioUtil.getInputter().getUncrawledIds());
+        	//load records in current spreadsheet into memory
+            spiderWeb.setCrawledRecords(ioUtil.getInputter().readRecordsFromSheet(new File(ioUtil.getMainDocPath()),0));
+            ioUtil.getOutputter().createWorkbook(ioUtil.getMainDocPath(), spiderWeb.getCrawledRecords(), true, ArrestDateComparator);
+        } catch (ExcelOutputException | IDCheckException e) {
+            throw e;
         }
+        return ioUtil;
     }
 
     public Map<Object,String> compileRecordDetailUrlMap(Document mainPageDoc, Map<Integer,Document> resultsDocPlusMiscMap) {
@@ -441,61 +471,36 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     }
     
     @Override
-    @SuppressWarnings("deprecation")
-    public void matchPropertyToField(ArrestRecord record, Object profileDetail) {
-    	Element profileDetailElement = (Element) profileDetail;
-        String label = profileDetailElement.select("b").text().toLowerCase();
-        Elements charges = profileDetailElement.select(".charges li");
-        if (!charges.isEmpty()) {
-            String[] chargeStrings = new String[charges.size()];
-            for (int c = 0; c < charges.size(); c++) {
-                chargeStrings[c] = charges.get(c).text();
-            }
-            record.setCharges(chargeStrings);
-        } else if (!label.equals("")) {
-            try {
-                if (label.contains("full name")) {
-                    formatName(record, profileDetailElement);
-                } else if (label.contains("date")) {
-                    Date date = new Date(extractValue(profileDetailElement));
-                    Calendar calendar = Calendar.getInstance();
-                    calendar.setTime(date);
-                    record.setArrestDate(calendar);
-                } else if (label.contains("time")) {
-                    formatArrestTime(record, profileDetailElement);
-                } else if (label.contains("arrest age")) {
-                    record.setArrestAge(Integer.parseInt(extractValue(profileDetailElement)));
-                } else if (label.contains("gender")) {
-                    record.setGender(extractValue(profileDetailElement));
-                } else if (label.contains("city")) {
-                    String city = profileDetailElement.select("span[itemProp=\"addressLocality\"]").text();
-                    String state = profileDetailElement.select("span[itemprop=\"addressRegion\"]").text();
-                    record.setCity(city);
-                    record.setState(state);
-                } else if (label.contains("total bond")) {
-                    String bondAmount = extractValue(profileDetailElement);
-                    long totalBond = Integer.parseInt(bondAmount.replace("$", ""));
-                    record.setTotalBond(totalBond);
-                } else if (label.contains("height")) {
-                    record.setHeight(extractValue(profileDetailElement));
-                } else if (label.contains("weight")) {
-                    record.setWeight(extractValue(profileDetailElement));
-                } else if (label.contains("hair color")) {
-                    record.setHairColor(extractValue(profileDetailElement));
-                } else if (label.contains("eye color")) {
-                    record.setEyeColor(extractValue(profileDetailElement));
-                } else if (label.contains("birth")) {
-                    record.setBirthPlace(extractValue(profileDetailElement));
+    public void finalizeOutput(List<Record> arrestRecords) {
+        //format the output
+        if (!arrestRecords.isEmpty()) {
+            logger.info("Starting to finalize the result output");
+            Collections.sort(arrestRecords, ArrestRecord.CountyComparator);
+            String columnDelimiter = RecordColumnEnum.COUNTY_COLUMN.getFieldName();
+            Class<ArrestRecord> clazz = ArrestRecord.class;
+            if (filter!=null && filter!=RecordFilterEnum.NONE) {
+                try {
+                    logger.info("Outputting filtered results");
+                    List<Record> filteredRecords = filterRecords(arrestRecords);
+                    List<Set<Record>> splitRecords = Record.splitByField(filteredRecords, columnDelimiter, clazz);
+                    //create a separate sheet with filtered results
+                    logger.info(filteredRecords.size()+" "+filter.filterName()+" "+"records were crawled");
+                    if (!filteredRecords.isEmpty()) {
+                        recordIOUtil.getOutputter().createWorkbook(recordIOUtil.getOutputter().getFilteredDocPath(filter), new HashSet<>(filteredRecords), false, ArrestDateComparator);
+                        recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getOutputter().getFilteredDocPath(filter), columnDelimiter, splitRecords, clazz);
+                    }
+                } catch (Exception e) {
+                    logger.error("Error trying to create filtered spreadsheet", e);
                 }
-            } catch (NumberFormatException nfe) {
-                logger.error("Couldn't parse a numeric value from " + profileDetailElement.text());
             }
-        //trying it twice as the data seems inconsistent for county
-        } else if (profileDetailElement.select("h3").hasText()) {
-            record.setCounty(profileDetailElement.select("h3").text().replaceAll("(?i)county", "").trim());
-        } else if (profileDetailElement.hasAttr("src") && profileDetailElement.attr("src").contains("/mugs")) {
-        	String srcPath = profileDetailElement.attr("src").replaceAll("/mugs/", "");
-            record.setCounty(srcPath.substring(0, srcPath.indexOf('/')));
+            try {
+                List<Set<Record>> splitRecords = Record.splitByField(arrestRecords, columnDelimiter, clazz);
+                recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getMainDocPath(), columnDelimiter, splitRecords, clazz);
+            } catch (Exception e) {
+                logger.error("Error trying to split full list of records", e);
+            }
+        } else {
+            logger.info("There were no records to output!!");
         }
     }
     

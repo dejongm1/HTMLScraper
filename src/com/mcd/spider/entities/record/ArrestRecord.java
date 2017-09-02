@@ -13,6 +13,17 @@ import java.util.*;
 
 public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 
+    public static Comparator<Record> ArrestDateComparator = new Comparator<Record>() {
+        @Override
+        public int compare(Record record1, Record record2) {
+            Calendar recordDate1 = ((ArrestRecord) record1).getArrestDate()!=null?((ArrestRecord) record1).getArrestDate():Calendar.getInstance();
+            Calendar recordDate2 = ((ArrestRecord) record2).getArrestDate()!=null?((ArrestRecord) record2).getArrestDate():Calendar.getInstance();
+            //ascending order
+            int result = recordDate1.compareTo(recordDate2);
+            return result;
+        }
+    };
+
 	public static final Logger logger = Logger.getLogger(ArrestRecord.class);
 	public static final String MERGE_SEPARATOR = "---";
 
@@ -21,7 +32,8 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 	private String fullName;			
 	private String firstName;			
 	private String middleName;			
-	private String lastName;			
+	private String lastName;
+	private Date dob;
 	private Calendar arrestDate;		
 	private Long totalBond;				
 	private Integer arrestAge;				
@@ -54,6 +66,7 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
     public List<RecordColumnEnum> getColumnEnums() {
         return Arrays.asList(RecordColumnEnum.values());
     }
+
 	public String getFullName() {
 		return fullName;
 	}
@@ -78,6 +91,12 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
 	}
+    public Date getDob() {
+        return dob;
+    }
+    public void setDob(Date dob) {
+        this.dob = dob;
+    }
 	public Calendar getArrestDate() {
 		return arrestDate;
 	}
@@ -194,79 +213,47 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 	    return CaseFormat.UPPER_UNDERSCORE;
     }
 
-	public enum RecordColumnEnum {
-		//the column titles should match the fields names (camel case, spaces removed)
-		ID_COLUMN(0, "ID", String.class),
-		FULLNAME_COLUMN(1, "Full Name", String.class),
-		FIRSTNAME_COLUMN(2, "First Name", String.class),
-		MIDDLENAME_COLUMN(3, "Middle Name", String.class),
-		LASTNAME_COLUMN(4, "Last Name", String.class),
-		ARRESTDATE_COLUMN(5, "Arrest Date", Calendar.class),
-		TOTALBOND_COLUMN(6, "Total Bond", long.class),
-		ARRESTAGE_COLUMN(7, "Arrest Age", int.class),
-		GENDER_COLUMN(8, "Gender", String.class),
-		CITY_COLUMN(9, "City", String.class),
-		STATE_COLUMN(10, "State", String.class),
-		COUNTY_COLUMN(11, "County", String.class),
-		HEIGHT_COLUMN(12, "Height", String.class),
-		WEIGHT_COLUMN(13, "Weight", String.class),
-		HAIRCOLOR_COLUMN(14, "Hair Color", String.class),
-		EYECOLOR_COLUMN(15, "Eye Color", String.class),
-		BIRTHPLACE_COLUMN(16, "Birth Place", String.class),
-		CHARGES_COLUMN(17, "Charges", String[].class),
-		OFFENDERID_COLUMN(18, "Offender ID", String.class),
-		RACE_COLUMN(19, "Race", String.class);
-
-		private int columnIndex;
-		private String columnTitle;
-		private Field field;
-		private String fieldName;
-		private String getterName;
-		private String setterName;
-		private Class type;
-
-		RecordColumnEnum(int columnIndex, String columnTitle, Class type) {
-			this.columnIndex = columnIndex;
-            this.fieldName = CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, columnTitle.toUpperCase().replace(" ", "_"));
-            this.columnTitle = CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, fieldName);
-			try {
-                this.field = this.getDeclaringClass().getEnclosingClass().getDeclaredField(fieldName);
-            } catch (NoSuchFieldException  e) {
-                logger.error("Error tying field to enum: "+fieldName);
-            }
-            this.getterName = "get" + CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, columnTitle.replace(" ", "_"));
-			this.setterName = "set" + CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, columnTitle.replace(" ", "_"));
-			this.type = type;
-		}
-
-		public int getColumnIndex() {
-			return columnIndex;
-		}
-		public String getColumnTitle() {
-			return columnTitle;
-		}
-        public Field getField() {
-            return field;
-        }
-        public String getFieldName() {
-            return fieldName;
-        }
-		public String getGetterName() {
-			return getterName;
-		}
-		public String getSetterName() {
-			return setterName;
-		}
-		public Class getType() { return type; }
-	}
-
 	@Override
 	public int compareTo(ArrestRecord record) {
 		Calendar arrestDateToCompare = record.getArrestDate();
 		//ascending order
 		return this.arrestDate.compareTo(arrestDateToCompare);
 	}
-	
+
+	@Override
+	public WritableSheet addToExcelSheet(int rowNumber, WritableSheet sheet) throws IllegalAccessException {
+		int columnNumber = 0;
+		for (Field field : getFieldsToOutput()) {
+			Object fieldValue = field.get(this);
+			StringBuilder fieldValueString = new StringBuilder();
+				if (fieldValue instanceof String) {
+					fieldValueString.append((String) field.get(this));
+				} else if (fieldValue instanceof String[]) {
+					for (String stringItem : (String[]) field.get(this)) {
+						fieldValueString.append(stringItem + "; " );
+						//fieldValueString.append(stringItem + "\n" );
+					}
+				} else if (fieldValue instanceof Date) {
+                    SimpleDateFormat formatter=new SimpleDateFormat("MMM-dd-yyyy");
+                    fieldValueString.append(formatter.format(((Date)field.get(this)).getTime()));
+                } else if (fieldValue instanceof Calendar) {
+                    SimpleDateFormat formatter=new SimpleDateFormat("MMM-dd-yyyy hh:mm a");
+                    fieldValueString.append(formatter.format(((Calendar)field.get(this)).getTime()));
+                } else if (fieldValue instanceof Integer || fieldValue instanceof Long) {
+					fieldValueString.append(String.valueOf(field.get(this)));
+				}
+				try {
+					Label label = new Label(columnNumber, rowNumber, fieldValueString.toString());
+					sheet.addCell(label);
+
+				} catch (WriteException | NullPointerException e) {
+					logger.error("Trouble writing info from " + this.getFullName() + " into row " + rowNumber + ", column " + columnNumber, e);
+				}
+				columnNumber++;
+		}
+		return sheet;
+	}
+
 	public static Comparator<Record> CountyComparator = new Comparator<Record>() {
 		@Override
 		public int compare(Record record1, Record record2) {
@@ -288,36 +275,72 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 		}
 	};
 	
-	@Override
-	public WritableSheet addToExcelSheet(int rowNumber, WritableSheet sheet) throws IllegalAccessException {
-		int columnNumber = 0;
-		for (Field field : getFieldsToOutput()) {
-			Object fieldValue = field.get(this);
-			StringBuilder fieldValueString = new StringBuilder();
-				if (fieldValue instanceof String) {
-					fieldValueString.append((String) field.get(this));
-				} else if (fieldValue instanceof String[]) {
-					for (String stringItem : (String[]) field.get(this)) {
-						fieldValueString.append(stringItem + "; " );
-						//fieldValueString.append(stringItem + "\n" );
-					}
-				} else if (fieldValue instanceof Calendar) {
-					SimpleDateFormat formatter=new SimpleDateFormat("MMM-dd-yyyy hh:mm a"); 
-					fieldValueString.append(formatter.format(((Calendar)field.get(this)).getTime()));
-				} else if (fieldValue instanceof Integer || fieldValue instanceof Long) {
-					fieldValueString.append(String.valueOf(field.get(this)));
-				}
-				try {
-					Label label = new Label(columnNumber, rowNumber, fieldValueString.toString());
-					sheet.addCell(label);
+    public enum RecordColumnEnum {
+        //the column titles should match the fields names (camel case, spaces removed)
+        ID_COLUMN(0, "ID", String.class),
+        FULLNAME_COLUMN(1, "Full Name", String.class),
+        FIRSTNAME_COLUMN(2, "First Name", String.class),
+        MIDDLENAME_COLUMN(3, "Middle Name", String.class),
+        LASTNAME_COLUMN(4, "Last Name", String.class),
+        DOB_COLUMN(5, "DOB", Date.class),
+        ARRESTDATE_COLUMN(6, "Arrest Date", Calendar.class),
+        TOTALBOND_COLUMN(7, "Total Bond", long.class),
+        ARRESTAGE_COLUMN(8, "Arrest Age", int.class),
+        GENDER_COLUMN(9, "Gender", String.class),
+        CITY_COLUMN(10, "City", String.class),
+        STATE_COLUMN(11, "State", String.class),
+        COUNTY_COLUMN(12, "County", String.class),
+        HEIGHT_COLUMN(13, "Height", String.class),
+        WEIGHT_COLUMN(14, "Weight", String.class),
+        HAIRCOLOR_COLUMN(15, "Hair Color", String.class),
+        EYECOLOR_COLUMN(16, "Eye Color", String.class),
+        BIRTHPLACE_COLUMN(17, "Birth Place", String.class),
+        CHARGES_COLUMN(18, "Charges", String[].class),
+        OFFENDERID_COLUMN(19, "Offender ID", String.class),
+        RACE_COLUMN(20, "Race", String.class);
 
-				} catch (WriteException | NullPointerException e) {
-					logger.error("Trouble writing info from " + this.getFullName() + " into row " + rowNumber + ", column " + columnNumber, e);
-				}
-				columnNumber++;
-		}
-		return sheet;
-	}
+        private int columnIndex;
+        private String columnTitle;
+        private Field field;
+        private String fieldName;
+        private String getterName;
+        private String setterName;
+        private Class type;
+
+        RecordColumnEnum(int columnIndex, String columnTitle, Class type) {
+            this.columnIndex = columnIndex;
+            this.fieldName = CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, columnTitle.toUpperCase().replace(" ", "_"));
+            this.columnTitle = CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, fieldName);
+            try {
+                this.field = this.getDeclaringClass().getEnclosingClass().getDeclaredField(fieldName);
+            } catch (NoSuchFieldException  e) {
+                logger.error("Error tying field to enum: "+fieldName);
+            }
+            this.getterName = "get" + CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, columnTitle.replace(" ", "_"));
+            this.setterName = "set" + CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, columnTitle.replace(" ", "_"));
+            this.type = type;
+        }
+
+        public int getColumnIndex() {
+            return columnIndex;
+        }
+        public String getColumnTitle() {
+            return columnTitle;
+        }
+        public Field getField() {
+            return field;
+        }
+        public String getFieldName() {
+            return fieldName;
+        }
+        public String getGetterName() {
+            return getterName;
+        }
+        public String getSetterName() {
+            return setterName;
+        }
+        public Class getType() { return type; }
+    }
 
 	@Override
 	public Record merge(Record record) {

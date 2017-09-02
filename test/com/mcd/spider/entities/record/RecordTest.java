@@ -1,27 +1,20 @@
 package com.mcd.spider.entities.record;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-
+import com.mcd.spider.entities.record.ArrestRecord.RecordColumnEnum;
+import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
+import com.mcd.spider.util.io.RecordIOUtil;
+import jxl.Sheet;
+import jxl.Workbook;
+import jxl.read.biff.BiffException;
 import org.apache.log4j.Logger;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import com.mcd.spider.entities.record.ArrestRecord.RecordColumnEnum;
-import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
-import com.mcd.spider.util.io.RecordIOUtil;
-
-import jxl.Sheet;
-import jxl.Workbook;
-import jxl.read.biff.BiffException;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 
 /**
  *
@@ -210,7 +203,19 @@ public class RecordTest {
 		Assert.assertEquals(record4.getEyeColor(), null);
 	}
 
-	@Test
+    @Test
+    public void testGetAsSortedList() {
+
+        Assert.fail(); //need to test sorting
+    }
+
+    @Test
+    public void testGetAsSortedList_NoComparator() {
+
+	    Assert.fail(); //need to test sorting
+    }
+
+    @Test
 	public void splitByField_ArrestRecordsByCounty() throws InterruptedException {
 		List<Record> records = new ArrayList<>(ioUtil.getInputter().readRecordsFromSheet(testReadInputFile, "readRecordsIn"));
         Collections.sort(records, ArrestRecord.CountyComparator);

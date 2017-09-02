@@ -1,10 +1,12 @@
 package com.mcd.spider.entities.record;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Calendar;
-import java.util.Date;
-
+import com.google.common.io.Files;
+import jxl.Cell;
+import jxl.Sheet;
+import jxl.Workbook;
+import jxl.read.biff.BiffException;
+import jxl.write.WritableSheet;
+import jxl.write.WritableWorkbook;
 import org.apache.log4j.Logger;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -12,14 +14,10 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
-import com.google.common.io.Files;
-
-import jxl.Cell;
-import jxl.Sheet;
-import jxl.Workbook;
-import jxl.read.biff.BiffException;
-import jxl.write.WritableSheet;
-import jxl.write.WritableWorkbook;
+import java.io.File;
+import java.io.IOException;
+import java.util.Calendar;
+import java.util.Date;
 
 /**
  *
@@ -156,21 +154,22 @@ public class ArrestRecordTest {
 		String outputfirstname = row[2].getContents().equals("")?null:row[2].getContents();
 		String outputmiddlename = row[3].getContents().equals("")?null:row[3].getContents();
 		String outputlastname = row[4].getContents().equals("")?null:row[4].getContents();
-		Calendar outputarrestdate = row[5].getContents().equals("")?null:convertStringToCalendar(row[5].getContents());
-		Long outputtotalbond = row[6].getContents().equals("")?null:Long.valueOf(row[6].getContents());
-		Integer outputarrestage = row[7].getContents().equals("")?null:Integer.valueOf(row[7].getContents());
-		String outputgender = row[8].getContents().equals("")?null:row[8].getContents();
-		String outputcity = row[9].getContents().equals("")?null:row[9].getContents();
-		String outputstate = row[10].getContents().equals("")?null:row[10].getContents();
-		String outputcounty = row[11].getContents().equals("")?null:row[11].getContents();
-		String outputheight = row[12].getContents().equals("")?null:row[12].getContents();
-		String outputweight = row[13].getContents().equals("")?null:row[13].getContents();
-		String outputhaircolor = row[14].getContents().equals("")?null:row[14].getContents();
-		String outputeyecolor = row[15].getContents().equals("")?null:row[15].getContents();
-		String outputbirthplace = row[16].getContents().equals("")?null:row[16].getContents();
-		String outputcharges = row[17].getContents().equals("")?null:row[17].getContents().replace("; ", "");
-		String outputoffenderid = row[18].getContents().equals("")?null:row[18].getContents();
-		String outputrace = row[19].getContents().equals("")?null:row[19].getContents();
+        Date outputdob = row[5].getContents().equals("")?null:new Date(row[5].getContents());
+		Calendar outputarrestdate = row[6].getContents().equals("")?null:convertStringToCalendar(row[6].getContents());
+		Long outputtotalbond = row[7].getContents().equals("")?null:Long.valueOf(row[7].getContents());
+		Integer outputarrestage = row[8].getContents().equals("")?null:Integer.valueOf(row[8].getContents());
+		String outputgender = row[9].getContents().equals("")?null:row[9].getContents();
+		String outputcity = row[10].getContents().equals("")?null:row[10].getContents();
+		String outputstate = row[11].getContents().equals("")?null:row[11].getContents();
+		String outputcounty = row[12].getContents().equals("")?null:row[12].getContents();
+		String outputheight = row[13].getContents().equals("")?null:row[13].getContents();
+		String outputweight = row[14].getContents().equals("")?null:row[14].getContents();
+		String outputhaircolor = row[15].getContents().equals("")?null:row[15].getContents();
+		String outputeyecolor = row[16].getContents().equals("")?null:row[16].getContents();
+		String outputbirthplace = row[17].getContents().equals("")?null:row[17].getContents();
+		String outputcharges = row[18].getContents().equals("")?null:row[18].getContents().replace("; ", "");
+		String outputoffenderid = row[19].getContents().equals("")?null:row[19].getContents();
+		String outputrace = row[20].getContents().equals("")?null:row[20].getContents();
 		
 		//need to check each field?
 		Assert.assertEquals(outputid, mockRecordOne.getId());
@@ -178,6 +177,7 @@ public class ArrestRecordTest {
 		Assert.assertEquals(outputfirstname, mockRecordOne.getFirstName());
 		Assert.assertEquals(outputmiddlename, mockRecordOne.getMiddleName());
 		Assert.assertEquals(outputlastname, mockRecordOne.getLastName());
+        Assert.assertEquals(outputdob, mockRecordOne.getDob());
 		Assert.assertEquals(outputarrestdate, mockRecordOne.getArrestDate());
 		Assert.assertEquals(outputarrestdate.get(Calendar.MONTH), mockRecordOne.getArrestDate().get(Calendar.MONTH));
 		Assert.assertEquals(outputarrestdate.get(Calendar.DAY_OF_MONTH), mockRecordOne.getArrestDate().get(Calendar.DAY_OF_MONTH));

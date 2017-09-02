@@ -1,24 +1,22 @@
 package com.mcd.spider.util.io;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import java.util.Set;
-
+import com.mcd.spider.entities.record.ArrestRecord;
+import com.mcd.spider.entities.record.Record;
+import com.mcd.spider.entities.record.State;
+import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
+import jxl.Sheet;
+import jxl.Workbook;
+import jxl.read.biff.BiffException;
 import org.apache.log4j.Logger;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import com.mcd.spider.entities.record.ArrestRecord;
-import com.mcd.spider.entities.record.Record;
-import com.mcd.spider.entities.record.State;
-import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
-
-import jxl.Sheet;
-import jxl.Workbook;
-import jxl.read.biff.BiffException;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -76,7 +74,7 @@ public class RecordInputUtilTest {
 		Assert.assertEquals(recordsSetList.get(inputter.getSheetIndex(testReadInputFile, "emptyRows")).size(), inputter.getNonEmptyRowCount(readSheet3)-1); //compare sheet (minus header) to respective set
 		//first 4 sheet are empty
 		for (int s=0;s<4;s++) {
-			Assert.assertEquals(recordsSetList.get(s).size(), workbook.getSheet(s).getRows());
+			Assert.assertEquals(recordsSetList.get(s).size(), inputter.getNonEmptyRowCount(workbook.getSheet(s)));
 		}
 		Assert.assertEquals(recordsSetList.size(), workbook.getNumberOfSheets());
 	}
@@ -103,10 +101,9 @@ public class RecordInputUtilTest {
 	public void testGetNonEmptyRowCount() {
 		Sheet testSheet = null;
 		if (workbook!=null) {
-			testSheet = workbook.getSheet("readRecordsIn");
+			testSheet = workbook.getSheet("emptyRows");
         }
 		Assert.assertEquals(inputter.getNonEmptyRowCount(testSheet), 4);
-		Assert.assertEquals(testSheet.getRows(), 16);
 	}
 
 }

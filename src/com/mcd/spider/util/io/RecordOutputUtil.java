@@ -1,5 +1,17 @@
 package com.mcd.spider.util.io;
 
+import com.google.common.base.CaseFormat;
+import com.mcd.spider.entities.record.Record;
+import com.mcd.spider.entities.record.State;
+import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
+import jxl.Workbook;
+import jxl.read.biff.BiffException;
+import jxl.write.Label;
+import jxl.write.WritableSheet;
+import jxl.write.WritableWorkbook;
+import jxl.write.WriteException;
+import org.apache.log4j.Logger;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -7,28 +19,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.log4j.Logger;
-
-import com.google.common.base.CaseFormat;
-import com.mcd.spider.entities.record.Record;
-import com.mcd.spider.entities.record.State;
-import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
-
-import jxl.Workbook;
-import jxl.read.biff.BiffException;
-import jxl.write.Label;
-import jxl.write.WritableSheet;
-import jxl.write.WritableWorkbook;
-import jxl.write.WriteException;
+import java.util.*;
 
 /**
  * 
@@ -71,13 +62,13 @@ public class RecordOutputUtil {
         return BACKUP_SUFFIX;
     }
 
-    public void createWorkbook(String workbookName, Set<Record> recordSet, boolean backUpExisting) {
+    public void createWorkbook(String workbookName, Set<Record> recordSet, boolean backUpExisting, Comparator comparator) {
         List<Set<Record>> recordSetList = new ArrayList<>();
         recordSetList.add(recordSet==null?new HashSet<>():recordSet);
-        createWorkbook(workbookName, recordSetList, backUpExisting, new String[]{state.getName()});
+        createWorkbook(workbookName, recordSetList, backUpExisting, new String[]{state.getName()}, comparator);
     }
     
-    public void createWorkbook(String workbookName, List<Set<Record>> recordSetList, boolean backUpExisting, String[] sheetNames) {
+    public void createWorkbook(String workbookName, List<Set<Record>> recordSetList, boolean backUpExisting, String[] sheetNames, Comparator comparator) {
         WritableWorkbook newWorkbook = null;
         try {
             //backup existing workbook first
@@ -95,7 +86,7 @@ public class RecordOutputUtil {
 	            createColumnHeaders(excelSheet);
             }
             if (!recordSetList.isEmpty() && !recordSetList.get(0).isEmpty()) {
-                saveRecordsToWorkbook(recordSetList, newWorkbook);
+                saveRecordsToWorkbook(recordSetList, newWorkbook, comparator);
             }
             newWorkbook.write();
         } catch (IOException | WriteException | BiffException e) {
@@ -135,21 +126,40 @@ public class RecordOutputUtil {
 		return docPath.substring(0, docPath.lastIndexOf('_')) + "_" + "MERGED" + EXT;
 	}
 
-	public void saveRecordsToWorkbook(Set<Record> records, WritableWorkbook workbook) {
-		List<Set<Record>> recordSetList = new ArrayList<>();
-		recordSetList.add(records);
-		saveRecordsToWorkbook(recordSetList, workbook);
+	private void handleBackup(String docName, boolean deleteBackup) throws IOException, WriteException {
+		copyWorkbook.write();
+		copyWorkbook.close();
+		currentWorkbook.close();
+
+		if (deleteBackup) {
+			if (!oldBook.delete()) {
+				// making sure we don't lose data or override good data
+                logger.error("Can't save record to current workbook, is it open? You have 10 seconds to close it or I'm starting a new workbook to finish processing");
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException e) {
+                    logger.error("Tried to sleep but I couldn't");
+                }
+                if (!oldBook.delete()) {
+                    this.docPath = docName.substring(0, docName.indexOf(EXT))+"_"+System.currentTimeMillis()+EXT;
+                    ioutil.setMainDocPath(this.docPath);
+                }
+			}
+			newBook.renameTo(new File(docName));
+		}
 	}
 
-	public void saveRecordsToWorkbook(List<Set<Record>> recordSetList, WritableWorkbook workbook) {
+	public void saveRecordsToWorkbook(List<Set<Record>> recordSetList, WritableWorkbook workbook, Comparator comparator) {
 		try {
 			logger.info("Beginning to add " + recordSetList.size() + " sheets to workbook");
 			int rs = 0;
 			for (Set<Record> recordSet : recordSetList) {
+                logger.info("Sorting records before trying to save");
+                List<Record> sortedList = Record.getAsSortedList(recordSet, comparator);
 				int rowNumber = 1;
 				WritableSheet sheet = workbook.getSheet(rs);
 				logger.info(recordSet.size() + " records in sheet " + rs);
-				for (Record currentRecord : recordSet) {
+				for (Record currentRecord : sortedList) {
 					currentRecord.addToExcelSheet(rowNumber, sheet);
 					rowNumber++;
 				}
@@ -193,24 +203,13 @@ public class RecordOutputUtil {
 		return successful;
 	}
 
-	private void handleBackup(String docName, boolean deleteBackup) throws IOException, WriteException {
-		copyWorkbook.write();
-		copyWorkbook.close();
-		currentWorkbook.close();
-
-		if (deleteBackup) {
-			if (!oldBook.delete()) {
-				// making sure we don't lose data or override good data
-                logger.error("Can't save record to current workbook, is it open? Starting a new workbook to finish processing");
-                this.docPath = docName.substring(0, docName.indexOf(EXT)) + "_" + System.currentTimeMillis() + EXT;
-                ioutil.setMainDocPath(this.docPath);
-			}
-			newBook.renameTo(new File(docName));
-		}
+	public void saveRecordsToWorkbook(Set<Record> records, WritableWorkbook workbook, Comparator comparator) {
+		List<Set<Record>> recordSetList = new ArrayList<>();
+		recordSetList.add(records);
+		saveRecordsToWorkbook(recordSetList, workbook, comparator);
 	}
 
     public boolean splitIntoSheets(String docName, String delimiterColumn, List<Set<Record>> recordsSetList, Class clazz) {
-    	//TODO this is appending split records, not overriding
         boolean successful = false;
         Method fieldGetter = null;
         for (Method method : clazz.getMethods()) {

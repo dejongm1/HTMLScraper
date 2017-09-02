@@ -50,7 +50,7 @@ public final class State {
 	public static final State NC = new State("NORTH CAROLINA", "NC", new ArrayList<>(Arrays.asList(new ArrestsDotOrgEngine())));
 	public static final State ND = new State("NORTH DAKOTA", "ND", new ArrayList<>());
 	public static final State OH = new State("OHIO", "OH", new ArrayList<>(Arrays.asList(new ArrestsDotOrgEngine())));
-	public static final State OK = new State("OKLAHOMA", "OK", new ArrayList<>());
+	public static final State OK = new State("OKLAHOMA", "OK", new ArrayList<>(Arrays.asList(new ArrestsDotOrgEngine())));
 	public static final State OR = new State("OREGON", "OR", new ArrayList<>(Arrays.asList(new ArrestsDotOrgEngine())));
 	public static final State PA = new State("PENNSYLVANIA", "PA", new ArrayList<>(Arrays.asList(new ArrestsDotOrgEngine())));
 	public static final State RI = new State("RHODE ISLAND", "RI", new ArrayList<>());

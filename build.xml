@@ -41,7 +41,7 @@
         </javac>
     </target>
 
-    <target name="compiletests">
+    <target name="compiletests" unless="skipTests">
         <javac srcdir="${dir.test}" destdir="${dir.build}">
             <classpath refid="dir.classpath" />
         </javac>
@@ -60,7 +60,7 @@
         </testng>
     </target>
 
-    <target name="create_run_jar" depends="backup, compile">
+    <target name="create_run_jar" depends="backup, compile, testng">
         <buildnumber/>
 
     	<manifestclasspath property="manifest_cp" jarfile="Spider-${version}.${build.number}.jar">
