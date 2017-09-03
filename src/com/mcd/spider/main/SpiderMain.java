@@ -112,12 +112,14 @@ public class SpiderMain {
 	private static void getPopularWords(String[] args) throws IOException {
 		String url = args.length>=2?mainInputUtil.convertToUrl(args[1]):(String) mainInputUtil.getInput("URL: ", 3, SpiderConstants.URL_VALIDATION);
 		int numberOfWords = args.length>=3?mainInputUtil.convertToNumber(args[2]):(int) mainInputUtil.getInput("Number of words: ", 3, SpiderConstants.NUMBER_VALIDATION);
+        //TODO have user confirm args
 		engine.getPopularWords(url, numberOfWords);
 	}
 	
 	private static void getTextBySelector(String[] args) throws IOException {
 		String url = args.length>=2?mainInputUtil.convertToUrl(args[1]):(String) mainInputUtil.getInput("URL: ", 3, SpiderConstants.URL_VALIDATION);
 		String selector = args.length>=3?args[2]:(String) mainInputUtil.getInput("Selector(s): ", 1, SpiderConstants.NO_VALIDATION);
+        //TODO have user confirm args
 		engine.getTextBySelector(url, selector);
 	}
 	
@@ -125,7 +127,8 @@ public class SpiderMain {
 		String url = args.length>=2?mainInputUtil.convertToUrl(args[1]):(String) mainInputUtil.getInput("URL: ", 3, SpiderConstants.URL_VALIDATION);
 		String words = args.length>=3?args[2]:(String) mainInputUtil.getInput("Words: ", 1, SpiderConstants.NO_VALIDATION);
 		int flexibility = 0; //(int) mainInputUtil.getInput("Flexibility of search (1-3): ", 1, SpiderConstants.NUMBER_VALIDATION);
-		engine.search(url, words, flexibility);
+        //TODO have user confirm args
+        engine.search(url, words, flexibility);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -134,6 +137,7 @@ public class SpiderMain {
         RecordFilterEnum filter = args.length>=3?mainInputUtil.convertToFilter(args[2]):(RecordFilterEnum) mainInputUtil.getInput("Filter: ", 3, SpiderConstants.FILTER_VALIDATION);
         long maxNumberOfResults = args.length>=4?mainInputUtil.convertToNumber(args[3]):(int) mainInputUtil.getInput("Maximum Number of Records: ", 3, SpiderConstants.NUMBER_VALIDATION);
         boolean retrieveMissedRecords = args.length>=5?mainInputUtil.convertToBoolean(args[4]):(boolean) mainInputUtil.getInput("Retrieve Missed Records: ", 3, SpiderConstants.BOOLEAN_VALIDATION);
+        //TODO have user confirm args
         engine.getArrestRecordsByState(states, maxNumberOfResults, filter, retrieveMissedRecords);
 	}
 

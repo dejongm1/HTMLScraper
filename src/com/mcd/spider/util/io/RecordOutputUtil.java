@@ -72,7 +72,10 @@ public class RecordOutputUtil {
         WritableWorkbook newWorkbook = null;
         try {
             //backup existing workbook first
-            if (backUpExisting) logger.info("Backing up " + workbookName + " as " + docPath.substring(0, docPath.indexOf(EXT))+BACKUP_SUFFIX+EXT + " and starting a new workbook");
+            if (backUpExisting) {
+                logger.info("Backing up " + workbookName + " as " + docPath.substring(0, docPath.indexOf(EXT))+BACKUP_SUFFIX+EXT + " and starting a new workbook");
+            }
+            //TODO why does this check fail if crawling a state where no book exists?
             if (new File(docPath).exists() && backUpExisting) {
                 createWorkbookCopy(docPath,
                         docPath.substring(0, docPath.indexOf(EXT))+BACKUP_SUFFIX+EXT);

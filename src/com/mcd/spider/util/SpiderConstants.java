@@ -38,7 +38,9 @@ public class SpiderConstants {
             + "  State: The state(s) you want records for. Use \"All\" to get every state" + "\n"
             + "  Filter: NOT READY YET. Default for now is arrest records" + "\n"
             + "  Max Number of Results: Put a limit on how many recrds to retrieve in a single run" + "\n"
-            + "          Note - Only uncrawled records will be obtained on subseqent runs" + "\n\n";
+            + "          Note - Only uncrawled records will be obtained on subseqent runs" + "\n"
+            + "  Retrieve uncrawled records: If a list of uncrawled records exists, crawl those alone." + "\n"
+            + "          Otherwise, look through all posted records for any missed. \n\n";
  public static final String HELP_MESSAGE_5 = "5 - SEO Audit: " + "\n"
             + "  Perform a customizable SEO audit of an entire website " + "\n"
             + "  All parameters are optional and should be included together, separated by spaces" + "\n"

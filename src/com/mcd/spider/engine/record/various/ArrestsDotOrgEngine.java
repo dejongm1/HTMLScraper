@@ -241,7 +241,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         record.setId(site.generateRecordId(((Node) profileDetailObj).baseUri()));
         for (Element profileDetail : profileDetails) {
             matchPropertyToField(record, profileDetail);
-            logger.info("\t" + profileDetail.text());
+            logger.debug("\t" + profileDetail.text());
         }
         return record;
     }
