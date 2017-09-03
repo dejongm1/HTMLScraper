@@ -293,6 +293,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
             }
         } else if (profileDetailElement.select("h1").hasText()) {
             record.setFullName(profileDetailElement.select("h1").text().trim());
+            //TODO split full name into first (, middle) and last
         }
     }
 

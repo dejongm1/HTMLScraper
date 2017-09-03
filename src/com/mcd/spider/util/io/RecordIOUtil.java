@@ -1,18 +1,16 @@
 package com.mcd.spider.util.io;
 
+import com.mcd.spider.entities.record.Record;
+import com.mcd.spider.entities.record.State;
+import com.mcd.spider.entities.site.Site;
+import jxl.Sheet;
+import org.apache.log4j.Logger;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import org.apache.log4j.Logger;
-
-import com.mcd.spider.entities.record.Record;
-import com.mcd.spider.entities.record.State;
-import com.mcd.spider.entities.site.Site;
-
-import jxl.Sheet;
 
 /**
  * 
@@ -39,7 +37,19 @@ public class RecordIOUtil {
 	}
 
     public RecordIOUtil(State state, Record record, Site site, boolean testing) {
+//	    if (!new File(OUTPUT_DIR).exists()) {
+//            new File(OUTPUT_DIR).mkdirs();
+//        }
+        if (!new File(TRACKING_DIR).exists()) {
+            new File(TRACKING_DIR).mkdirs();
+        }
 	    if (testing) {
+//            if (!new File("output\\testing\\").exists()) {
+//                new File("output\\testing\\").mkdirs();
+//            }
+            if (!new File("output\\testing\\tracking\\").exists()) {
+                new File("output\\testing\\tracking\\").mkdirs();
+            }
 	        this.crawledIdFile = new File("output\\testing\\tracking\\" + site.getName() + "_Archive.txt");
 	        this.uncrawledIdFile = new File("output\\testing\\tracking\\" + site.getName() + "_Uncrawled.txt");
 	        this.mainDocPath = "output\\testing\\" + state.getName() + "_" + record.getClass().getSimpleName() + "_" + site.getName() + EXT;

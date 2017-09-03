@@ -95,6 +95,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         Document mainPageDoc = null;
         if (spiderWeb.getAttemptCount()<=maxAttempts) {
 	        try {
+	            logger.info("Trying to make initial connection to " + site.getName());
 	        	mainPageDoc = (Document) initiateConnection(firstPageResultsUrl);
 	        } catch (IOException e) {
 	            logger.error("Couldn't make initial connection to site. Trying again " + (maxAttempts-spiderWeb.getAttemptCount()) + " more times", e);
@@ -102,7 +103,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 	            if (e instanceof HttpStatusException && ((HttpStatusException) e).getStatusCode()==500) {
 	            	connectionUtil = new ConnectionUtil(true);
 	            }
-                spiderUtil.sleep(3000, true);
+                spiderUtil.sleep(5000, true);
 	            spiderWeb.increaseAttemptCount();
 	            scrapeSite();
 	        }
@@ -389,7 +390,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     					resultsDocPlusMiscMap.put((Integer)k, docToCheck);
     				}
     				int sleepTime = ConnectionUtil.getSleepTime(site);
-    				logger.debug("Sleeping for " + sleepTime + " after fetching " + resultsUrlPlusMiscMap.get(k));
+    				logger.debug("Sleeping for " + sleepTime + " milliseconds after fetching " + resultsUrlPlusMiscMap.get(k));
     				spiderUtil.sleep(sleepTime, false);
 
     				previousKey = page;
@@ -422,7 +423,6 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 
     public Map<Object,String> compileRecordDetailUrlMap(Document mainPageDoc, Map<Integer,Document> resultsDocPlusMiscMap) {
         Map<Object,String> recordDetailUrlMap = new HashMap<>();
-        //TODO parse a page at a time instead or all details at once?
         for (Map.Entry<Integer, Document> entry : resultsDocPlusMiscMap.entrySet()) {
             Document doc = entry.getValue();
             //only crawl for records if document was retrieved, is a results doc and has not already been crawled

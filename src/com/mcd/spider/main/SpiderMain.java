@@ -45,10 +45,11 @@ public class SpiderMain {
 		String scrapeTypeChoice = "";
 		
 		if (args.length==0) {
-			scrapeTypeChoice = (String) mainInputUtil.getInput(prompt, 3, "");
-		} else if (args.length>=1) {
-			scrapeTypeChoice = args[0];
-		}
+            args = new String[1];
+            args[0] = (String) mainInputUtil.getInput(prompt, 3, "");
+        }
+        scrapeTypeChoice = args[0];
+
 		//reset prompt
 		prompt = SpiderConstants.PROMPT;
 		try {
@@ -95,6 +96,7 @@ public class SpiderMain {
             System.err.println("Dunno what you did but I don't like it. I quit.");
             System.exit(0);
         } catch (ExcelOutputException ebe) {
+		    //TODO not using this anymore?
             prompt = "Error with excel output: " + ebe.getMethodName() + ". Please ensure it's not open and try again. \n" + prompt;
             main(new String[] {});
         } catch (NullPointerException npe) {
@@ -112,23 +114,48 @@ public class SpiderMain {
 	private static void getPopularWords(String[] args) throws IOException {
 		String url = args.length>=2?mainInputUtil.convertToUrl(args[1]):(String) mainInputUtil.getInput("URL: ", 3, SpiderConstants.URL_VALIDATION);
 		int numberOfWords = args.length>=3?mainInputUtil.convertToNumber(args[2]):(int) mainInputUtil.getInput("Number of words: ", 3, SpiderConstants.NUMBER_VALIDATION);
-        //TODO have user confirm args
-		engine.getPopularWords(url, numberOfWords);
+
+        String confirmationPrompt = "You chose \n" +
+                                    "URL: " + url + "\n" +
+                                    "Number of words: " + numberOfWords + "\n" +
+                                    "   Is that correct?";
+        if ((boolean) mainInputUtil.getInput(confirmationPrompt, 2, SpiderConstants.BOOLEAN_VALIDATION)) {
+            engine.getPopularWords(url, numberOfWords);
+        } else {
+            main(new String[] {args[0]});
+        }
 	}
 	
 	private static void getTextBySelector(String[] args) throws IOException {
 		String url = args.length>=2?mainInputUtil.convertToUrl(args[1]):(String) mainInputUtil.getInput("URL: ", 3, SpiderConstants.URL_VALIDATION);
 		String selector = args.length>=3?args[2]:(String) mainInputUtil.getInput("Selector(s): ", 1, SpiderConstants.NO_VALIDATION);
-        //TODO have user confirm args
-		engine.getTextBySelector(url, selector);
+
+        String confirmationPrompt = "You chose \n" +
+                "URL: " + url + "\n" +
+                "Selector(s): " + selector + "\n" +
+                "   Is that correct?";
+        if ((boolean) mainInputUtil.getInput(confirmationPrompt, 2, SpiderConstants.BOOLEAN_VALIDATION)) {
+            engine.getTextBySelector(url, selector);
+        } else {
+            main(new String[] {args[0]});
+        }
 	}
 	
 	private static void getSearchTerms(String[] args) throws IOException {
 		String url = args.length>=2?mainInputUtil.convertToUrl(args[1]):(String) mainInputUtil.getInput("URL: ", 3, SpiderConstants.URL_VALIDATION);
 		String words = args.length>=3?args[2]:(String) mainInputUtil.getInput("Words: ", 1, SpiderConstants.NO_VALIDATION);
 		int flexibility = 0; //(int) mainInputUtil.getInput("Flexibility of search (1-3): ", 1, SpiderConstants.NUMBER_VALIDATION);
-        //TODO have user confirm args
-        engine.search(url, words, flexibility);
+
+        String confirmationPrompt = "You chose \n" +
+                "URL: " + url + "\n" +
+                "Words: " + words + "\n" +
+                "Flexibility: " + flexibility + "\n" +
+                "   Is that correct?";
+        if ((boolean) mainInputUtil.getInput(confirmationPrompt, 2, SpiderConstants.BOOLEAN_VALIDATION)) {
+            engine.search(url, words, flexibility);
+        } else {
+            main(new String[] {args[0]});
+        }
 	}
 
 	@SuppressWarnings("unchecked")
@@ -137,8 +164,23 @@ public class SpiderMain {
         RecordFilterEnum filter = args.length>=3?mainInputUtil.convertToFilter(args[2]):(RecordFilterEnum) mainInputUtil.getInput("Filter: ", 3, SpiderConstants.FILTER_VALIDATION);
         long maxNumberOfResults = args.length>=4?mainInputUtil.convertToNumber(args[3]):(int) mainInputUtil.getInput("Maximum Number of Records: ", 3, SpiderConstants.NUMBER_VALIDATION);
         boolean retrieveMissedRecords = args.length>=5?mainInputUtil.convertToBoolean(args[4]):(boolean) mainInputUtil.getInput("Retrieve Missed Records: ", 3, SpiderConstants.BOOLEAN_VALIDATION);
-        //TODO have user confirm args
-        engine.getArrestRecordsByState(states, maxNumberOfResults, filter, retrieveMissedRecords);
+
+        StringBuilder stateSB = new StringBuilder();
+        for (int s = 0;s<states.size();s++) {
+            stateSB.append(states.get(s).getName());
+            stateSB.append(s+1<states.size()?", ":"");
+        }
+        String confirmationPrompt = "You chose \n" +
+                "State(s): " + stateSB.toString() + "\n" +
+                "Filter: " + filter.filterName() + "\n" +
+                "Max Number of Records: " + maxNumberOfResults + "\n" +
+                "Retrieve Missed Records: " + retrieveMissedRecords + "\n" +
+                "   Is that correct?";
+        if ((boolean) mainInputUtil.getInput(confirmationPrompt, 2, SpiderConstants.BOOLEAN_VALIDATION)) {
+            engine.getArrestRecordsByState(states, maxNumberOfResults, filter, retrieveMissedRecords);
+        } else {
+            main(new String[] {args[0]});
+        }
 	}
 
 	@SuppressWarnings("unchecked")
@@ -147,7 +189,23 @@ public class SpiderMain {
 		RecordFilterEnum filter = args.length>=3?mainInputUtil.convertToFilter(args[2]):(RecordFilterEnum) mainInputUtil.getInput("Filter: ", 3, SpiderConstants.FILTER_VALIDATION);
 		long maxNumberOfResults = args.length>=4?mainInputUtil.convertToNumber(args[3]):(int) mainInputUtil.getInput("Maximum Number of Records: ", 3, SpiderConstants.NUMBER_VALIDATION);
         boolean retrieveMissedRecords = args.length>=5?mainInputUtil.convertToBoolean(args[4]):(boolean) mainInputUtil.getInput("Retrieve Missed Records: ", 3, SpiderConstants.BOOLEAN_VALIDATION);
-        engine.getArrestRecordsThroughTheBackDoor(states, maxNumberOfResults, filter, retrieveMissedRecords);
+
+        StringBuilder stateSB = new StringBuilder();
+        for (int s = 0;s<states.size();s++) {
+            stateSB.append(states.get(s).getName());
+            stateSB.append(s+1<states.size()?", ":"");
+        }
+        String confirmationPrompt = "You chose \n" +
+                "State(s): " + stateSB.toString() + "\n" +
+                "Filter: " + filter.filterName() + "\n" +
+                "Max Number of Records: " + maxNumberOfResults + "\n" +
+                "Retrieve Missed Records: " + retrieveMissedRecords + "\n" +
+                "   Is that correct?";
+        if ((boolean) mainInputUtil.getInput(confirmationPrompt, 2, SpiderConstants.BOOLEAN_VALIDATION)) {
+            engine.getArrestRecordsThroughTheBackDoor(states, maxNumberOfResults, filter, retrieveMissedRecords);
+        } else {
+            main(new String[] {args[0]});
+        }
 	}
 
 	private static void getSEOAudit(String argString) throws IOException {

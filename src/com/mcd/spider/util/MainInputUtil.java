@@ -86,12 +86,13 @@ public class MainInputUtil {
 	}
 
     public boolean convertToBoolean(String input) {
-        boolean result = false;
+        Boolean result;
         Set<String> values = new HashSet<>(Arrays.asList("true", "yes", "no", "false"));
     	if (values.contains(input.toLowerCase())) {
     		result = input.equalsIgnoreCase("true") || input.equalsIgnoreCase("yes");
     	} else {
-    		System.err.println("Not sure what that meant, so you get false\n");
+    		System.err.println("Not sure what that meant\n");
+    		result = null;
     	}
     	return result;
     }

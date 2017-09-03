@@ -28,12 +28,12 @@ public class SpiderConstants {
             + "  URL: The url of the page you want to crawl (http:// will be used unless you specify a protocol" + "\n"
             + "  Selector(s): The CSS selector(s) to find and select the text you want. Surround with \" if there is more than one" + "\n"
             + "    e.g. \"body tr .pretty_font\" " + "\n\n";
- public static final String HELP_MESSAGE_3 = "3 - Search for a term: " + "\n"
+    public static final String HELP_MESSAGE_3 = "3 - Search for a term: " + "\n"
             + "  Search a webpage for specific word(s) or variations of the word(s)" + "\n"
             + "  URL: The url of the page you want to crawl (http:// will be used unless you specify a protocol" + "\n"
             + "  Word(s): The word(s) you want to search for. Surround with \" if there is more than one" + "\n"
             + "  Flexibility: From 1-3, how flexible should the search be (1 is not flexible at all)" + "\n\n";
- public static final String HELP_MESSAGE_4 = "4 - Get records: " + "\n"
+    public static final String HELP_MESSAGE_4 = "4 - Get records: " + "\n"
             + "  Scrape records and output the results to a spreadsheet" + "\n"
             + "  State: The state(s) you want records for. Use \"All\" to get every state" + "\n"
             + "  Filter: NOT READY YET. Default for now is arrest records" + "\n"
@@ -41,7 +41,7 @@ public class SpiderConstants {
             + "          Note - Only uncrawled records will be obtained on subseqent runs" + "\n"
             + "  Retrieve uncrawled records: If a list of uncrawled records exists, crawl those alone." + "\n"
             + "          Otherwise, look through all posted records for any missed. \n\n";
- public static final String HELP_MESSAGE_5 = "5 - SEO Audit: " + "\n"
+    public static final String HELP_MESSAGE_5 = "5 - SEO Audit: " + "\n"
             + "  Perform a customizable SEO audit of an entire website " + "\n"
             + "  All parameters are optional and should be included together, separated by spaces" + "\n"
             + "  -url" + "\n"

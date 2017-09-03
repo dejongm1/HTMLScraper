@@ -44,14 +44,14 @@ public class RecordOutputUtil {
 	private File newBook;
 	private Workbook currentWorkbook;
 	private WritableWorkbook copyWorkbook;
-	private RecordIOUtil ioutil;
+	private RecordIOUtil ioUtil;
 
 	public RecordOutputUtil(RecordIOUtil ioUtil, State state) {
         this.docPath = ioUtil.getMainDocPath();
 		this.state = state;
 		this.record = ioUtil.getRecord();
 		this.crawledIdFile = ioUtil.getCrawledIdFile();
-		this.ioutil = ioUtil;
+		this.ioUtil = ioUtil;
         this.uncrawledIdFile = ioUtil.getUncrawledIdFile();
 	}
 
@@ -71,12 +71,9 @@ public class RecordOutputUtil {
     public void createWorkbook(String workbookName, List<Set<Record>> recordSetList, boolean backUpExisting, String[] sheetNames, Comparator comparator) {
         WritableWorkbook newWorkbook = null;
         try {
-            //backup existing workbook first
-            if (backUpExisting) {
-                logger.info("Backing up " + workbookName + " as " + docPath.substring(0, docPath.indexOf(EXT))+BACKUP_SUFFIX+EXT + " and starting a new workbook");
-            }
             //TODO why does this check fail if crawling a state where no book exists?
             if (new File(docPath).exists() && backUpExisting) {
+                logger.info("Backing up " + workbookName + " as " + docPath.substring(0, docPath.indexOf(EXT))+BACKUP_SUFFIX+EXT + " and starting a new workbook");
                 createWorkbookCopy(docPath,
                         docPath.substring(0, docPath.indexOf(EXT))+BACKUP_SUFFIX+EXT);
                 handleBackup(docPath, false);
@@ -145,7 +142,7 @@ public class RecordOutputUtil {
                 }
                 if (!oldBook.delete()) {
                     this.docPath = docName.substring(0, docName.indexOf(EXT))+"_"+System.currentTimeMillis()+EXT;
-                    ioutil.setMainDocPath(this.docPath);
+                    ioUtil.setMainDocPath(this.docPath);
                 }
 			}
 			newBook.renameTo(new File(docName));
@@ -176,7 +173,7 @@ public class RecordOutputUtil {
 	public void addRecordToMainWorkbook(Record record) {
 		try {
 			createWorkbookCopy(docPath, getTempFileName() + EXT);
-			int rowNumber = ioutil.getInputter().getNonEmptyRowCount(copyWorkbook.getSheet(0));
+			int rowNumber = ioUtil.getInputter().getNonEmptyRowCount(copyWorkbook.getSheet(0));
 			WritableSheet sheet = copyWorkbook.getSheet(0);
 			record.addToExcelSheet(rowNumber, sheet);
 			writeIdToFile(crawledIdFile, record.getId());
@@ -272,7 +269,7 @@ public class RecordOutputUtil {
 		for (Map.Entry<Object, String> entry : recordsDetailsUrlMap.entrySet()) {
 			try {
 			    if (!entry.getValue().startsWith("CRAWLED")) {
-                    writeIdToFile(uncrawledIdFile, (String)entry.getKey());
+                    writeIdToFile(uncrawledIdFile, String.valueOf(entry.getKey()));
                 }
 			} catch (Exception e) {
 				logger.error("Error backing up " + entry.getKey() + "=" + entry.getValue() + "-" + e.getMessage());

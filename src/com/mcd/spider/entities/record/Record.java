@@ -106,7 +106,6 @@ public interface Record {
 					}
 				}
 				if (!matchingColumnFound) {
-					//TODO create a new EXTRA_COLUMN ENUM??
 					columnEnums.add("EXTRA_COLUMN");
 				}
 			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException

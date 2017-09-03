@@ -169,7 +169,12 @@ public class RecordInputUtil {
         //don't try to readRecords if -1 is passed
         if (sheetNumber!=-1) {
 	        try {
-	            Workbook workbook = Workbook.getWorkbook(fileToRead);
+                Workbook workbook = null;
+                try {
+                    workbook = Workbook.getWorkbook(fileToRead);
+                } catch (FileNotFoundException e) {
+                    logger.error(fileToRead.getName() + " does not exist so there are no records to read in");
+                }
 	            if (workbook!=null) {
 	                Sheet sheetToRead = workbook.getSheet(sheetNumber);
 	                logger.debug("Attempting to read previous records from sheet " + sheetToRead.getName() + " into memory");
@@ -189,12 +194,11 @@ public class RecordInputUtil {
 	                }
 	                retrievedRecordsCount+=storedRecords.size();
 	            }
-	
+                logger.debug("Found " +  (foundRecordsCount-1) + " and retrieved " + retrievedRecordsCount);
 	        } catch (BiffException | IOException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 	            logger.error("Exception caught reading sheet into records - " + fileToRead.getName() + " sheet " + sheetNumber, e);
 	        }
         }
-        logger.debug("Found " +  (foundRecordsCount-1) + " and retrieved " + retrievedRecordsCount);
         return storedRecords;
     }
 
