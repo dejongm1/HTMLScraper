@@ -94,7 +94,7 @@ public class SpiderEngine {
                 sheetNames[mrs] = ((ArrestRecord)mergedRecords.get(mrs).toArray()[0]).getCounty();
             }
             if (!mergedRecords.isEmpty()) {
-                mainIOutil.getOutputter().createWorkbook(mainIOutil.getOutputter().getMergedDocPath(), mergedRecords, false, sheetNames, ArrestDateComparator);
+                mainIOutil.getOutputter().createWorkbook(mainIOutil.getOutputter().getMergedDocPath(null), mergedRecords, false, sheetNames, ArrestDateComparator);
                 logger.info("Merge of all records complete.");
             } else {
                 logger.info("Nothing found to merge");
@@ -109,7 +109,7 @@ public class SpiderEngine {
                     filteredSheetNames[mrs] = ((ArrestRecord) mergedFilteredRecords.get(mrs).toArray()[0]).getCounty();
                 }
                 if (!mergedFilteredRecords.isEmpty()) {
-                    mainIOutil.getOutputter().createWorkbook(mainIOutil.getOutputter().getMergedDocPath(), mergedFilteredRecords, false, filteredSheetNames, ArrestDateComparator);
+                    mainIOutil.getOutputter().createWorkbook(mainIOutil.getOutputter().getMergedDocPath(mainIOutil.getOutputter().getFilteredDocPath(filter)), mergedFilteredRecords, false, filteredSheetNames, ArrestDateComparator);
                     logger.info("Merge of filtered records complete.");
                 } else {
                     logger.info("No filtered records found to merge");

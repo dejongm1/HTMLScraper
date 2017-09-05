@@ -82,7 +82,7 @@ public class RecordOutputUtilTest {
     	backUpDoc = new File(ioUtil.getMainDocPath().substring(0, ioUtil.getMainDocPath().indexOf(RecordIOUtil.getEXT())) + RecordOutputUtil.getBackupSuffix() + RecordIOUtil.getEXT());
         mainDoc = new File(ioUtil.getMainDocPath());
         mainDocRenamed = new File(mainDoc.getPath() + "tempForTesting");
-        mergedDoc = new File(outputter.getMergedDocPath());
+        mergedDoc = new File(outputter.getMergedDocPath(null));
         filteredDoc = new File(outputter.getFilteredDocPath(RecordFilterEnum.findFilter("alcohol")));
         outputter.createWorkbook(mainDoc.getPath(), null, true, null);
         testWorkbook = Workbook.createWorkbook(mainDoc);
@@ -239,7 +239,13 @@ public class RecordOutputUtilTest {
     	//confirm it exists, name is correct and row count matches list
     	Assert.assertTrue(mergedDoc.exists());
     	Assert.assertEquals(mergedWorkbook.getSheet(0).getRows(), records.size()+1);
-    	Assert.assertEquals(mergedDoc.getPath(), outputter.getMergedDocPath());
+    	Assert.assertEquals(mergedDoc.getPath(), outputter.getMergedDocPath(null));
+    }
+
+    @Test
+    public void testGetCustomerNamedMergedSpreadsheet() throws Exception {
+    	String result = outputter.getMergedDocPath(outputter.getFilteredDocPath(RecordFilterEnum.findFilter("alcohol")));
+    	Assert.assertEquals(result, "output\\testing\\IOWA_ArrestRecord_ArrestsOrg_Alcohol-related_MERGED.xls");
     }
 
     @Test

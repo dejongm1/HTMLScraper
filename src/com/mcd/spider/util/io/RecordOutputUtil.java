@@ -121,8 +121,14 @@ public class RecordOutputUtil {
 		return docPath.substring(0, docPath.indexOf(EXT)) + "_" + filter.filterName() + EXT;
 	}
 
-	public String getMergedDocPath() {
-		return docPath.substring(0, docPath.lastIndexOf('_')) + "_" + "MERGED" + EXT;
+	public String getMergedDocPath(String baseDocPath) {
+		String mergedName;
+		if (baseDocPath!=null) {
+			mergedName = baseDocPath.substring(0, baseDocPath.lastIndexOf('.')) + "_" + "MERGED" + EXT;
+		} else {
+			mergedName = docPath.substring(0, docPath.lastIndexOf('_')) + "_" + "MERGED" + EXT;
+		}
+		return mergedName;
 	}
 
 	private void handleBackup(String docName, boolean deleteBackup) throws IOException, WriteException {
