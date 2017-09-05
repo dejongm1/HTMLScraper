@@ -1,24 +1,27 @@
 package com.mcd.spider.engine;
 
+import static com.mcd.spider.entities.record.ArrestRecord.ArrestDateComparator;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.apache.log4j.Logger;
+
 import com.mcd.spider.engine.audit.AuditEngine;
 import com.mcd.spider.engine.record.iowa.DesMoinesRegisterComEngine;
 import com.mcd.spider.engine.router.StateRouter;
 import com.mcd.spider.entities.audit.AuditParameters;
 import com.mcd.spider.entities.record.ArrestRecord;
+import com.mcd.spider.entities.record.ArrestRecord.RecordColumnEnum;
 import com.mcd.spider.entities.record.Record;
 import com.mcd.spider.entities.record.State;
 import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
 import com.mcd.spider.exception.SpiderException;
 import com.mcd.spider.exception.StateNotReadyException;
 import com.mcd.spider.util.io.RecordIOUtil;
-import org.apache.log4j.Logger;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
-import static com.mcd.spider.entities.record.ArrestRecord.ArrestDateComparator;
 
 /**
  * 
@@ -36,7 +39,7 @@ public class SpiderEngine {
 			if (!state.getEngines().isEmpty()) {
 				StateRouter router = new StateRouter(state);
 				router.collectRecordsUsingThreading(maxNumberOfResults, filter, retrieveMissedRecords);
-				customizeOutputs(state, filter);
+				customizeArrestOutputs(state, filter);
 			} else {
 				throw new StateNotReadyException(state);
 			}
@@ -76,7 +79,8 @@ public class SpiderEngine {
 		engine.getTextBySelector(url, selector);
 	}
 
-	protected void customizeOutputs(State state, RecordFilterEnum filter) {
+	protected void customizeArrestOutputs(State state, RecordFilterEnum filter) {
+		//TODO move this whole thing to RecordOutputUtil?
         RecordIOUtil mainIOutil = new RecordIOUtil(state, new ArrestRecord(), state.getEngines().get(0).getSite());
         //start with the second engine and iterate over the rest
         List<Set<Record>> allMergedRecords = new ArrayList<>();
@@ -117,15 +121,45 @@ public class SpiderEngine {
             }
         }
 
-        //TODO create a version for Lexis Nexis for any records with DOB and arrest date
+        //TODO test this
         if (state.meetsLexisNexisCriteria()) {
-            //read records in from main workbook
-            //create a new workbook with only 4 necessary columns
-            //read through records and create a list of those that have all 4 criteria
-            //save those to new workbook
+        	File docPathtoConvert = new File( filter.equals(RecordFilterEnum.NONE)?mainIOutil.getMainDocPath():mainIOutil.getOutputter().getFilteredDocPath(filter));
+        	List<Set<Record>> eligibleRecordsCrawled;
+        	if (!allMergedRecords.isEmpty()) {
+        		//use allMergedRecords if not empty
+        		eligibleRecordsCrawled = filterOutLexisNexisEligibleRecords(allMergedRecords);
+        	} else {
+	            //read records in from main workbook
+        		eligibleRecordsCrawled = filterOutLexisNexisEligibleRecords(mainIOutil.getInputter().readRecordsFromWorkbook(docPathtoConvert));
+        	}
+        	
+        	mainIOutil.getOutputter().createWorkbook(mainIOutil.getOutputter().getLNPath(), eligibleRecordsCrawled, false, new String[]{state.getName()}, ArrestDateComparator);
+        	List<Integer> columnsToRemove = new ArrayList<>();
+        	for (RecordColumnEnum columnEnum : RecordColumnEnum.values()) {
+        		if (!columnEnum.equals(RecordColumnEnum.ARRESTDATE_COLUMN) && !columnEnum.equals(RecordColumnEnum.DOB_COLUMN)
+        				&& !columnEnum.equals(RecordColumnEnum.FIRSTNAME_COLUMN) && !columnEnum.equals(RecordColumnEnum.LASTNAME_COLUMN)) {
+        			columnsToRemove.add(columnEnum.getColumnIndex());
+        		}
+        	}
+        	mainIOutil.getOutputter().removeColumnsFromSpreadsheet(columnsToRemove.toArray(new Integer[columnsToRemove.size()]), mainIOutil.getOutputter().getLNPath());
+        	
             logger.info("Lexis Nexis input sheet complete.");
         } else {
             logger.info("This state does not meet the criteria for Lexis Nexis");
         }
     }
+	
+	private List<Set<Record>> filterOutLexisNexisEligibleRecords(List<Set<Record>> records) {
+		List<Set<Record>> eligibleRecords = new ArrayList<>();
+		for (Set<Record> recordSet : records) {
+			Set<Record> eligibleRecordSet = new HashSet<>();
+			for (Record record : recordSet) {
+				if (((ArrestRecord)record).getDob()!=null && ((ArrestRecord)record).getArrestDate()!=null && ((ArrestRecord)record).getFirstName()!=null&& ((ArrestRecord)record).getLastName()!=null) {
+					eligibleRecordSet.add(record);
+				}
+			}
+			eligibleRecords.add(eligibleRecordSet);
+		}
+		return eligibleRecords;
+	}
 }

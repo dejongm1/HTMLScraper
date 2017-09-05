@@ -68,7 +68,7 @@ public class RecordInputUtilTest {
 		Sheet readSheet2 = workbook.getSheet("readRecordsInDiffColumns");
 		Sheet readSheet3 = workbook.getSheet("emptyRows");
 		
-		Assert.assertEquals(recordsSetList.size(), 10);
+		Assert.assertEquals(recordsSetList.size(), 11);
 		Assert.assertEquals(recordsSetList.get(inputter.getSheetIndex(testReadInputFile, "readRecordsIn")).size(), inputter.getNonEmptyRowCount(readSheet1)-1); //compare sheet (minus header) to respective set
 		Assert.assertEquals(recordsSetList.get(inputter.getSheetIndex(testReadInputFile, "readRecordsInDiffColumns")).size(), inputter.getNonEmptyRowCount(readSheet2)-1); //compare sheet (minus header) to respective set
 		Assert.assertEquals(recordsSetList.get(inputter.getSheetIndex(testReadInputFile, "emptyRows")).size(), inputter.getNonEmptyRowCount(readSheet3)-1); //compare sheet (minus header) to respective set

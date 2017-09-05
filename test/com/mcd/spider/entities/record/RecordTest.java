@@ -222,14 +222,15 @@ public class RecordTest {
 		ArrestRecord record1 = new ArrestRecord();
         ArrestRecord record2 = new ArrestRecord();
         ArrestRecord record4 = new ArrestRecord();
-		Record.readRowIntoRecord(ArrestRecord.class, mainSheet, record1, 1, null);
-        Record.readRowIntoRecord(ArrestRecord.class, mainSheet, record2, 2, null);
-        Record.readRowIntoRecord(ArrestRecord.class, mainSheet, record4, 4, null);
+        Sheet sortingSheet = workbook.getSheet("sorting");
+		Record.readRowIntoRecord(ArrestRecord.class, sortingSheet, record1, 1, null);
+        Record.readRowIntoRecord(ArrestRecord.class, sortingSheet, record2, 2, null);
+        Record.readRowIntoRecord(ArrestRecord.class, sortingSheet, record4, 4, null);
     	recordSet.add(record1);
     	recordSet.add(record2);
     	recordSet.add(record4);
-    	//do this 20 times to minimize chance of random success
-    	for (int t=0;t<=20;t++) {
+
+    	for (int t=0;t<=40;t++) {
 	        List<Record> sortedList = Record.getAsSortedList(recordSet, ArrestRecord.CountyComparator);
 	        
 	        assertThat(sortedList, contains(record4, record1, record2));
@@ -242,14 +243,15 @@ public class RecordTest {
 		ArrestRecord record1 = new ArrestRecord();
         ArrestRecord record2 = new ArrestRecord();
         ArrestRecord record4 = new ArrestRecord();
-		Record.readRowIntoRecord(ArrestRecord.class, mainSheet, record1, 1, null);
-        Record.readRowIntoRecord(ArrestRecord.class, mainSheet, record2, 2, null);
-        Record.readRowIntoRecord(ArrestRecord.class, mainSheet, record4, 4, null);
+        Sheet sortingSheet = workbook.getSheet("sorting");
+		Record.readRowIntoRecord(ArrestRecord.class, sortingSheet, record1, 1, null);
+        Record.readRowIntoRecord(ArrestRecord.class, sortingSheet, record2, 2, null);
+        Record.readRowIntoRecord(ArrestRecord.class, sortingSheet, record4, 4, null);
     	recordSet.add(record1);
     	recordSet.add(record2);
     	recordSet.add(record4);
-    	//do this 20 times to minimize chance of random success
-    	for (int t=0;t<=20;t++) {
+
+    	for (int t=0;t<=40;t++) {
 	        List<Record> sortedList = Record.getAsSortedList(recordSet, ArrestRecord.ArrestDateComparator);
 	        
 	        assertThat(sortedList, contains(record2, record1, record4));
@@ -262,15 +264,16 @@ public class RecordTest {
 		ArrestRecord record1 = new ArrestRecord();
         ArrestRecord record2 = new ArrestRecord();
         ArrestRecord record4 = new ArrestRecord();
-		Record.readRowIntoRecord(ArrestRecord.class, mainSheet, record1, 1, null);
-        Record.readRowIntoRecord(ArrestRecord.class, mainSheet, record2, 2, null);
-        Record.readRowIntoRecord(ArrestRecord.class, mainSheet, record4, 4, null);
+        Sheet sortingSheet = workbook.getSheet("sorting");
+		Record.readRowIntoRecord(ArrestRecord.class, sortingSheet, record1, 1, null);
+        Record.readRowIntoRecord(ArrestRecord.class, sortingSheet, record2, 2, null);
+        Record.readRowIntoRecord(ArrestRecord.class, sortingSheet, record4, 4, null);
     	recordSet.add(record4);
     	recordSet.add(record2);
     	recordSet.add(record1);
-    	//do this 20 times to minimize chance of random success
-    	for (int t=0;t<=20;t++) {
-	        List<Record> sortedList = Record.getAsSortedList(recordSet, ArrestRecord.ArrestDateComparator);
+
+    	for (int t=0;t<=40;t++) {
+	        List<Record> sortedList = Record.getAsSortedList(recordSet, null);
 	        
 	        assertThat(sortedList, containsInAnyOrder(record4, record2, record1));
 	    	Assert.assertEquals(sortedList,  sortedList);

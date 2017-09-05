@@ -131,6 +131,10 @@ public class RecordOutputUtil {
 		return mergedName;
 	}
 
+	public String getLNPath() {
+		return docPath.substring(0, docPath.indexOf(EXT)) + "_" + "LN" + EXT;
+	}
+
 	private void handleBackup(String docName, boolean deleteBackup) throws IOException, WriteException {
 		copyWorkbook.write();
 		copyWorkbook.close();
