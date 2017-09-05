@@ -1,20 +1,33 @@
 package com.mcd.spider.entities.record;
 
-import com.mcd.spider.entities.record.ArrestRecord.RecordColumnEnum;
-import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
-import com.mcd.spider.util.io.RecordIOUtil;
-import jxl.Sheet;
-import jxl.Workbook;
-import jxl.read.biff.BiffException;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
+import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.log4j.Logger;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
+import com.mcd.spider.entities.record.ArrestRecord.RecordColumnEnum;
+import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
+import com.mcd.spider.util.io.RecordIOUtil;
+
+import jxl.Sheet;
+import jxl.Workbook;
+import jxl.read.biff.BiffException;
 
 /**
  *
@@ -204,15 +217,64 @@ public class RecordTest {
 	}
 
     @Test
-    public void testGetAsSortedList() {
+    public void testGetAsSortedList_ArrestCounty() {
+    	Set<Record> recordSet = new HashSet<>(); 
+		ArrestRecord record1 = new ArrestRecord();
+        ArrestRecord record2 = new ArrestRecord();
+        ArrestRecord record4 = new ArrestRecord();
+		Record.readRowIntoRecord(ArrestRecord.class, mainSheet, record1, 1, null);
+        Record.readRowIntoRecord(ArrestRecord.class, mainSheet, record2, 2, null);
+        Record.readRowIntoRecord(ArrestRecord.class, mainSheet, record4, 4, null);
+    	recordSet.add(record1);
+    	recordSet.add(record2);
+    	recordSet.add(record4);
+    	//do this 20 times to minimize chance of random success
+    	for (int t=0;t<=20;t++) {
+	        List<Record> sortedList = Record.getAsSortedList(recordSet, ArrestRecord.CountyComparator);
+	        
+	        assertThat(sortedList, contains(record4, record1, record2));
+    	}
+    }
 
-        Assert.fail(); //need to test sorting
+    @Test
+    public void testGetAsSortedList_ArrestDate() {
+    	Set<Record> recordSet = new HashSet<>(); 
+		ArrestRecord record1 = new ArrestRecord();
+        ArrestRecord record2 = new ArrestRecord();
+        ArrestRecord record4 = new ArrestRecord();
+		Record.readRowIntoRecord(ArrestRecord.class, mainSheet, record1, 1, null);
+        Record.readRowIntoRecord(ArrestRecord.class, mainSheet, record2, 2, null);
+        Record.readRowIntoRecord(ArrestRecord.class, mainSheet, record4, 4, null);
+    	recordSet.add(record1);
+    	recordSet.add(record2);
+    	recordSet.add(record4);
+    	//do this 20 times to minimize chance of random success
+    	for (int t=0;t<=20;t++) {
+	        List<Record> sortedList = Record.getAsSortedList(recordSet, ArrestRecord.ArrestDateComparator);
+	        
+	        assertThat(sortedList, contains(record2, record1, record4));
+    	}
     }
 
     @Test
     public void testGetAsSortedList_NoComparator() {
-
-	    Assert.fail(); //need to test sorting
+    	Set<Record> recordSet = new HashSet<>(); 
+		ArrestRecord record1 = new ArrestRecord();
+        ArrestRecord record2 = new ArrestRecord();
+        ArrestRecord record4 = new ArrestRecord();
+		Record.readRowIntoRecord(ArrestRecord.class, mainSheet, record1, 1, null);
+        Record.readRowIntoRecord(ArrestRecord.class, mainSheet, record2, 2, null);
+        Record.readRowIntoRecord(ArrestRecord.class, mainSheet, record4, 4, null);
+    	recordSet.add(record4);
+    	recordSet.add(record2);
+    	recordSet.add(record1);
+    	//do this 20 times to minimize chance of random success
+    	for (int t=0;t<=20;t++) {
+	        List<Record> sortedList = Record.getAsSortedList(recordSet, ArrestRecord.ArrestDateComparator);
+	        
+	        assertThat(sortedList, containsInAnyOrder(record4, record2, record1));
+	    	Assert.assertEquals(sortedList,  sortedList);
+    	}
     }
 
     @Test

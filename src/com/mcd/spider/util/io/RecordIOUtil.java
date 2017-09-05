@@ -145,10 +145,14 @@ public class RecordIOUtil {
     public Set<Record> mergeRecordsFromSheets(File fileOne, File fileTwo, int sheetNumberOne, int sheetNumberTwo) {
 		Set<Record> storedRecordsOne = inputter.readRecordsFromSheet(fileOne, sheetNumberOne);
 		Set<Record> storedRecordsTwo = inputter.readRecordsFromSheet(fileTwo, sheetNumberTwo);
-		Set<Record> compiledRecords = new HashSet<>();
 		
-		Set<Record> outerSet = storedRecordsOne==null?new HashSet<>():new HashSet<>(storedRecordsOne);
-		Set<Record> innerSet = storedRecordsTwo==null?new HashSet<>():new HashSet<>(storedRecordsTwo);
+		return mergeRecordsFromSets(storedRecordsOne, storedRecordsTwo);
+	}
+    
+    public Set<Record> mergeRecordsFromSets(Set<Record> recordSetOne, Set<Record> recordSetTwo) {
+		Set<Record> compiledRecords = new HashSet<>();
+    	Set<Record> outerSet = recordSetOne==null?new HashSet<>():new HashSet<>(recordSetOne);
+		Set<Record> innerSet = recordSetTwo==null?new HashSet<>():new HashSet<>(recordSetTwo);
 
 		int mergedCount = 0;
 		for (Record recordOne : outerSet) {
@@ -156,18 +160,18 @@ public class RecordIOUtil {
 				if (recordOne.matches(recordTwo)) {
 					recordOne.merge(recordTwo);
 					compiledRecords.add(recordOne);
-					storedRecordsTwo.remove(recordTwo);
+					recordSetTwo.remove(recordTwo);
 					mergedCount++;
 				} else {
 					compiledRecords.add(recordOne);
-					storedRecordsOne.remove(recordOne);
+					recordSetOne.remove(recordOne);
 				}
 			}
 		}
-		compiledRecords.addAll(storedRecordsOne);
-		compiledRecords.addAll(storedRecordsTwo);
+		compiledRecords.addAll(recordSetOne);
+		compiledRecords.addAll(recordSetTwo);
 		logger.info(mergedCount + " records were merged");
 		logger.info(compiledRecords.size() + " total records as a result of the merge");
 		return compiledRecords;
-	}
+    }
 }

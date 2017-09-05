@@ -14,6 +14,7 @@ import com.mcd.spider.util.io.RecordIOUtil;
 import org.apache.log4j.Logger;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -78,12 +79,15 @@ public class SpiderEngine {
 	protected void customizeOutputs(State state, RecordFilterEnum filter) {
         RecordIOUtil mainIOutil = new RecordIOUtil(state, new ArrestRecord(), state.getEngines().get(0).getSite());
         //start with the second engine and iterate over the rest
+        List<Set<Record>> allMergedRecords = new ArrayList<>();
         for (int e=1;e<state.getEngines().size();e++) {
-            //TODO this will overwrite _MERGED if more than 2 engine per site
+            //TODO this will overwrite _MERGED if more than 2 engines per site
             //try simply gathering merged records from all engines, then outputting everything at the end
+        	//can wait until a third site is added to any state. Implement RecordWorkbook in conjunction with this
             logger.info("Attempting to merge record output from " + state);
             RecordIOUtil comparingIOUtil = new RecordIOUtil(state, new ArrestRecord(), state.getEngines().get(e).getSite());
             List<Set<Record>> mergedRecords = mainIOutil.mergeRecordsFromWorkbooks(new File(mainIOutil.getMainDocPath()), new File(comparingIOUtil.getMainDocPath()));
+        
             String[] sheetNames = new String[mergedRecords.size()];
             sheetNames[0] = state.getName();
             for (int mrs=1;mrs<sheetNames.length;mrs++) {
