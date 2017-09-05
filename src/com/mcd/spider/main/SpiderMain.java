@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * 
+ *
  * @author U569220
  *
  */
@@ -25,9 +25,9 @@ public class SpiderMain {
 	private static final Logger logger = Logger.getLogger(SpiderMain.class);
 	private static MainInputUtil mainInputUtil;
 	private static SpiderEngine engine;
-	
+
 	private static String prompt;
-	
+
 	private SpiderMain(){}
 
 	public static void  main(String[] args) throws IOException {
@@ -38,12 +38,12 @@ public class SpiderMain {
 		logger.info("*******************************************************************************************");
 		mainInputUtil = new MainInputUtil();
 		engine = new SpiderEngine();
-		
+
 		if (prompt==null) {
 			prompt = SpiderConstants.PROMPT;
 		}
 		String scrapeTypeChoice = "";
-		
+
 		if (args.length==0) {
             args = new String[1];
             args[0] = (String) mainInputUtil.getInput(prompt, 3, "");
@@ -124,7 +124,7 @@ public class SpiderMain {
             main(new String[] {args[0]});
         }
 	}
-	
+
 	private static void getTextBySelector(String[] args) throws IOException {
 		String url = args.length>=2?mainInputUtil.convertToUrl(args[1]):(String) mainInputUtil.getInput("URL: ", 3, SpiderConstants.URL_VALIDATION);
 		String selector = args.length>=3?args[2]:(String) mainInputUtil.getInput("Selector(s): ", 1, SpiderConstants.NO_VALIDATION);
@@ -139,7 +139,7 @@ public class SpiderMain {
             main(new String[] {args[0]});
         }
 	}
-	
+
 	private static void getSearchTerms(String[] args) throws IOException {
 		String url = args.length>=2?mainInputUtil.convertToUrl(args[1]):(String) mainInputUtil.getInput("URL: ", 3, SpiderConstants.URL_VALIDATION);
 		String words = args.length>=3?args[2]:(String) mainInputUtil.getInput("Words: ", 1, SpiderConstants.NO_VALIDATION);
@@ -162,7 +162,7 @@ public class SpiderMain {
 		List<State> states = args.length>=2?mainInputUtil.convertToStates(args[1]):(List<State>) mainInputUtil.getInput("State(s) or \"All\": ", 3, SpiderConstants.STATE_VALIDATION);
         RecordFilterEnum filter = args.length>=3?mainInputUtil.convertToFilter(args[2]):(RecordFilterEnum) mainInputUtil.getInput("Filter: ", 3, SpiderConstants.FILTER_VALIDATION);
         long maxNumberOfResults = args.length>=4?mainInputUtil.convertToNumber(args[3]):(int) mainInputUtil.getInput("Maximum Number of Records: ", 3, SpiderConstants.NUMBER_VALIDATION);
-        boolean retrieveMissedRecords = args.length>=5?mainInputUtil.convertToBoolean(args[4]):(boolean) mainInputUtil.getInput("Retrieve Missed Records: ", 3, SpiderConstants.BOOLEAN_VALIDATION);
+        boolean retrieveMissedRecords = args.length>=5?mainInputUtil.convertToBoolean(args[4]):(boolean) mainInputUtil.getInput("Start from Last Crawled: ", 3, SpiderConstants.BOOLEAN_VALIDATION);
 
         StringBuilder stateSB = new StringBuilder();
         for (int s = 0;s<states.size();s++) {
@@ -173,7 +173,7 @@ public class SpiderMain {
                 "State(s): " + stateSB.toString() + "\n" +
                 "Filter: " + filter.filterName() + "\n" +
                 "Max Number of Records: " + maxNumberOfResults + "\n" +
-                "Retrieve Missed Records: " + retrieveMissedRecords + "\n" +
+                "Start from Last Crawled: " + retrieveMissedRecords + "\n" +
                 "   Is that correct?";
         if ((boolean) mainInputUtil.getInput(confirmationPrompt, 2, SpiderConstants.BOOLEAN_VALIDATION)) {
             engine.getArrestRecordsByState(states, maxNumberOfResults, filter, retrieveMissedRecords);
@@ -187,7 +187,7 @@ public class SpiderMain {
 		List<State> states = args.length>=2?mainInputUtil.convertToStates(args[1]):(List<State>) mainInputUtil.getInput("State(s) or \"All\": ", 3, SpiderConstants.STATE_VALIDATION);
 		RecordFilterEnum filter = args.length>=3?mainInputUtil.convertToFilter(args[2]):(RecordFilterEnum) mainInputUtil.getInput("Filter: ", 3, SpiderConstants.FILTER_VALIDATION);
 		long maxNumberOfResults = args.length>=4?mainInputUtil.convertToNumber(args[3]):(int) mainInputUtil.getInput("Maximum Number of Records: ", 3, SpiderConstants.NUMBER_VALIDATION);
-        boolean retrieveMissedRecords = args.length>=5?mainInputUtil.convertToBoolean(args[4]):(boolean) mainInputUtil.getInput("Retrieve Missed Records: ", 3, SpiderConstants.BOOLEAN_VALIDATION);
+        boolean retrieveMissedRecords = args.length>=5?mainInputUtil.convertToBoolean(args[4]):(boolean) mainInputUtil.getInput("Start from Last Crawled: ", 3, SpiderConstants.BOOLEAN_VALIDATION);
 
         StringBuilder stateSB = new StringBuilder();
         for (int s = 0;s<states.size();s++) {
@@ -198,7 +198,7 @@ public class SpiderMain {
                 "State(s): " + stateSB.toString() + "\n" +
                 "Filter: " + filter.filterName() + "\n" +
                 "Max Number of Records: " + maxNumberOfResults + "\n" +
-                "Retrieve Missed Records: " + retrieveMissedRecords + "\n" +
+                "Start from Last Crawled: " + retrieveMissedRecords + "\n" +
                 "   Is that correct?";
         if ((boolean) mainInputUtil.getInput(confirmationPrompt, 2, SpiderConstants.BOOLEAN_VALIDATION)) {
             engine.getArrestRecordsThroughTheBackDoor(states, maxNumberOfResults, filter, retrieveMissedRecords);
@@ -247,12 +247,5 @@ public class SpiderMain {
 			prompt = SpiderConstants.HELP_MESSAGE_ALL + prompt;
 			main(new String[] {});
         }
-			
-			
 	}
-
-//	private static void testConnectionGetter(String[] args) throws IOException {
-//        int numberOfTries = args.length>=2?mainInputUtil.convertToNumber(args[1]):(int) mainInputUtil.getInput("Number of connections to make: ", 3, SpiderConstants.NUMBER_VALIDATION);
-//        engine.testRandomConnections(numberOfTries);
-//    }
 }

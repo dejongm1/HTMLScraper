@@ -57,7 +57,11 @@ public class MainInputUtil {
         try {
             result = Integer.parseInt(input);
         } catch (NumberFormatException nfe) {
-            System.err.println("That's not a number\n");
+            if (input.equals("")) {
+                result = 99999;
+            } else {
+                System.err.println("That's not a number\n");
+            }
         }
         return result;
     }
@@ -87,10 +91,13 @@ public class MainInputUtil {
 
     public boolean convertToBoolean(String input) {
         Boolean result;
-        Set<String> values = new HashSet<>(Arrays.asList("true", "yes", "no", "false"));
-    	if (values.contains(input.toLowerCase())) {
-    		result = input.equalsIgnoreCase("true") || input.equalsIgnoreCase("yes");
-    	} else {
+        Set<String> trueValues = new HashSet<>(Arrays.asList("true", "yes", "y", ""));
+        Set<String> falseValues = new HashSet<>(Arrays.asList("no", "false", "n"));
+    	if (trueValues.contains(input.toLowerCase())) {
+    		result = true;
+    	} else if (falseValues.contains(input.toLowerCase())) {
+            result = false;
+        } else {
     		System.err.println("Not sure what that meant\n");
     		result = null;
     	}

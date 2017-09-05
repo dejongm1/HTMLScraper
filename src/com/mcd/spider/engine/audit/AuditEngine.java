@@ -225,6 +225,7 @@ public class AuditEngine {
     }
 
     private void search(Document doc, List<Term> terms, PageAuditResult page, int levelOfGenerosity, boolean tagsAndText) { //TODO add tags to textToSearch
+        //TODO The default for flexibility is 99999, convert to 1-3 on execution
     	SearchResults results = page.getSearchResults();
     	for (Term termToSearch : terms) {
     		Term term = new Term(termToSearch.getWord(), 0);
@@ -374,6 +375,7 @@ public class AuditEngine {
 	}
 	
     public void search(String url, String word, int levelOfGenerosity) {
+        //TODO The default for flexibility is 99999, convert to 1-3 on execution
     	//TODO redirect to private method?
     	Term term = new Term(word, 0);
     	String textToSearch;

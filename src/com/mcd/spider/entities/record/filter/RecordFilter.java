@@ -24,6 +24,9 @@ public class RecordFilter {
 		}
 		
 		public static RecordFilterEnum findFilter(String filterName) {
+            if (filterName.equals("")) {
+                return RecordFilterEnum.NONE;
+            }
 			for (RecordFilterEnum filterEnum : RecordFilterEnum.values()) {
 				if (filterName.equalsIgnoreCase(filterEnum.name())) {
 					return filterEnum;
