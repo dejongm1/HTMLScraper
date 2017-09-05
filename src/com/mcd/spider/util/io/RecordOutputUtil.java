@@ -71,7 +71,6 @@ public class RecordOutputUtil {
     public void createWorkbook(String workbookName, List<Set<Record>> recordSetList, boolean backUpExisting, String[] sheetNames, Comparator comparator) {
         WritableWorkbook newWorkbook = null;
         try {
-            //TODO why does this check fail if crawling a state where no book exists?
             if (new File(docPath).exists() && backUpExisting) {
                 logger.info("Backing up " + workbookName + " as " + docPath.substring(0, docPath.indexOf(EXT))+BACKUP_SUFFIX+EXT + " and starting a new workbook");
                 createWorkbookCopy(docPath,

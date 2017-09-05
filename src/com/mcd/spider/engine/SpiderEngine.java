@@ -80,6 +80,7 @@ public class SpiderEngine {
         //start with the second engine and iterate over the rest
         for (int e=1;e<state.getEngines().size();e++) {
             //TODO this will overwrite _MERGED if more than 2 engine per site
+            //try simply gathering merged records from all engines, then outputting everything at the end
             logger.info("Attempting to merge record output from " + state);
             RecordIOUtil comparingIOUtil = new RecordIOUtil(state, new ArrestRecord(), state.getEngines().get(e).getSite());
             List<Set<Record>> mergedRecords = mainIOutil.mergeRecordsFromWorkbooks(new File(mainIOutil.getMainDocPath()), new File(comparingIOUtil.getMainDocPath()));

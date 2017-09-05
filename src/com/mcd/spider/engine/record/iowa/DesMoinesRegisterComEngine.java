@@ -142,7 +142,6 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     public void scrapeRecords(Map<Object, String> recordsDetailsUrlMap){
         List<Record> arrestRecords = new ArrayList<>();
         ArrestRecord arrestRecord;
-        //TODO test these next two lines
         arrestRecords.addAll(spiderWeb.getCrawledRecords());
         
         RecordOutputUtil recordOutputUtil = recordIOUtil.getOutputter();
@@ -292,8 +291,16 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
                 logger.error("Nullpointer while trying to parse parse out record details");
             }
         } else if (profileDetailElement.select("h1").hasText()) {
-            record.setFullName(profileDetailElement.select("h1").text().trim());
-            //TODO split full name into first (, middle) and last
+            String fullName = profileDetailElement.select("h1").text().trim();
+            record.setFullName(fullName);
+            try {
+                String[] nameParts = fullName.split(" ");
+                record.setFirstName(nameParts[0]);
+                record.setMiddleName(nameParts[1]);
+                record.setLastName(nameParts[2]);
+            } catch (ArrayIndexOutOfBoundsException e) {
+                logger.error("Had some trouble splitting " + fullName + " into parts");
+            }
         }
     }
 

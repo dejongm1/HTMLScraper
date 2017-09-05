@@ -96,7 +96,6 @@ public class SpiderMain {
             System.err.println("Dunno what you did but I don't like it. I quit.");
             System.exit(0);
         } catch (ExcelOutputException ebe) {
-		    //TODO not using this anymore?
             prompt = "Error with excel output: " + ebe.getMethodName() + ". Please ensure it's not open and try again. \n" + prompt;
             main(new String[] {});
         } catch (NullPointerException npe) {
