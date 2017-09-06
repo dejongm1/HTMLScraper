@@ -1,5 +1,6 @@
 package com.mcd.spider.entities.io;
 
+import java.util.List;
 
 /**
  * 
@@ -8,13 +9,22 @@ package com.mcd.spider.entities.io;
  */
 
 public class RecordWorkbook {
-
-	//This class will be an entity to represent a workbook in java form to save from using Lists of Set and String[] sheetNames
-	//HeaderRow=Record.FieldNames
-	//Cell=Record.Field
-	//Row=Record
-	//Sheet=Set<Record>
-	//		String sheetName
-	//Workbook=List<Sheet>
 	
+	//initialize ioutil when this is instantiated? each workbook would get it's own ioUtil
+
+	private List<RecordSheet> recordSheet;
+	
+	public RecordWorkbook(List<RecordSheet> recordSheet) {
+		this.recordSheet = recordSheet;
+	}
+
+	public List<RecordSheet> getRecordSheet() {
+		return recordSheet;
+	}
+
+	public void setRecordSheet(List<RecordSheet> recordSheet) {
+		this.recordSheet = recordSheet;
+	}
+	
+	//methods to access inputter and outputter
 }

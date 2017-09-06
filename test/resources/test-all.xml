@@ -2,30 +2,31 @@
 
 <suite name="TestAll">
 
-    <!--<test name="main">-->
-        <!--<classes>-->
-            <!--<class name="com.mcd.spider.main.SpiderMainTest" />-->
-        <!--</classes>-->
-    <!--</test>-->
+	<!--<test name="main"> -->
+		<!--<classes> -->
+			<!--<class name="com.mcd.spider.main.SpiderMainTest" /> -->
+		<!--</classes> -->
+	<!--</test> -->
+	
+	<test name="util">
+		<classes>
+			<class name="com.mcd.spider.util.io.RecordIOUtilTest" />
+			<class name="com.mcd.spider.util.io.RecordInputUtilTest" />
+			<class name="com.mcd.spider.util.io.RecordOutputUtilTest" />
+		</classes>
+	</test>
 
-    <test name="util">
-        <classes>
-            <class name="com.mcd.spider.util.io.RecordIOUtilTest" />
-            <class name="com.mcd.spider.util.io.RecordInputUtilTest" />
-            <class name="com.mcd.spider.util.io.RecordOutputUtilTest" />
-        </classes>
-    </test>
+	<test name="entities">
+		<classes>
+			<class name="com.mcd.spider.entities.record.RecordTest" />
+			<class name="com.mcd.spider.entities.record.ArrestRecordTest" />
+		</classes>
+	</test>
 
-    <test name="entities">
-        <classes>
-            <class name="com.mcd.spider.entities.record.RecordTest" />
-            <class name="com.mcd.spider.entities.record.ArrestRecordTest" />
-        </classes>
-    </test>
-
-    <test name="engine">
-        <classes>
-        </classes>
-    </test>
+	<test name="engine">
+		<classes>
+			<class name="com.mcd.spider.engine.SpiderEngineTest" />
+		</classes>
+	</test>
 
 </suite>

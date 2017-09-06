@@ -149,7 +149,7 @@ public class SpiderEngine {
         }
     }
 	
-	private List<Set<Record>> filterOutLexisNexisEligibleRecords(List<Set<Record>> records) {
+	protected List<Set<Record>> filterOutLexisNexisEligibleRecords(List<Set<Record>> records) {
 		List<Set<Record>> eligibleRecords = new ArrayList<>();
 		for (Set<Record> recordSet : records) {
 			Set<Record> eligibleRecordSet = new HashSet<>();
