@@ -38,8 +38,9 @@ public class SpiderEngineTest {
 
 	private SpiderEngine engine;
 	private State state;
-	private File testOutputFileOne = new File("output/testing/ArrestsOrgOutput.xls");
+	private File testOutputFileOne = new File("output/testing/IAArrestsOrgOutput.xls");
 	private File testOutputFileTwo = new File("output/testing/DSMRegComOutput.xls");
+	private File testOutputFileLN = new File("output/testing/OKArrestsOrgOutput.xls");
 	private File testOutputFileOneFiltered = new File("output/testing/ArrestsOrgOutput_Alcohol-related.xls");
 	private File testOutputFileTwoFiltered = new File("output/testing/DSMRegComOutput_Alcohol-related.xls");
 	private File mockOutputFileOne;
@@ -65,6 +66,7 @@ public class SpiderEngineTest {
 		//create output books
 		Assert.assertTrue(testOutputFileOne.exists());
 		Assert.assertTrue(testOutputFileTwo.exists());
+		Assert.assertTrue(testOutputFileLN.exists());
 		Assert.assertTrue(testOutputFileOneFiltered.exists());
 		Assert.assertTrue(testOutputFileTwoFiltered.exists());
 		//rename these to RecordIOUtil expected names
@@ -124,13 +126,15 @@ public class SpiderEngineTest {
 		//lexis nexis book created
 		state = State.OK;
 		state.setEngines(Arrays.asList(new ArrestsDotOrgEngine(state.getName())));
-		mainIOUtil = new RecordIOUtil(state, new ArrestRecord(), new ArrestsDotOrgSite(new String[]{state.getName()}), true);
-		engine.customizeArrestOutputs(mainIOUtil, state, RecordFilterEnum.NONE);
+		//rename testOutputFileLN
+		RecordIOUtil iOUtil = new RecordIOUtil(state, new ArrestRecord(), new ArrestsDotOrgSite(new String[]{state.getName()}), true);
+		engine.customizeArrestOutputs(iOUtil, state, RecordFilterEnum.NONE);
 
 		//verify outputs
+		
+		//delete testOutputFileLN
 		throw new RuntimeException("Test not implemented");
 	}
-	
 
 	@Test
 	public void customizeArrestOutputs_OneEngineLexisNexisEligibleNoneFound() {
@@ -138,14 +142,15 @@ public class SpiderEngineTest {
 		//lexis nexis book not created because no eligible records were found
 		state = State.OK;
 		state.setEngines(Arrays.asList(new ArrestsDotOrgEngine(state.getName())));
-		mainIOUtil = new RecordIOUtil(state, new ArrestRecord(), new ArrestsDotOrgSite(new String[]{state.getName()}), true);
-		engine.customizeArrestOutputs(mainIOUtil, state, RecordFilterEnum.NONE);
+		//rename testOutputFileLN
+		RecordIOUtil iOUtil = new RecordIOUtil(state, new ArrestRecord(), new ArrestsDotOrgSite(new String[]{state.getName()}), true);
+		engine.customizeArrestOutputs(iOUtil, state, RecordFilterEnum.NONE);
 
 		//verify outputs
+
+		//delete testOutputFileLN
 		throw new RuntimeException("Test not implemented");
-	}
-	
-	
+	}	
 
 	@Test
 	public void filterOutLexisNexisEligibleRecords() {
