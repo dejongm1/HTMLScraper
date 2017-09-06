@@ -29,7 +29,7 @@ public class DesMoinesRegisterComSite implements SiteService {
 	public DesMoinesRegisterComSite(String[] args) {
 		setBaseUrl(args);
 	}
-	
+
 	@Override
 	public Url getUrl() {
 		return url;

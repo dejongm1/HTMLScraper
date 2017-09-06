@@ -35,6 +35,7 @@ public class RecordIOUtilTest {
 	@BeforeClass
 	public void setUp() throws IOException {
 		logger.info("********** Starting Test cases for RecordIOUtil *****************");
+		System.setProperty("TestingSpider", "true");
 		Assert.assertTrue(testMergeFileOne.exists());
 		Assert.assertTrue(testMergeFileTwo.exists());
 		Assert.assertTrue(testMergeFileOneExtraSheets.exists());
@@ -44,6 +45,7 @@ public class RecordIOUtilTest {
 
 	@AfterClass
 	public void tearDown() {
+		System.setProperty("TestingSpider", "false");
 		logger.info("********** Finishing Test cases for RecordIOUtil *****************");
 	}
 

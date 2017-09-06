@@ -47,6 +47,7 @@ public class RecordTest {
 	@BeforeClass
 	public void setUpClass() throws BiffException, IOException {
 		logger.info("********** Starting Test cases for Record *****************");
+		System.setProperty("TestingSpider", "true");
 		Assert.assertTrue(testReadInputFile.exists());
 		workbook = Workbook.getWorkbook(testReadInputFile);
         if (workbook!=null) {
@@ -58,6 +59,7 @@ public class RecordTest {
 	
 	@AfterClass
 	public void tearDown() {
+		System.setProperty("TestingSpider", "false");
 		logger.info("********** Finishing Test cases for Record *****************");
 	}
 

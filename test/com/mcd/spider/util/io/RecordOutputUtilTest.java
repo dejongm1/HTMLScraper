@@ -38,6 +38,7 @@ public class RecordOutputUtilTest {
     @BeforeClass
     public void setUpClass() {
 		logger.info("********** Starting Test cases for RecordOutputUtil *****************");
+		System.setProperty("TestingSpider", "true");
     	mockRecordOne.setId("Ashley_Graves_34029315");
 		mockRecordOne.setFullName("Ashley  Graves");
 		mockRecordOne.setFirstName("Ashley");
@@ -70,6 +71,7 @@ public class RecordOutputUtilTest {
     
     @AfterClass
     public void tearDown() {
+		System.setProperty("TestingSpider", "false");
 		logger.info("********** Finishing Test cases for RecordOutputUtil *****************");
     }
 
@@ -265,7 +267,7 @@ public class RecordOutputUtilTest {
         
         Assert.assertTrue(mainDoc.exists());
 
-        outputter.splitIntoSheets(mainDoc.getPath(), ArrestRecord.RecordColumnEnum.COUNTY_COLUMN.getColumnTitle(), recordsSetList, ArrestRecord.class);
+        outputter.splitIntoSheets(mainDoc.getPath(), ArrestRecord.RecordColumnEnum.COUNTY_COLUMN.getColumnTitle(), recordsSetList, ArrestRecord.class, ArrestRecord.CountyComparator);
 
         Workbook splitworkWorkbook = Workbook.getWorkbook(mainDoc);
         Sheet sheetOne = splitworkWorkbook.getSheet("Polk");
@@ -302,7 +304,7 @@ public class RecordOutputUtilTest {
         recordsSetList.add(recordsListTwo);
         recordsSetList.add(recordsListThree);
 
-        outputter.splitIntoSheets(mainDoc.getPath(), ArrestRecord.RecordColumnEnum.COUNTY_COLUMN.getColumnTitle(), recordsSetList, ArrestRecord.class);
+        outputter.splitIntoSheets(mainDoc.getPath(), ArrestRecord.RecordColumnEnum.COUNTY_COLUMN.getColumnTitle(), recordsSetList, ArrestRecord.class, ArrestRecord.CountyComparator);
 
         Workbook splitworkWorkbook = Workbook.getWorkbook(mainDoc);
         Sheet sheetOne = splitworkWorkbook.getSheet("Polk");

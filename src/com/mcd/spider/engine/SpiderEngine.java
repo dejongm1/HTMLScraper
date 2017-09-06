@@ -14,6 +14,7 @@ import com.mcd.spider.engine.audit.AuditEngine;
 import com.mcd.spider.engine.record.iowa.DesMoinesRegisterComEngine;
 import com.mcd.spider.engine.router.StateRouter;
 import com.mcd.spider.entities.audit.AuditParameters;
+import com.mcd.spider.entities.io.RecordWorkbook;
 import com.mcd.spider.entities.record.ArrestRecord;
 import com.mcd.spider.entities.record.ArrestRecord.RecordColumnEnum;
 import com.mcd.spider.entities.record.Record;
@@ -39,7 +40,8 @@ public class SpiderEngine {
 			if (!state.getEngines().isEmpty()) {
 				StateRouter router = new StateRouter(state);
 				router.collectRecordsUsingThreading(maxNumberOfResults, filter, retrieveMissedRecords);
-				customizeArrestOutputs(state, filter);
+		        RecordIOUtil mainIOutil = new RecordIOUtil(state, new ArrestRecord(), state.getEngines().get(0).getSite());
+				customizeArrestOutputs(mainIOutil, state, filter);
 			} else {
 				throw new StateNotReadyException(state);
 			}
@@ -79,9 +81,8 @@ public class SpiderEngine {
 		engine.getTextBySelector(url, selector);
 	}
 
-	protected void customizeArrestOutputs(State state, RecordFilterEnum filter) {
+	protected void customizeArrestOutputs(RecordIOUtil mainIOutil, State state, RecordFilterEnum filter) {
 		//TODO move this whole thing to RecordOutputUtil?
-        RecordIOUtil mainIOutil = new RecordIOUtil(state, new ArrestRecord(), state.getEngines().get(0).getSite());
         //start with the second engine and iterate over the rest
         List<Set<Record>> allMergedRecords = new ArrayList<>();
         for (int e=1;e<state.getEngines().size();e++) {
@@ -121,7 +122,7 @@ public class SpiderEngine {
             }
         }
 
-        //TODO test this
+        //TODO test this and move to it's own method
         if (state.meetsLexisNexisCriteria()) {
         	File docPathtoConvert = new File( filter.equals(RecordFilterEnum.NONE)?mainIOutil.getMainDocPath():mainIOutil.getOutputter().getFilteredDocPath(filter));
         	List<Set<Record>> eligibleRecordsCrawled;
@@ -132,18 +133,21 @@ public class SpiderEngine {
 	            //read records in from main workbook
         		eligibleRecordsCrawled = filterOutLexisNexisEligibleRecords(mainIOutil.getInputter().readRecordsFromWorkbook(docPathtoConvert));
         	}
-        	
-        	mainIOutil.getOutputter().createWorkbook(mainIOutil.getOutputter().getLNPath(), eligibleRecordsCrawled, false, new String[]{state.getName()}, ArrestDateComparator);
-        	List<Integer> columnsToRemove = new ArrayList<>();
-        	for (RecordColumnEnum columnEnum : RecordColumnEnum.values()) {
-        		if (!columnEnum.equals(RecordColumnEnum.ARRESTDATE_COLUMN) && !columnEnum.equals(RecordColumnEnum.DOB_COLUMN)
-        				&& !columnEnum.equals(RecordColumnEnum.FIRSTNAME_COLUMN) && !columnEnum.equals(RecordColumnEnum.LASTNAME_COLUMN)) {
-        			columnsToRemove.add(columnEnum.getColumnIndex());
-        		}
+        	if (!RecordWorkbook.isEmpty(eligibleRecordsCrawled)) {
+	        	mainIOutil.getOutputter().createWorkbook(mainIOutil.getOutputter().getLNPath(), eligibleRecordsCrawled, false, new String[]{state.getName()}, ArrestDateComparator);
+	        	List<Integer> columnsToRemove = new ArrayList<>();
+	        	for (RecordColumnEnum columnEnum : RecordColumnEnum.values()) {
+	        		if (!columnEnum.equals(RecordColumnEnum.ARRESTDATE_COLUMN) && !columnEnum.equals(RecordColumnEnum.DOB_COLUMN)
+	        				&& !columnEnum.equals(RecordColumnEnum.FIRSTNAME_COLUMN) && !columnEnum.equals(RecordColumnEnum.LASTNAME_COLUMN)) {
+	        			columnsToRemove.add(columnEnum.getColumnIndex());
+	        		}
+	        	}
+	        	mainIOutil.getOutputter().removeColumnsFromSpreadsheet(columnsToRemove.toArray(new Integer[columnsToRemove.size()]), mainIOutil.getOutputter().getLNPath());
+	        	
+	            logger.info("Lexis Nexis input sheet complete.");
+        	} else {
+        		logger.info("No records eligible for Lexis Nexis were found");
         	}
-        	mainIOutil.getOutputter().removeColumnsFromSpreadsheet(columnsToRemove.toArray(new Integer[columnsToRemove.size()]), mainIOutil.getOutputter().getLNPath());
-        	
-            logger.info("Lexis Nexis input sheet complete.");
         } else {
             logger.info("This state does not meet the criteria for Lexis Nexis");
         }

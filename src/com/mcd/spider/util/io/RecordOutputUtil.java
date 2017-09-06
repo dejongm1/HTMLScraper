@@ -218,7 +218,8 @@ public class RecordOutputUtil {
 		saveRecordsToWorkbook(recordSetList, workbook, comparator);
 	}
 
-    public boolean splitIntoSheets(String docName, String delimiterColumn, List<Set<Record>> recordsSetList, Class clazz) {
+    public boolean splitIntoSheets(String docName, String delimiterColumn, List<Set<Record>> recordsSetList, Class clazz, Comparator comparator) {
+    	logger.info("Splitting " + docName + " into sheets by " + delimiterColumn);
         boolean successful = false;
         Method fieldGetter = null;
         for (Method method : clazz.getMethods()) {
@@ -237,9 +238,11 @@ public class RecordOutputUtil {
                         excelSheet = copyWorkbook.createSheet(delimitValue == null ? "empty" : delimitValue, s + 1);
                     }
                     createColumnHeaders(excelSheet);
-                    Record[] recordArray = recordsSetList.get(s).toArray(new Record[recordsSetList.get(s).size()]);
-                    for (int r = 0; r < recordArray.length; r++) {
-                    	recordArray[r].addToExcelSheet(r+1, excelSheet);
+//                    Record[] recordArray = recordsSetList.get(s).toArray(new Record[recordsSetList.get(s).size()]);
+                    logger.info("Sorting records before trying to save");
+                    List<Record> sortedList = Record.getAsSortedList(recordsSetList.get(s), comparator);
+                    for (int r = 0; r < sortedList.size(); r++) {
+                    	sortedList.get(r).addToExcelSheet(r+1, excelSheet);
                     }
                 } catch (NullPointerException e) {
                     logger.error("Error trying split workbook into sheets by " + fieldGetter.getName(), e);

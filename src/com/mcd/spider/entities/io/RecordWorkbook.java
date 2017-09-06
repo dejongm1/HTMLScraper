@@ -1,6 +1,9 @@
 package com.mcd.spider.entities.io;
 
 import java.util.List;
+import java.util.Set;
+
+import com.mcd.spider.entities.record.Record;
 
 /**
  * 
@@ -27,4 +30,17 @@ public class RecordWorkbook {
 	}
 	
 	//methods to access inputter and outputter
+	
+	//when this class is implememnted, change to a non-static method that returns whther this is empty or not
+	public static boolean isEmpty(List<Set<Record>> recordSetList) {
+		boolean empty = true;
+		if (recordSetList!=null && !recordSetList.isEmpty()) {
+			for (Set<Record> recordSet : recordSetList) {
+				if (recordSet.size()>0) {
+					empty = false;
+				}
+			}
+		}
+		return empty;
+	}
 }

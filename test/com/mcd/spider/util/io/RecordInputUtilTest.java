@@ -36,6 +36,7 @@ public class RecordInputUtilTest {
 	@BeforeClass
 	public void setUpClass() throws BiffException, IOException {
 		logger.info("********** Starting Test cases for RecordInputUtil *****************");
+		System.setProperty("TestingSpider", "true");
 		ioUtil = new RecordIOUtil(State.getState("IA"), new ArrestRecord(), new ArrestsDotOrgSite(new String[]{"iowa"}));
 		inputter = ioUtil.getInputter();
 		Assert.assertTrue(testReadInputFile.exists());
@@ -48,6 +49,7 @@ public class RecordInputUtilTest {
 	
 	@AfterClass
 	public void tearDown() throws Exception {
+		System.setProperty("TestingSpider", "false");
 		logger.info("********** Finishing Test cases for RecordInputUtil *****************");
 	}
 	

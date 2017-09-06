@@ -40,9 +40,8 @@ import static com.mcd.spider.entities.record.ArrestRecord.ArrestDateComparator;
 
 public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 
-//    public static final Logger logger = Logger.getLogger("arrestsorgLogger");
     public static final Logger logger = Logger.getLogger(ArrestsDotOrgEngine.class);
-    
+
     SpiderUtil spiderUtil = new SpiderUtil();
     private RecordFilterEnum filter;
     private ConnectionUtil connectionUtil;
@@ -51,6 +50,10 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     private RecordIOUtil recordIOUtil;
     private SpiderWeb spiderWeb;
 
+    public ArrestsDotOrgEngine(String stateName) {
+    	this.site = new ArrestsDotOrgSite(new String[]{stateName});
+    }
+    
     @Override
     public Site getSite() {
     	return site;
@@ -62,7 +65,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         this.state = state;
         this.filter = filter;
         spiderWeb = new SpiderWeb(maxNumberOfResults, true, retrieveMissedRecords);
-        site = new ArrestsDotOrgSite(new String[]{state.getName()});
+//        site = new ArrestsDotOrgSite(new String[]{state.getName()}); //moved to constructor
         recordIOUtil = initializeIOUtil(state);
         //Do we want to persist between states in same run? Or not run multiple states at once?
         connectionUtil = new ConnectionUtil(true);
@@ -473,9 +476,10 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     @Override
     public void finalizeOutput(List<Record> arrestRecords) {
         //format the output
+    	Comparator comparator = ArrestRecord.CountyComparator;
         if (!arrestRecords.isEmpty()) {
             logger.info("Starting to finalize the result output");
-            Collections.sort(arrestRecords, ArrestRecord.CountyComparator);
+            Collections.sort(arrestRecords, comparator);
             String columnDelimiter = RecordColumnEnum.COUNTY_COLUMN.getFieldName();
             Class<ArrestRecord> clazz = ArrestRecord.class;
             if (filter!=null && filter!=RecordFilterEnum.NONE) {
@@ -486,8 +490,8 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
                     //create a separate sheet with filtered results
                     logger.info(filteredRecords.size()+" "+filter.filterName()+" "+"records were crawled");
                     if (!filteredRecords.isEmpty()) {
-                        recordIOUtil.getOutputter().createWorkbook(recordIOUtil.getOutputter().getFilteredDocPath(filter), new HashSet<>(filteredRecords), false, ArrestDateComparator);
-                        recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getOutputter().getFilteredDocPath(filter), columnDelimiter, splitRecords, clazz);
+                        recordIOUtil.getOutputter().createWorkbook(recordIOUtil.getOutputter().getFilteredDocPath(filter), new HashSet<>(filteredRecords), false, comparator);
+                        recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getOutputter().getFilteredDocPath(filter), columnDelimiter, splitRecords, clazz, comparator);
                     }
                 } catch (Exception e) {
                     logger.error("Error trying to create filtered spreadsheet", e);
@@ -495,7 +499,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             }
             try {
                 List<Set<Record>> splitRecords = Record.splitByField(arrestRecords, columnDelimiter, clazz);
-                recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getMainDocPath(), columnDelimiter, splitRecords, clazz);
+                recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getMainDocPath(), columnDelimiter, splitRecords, clazz, comparator);
             } catch (Exception e) {
                 logger.error("Error trying to split full list of records", e);
             }

@@ -33,7 +33,7 @@ public class RecordIOUtil {
 	private Record record;
 	
 	public RecordIOUtil(State state, Record record, Site site) {
-        this(state, record, site, false);
+		this(state, record, site, Boolean.parseBoolean(System.getProperty("TestingSpider")));
 	}
 
     public RecordIOUtil(State state, Record record, Site site, boolean testing) {
