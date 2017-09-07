@@ -1,5 +1,29 @@
 package com.mcd.spider.engine.record.various;
 
+import static com.mcd.spider.entities.record.ArrestRecord.ArrestDateComparator;
+import static com.mcd.spider.entities.record.ArrestRecord.CountyComparator;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.log4j.Logger;
+import org.jsoup.Connection;
+import org.jsoup.HttpStatusException;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
+import org.jsoup.select.Elements;
+
 import com.mcd.spider.engine.record.ArrestRecordEngine;
 import com.mcd.spider.entities.record.ArrestRecord;
 import com.mcd.spider.entities.record.ArrestRecord.RecordColumnEnum;
@@ -17,20 +41,6 @@ import com.mcd.spider.util.ConnectionUtil;
 import com.mcd.spider.util.SpiderUtil;
 import com.mcd.spider.util.io.RecordIOUtil;
 import com.mcd.spider.util.io.RecordOutputUtil;
-import org.apache.log4j.Logger;
-import org.jsoup.Connection;
-import org.jsoup.HttpStatusException;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
-import org.jsoup.select.Elements;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.*;
-
-import static com.mcd.spider.entities.record.ArrestRecord.ArrestDateComparator;
 
 /**
  *
@@ -476,10 +486,9 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     @Override
     public void finalizeOutput(List<Record> arrestRecords) {
         //format the output
-    	Comparator comparator = ArrestRecord.CountyComparator;
         if (!arrestRecords.isEmpty()) {
             logger.info("Starting to finalize the result output");
-            Collections.sort(arrestRecords, comparator);
+            Collections.sort(arrestRecords, CountyComparator);
             String columnDelimiter = RecordColumnEnum.COUNTY_COLUMN.getFieldName();
             Class<ArrestRecord> clazz = ArrestRecord.class;
             if (filter!=null && filter!=RecordFilterEnum.NONE) {
@@ -490,8 +499,8 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
                     //create a separate sheet with filtered results
                     logger.info(filteredRecords.size()+" "+filter.filterName()+" "+"records were crawled");
                     if (!filteredRecords.isEmpty()) {
-                        recordIOUtil.getOutputter().createWorkbook(recordIOUtil.getOutputter().getFilteredDocPath(filter), new HashSet<>(filteredRecords), false, comparator);
-                        recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getOutputter().getFilteredDocPath(filter), columnDelimiter, splitRecords, clazz, comparator);
+                        recordIOUtil.getOutputter().createWorkbook(recordIOUtil.getOutputter().getFilteredDocPath(filter), new HashSet<>(filteredRecords), false, ArrestDateComparator);
+                        recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getOutputter().getFilteredDocPath(filter), columnDelimiter, splitRecords, clazz, ArrestDateComparator);
                     }
                 } catch (Exception e) {
                     logger.error("Error trying to create filtered spreadsheet", e);
@@ -499,7 +508,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             }
             try {
                 List<Set<Record>> splitRecords = Record.splitByField(arrestRecords, columnDelimiter, clazz);
-                recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getMainDocPath(), columnDelimiter, splitRecords, clazz, comparator);
+                recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getMainDocPath(), columnDelimiter, splitRecords, clazz, ArrestDateComparator);
             } catch (Exception e) {
                 logger.error("Error trying to split full list of records", e);
             }

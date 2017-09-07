@@ -13,17 +13,6 @@ import java.util.*;
 
 public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 
-    public static Comparator<Record> ArrestDateComparator = new Comparator<Record>() {
-        @Override
-        public int compare(Record record1, Record record2) {
-            Calendar recordDate1 = ((ArrestRecord) record1).getArrestDate()!=null?((ArrestRecord) record1).getArrestDate():Calendar.getInstance();
-            Calendar recordDate2 = ((ArrestRecord) record2).getArrestDate()!=null?((ArrestRecord) record2).getArrestDate():Calendar.getInstance();
-            //ascending order
-            int result = recordDate1.compareTo(recordDate2);
-            return result;
-        }
-    };
-
 	public static final Logger logger = Logger.getLogger(ArrestRecord.class);
 	public static final String MERGE_SEPARATOR = "---";
 
@@ -254,94 +243,6 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 		return sheet;
 	}
 
-	public static Comparator<Record> CountyComparator = new Comparator<Record>() {
-		@Override
-		public int compare(Record record1, Record record2) {
-			String recordCounty1 = ((ArrestRecord) record1).getCounty()!=null?((ArrestRecord) record1).getCounty().toUpperCase():"No County";
-			String recordCounty2 = ((ArrestRecord) record2).getCounty()!=null?((ArrestRecord) record2).getCounty().toUpperCase():"No County";
-			//ascending order
-			int result = recordCounty1.compareTo(recordCounty2);
-			return result;
-		}
-	};
-	
-	public static Comparator<Record> CityComparator = new Comparator<Record>() {
-		@Override
-		public int compare(Record record1, Record record2) {
-			String recordCity1 = ((ArrestRecord) record1).getCity()!=null?((ArrestRecord) record1).getCity().toUpperCase():"No City";
-			String recordCity2 = ((ArrestRecord) record2).getCity()!=null?((ArrestRecord) record2).getCity().toUpperCase():"No City";
-			//ascending order
-			return recordCity1.compareTo(recordCity2);
-		}
-	};
-	
-    public enum RecordColumnEnum {
-        //the column titles should match the fields names (camel case, spaces removed)
-        ID_COLUMN(0, "ID", String.class),
-        FULLNAME_COLUMN(1, "Full Name", String.class),
-        FIRSTNAME_COLUMN(2, "First Name", String.class),
-        MIDDLENAME_COLUMN(3, "Middle Name", String.class),
-        LASTNAME_COLUMN(4, "Last Name", String.class),
-        DOB_COLUMN(5, "DOB", Date.class),
-        ARRESTDATE_COLUMN(6, "Arrest Date", Calendar.class),
-        TOTALBOND_COLUMN(7, "Total Bond", long.class),
-        ARRESTAGE_COLUMN(8, "Arrest Age", int.class),
-        GENDER_COLUMN(9, "Gender", String.class),
-        CITY_COLUMN(10, "City", String.class),
-        STATE_COLUMN(11, "State", String.class),
-        COUNTY_COLUMN(12, "County", String.class),
-        HEIGHT_COLUMN(13, "Height", String.class),
-        WEIGHT_COLUMN(14, "Weight", String.class),
-        HAIRCOLOR_COLUMN(15, "Hair Color", String.class),
-        EYECOLOR_COLUMN(16, "Eye Color", String.class),
-        BIRTHPLACE_COLUMN(17, "Birth Place", String.class),
-        CHARGES_COLUMN(18, "Charges", String[].class),
-        OFFENDERID_COLUMN(19, "Offender ID", String.class),
-        RACE_COLUMN(20, "Race", String.class);
-
-        private int columnIndex;
-        private String columnTitle;
-        private Field field;
-        private String fieldName;
-        private String getterName;
-        private String setterName;
-        private Class type;
-
-        RecordColumnEnum(int columnIndex, String columnTitle, Class type) {
-            this.columnIndex = columnIndex;
-            this.fieldName = CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, columnTitle.toUpperCase().replace(" ", "_"));
-            this.columnTitle = CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, fieldName);
-            try {
-                this.field = this.getDeclaringClass().getEnclosingClass().getDeclaredField(fieldName);
-            } catch (NoSuchFieldException  e) {
-                logger.error("Error tying field to enum: "+fieldName);
-            }
-            this.getterName = "get" + CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, columnTitle.replace(" ", "_"));
-            this.setterName = "set" + CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, columnTitle.replace(" ", "_"));
-            this.type = type;
-        }
-
-        public int getColumnIndex() {
-            return columnIndex;
-        }
-        public String getColumnTitle() {
-            return columnTitle;
-        }
-        public Field getField() {
-            return field;
-        }
-        public String getFieldName() {
-            return fieldName;
-        }
-        public String getGetterName() {
-            return getterName;
-        }
-        public String getSetterName() {
-            return setterName;
-        }
-        public Class getType() { return type; }
-    }
-
 	@Override
 	public Record merge(Record record) {
 		ArrestRecord recordToMerge = (ArrestRecord) record;
@@ -516,4 +417,103 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 	private boolean neitherIsNull(Object first, Object second) {
 	    return first!=null && second!=null;
     }
+    public static Comparator<Record> ArrestDateComparator = new Comparator<Record>() {
+        @Override
+        public int compare(Record record1, Record record2) {
+            Calendar recordDate1 = ((ArrestRecord) record1).getArrestDate()!=null?((ArrestRecord) record1).getArrestDate():Calendar.getInstance();
+            Calendar recordDate2 = ((ArrestRecord) record2).getArrestDate()!=null?((ArrestRecord) record2).getArrestDate():Calendar.getInstance();
+            //ascending order
+            int result = recordDate1.compareTo(recordDate2);
+            return result;
+        }
+    };
+
+	public static Comparator<Record> CountyComparator = new Comparator<Record>() {
+		@Override
+		public int compare(Record record1, Record record2) {
+			String recordCounty1 = ((ArrestRecord) record1).getCounty()!=null?((ArrestRecord) record1).getCounty().toUpperCase():"No County";
+			String recordCounty2 = ((ArrestRecord) record2).getCounty()!=null?((ArrestRecord) record2).getCounty().toUpperCase():"No County";
+			//ascending order
+			int result = recordCounty1.compareTo(recordCounty2);
+			return result;
+		}
+	};
+	
+	public static Comparator<Record> CityComparator = new Comparator<Record>() {
+		@Override
+		public int compare(Record record1, Record record2) {
+			String recordCity1 = ((ArrestRecord) record1).getCity()!=null?((ArrestRecord) record1).getCity().toUpperCase():"No City";
+			String recordCity2 = ((ArrestRecord) record2).getCity()!=null?((ArrestRecord) record2).getCity().toUpperCase():"No City";
+			//ascending order
+			return recordCity1.compareTo(recordCity2);
+		}
+	};
+	
+    public enum RecordColumnEnum {
+        //the column titles should match the fields names (camel case, spaces removed)
+        ID_COLUMN(0, "ID", String.class),
+        FULLNAME_COLUMN(1, "Full Name", String.class),
+        FIRSTNAME_COLUMN(2, "First Name", String.class),
+        MIDDLENAME_COLUMN(3, "Middle Name", String.class),
+        LASTNAME_COLUMN(4, "Last Name", String.class),
+        DOB_COLUMN(5, "DOB", Date.class),
+        ARRESTDATE_COLUMN(6, "Arrest Date", Calendar.class),
+        TOTALBOND_COLUMN(7, "Total Bond", long.class),
+        ARRESTAGE_COLUMN(8, "Arrest Age", int.class),
+        GENDER_COLUMN(9, "Gender", String.class),
+        CITY_COLUMN(10, "City", String.class),
+        STATE_COLUMN(11, "State", String.class),
+        COUNTY_COLUMN(12, "County", String.class),
+        HEIGHT_COLUMN(13, "Height", String.class),
+        WEIGHT_COLUMN(14, "Weight", String.class),
+        HAIRCOLOR_COLUMN(15, "Hair Color", String.class),
+        EYECOLOR_COLUMN(16, "Eye Color", String.class),
+        BIRTHPLACE_COLUMN(17, "Birth Place", String.class),
+        CHARGES_COLUMN(18, "Charges", String[].class),
+        OFFENDERID_COLUMN(19, "Offender ID", String.class),
+        RACE_COLUMN(20, "Race", String.class);
+
+        private int columnIndex;
+        private String columnTitle;
+        private Field field;
+        private String fieldName;
+        private String getterName;
+        private String setterName;
+        private Class type;
+
+        RecordColumnEnum(int columnIndex, String columnTitle, Class type) {
+            this.columnIndex = columnIndex;
+            this.fieldName = CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, columnTitle.toUpperCase().replace(" ", "_"));
+            this.columnTitle = CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, fieldName);
+            try {
+                this.field = this.getDeclaringClass().getEnclosingClass().getDeclaredField(fieldName);
+            } catch (NoSuchFieldException  e) {
+                logger.error("Error tying field to enum: "+fieldName);
+            }
+            this.getterName = "get" + CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, columnTitle.replace(" ", "_"));
+            this.setterName = "set" + CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, columnTitle.replace(" ", "_"));
+            this.type = type;
+        }
+
+        public int getColumnIndex() {
+            return columnIndex;
+        }
+        public String getColumnTitle() {
+            return columnTitle;
+        }
+        public Field getField() {
+            return field;
+        }
+        public String getFieldName() {
+            return fieldName;
+        }
+        public String getGetterName() {
+            return getterName;
+        }
+        public String getSetterName() {
+            return setterName;
+        }
+        public Class getType() { return type; }
+    }
+
 }

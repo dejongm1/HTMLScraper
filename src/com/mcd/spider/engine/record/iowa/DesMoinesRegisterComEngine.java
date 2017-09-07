@@ -316,8 +316,8 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     public void finalizeOutput(List<Record> arrestRecords) {
     	//format the output
         logger.info("Starting to finalize the result output");
-        Comparator comparator = ArrestRecord.CountyComparator;
-        Collections.sort(arrestRecords, comparator);
+        //Initially sort by county for splitting
+        Collections.sort(arrestRecords, ArrestRecord.CountyComparator);
         String delimiter = RecordColumnEnum.COUNTY_COLUMN.getColumnTitle();
         Class<ArrestRecord> clazz = ArrestRecord.class;
         if (filter!=null && filter!=RecordFilterEnum.NONE) {
@@ -331,7 +331,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
 	                if (!filteredRecords.isEmpty()) {
 	                    recordIOUtil.getOutputter().createWorkbook(recordIOUtil.getOutputter().getFilteredDocPath(filter), new HashSet<>(filteredRecords), false, ArrestDateComparator);
 	                }
-	                recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getOutputter().getFilteredDocPath(filter), delimiter, splitRecords, clazz, comparator);
+	                recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getOutputter().getFilteredDocPath(filter), delimiter, splitRecords, clazz, ArrestDateComparator);
                 }
             } catch (Exception e) {
                 logger.error("Error trying to create filtered spreadsheet", e);
@@ -340,7 +340,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
         try {
             List<Set<Record>> splitRecords = Record.splitByField(arrestRecords, delimiter, clazz);
             if (!splitRecords.isEmpty()) {
-            	recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getMainDocPath(), delimiter, splitRecords, clazz, comparator);
+            	recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getMainDocPath(), delimiter, splitRecords, clazz, ArrestDateComparator);
             }
         } catch (Exception e) {
             logger.error("Error trying to split full list of records", e);

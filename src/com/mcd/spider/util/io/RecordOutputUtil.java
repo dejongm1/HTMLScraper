@@ -78,15 +78,17 @@ public class RecordOutputUtil {
                         docPath.substring(0, docPath.indexOf(EXT))+BACKUP_SUFFIX+EXT);
                 handleBackup(docPath, false);
             }
-            if (mainBook.exists()) {
-                logger.error("Output workbook might be open. You have 15 seconds to close it.");
+            try {
+            	newWorkbook = Workbook.createWorkbook(new File(workbookName));
+            } catch (IOException ioe) {
+            	logger.error("Output workbook might be open. You have 15 seconds to close it.");
                 try {
                     Thread.sleep(15000);
-                } catch (InterruptedException e) {
+                    newWorkbook = Workbook.createWorkbook(new File(workbookName));
+                } catch (InterruptedException ie) {
                     logger.error("Couldn't sleep for 15 seconds");
                 }
             }
-            newWorkbook = Workbook.createWorkbook(new File(workbookName));
             
             logger.info("Creating " + sheetNames.length + " sheets in workbook " + workbookName);
             for (int rs = 0;rs<recordSetList.size();rs++) {
