@@ -3,9 +3,6 @@ package com.mcd.spider.entities.record;
 import com.mcd.spider.engine.record.ArrestRecordEngine;
 import com.mcd.spider.engine.record.iowa.DesMoinesRegisterComEngine;
 import com.mcd.spider.engine.record.various.ArrestsDotOrgEngine;
-import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
-
-import bsh.This;
 
 import java.util.*;
 

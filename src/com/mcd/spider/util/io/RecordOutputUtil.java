@@ -70,12 +70,21 @@ public class RecordOutputUtil {
     
     public void createWorkbook(String workbookName, List<Set<Record>> recordSetList, boolean backUpExisting, String[] sheetNames, Comparator comparator) {
         WritableWorkbook newWorkbook = null;
+        File mainBook = new File(docPath);
         try {
-            if (new File(docPath).exists() && backUpExisting) {
+            if (mainBook.exists() && backUpExisting) {
                 logger.info("Backing up " + workbookName + " as " + docPath.substring(0, docPath.indexOf(EXT))+BACKUP_SUFFIX+EXT + " and starting a new workbook");
                 createWorkbookCopy(docPath,
                         docPath.substring(0, docPath.indexOf(EXT))+BACKUP_SUFFIX+EXT);
                 handleBackup(docPath, false);
+            }
+            if (mainBook.exists()) {
+                logger.error("Output workbook might be open. You have 15 seconds to close it.");
+                try {
+                    Thread.sleep(15000);
+                } catch (InterruptedException e) {
+                    logger.error("Couldn't sleep for 15 seconds");
+                }
             }
             newWorkbook = Workbook.createWorkbook(new File(workbookName));
             

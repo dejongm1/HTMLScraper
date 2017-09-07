@@ -37,25 +37,19 @@ public class RecordIOUtil {
 	}
 
     public RecordIOUtil(State state, Record record, Site site, boolean testing) {
-//	    if (!new File(OUTPUT_DIR).exists()) {
-//            new File(OUTPUT_DIR).mkdirs();
-//        }
         if (!new File(TRACKING_DIR).exists()) {
             new File(TRACKING_DIR).mkdirs();
         }
 	    if (testing) {
-//            if (!new File("output\\testing\\").exists()) {
-//                new File("output\\testing\\").mkdirs();
-//            }
             if (!new File("output\\testing\\tracking\\").exists()) {
                 new File("output\\testing\\tracking\\").mkdirs();
             }
-	        this.crawledIdFile = new File("output\\testing\\tracking\\" + site.getName() + "_Archive.txt");
-	        this.uncrawledIdFile = new File("output\\testing\\tracking\\" + site.getName() + "_Uncrawled.txt");
+	        this.crawledIdFile = new File("output\\testing\\tracking\\" + state.getName() + "_" + site.getName() + "_Archive.txt");
+	        this.uncrawledIdFile = new File("output\\testing\\tracking\\" + state.getName() + "_" + site.getName() + "_Uncrawled.txt");
 	        this.mainDocPath = "output\\testing\\" + state.getName() + "_" + record.getClass().getSimpleName() + "_" + site.getName() + EXT;
         } else {
-	        this.crawledIdFile = new File(TRACKING_DIR + site.getName() + "_Archive.txt");
-	        this.uncrawledIdFile = new File(TRACKING_DIR + site.getName() + "_Uncrawled.txt");
+	        this.crawledIdFile = new File(TRACKING_DIR + state.getName() + "_" + site.getName() + "_Archive.txt");
+	        this.uncrawledIdFile = new File(TRACKING_DIR + state.getName() + "_" + site.getName() + "_Uncrawled.txt");
 	        this.mainDocPath = OUTPUT_DIR + state.getName() + "_" + record.getClass().getSimpleName() + "_" + site.getName() + EXT;
         }
         this.record = record;
