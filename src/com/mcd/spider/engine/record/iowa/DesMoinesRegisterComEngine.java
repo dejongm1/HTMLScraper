@@ -304,7 +304,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
                     record.setLastName(nameParts[1]);
                 } else {
                     record.setMiddleName(nameParts[1]);
-                    record.setLastName(nameParts[2]);
+                    record.setLastName(nameParts[nameParts.length-1]);
                 }
             } catch (ArrayIndexOutOfBoundsException e) {
                 logger.error("Had some trouble splitting " + fullName + " into parts");

@@ -1,17 +1,5 @@
 package com.mcd.spider.util.io;
 
-import com.google.common.base.CaseFormat;
-import com.mcd.spider.entities.record.Record;
-import com.mcd.spider.entities.record.State;
-import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
-import jxl.Workbook;
-import jxl.read.biff.BiffException;
-import jxl.write.Label;
-import jxl.write.WritableSheet;
-import jxl.write.WritableWorkbook;
-import jxl.write.WriteException;
-import org.apache.log4j.Logger;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -19,7 +7,30 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.log4j.Logger;
+
+import com.google.common.base.CaseFormat;
+import com.mcd.spider.entities.record.Record;
+import com.mcd.spider.entities.record.State;
+import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
+import com.mcd.spider.entities.site.Site;
+
+import jxl.Workbook;
+import jxl.read.biff.BiffException;
+import jxl.write.Label;
+import jxl.write.WritableSheet;
+import jxl.write.WritableWorkbook;
+import jxl.write.WriteException;
 
 /**
  * 
@@ -37,6 +48,7 @@ public class RecordOutputUtil {
 
 	private String docPath;
 	private State state;
+	private Site site;
 	private File crawledIdFile;
 	private File uncrawledIdFile;
 	private Record record;
@@ -46,13 +58,14 @@ public class RecordOutputUtil {
 	private WritableWorkbook copyWorkbook;
 	private RecordIOUtil ioUtil;
 
-	public RecordOutputUtil(RecordIOUtil ioUtil, State state) {
+	public RecordOutputUtil(RecordIOUtil ioUtil, State state, Site site) {
         this.docPath = ioUtil.getMainDocPath();
 		this.state = state;
 		this.record = ioUtil.getRecord();
 		this.crawledIdFile = ioUtil.getCrawledIdFile();
 		this.ioUtil = ioUtil;
         this.uncrawledIdFile = ioUtil.getUncrawledIdFile();
+        this.site = site;
 	}
 
 	public State getState() {
@@ -135,7 +148,7 @@ public class RecordOutputUtil {
 	public String getMergedDocPath(String baseDocPath) {
 		String mergedName;
 		if (baseDocPath!=null) {
-			mergedName = baseDocPath.substring(0, baseDocPath.lastIndexOf('.')) + "_" + "MERGED" + EXT;
+			mergedName = baseDocPath.substring(0, baseDocPath.indexOf(EXT)).replace(site.getName() + "_", "") + "_" + "MERGED" + EXT;
 		} else {
 			mergedName = docPath.substring(0, docPath.lastIndexOf('_')) + "_" + "MERGED" + EXT;
 		}

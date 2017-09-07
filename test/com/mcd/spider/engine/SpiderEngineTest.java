@@ -17,6 +17,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import com.mcd.spider.engine.record.ArrestRecordEngine;
 import com.mcd.spider.engine.record.various.ArrestsDotOrgEngine;
 import com.mcd.spider.entities.record.ArrestRecord;
 import com.mcd.spider.entities.record.Record;
@@ -41,14 +42,15 @@ public class SpiderEngineTest {
 	private File testOutputFileOne = new File("output/testing/IAArrestsOrgOutput.xls");
 	private File testOutputFileTwo = new File("output/testing/DSMRegComOutput.xls");
 	private File testOutputFileLN = new File("output/testing/OKArrestsOrgOutput.xls");
-	private File testOutputFileOneFiltered = new File("output/testing/ArrestsOrgOutput_Alcohol-related.xls");
+	private File testOutputFileLNIneligible = new File("output/testing/OKArrestsOrgOutput_Ineligible.xls");
+	private File testOutputFileOneFiltered = new File("output/testing/IAArrestsOrgOutput_Alcohol-related.xls");
 	private File testOutputFileTwoFiltered = new File("output/testing/DSMRegComOutput_Alcohol-related.xls");
 	private File mockOutputFileOne;
 	private File mockOutputFileTwo;
 	private File mockOutputFileOneFiltered;
 	private File mockOutputFileTwoFiltered;
-	RecordIOUtil mainIOUtil;
-	RecordIOUtil secondaryIOUtil;
+	private RecordIOUtil mainIOUtil;
+	private RecordIOUtil secondaryIOUtil;
 
 
 	@BeforeClass
@@ -67,6 +69,7 @@ public class SpiderEngineTest {
 		Assert.assertTrue(testOutputFileOne.exists());
 		Assert.assertTrue(testOutputFileTwo.exists());
 		Assert.assertTrue(testOutputFileLN.exists());
+		Assert.assertTrue(testOutputFileLNIneligible.exists());
 		Assert.assertTrue(testOutputFileOneFiltered.exists());
 		Assert.assertTrue(testOutputFileTwoFiltered.exists());
 		//rename these to RecordIOUtil expected names
@@ -97,59 +100,82 @@ public class SpiderEngineTest {
 	}
 	@AfterClass
 	public void tearDownClass() {
+		new File("output/testing/IOWA_ArrestRecord_Alcohol-related_MERGED.xls").delete();
+		new File("output/testing/IOWA_ArrestRecord_MERGED.xls").delete();
 		System.setProperty("TestingSpider", "false");
 		logger.info("********** Finishing Test cases for SpiderEngine *****************");
 	}
 
 	@Test
-	public void customizeArrestOutputs_MultipleEngines() {
-		//all possible outputs created
-		engine.customizeArrestOutputs(mainIOUtil, state, RecordFilterEnum.ALCOHOL);
-
-		//verify outputs
+	public void getArrestRecordsByState() {
 		throw new RuntimeException("Test not implemented");
+	}
+	
+	@Test
+	public void customizeArrestOutputs_TwoEngines() {
+		//merge book and filter book created
+		//no lexis nexis book
+		RecordFilterEnum filter = RecordFilterEnum.ALCOHOL;
+		engine.customizeArrestOutputs(mainIOUtil, state, filter);
+		
+		//verify outputs
+		Assert.assertFalse(new File(mainIOUtil.getOutputter().getLNPath()).exists());
+		Assert.assertTrue(new File(mainIOUtil.getOutputter().getMergedDocPath(null)).exists());
+		Assert.assertTrue(new File(mainIOUtil.getOutputter().getMergedDocPath(mainIOUtil.getOutputter().getFilteredDocPath(filter))).exists());
 	}
 
 	@Test
 	public void customizeArrestOutputs_NoFilter() {
 		//only all records merge book created
 		//no lexis nexis book
-		engine.customizeArrestOutputs(mainIOUtil, state, RecordFilterEnum.NONE);
+		RecordFilterEnum filter = RecordFilterEnum.NONE;
+		engine.customizeArrestOutputs(mainIOUtil, state, filter);
 
 		//verify outputs
-		throw new RuntimeException("Test not implemented");
+		Assert.assertFalse(new File(mainIOUtil.getOutputter().getLNPath()).exists());
+		Assert.assertTrue(new File(mainIOUtil.getOutputter().getMergedDocPath(null)).exists());
+		Assert.assertFalse(new File(mainIOUtil.getOutputter().getMergedDocPath(mainIOUtil.getOutputter().getFilteredDocPath(filter))).exists());
 	}
 
 	@Test
 	public void customizeArrestOutputs_OneEngineLexisNexisEligible() {
 		//no merging
 		//lexis nexis book created
-		state = State.OK;
+		State state = State.OK;
 		state.setEngines(Arrays.asList(new ArrestsDotOrgEngine(state.getName())));
-		//rename testOutputFileLN
 		RecordIOUtil iOUtil = new RecordIOUtil(state, new ArrestRecord(), new ArrestsDotOrgSite(new String[]{state.getName()}), true);
+		File mockFile = new File(iOUtil.getMainDocPath());
+		testOutputFileLN.renameTo(mockFile);
 		engine.customizeArrestOutputs(iOUtil, state, RecordFilterEnum.NONE);
-
-		//verify outputs
 		
-		//delete testOutputFileLN
-		throw new RuntimeException("Test not implemented");
+		//verify outputs
+		Assert.assertTrue(new File(iOUtil.getOutputter().getLNPath()).exists());
+		Assert.assertFalse(new File(iOUtil.getOutputter().getMergedDocPath(iOUtil.getMainDocPath())).exists());
+		
+		//rename testOutputFileLN
+		mockFile.renameTo(testOutputFileLN);
+		new File(iOUtil.getOutputter().getLNPath()).delete();
+
 	}
 
 	@Test
 	public void customizeArrestOutputs_OneEngineLexisNexisEligibleNoneFound() {
 		//no merging
 		//lexis nexis book not created because no eligible records were found
-		state = State.OK;
+		State state = State.OK;
 		state.setEngines(Arrays.asList(new ArrestsDotOrgEngine(state.getName())));
-		//rename testOutputFileLN
 		RecordIOUtil iOUtil = new RecordIOUtil(state, new ArrestRecord(), new ArrestsDotOrgSite(new String[]{state.getName()}), true);
+		File mockFile = new File(iOUtil.getMainDocPath());
+		testOutputFileLNIneligible.renameTo(mockFile);
 		engine.customizeArrestOutputs(iOUtil, state, RecordFilterEnum.NONE);
 
 		//verify outputs
-
-		//delete testOutputFileLN
-		throw new RuntimeException("Test not implemented");
+		//verify outputs
+		Assert.assertFalse(new File(iOUtil.getOutputter().getLNPath()).exists());
+		Assert.assertFalse(new File(iOUtil.getOutputter().getMergedDocPath(iOUtil.getMainDocPath())).exists());
+		
+		//rename testOutputFileLN
+		mockFile.renameTo(testOutputFileLNIneligible);
 	}	
 
 	@Test
@@ -190,10 +216,5 @@ public class SpiderEngineTest {
 		Assert.assertEquals(eligibleRecords.get(0).size(), 1);
 		Assert.assertEquals(eligibleRecords.get(1).size(), 1);
 
-	}
-
-	@Test
-	public void getArrestRecordsByState() {
-		throw new RuntimeException("Test not implemented");
 	}
 }

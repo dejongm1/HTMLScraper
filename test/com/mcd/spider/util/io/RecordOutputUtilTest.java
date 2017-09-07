@@ -245,9 +245,9 @@ public class RecordOutputUtilTest {
     }
 
     @Test
-    public void testGetCustomerNamedMergedSpreadsheet() throws Exception {
+    public void testGetCustomNamedMergedSpreadsheet() throws Exception {
     	String result = outputter.getMergedDocPath(outputter.getFilteredDocPath(RecordFilterEnum.findFilter("alcohol")));
-    	Assert.assertEquals(result, "output\\testing\\IOWA_ArrestRecord_ArrestsOrg_Alcohol-related_MERGED.xls");
+    	Assert.assertEquals(result, "output\\testing\\IOWA_ArrestRecord_Alcohol-related_MERGED.xls");
     }
 
     @Test

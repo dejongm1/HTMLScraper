@@ -53,7 +53,7 @@ public class RecordIOUtil {
 	        this.mainDocPath = OUTPUT_DIR + state.getName() + "_" + record.getClass().getSimpleName() + "_" + site.getName() + EXT;
         }
         this.record = record;
-        this.outputter = new RecordOutputUtil(this, state);
+        this.outputter = new RecordOutputUtil(this, state, site);
         this.inputter = new RecordInputUtil(this);
     }
 
