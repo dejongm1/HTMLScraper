@@ -20,6 +20,7 @@
 		<classes>
 			<class name="com.mcd.spider.entities.record.RecordTest" />
 			<class name="com.mcd.spider.entities.record.ArrestRecordTest" />
+			<class name="com.mcd.spider.entities.record.filter.RecordFilterTest" />
 		</classes>
 	</test>
 
