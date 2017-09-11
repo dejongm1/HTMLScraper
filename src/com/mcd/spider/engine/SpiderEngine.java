@@ -46,7 +46,7 @@ public class SpiderEngine {
 				throw new StateNotReadyException(state);
 			}
 		}
-		logger.info("Spider has finished crawling. Shutting down.");
+		logger.info("Spider has finished crawling. Going back to it's web.");
 	}
 	
 	public void getArrestRecordsThroughTheBackDoor(List<State> states, long maxNumberOfResults, RecordFilterEnum filter, boolean retrieveMissedRecords) throws SpiderException {
@@ -58,7 +58,7 @@ public class SpiderEngine {
 			StateRouter router = new StateRouter(state);
 			router.collectRecords(maxNumberOfResults, filter, retrieveMissedRecords);
 		}
-		logger.info("Spider has finished crawling. Shutting down.");
+		logger.info("Spider has finished crawling through backdoors and cracks in the walls. Shutting down.");
 	}
 	
 	public void performSEOAudit(AuditParameters auditParams) {

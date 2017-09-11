@@ -5,7 +5,7 @@ import java.util.List;
 
 public class RecordFilter {
 	public enum RecordFilterEnum {
-		ALCOHOL("Alcohol-related", Arrays.asList("alcohol", "oui", "dui", "owi", "dwi", "bui", "open container", "intox")),
+		ALCOHOL("Alcohol-related", Arrays.asList("alcohol", "oui", "dui", "owi", "dwi", "bui", "open container", "intox", "influence", "consumption", "drink", "drunk")),
 		TRAFFIC("Traffic-related", Arrays.asList("speed", "traffic")),
         NONE("No-filter", Arrays.asList(""));
 
