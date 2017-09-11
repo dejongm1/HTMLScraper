@@ -2,8 +2,6 @@ package com.mcd.spider.util.io;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.testng.Assert;
@@ -11,9 +9,9 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import com.google.common.io.Files;
+import com.mcd.spider.entities.io.RecordSheet;
+import com.mcd.spider.entities.io.RecordWorkbook;
 import com.mcd.spider.entities.record.ArrestRecord;
-import com.mcd.spider.entities.record.Record;
 import com.mcd.spider.entities.record.State;
 import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
 
@@ -51,45 +49,45 @@ public class RecordIOUtilTest {
 
 	@Test
 	public void testMergeRecordsFromSheets() {
-		Set<Record> mergedRecords = ioUtil.mergeRecordsFromSheets(testMergeFileOne, testMergeFileTwo, 0, 0);
-		Assert.assertEquals(mergedRecords.size(), 12);
+		RecordSheet mergedRecordSheet = ioUtil.mergeRecordsFromSheetsRefactored(testMergeFileOne, testMergeFileTwo, 0, 0);
+		Assert.assertEquals(mergedRecordSheet.recordCount(), 12);
 	}
 	
 	@Test
 	public void testMergeRecordsFromSheets_NullFilePassed() {
-		Set<Record> mergedRecords = ioUtil.mergeRecordsFromSheets(testMergeFileOne, null, 0, -1);
-		Set<Record> recordsFromSheet = ioUtil.getInputter().readRecordsFromSheet(testMergeFileOne, 0);
+		RecordSheet mergedRecordSheet = ioUtil.mergeRecordsFromSheetsRefactored(testMergeFileOne, null, 0, -1);
+		RecordSheet recordsFromSheet = ioUtil.getInputter().readRecordsFromSheetRefactored(testMergeFileOne, 0);
 		
-		Assert.assertEquals(mergedRecords.size(), 8);
-		Assert.assertEquals(recordsFromSheet.size(), mergedRecords.size());
+		Assert.assertEquals(mergedRecordSheet.recordCount(), 8);
+		Assert.assertEquals(recordsFromSheet.recordCount(), mergedRecordSheet.recordCount());
 	}
 	
 	@Test
 	public void testMergeRecordsFromWorkbooks() {
-		List<Set<Record>> mergedRecords = ioUtil.mergeRecordsFromWorkbooks(testMergeFileOne, testMergeFileTwo);		
+		RecordWorkbook mergedRecordBook = ioUtil.mergeRecordsFromWorkbooksRefactored(testMergeFileOne, testMergeFileTwo);		
 		
-		Assert.assertEquals(mergedRecords.size(), 1);
-		Assert.assertEquals(mergedRecords.get(0).size(), 12);
+		Assert.assertEquals(mergedRecordBook.sheetCount(), 1);
+		Assert.assertEquals(mergedRecordBook.getSheets().get(0).recordCount(), 12);
 	}
 	
 	@Test
 	public void testMergeRecordsFromWorkbooks_MoreSheetsBookOne() {
-		List<Set<Record>> mergedRecords = ioUtil.mergeRecordsFromWorkbooks(testMergeFileOneExtraSheets, testMergeFileTwo);
-		Set<Record> recordsFromExtraSheet = ioUtil.getInputter().readRecordsFromSheet(testMergeFileOneExtraSheets, 1);
+		RecordWorkbook mergedRecordBook = ioUtil.mergeRecordsFromWorkbooksRefactored(testMergeFileOneExtraSheets, testMergeFileTwo);
+		RecordSheet recordsFromExtraSheet = ioUtil.getInputter().readRecordsFromSheetRefactored(testMergeFileOneExtraSheets, 1);
 		
-		Assert.assertEquals(mergedRecords.size(), 2);
-		Assert.assertEquals(mergedRecords.get(0).size(), 12);
-		Assert.assertEquals(mergedRecords.get(1).size(), recordsFromExtraSheet.size());
+		Assert.assertEquals(mergedRecordBook.sheetCount(), 2);
+		Assert.assertEquals(mergedRecordBook.getSheets().get(0).recordCount(), 12);
+		Assert.assertEquals(mergedRecordBook.getSheets().get(1).recordCount(), recordsFromExtraSheet.recordCount());
 	}
 
 	@Test
 	public void testMergeRecordsFromWorkbooks_MoreSheetsBookTwo() {
-		List<Set<Record>> mergedRecords = ioUtil.mergeRecordsFromWorkbooks(testMergeFileOne, testMergeFileTwoExtraSheets);
-		Set<Record> recordsFromExtraSheet = ioUtil.getInputter().readRecordsFromSheet(testMergeFileTwoExtraSheets, 1);
+		RecordWorkbook mergedRecordBook = ioUtil.mergeRecordsFromWorkbooksRefactored(testMergeFileOne, testMergeFileTwoExtraSheets);
+		RecordSheet recordsFromExtraSheet = ioUtil.getInputter().readRecordsFromSheetRefactored(testMergeFileTwoExtraSheets, 1);
 
-		Assert.assertEquals(mergedRecords.size(), 2);
-		Assert.assertEquals(mergedRecords.get(0).size(), 12);
-		Assert.assertEquals(mergedRecords.get(1).size(), recordsFromExtraSheet.size());
+		Assert.assertEquals(mergedRecordBook.sheetCount(), 2);
+		Assert.assertEquals(mergedRecordBook.getSheets().get(0).recordCount(), 12);
+		Assert.assertEquals(mergedRecordBook.getSheets().get(1).recordCount(), recordsFromExtraSheet.recordCount());
 	}
 
 }

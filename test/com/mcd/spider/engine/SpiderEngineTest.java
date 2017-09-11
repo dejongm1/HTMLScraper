@@ -1,13 +1,9 @@
 package com.mcd.spider.engine;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.testng.Assert;
@@ -17,10 +13,10 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import com.mcd.spider.engine.record.ArrestRecordEngine;
 import com.mcd.spider.engine.record.various.ArrestsDotOrgEngine;
+import com.mcd.spider.entities.io.RecordSheet;
+import com.mcd.spider.entities.io.RecordWorkbook;
 import com.mcd.spider.entities.record.ArrestRecord;
-import com.mcd.spider.entities.record.Record;
 import com.mcd.spider.entities.record.State;
 import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
 import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
@@ -200,21 +196,21 @@ public class SpiderEngineTest {
 		record4.setLastName("Sprout");
 		record4.setDob(new Date());
 
-		Set<Record> recordSet1 = new HashSet<>();
-		recordSet1.add(record1);
-		recordSet1.add(record2);
-		Set<Record> recordSet2 = new HashSet<>();
-		recordSet2.add(record4);
-		recordSet2.add(record3);
+		RecordSheet recordSheet1 = new RecordSheet();
+		recordSheet1.add(record1);
+		recordSheet1.add(record2);
+		RecordSheet recordSheet2 = new RecordSheet();
+		recordSheet2.add(record4);
+		recordSheet2.add(record3);
 
-		List<Set<Record>> recordSetList = new ArrayList<>();
-		recordSetList.add(recordSet2);
-		recordSetList.add(recordSet1);
+		RecordWorkbook recordBook = new RecordWorkbook();
+		recordBook.add(recordSheet2);
+		recordBook.add(recordSheet1);
 
-		List<Set<Record>> eligibleRecords = engine.filterOutLexisNexisEligibleRecords(recordSetList);
-		Assert.assertEquals(eligibleRecords.size(), recordSetList.size());
-		Assert.assertEquals(eligibleRecords.get(0).size(), 1);
-		Assert.assertEquals(eligibleRecords.get(1).size(), 1);
+		RecordWorkbook eligibleRecordBook = engine.filterOutLexisNexisEligibleRecords(recordBook);
+		Assert.assertEquals(eligibleRecordBook.sheetCount(), recordBook.sheetCount());
+		Assert.assertEquals(eligibleRecordBook.getSheets().get(0).recordCount(), 1);
+		Assert.assertEquals(eligibleRecordBook.getSheets().get(1).recordCount(), 1);
 
 	}
 }

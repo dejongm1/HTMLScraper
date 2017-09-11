@@ -1,25 +1,37 @@
 package com.mcd.spider.util.io;
 
+import static com.mcd.spider.entities.record.ArrestRecord.ArrestDateComparator;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
+import com.mcd.spider.entities.io.RecordSheet;
+import com.mcd.spider.entities.io.RecordWorkbook;
 import com.mcd.spider.entities.record.ArrestRecord;
 import com.mcd.spider.entities.record.Record;
 import com.mcd.spider.entities.record.State;
 import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
 import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
+
 import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
-import org.apache.log4j.Logger;
-import org.testng.Assert;
-import org.testng.annotations.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-
-import static com.mcd.spider.entities.record.ArrestRecord.ArrestDateComparator;
 
 public class RecordOutputUtilTest {
 
@@ -122,25 +134,22 @@ public class RecordOutputUtilTest {
 
     @Test
     public void testCreateWorkbook_MultipleSheets() throws Exception {
-    	List<Set<Record>> recordSetList = new ArrayList<>();
-    	Set<Record> recordSetOne = new HashSet<>(Arrays.asList(mockRecordOne));
-    	Set<Record> recordSetTwo = new HashSet<>(Arrays.asList(mockRecordTwo));
-    	recordSetList.add(recordSetOne);
-    	recordSetList.add(recordSetTwo);
-    	String[] sheetNames = new String[recordSetList.size()];
-        sheetNames[0] = ioUtil.getOutputter().getState().getName();
-        for (int mrs=1;mrs<sheetNames.length;mrs++) {
-    		sheetNames[mrs] = ((ArrestRecord)recordSetList.get(mrs).toArray()[0]).getCounty();
-    	}
-    	
-        outputter.createWorkbook(mainDoc.getPath(), recordSetList, true, sheetNames, null);
+    	RecordWorkbook recordBook = new RecordWorkbook();
+    	RecordSheet recordSheetOne = new RecordSheet();
+    	recordSheetOne.add(mockRecordOne);
+    	RecordSheet recordSheetTwo = new RecordSheet();
+    	recordSheetOne.add(mockRecordTwo);
+    	recordBook.add(recordSheetOne);
+    	recordBook.add(recordSheetTwo);
+    	String[] sheetNames = recordBook.getSheetNames();
+        outputter.createWorkbookRefactored(mainDoc.getPath(), recordBook, true, sheetNames, null);
         Assert.assertTrue(mainDoc.exists());
 
         Workbook mainWorkbook = Workbook.getWorkbook(mainDoc);
         
-        Assert.assertEquals(mainWorkbook.getNumberOfSheets(), recordSetList.size());
-        Assert.assertEquals(mainWorkbook.getSheet(0).getRows(), recordSetList.get(0).size()+1); //+1 for header row
-        Assert.assertEquals(mainWorkbook.getSheet(1).getRows(), recordSetList.get(1).size()+1); //+1 for header row
+        Assert.assertEquals(mainWorkbook.getNumberOfSheets(), recordBook.sheetCount());
+        Assert.assertEquals(mainWorkbook.getSheet(0).getRows(), recordBook.getSheets().get(0).recordCount()+1); //+1 for header row
+        Assert.assertEquals(mainWorkbook.getSheet(1).getRows(), recordBook.getSheets().get(1).recordCount()+1); //+1 for header row
         Assert.assertEquals(mainWorkbook.getSheet(0).getName(), sheetNames[0]);
         Assert.assertEquals(mainWorkbook.getSheet(0).getName(), ioUtil.getOutputter().getState().getName());
         Assert.assertEquals(mainWorkbook.getSheet(1).getName(), sheetNames[1]);
@@ -165,16 +174,16 @@ public class RecordOutputUtilTest {
     @Test
     public void testSaveRecordsToWorkbook() throws Exception {
         //create list of records with basic data
-    	Set<Record> mockedRecords = new HashSet<>();
+    	RecordSheet mockedRecordSheet = new RecordSheet();
     	for (int r=0;r<15;r++) {
             ArrestRecord record = new ArrestRecord();
             record.setId(String.valueOf(r));
             record.setFullName("name" + r);
-            mockedRecords.add(record);
+            mockedRecordSheet.add(record);
         }
-        outputter.saveRecordsToWorkbook(mockedRecords, testWorkbook, ArrestDateComparator);
+        outputter.saveRecordsToWorkbookRefactored(mockedRecordSheet, testWorkbook, ArrestDateComparator);
     	//check sizes(rows (minus header) vs list size) match
-        Assert.assertEquals(mockedRecords.size(), testWorkbook.getSheet(0).getRows()-1);
+        Assert.assertEquals(mockedRecordSheet.recordCount(), testWorkbook.getSheet(0).getRows()-1);
     }
 
     @Test
@@ -215,32 +224,32 @@ public class RecordOutputUtilTest {
     @Test
     public void testCreateAlcoholFilteredSpreadsheet() throws Exception {
     	//create a list of merged records
-    	Set<Record> records = new HashSet<>();
-    	records.add(mockRecordOne);
-    	records.add(mockRecordTwo);
-    	outputter.createWorkbook(filteredDoc.getPath(), records, false, ArrestDateComparator);
+    	RecordSheet recordSheet = new RecordSheet();
+    	recordSheet.add(mockRecordOne);
+    	recordSheet.add(mockRecordTwo);
+    	outputter.createWorkbookRefactored(filteredDoc.getPath(), recordSheet, false, ArrestDateComparator);
     	Workbook filteredWorkbook = Workbook.getWorkbook(filteredDoc);
     	
     	//TODO future - confirm it creates a backup, if one already exists
     	//confirm it exists, name is correct and row count matches list
     	Assert.assertTrue(filteredDoc.exists());
-    	Assert.assertEquals(filteredWorkbook.getSheet(0).getRows(), records.size()+1);
+    	Assert.assertEquals(filteredWorkbook.getSheet(0).getRows(), recordSheet.recordCount()+1);
     	Assert.assertEquals(filteredDoc.getPath(), outputter.getFilteredDocPath(RecordFilterEnum.ALCOHOL));
     }
 
     @Test
     public void testCreateMergedSpreadsheet() throws Exception {
     	//create a list of merged records
-    	Set<Record> records = new HashSet<>();
-    	records.add(mockRecordOne);
-    	records.add(mockRecordTwo);
-    	outputter.createWorkbook(mergedDoc.getPath(), records, false, ArrestDateComparator);
+    	RecordSheet recordSheet = new RecordSheet();
+    	recordSheet.add(mockRecordOne);
+    	recordSheet.add(mockRecordTwo);
+    	outputter.createWorkbookRefactored(mergedDoc.getPath(), recordSheet, false, ArrestDateComparator);
     	Workbook mergedWorkbook = Workbook.getWorkbook(mergedDoc);
     	
     	//TODO future - confirm it creates a backup, if one already exists
     	//confirm it exists, name is correct and row count matches list
     	Assert.assertTrue(mergedDoc.exists());
-    	Assert.assertEquals(mergedWorkbook.getSheet(0).getRows(), records.size()+1);
+    	Assert.assertEquals(mergedWorkbook.getSheet(0).getRows(), recordSheet.recordCount()+1);
     	Assert.assertEquals(mergedDoc.getPath(), outputter.getMergedDocPath(null));
     }
 
@@ -252,22 +261,22 @@ public class RecordOutputUtilTest {
 
     @Test
     public void testSplitIntoSheets_ArrestRecord() throws Exception {
-        List<Set<Record>> recordsSetList = new ArrayList<>();
-        Set<Record> recordsListOne = new HashSet<>();
-        Set<Record> recordsListTwo = new HashSet<>();
+        RecordWorkbook recordsBook = new RecordWorkbook();
+        RecordSheet recordSheetOne = new RecordSheet();
+        RecordSheet recordSheetTwo = new RecordSheet();
         Record mockRecordThree = new ArrestRecord();
         mockRecordThree.setId("123sdf");
         ((ArrestRecord)mockRecordThree).setFullName("Third record");
         ((ArrestRecord)mockRecordThree).setCounty("Polk");
-        recordsListOne.add(mockRecordOne);
-        recordsListTwo.add(mockRecordTwo);
-        recordsListOne.add(mockRecordThree);
-        recordsSetList.add(recordsListOne);
-        recordsSetList.add(recordsListTwo);
+        recordSheetOne.add(mockRecordOne);
+        recordSheetTwo.add(mockRecordTwo);
+        recordSheetOne.add(mockRecordThree);
+        recordsBook.add(recordSheetOne);
+        recordsBook.add(recordSheetTwo);
         
         Assert.assertTrue(mainDoc.exists());
 
-        outputter.splitIntoSheets(mainDoc.getPath(), ArrestRecord.RecordColumnEnum.COUNTY_COLUMN.getColumnTitle(), recordsSetList, ArrestRecord.class, ArrestRecord.CountyComparator);
+        outputter.splitIntoSheetsRefactored(mainDoc.getPath(), ArrestRecord.RecordColumnEnum.COUNTY_COLUMN.getColumnTitle(), recordsBook, ArrestRecord.class, ArrestRecord.CountyComparator);
 
         Workbook splitworkWorkbook = Workbook.getWorkbook(mainDoc);
         Sheet sheetOne = splitworkWorkbook.getSheet("Polk");
@@ -276,9 +285,9 @@ public class RecordOutputUtilTest {
 
         Assert.assertNotNull(sheetOne);
         Assert.assertNotNull(sheetTwo);
-        Assert.assertEquals(sheetOne.getRows(), recordsListOne.size()+1);//+1 for columnHeaders
-        Assert.assertEquals(sheetTwo.getRows(), recordsListTwo.size()+1);//+1 for columnHeaders
-        Assert.assertEquals(splitworkWorkbook.getNumberOfSheets(), recordsSetList.size()+1);//+1 for mainsheet
+        Assert.assertEquals(sheetOne.getRows(), recordSheetOne.recordCount()+1);//+1 for columnHeaders
+        Assert.assertEquals(sheetTwo.getRows(), recordSheetTwo.recordCount()+1);//+1 for columnHeaders
+        Assert.assertEquals(splitworkWorkbook.getNumberOfSheets(), recordsBook.sheetCount()+1);//+1 for mainsheet
         for (int r=1;r<sheetOne.getRows();r++) {
         	Assert.assertTrue(sheetOne.getRow(r)[ArrestRecord.RecordColumnEnum.COUNTY_COLUMN.getColumnIndex()].getContents().equalsIgnoreCase("Polk"));
         }        
@@ -289,22 +298,22 @@ public class RecordOutputUtilTest {
 
     @Test
     public void testSplitIntoSheets_NullDelimiter() throws Exception {
-        List<Set<Record>> recordsSetList = new ArrayList<>();
-        Set<Record> recordsListOne = new HashSet<>();
-        Set<Record> recordsListTwo = new HashSet<>();
-        Set<Record> recordsListThree = new HashSet<>();
+        RecordWorkbook recordsBook = new RecordWorkbook();
+        RecordSheet recordSheetOne = new RecordSheet();
+        RecordSheet recordSheetTwo = new RecordSheet();
+        RecordSheet recordSheetThree = new RecordSheet();
         Record mockRecordThree = new ArrestRecord();
         mockRecordThree.setId("123sdf");
         ((ArrestRecord)mockRecordThree).setFullName("Third record");
         ((ArrestRecord)mockRecordThree).setCounty(null);
-        recordsListOne.add(mockRecordOne);
-        recordsListTwo.add(mockRecordTwo);
-        recordsListThree.add(mockRecordThree);
-        recordsSetList.add(recordsListOne);
-        recordsSetList.add(recordsListTwo);
-        recordsSetList.add(recordsListThree);
+        recordSheetOne.add(mockRecordOne);
+        recordSheetTwo.add(mockRecordTwo);
+        recordSheetThree.add(mockRecordThree);
+        recordsBook.add(recordSheetOne);
+        recordsBook.add(recordSheetTwo);
+        recordsBook.add(recordSheetThree);
 
-        outputter.splitIntoSheets(mainDoc.getPath(), ArrestRecord.RecordColumnEnum.COUNTY_COLUMN.getColumnTitle(), recordsSetList, ArrestRecord.class, ArrestRecord.CountyComparator);
+        outputter.splitIntoSheetsRefactored(mainDoc.getPath(), ArrestRecord.RecordColumnEnum.COUNTY_COLUMN.getColumnTitle(), recordsBook, ArrestRecord.class, ArrestRecord.CountyComparator);
 
         Workbook splitworkWorkbook = Workbook.getWorkbook(mainDoc);
         Sheet sheetOne = splitworkWorkbook.getSheet("Polk");
@@ -315,10 +324,10 @@ public class RecordOutputUtilTest {
         Assert.assertNotNull(sheetOne);
         Assert.assertNotNull(sheetTwo);
         Assert.assertNotNull(sheetThree);
-        Assert.assertEquals(sheetOne.getRows(), recordsListOne.size()+1);//+1 for columnHeaders
-        Assert.assertEquals(sheetTwo.getRows(), recordsListTwo.size()+1);//+1 for columnHeaders
-        Assert.assertEquals(sheetThree.getRows(), recordsListThree.size()+1);//+1 for columnHeaders
-        Assert.assertEquals(splitworkWorkbook.getNumberOfSheets(), recordsSetList.size()+1);//+1 for mainsheet
+        Assert.assertEquals(sheetOne.getRows(), recordSheetOne.recordCount()+1);//+1 for columnHeaders
+        Assert.assertEquals(sheetTwo.getRows(), recordSheetTwo.recordCount()+1);//+1 for columnHeaders
+        Assert.assertEquals(sheetThree.getRows(), recordSheetThree.recordCount()+1);//+1 for columnHeaders
+        Assert.assertEquals(splitworkWorkbook.getNumberOfSheets(), recordsBook.sheetCount()+1);//+1 for mainsheet
         for (int r=1;r<sheetOne.getRows();r++) {
         	Assert.assertTrue(sheetOne.getRow(r)[ArrestRecord.RecordColumnEnum.COUNTY_COLUMN.getColumnIndex()].getContents().equalsIgnoreCase("Polk"));
         }        

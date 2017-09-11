@@ -20,6 +20,8 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 
 import com.google.common.base.CaseFormat;
+import com.mcd.spider.entities.io.RecordSheet;
+import com.mcd.spider.entities.io.RecordWorkbook;
 import com.mcd.spider.entities.record.Record;
 import com.mcd.spider.entities.record.State;
 import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
@@ -80,6 +82,12 @@ public class RecordOutputUtil {
         recordSetList.add(recordSet==null?new HashSet<>():recordSet);
         createWorkbook(workbookName, recordSetList, backUpExisting, new String[]{state.getName()}, comparator);
     }
+
+    public void createWorkbookRefactored(String workbookName, RecordSheet recordSheet, boolean backUpExisting, Comparator comparator) {
+        RecordWorkbook recordSetList = new RecordWorkbook();
+        recordSetList.add(recordSheet==null?new RecordSheet():recordSheet);
+        createWorkbookRefactored(workbookName, recordSetList, backUpExisting, new String[]{state.getName()}, comparator);
+    }
     
     public void createWorkbook(String workbookName, List<Set<Record>> recordSetList, boolean backUpExisting, String[] sheetNames, Comparator comparator) {
         WritableWorkbook newWorkbook = null;
@@ -110,6 +118,50 @@ public class RecordOutputUtil {
             }
             if (!recordSetList.isEmpty() && !recordSetList.get(0).isEmpty()) {
                 saveRecordsToWorkbook(recordSetList, newWorkbook, comparator);
+            }
+            newWorkbook.write();
+        } catch (IOException | WriteException | BiffException e) {
+            logger.error("Create " + workbookName + "spreadsheet error", e);
+        } finally {
+            if (newWorkbook != null) {
+                try {
+                    newWorkbook.close();
+                } catch (IOException | WriteException e) {
+                    logger.error("Close " + workbookName + "spreadsheet error", e);
+                }
+            }
+        }
+    }
+
+    public void createWorkbookRefactored(String workbookName, RecordWorkbook recordBook, boolean backUpExisting, String[] sheetNames, Comparator comparator) {
+        WritableWorkbook newWorkbook = null;
+        File mainBook = new File(docPath);
+        try {
+            if (mainBook.exists() && backUpExisting) {
+                logger.info("Backing up " + workbookName + " as " + docPath.substring(0, docPath.indexOf(EXT))+BACKUP_SUFFIX+EXT + " and starting a new workbook");
+                createWorkbookCopy(docPath,
+                        docPath.substring(0, docPath.indexOf(EXT))+BACKUP_SUFFIX+EXT);
+                handleBackup(docPath, false);
+            }
+            try {
+            	newWorkbook = Workbook.createWorkbook(new File(workbookName));
+            } catch (IOException ioe) {
+            	logger.error("Output workbook might be open. You have 15 seconds to close it.");
+                try {
+                    Thread.sleep(15000);
+                    newWorkbook = Workbook.createWorkbook(new File(workbookName));
+                } catch (InterruptedException ie) {
+                    logger.error("Couldn't sleep for 15 seconds");
+                }
+            }
+            
+            logger.info("Creating " + sheetNames.length + " sheets in workbook " + workbookName);
+            for (int rs = 0;rs<recordBook.sheetCount();rs++) {
+	            WritableSheet excelSheet = newWorkbook.createSheet(sheetNames[rs], rs);
+	            createColumnHeaders(excelSheet);
+            }
+            if (!recordBook.isEmpty() && !recordBook.getSheets().get(0).isEmpty()) {
+            	saveRecordsToWorkbookRefactored(recordBook, newWorkbook, comparator);
             }
             newWorkbook.write();
         } catch (IOException | WriteException | BiffException e) {
@@ -203,6 +255,27 @@ public class RecordOutputUtil {
 		}
 	}
 
+	public void saveRecordsToWorkbookRefactored(RecordWorkbook recordBook, WritableWorkbook workbook, Comparator comparator) {
+		try {
+			logger.info("Beginning to add " + recordBook.sheetCount() + " sheets to workbook");
+			int rs = 0;
+			for (RecordSheet recordSet : recordBook.getSheets()) {
+                logger.info("Sorting records before trying to save");
+                List<Record> sortedList = Record.getAsSortedList(recordSet.getRecords(), comparator);
+				int rowNumber = 1;
+				WritableSheet sheet = workbook.getSheet(rs);
+				logger.info(recordSet.recordCount() + " records in sheet " + rs);
+				for (Record currentRecord : sortedList) {
+					currentRecord.addToExcelSheet(rowNumber, sheet);
+					rowNumber++;
+				}
+				rs++;
+			}
+		} catch (IllegalAccessException e) {
+			logger.error("Error trying to save data to workbook", e);
+		}
+	}
+
 	public void addRecordToMainWorkbook(Record record) {
 		try {
 			createWorkbookCopy(docPath, getTempFileName() + EXT);
@@ -242,6 +315,12 @@ public class RecordOutputUtil {
 		saveRecordsToWorkbook(recordSetList, workbook, comparator);
 	}
 
+	public void saveRecordsToWorkbookRefactored(RecordSheet recordSheet, WritableWorkbook workbook, Comparator comparator) {
+		RecordWorkbook recordBook = new RecordWorkbook();
+		recordBook.add(recordSheet);
+		saveRecordsToWorkbookRefactored(recordBook, workbook, comparator);
+	}
+
     public boolean splitIntoSheets(String docName, String delimiterColumn, List<Set<Record>> recordsSetList, Class clazz, Comparator comparator) {
     	logger.info("Splitting " + docName + " into sheets by " + delimiterColumn);
         boolean successful = false;
@@ -265,6 +344,43 @@ public class RecordOutputUtil {
 //                    Record[] recordArray = recordsSetList.get(s).toArray(new Record[recordsSetList.get(s).size()]);
                     logger.info("Sorting records before trying to save");
                     List<Record> sortedList = Record.getAsSortedList(recordsSetList.get(s), comparator);
+                    for (int r = 0; r < sortedList.size(); r++) {
+                    	sortedList.get(r).addToExcelSheet(r+1, excelSheet);
+                    }
+                } catch (NullPointerException e) {
+                    logger.error("Error trying split workbook into sheets by " + fieldGetter.getName(), e);
+                }
+            }
+            handleBackup(docName, true);
+        } catch (IOException | WriteException | BiffException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            logger.error("Error trying split workbook into sheets", e);
+        }
+        return successful;
+    }
+
+    public boolean splitIntoSheetsRefactored(String docName, String delimiterColumn, RecordWorkbook recordsBook, Class clazz, Comparator comparator) {
+    	logger.info("Splitting " + docName + " into sheets by " + delimiterColumn);
+        boolean successful = false;
+        Method fieldGetter = null;
+        for (Method method : clazz.getMethods()) {
+            if (method.getName().equalsIgnoreCase("get" + delimiterColumn)) {
+                fieldGetter = method;
+            }
+        }
+        try {
+            createWorkbookCopy(docName, getTempFileName() + EXT);
+            for (int s = 0; s < recordsBook.sheetCount(); s++) {
+                try {
+                    String delimitValue = (String) fieldGetter.invoke(recordsBook.getSheets().get(s).getRecords().toArray()[0]);
+                    WritableSheet excelSheet = copyWorkbook.getSheet(delimitValue);
+                    if (excelSheet == null) {
+                        //append a new sheet for each
+                        excelSheet = copyWorkbook.createSheet(delimitValue == null ? "empty" : delimitValue, s + 1);
+                    }
+                    createColumnHeaders(excelSheet);
+//                    Record[] recordArray = recordsSetList.get(s).toArray(new Record[recordsSetList.get(s).size()]);
+                    logger.info("Sorting records before trying to save");
+                    List<Record> sortedList = Record.getAsSortedList(recordsBook.getSheets().get(s).getRecords(), comparator);
                     for (int r = 0; r < sortedList.size(); r++) {
                     	sortedList.get(r).addToExcelSheet(r+1, excelSheet);
                     }

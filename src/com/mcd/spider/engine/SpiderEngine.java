@@ -14,6 +14,7 @@ import com.mcd.spider.engine.audit.AuditEngine;
 import com.mcd.spider.engine.record.iowa.DesMoinesRegisterComEngine;
 import com.mcd.spider.engine.router.StateRouter;
 import com.mcd.spider.entities.audit.AuditParameters;
+import com.mcd.spider.entities.io.RecordSheet;
 import com.mcd.spider.entities.io.RecordWorkbook;
 import com.mcd.spider.entities.record.ArrestRecord;
 import com.mcd.spider.entities.record.ArrestRecord.RecordColumnEnum;
@@ -58,7 +59,7 @@ public class SpiderEngine {
 			StateRouter router = new StateRouter(state);
 			router.collectRecords(maxNumberOfResults, filter, retrieveMissedRecords);
 		}
-		logger.info("Spider has finished crawling through backdoors and cracks in the walls. Shutting down.");
+		logger.info("Spider has finished crawling through backdoors and cracks in the walls. Going back to it's web.");
 	}
 	
 	public void performSEOAudit(AuditParameters auditParams) {
@@ -80,26 +81,22 @@ public class SpiderEngine {
 		AuditEngine engine = new AuditEngine();
 		engine.getTextBySelector(url, selector);
 	}
-
+	
 	protected void customizeArrestOutputs(RecordIOUtil mainIOutil, State state, RecordFilterEnum filter) {
 		//TODO move this whole thing to RecordOutputUtil?
         //start with the second engine and iterate over the rest
-        List<Set<Record>> allMergedRecords = new ArrayList<>();
+        RecordWorkbook allMergedRecords = new RecordWorkbook();
         for (int e=1;e<state.getEngines().size();e++) {
             //TODO this will overwrite _MERGED if more than 2 engines per site
             //try simply gathering merged records from all engines, then outputting everything at the end
         	//can wait until a third site is added to any state. Implement RecordWorkbook in conjunction with this
             logger.info("Attempting to merge record output from " + state.getName());
             RecordIOUtil comparingIOUtil = new RecordIOUtil(state, new ArrestRecord(), state.getEngines().get(e).getSite());
-            List<Set<Record>> mergedRecords = mainIOutil.mergeRecordsFromWorkbooks(new File(mainIOutil.getMainDocPath()), new File(comparingIOUtil.getMainDocPath()));
+            RecordWorkbook mergedRecords = mainIOutil.mergeRecordsFromWorkbooksRefactored(new File(mainIOutil.getMainDocPath()), new File(comparingIOUtil.getMainDocPath()));
         
             if (!mergedRecords.isEmpty()) {
-            	String[] sheetNames = new String[mergedRecords.size()];
-                sheetNames[0] = state.getName();
-                for (int mrs=1;mrs<sheetNames.length;mrs++) {
-                    sheetNames[mrs] = ((ArrestRecord)mergedRecords.get(mrs).toArray()[0]).getCounty();
-                }
-                mainIOutil.getOutputter().createWorkbook(mainIOutil.getOutputter().getMergedDocPath(null), mergedRecords, false, sheetNames, ArrestDateComparator);
+            	String[] sheetNames = mergedRecords.getSheetNames();
+                mainIOutil.getOutputter().createWorkbookRefactored(mainIOutil.getOutputter().getMergedDocPath(null), mergedRecords, false, sheetNames, ArrestDateComparator);
                 logger.info("Merge of all records complete.");
             } else {
                 logger.info("Nothing found to merge");
@@ -107,14 +104,10 @@ public class SpiderEngine {
 
             if (!filter.filterName().equals(RecordFilterEnum.NONE.filterName())) {
                 logger.info("Attempting to merge filtered record output from "+state);
-                List<Set<Record>> mergedFilteredRecords = mainIOutil.mergeRecordsFromWorkbooks(new File(mainIOutil.getOutputter().getFilteredDocPath(filter)), new File(comparingIOUtil.getOutputter().getFilteredDocPath(filter)));
-                String[] filteredSheetNames = new String[mergedFilteredRecords.size()];
-                filteredSheetNames[0] = state.getName();
-                for (int mrs = 1; mrs<filteredSheetNames.length; mrs++) {
-                    filteredSheetNames[mrs] = ((ArrestRecord) mergedFilteredRecords.get(mrs).toArray()[0]).getCounty();
-                }
+                RecordWorkbook mergedFilteredRecords = mainIOutil.mergeRecordsFromWorkbooksRefactored(new File(mainIOutil.getOutputter().getFilteredDocPath(filter)), new File(comparingIOUtil.getOutputter().getFilteredDocPath(filter)));
+                String[] filteredSheetNames = mergedFilteredRecords.getSheetNames();
                 if (!mergedFilteredRecords.isEmpty()) {
-                    mainIOutil.getOutputter().createWorkbook(mainIOutil.getOutputter().getMergedDocPath(mainIOutil.getOutputter().getFilteredDocPath(filter)), mergedFilteredRecords, false, filteredSheetNames, ArrestDateComparator);
+                    mainIOutil.getOutputter().createWorkbookRefactored(mainIOutil.getOutputter().getMergedDocPath(mainIOutil.getOutputter().getFilteredDocPath(filter)), mergedFilteredRecords, false, filteredSheetNames, ArrestDateComparator);
                     logger.info("Merge of filtered records complete.");
                 } else {
                     logger.info("No filtered records found to merge");
@@ -125,23 +118,17 @@ public class SpiderEngine {
         //TODO test this and move to it's own method
         if (state.meetsLexisNexisCriteria()) {
         	File docPathtoConvert = new File( filter.equals(RecordFilterEnum.NONE)?mainIOutil.getMainDocPath():mainIOutil.getOutputter().getFilteredDocPath(filter));
-        	List<Set<Record>> eligibleRecordsCrawled;
+        	RecordWorkbook eligibleRecordsBook;
         	if (!allMergedRecords.isEmpty()) {
         		//use allMergedRecords if not empty
-        		eligibleRecordsCrawled = filterOutLexisNexisEligibleRecords(allMergedRecords);
+        		eligibleRecordsBook = filterOutLexisNexisEligibleRecords(allMergedRecords);
         	} else {
 	            //read records in from main workbook
-        		eligibleRecordsCrawled = filterOutLexisNexisEligibleRecords(mainIOutil.getInputter().readRecordsFromWorkbook(docPathtoConvert));
+        		eligibleRecordsBook = filterOutLexisNexisEligibleRecords(mainIOutil.getInputter().readRecordsFromWorkbookRefactored(docPathtoConvert));
         	}
-        	if (!RecordWorkbook.isEmpty(eligibleRecordsCrawled)) {
-        		String[] sheetNames = new String[eligibleRecordsCrawled.size()];
-	            sheetNames[0] = state.getName();
-	            for (int mrs=1;mrs<sheetNames.length;mrs++) {
-	            	if (!eligibleRecordsCrawled.get(mrs).isEmpty()) {
-	            		sheetNames[mrs] = ((ArrestRecord)eligibleRecordsCrawled.get(mrs).toArray()[0]).getCounty();
-	            	}
-	            }
-	        	mainIOutil.getOutputter().createWorkbook(mainIOutil.getOutputter().getLNPath(), eligibleRecordsCrawled, false, sheetNames, ArrestDateComparator);
+        	if (!eligibleRecordsBook.isEmpty()) {
+        		String[] sheetNames = eligibleRecordsBook.getSheetNames();
+	        	mainIOutil.getOutputter().createWorkbookRefactored(mainIOutil.getOutputter().getLNPath(), eligibleRecordsBook, false, sheetNames, ArrestDateComparator);
 	        	List<Integer> columnsToRemove = new ArrayList<>();
 	        	for (RecordColumnEnum columnEnum : RecordColumnEnum.values()) {
 	        		if (!columnEnum.equals(RecordColumnEnum.ARRESTDATE_COLUMN) && !columnEnum.equals(RecordColumnEnum.DOB_COLUMN)
@@ -160,22 +147,22 @@ public class SpiderEngine {
         }
     }
 	
-	protected List<Set<Record>> filterOutLexisNexisEligibleRecords(List<Set<Record>> records) {
+	protected RecordWorkbook filterOutLexisNexisEligibleRecords(RecordWorkbook recordBook) {
 		int recordCount = 0;
-		List<Set<Record>> eligibleRecords = new ArrayList<>();
-		for (Set<Record> recordSet : records) {
-			Set<Record> eligibleRecordSet = new HashSet<>();
-			for (Record record : recordSet) {
+		RecordWorkbook eligibleRecordBook = new RecordWorkbook();
+		for (RecordSheet recordSheet : recordBook.getSheets()) {
+			RecordSheet eligibleRecordSheet = new RecordSheet();
+			for (Record record : recordSheet.getRecords()) {
 				if (((ArrestRecord)record).getDob()!=null && ((ArrestRecord)record).getArrestDate()!=null && ((ArrestRecord)record).getFirstName()!=null&& ((ArrestRecord)record).getLastName()!=null) {
-					eligibleRecordSet.add(record);
+					eligibleRecordSheet.add(record);
 					recordCount++;
 				}
 			}
-			if (!eligibleRecordSet.isEmpty()) {
-				eligibleRecords.add(eligibleRecordSet);
+			if (!eligibleRecordSheet.isEmpty()) {
+				eligibleRecordBook.add(eligibleRecordSheet);
 			}
 		}
 		logger.info(recordCount + " records eligible for Lexis Nexis were found");
-		return eligibleRecords;
+		return eligibleRecordBook;
 	}
 }
