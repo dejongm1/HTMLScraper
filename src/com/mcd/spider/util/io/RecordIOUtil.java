@@ -101,7 +101,7 @@ public class RecordIOUtil {
         return OUTPUT_DIR;
     }
 
-    public RecordWorkbook mergeRecordsFromWorkbooksRefactored(File fileOne, File fileTwo) {
+    public RecordWorkbook mergeRecordsFromWorkbooks(File fileOne, File fileTwo) {
     	RecordWorkbook mergedResults = new RecordWorkbook();
     	Sheet[] sheetsFromFileOne = inputter.getSheets(fileOne);
     	Sheet[] sheetsFromFileTwo = inputter.getSheets(fileTwo);
@@ -111,14 +111,14 @@ public class RecordIOUtil {
     		for (Sheet sheetFromTwo : sheetsFromFileTwo) {
     			if (sheetNotAdded && sheetFromOne.getName().equalsIgnoreCase(sheetFromTwo.getName())) {
     				logger.info("Attempting to merge sheets " + sheetFromOne.getName() + " from " + fileOne.getName() + " and " + fileTwo.getName());
-    				mergedResults.add(mergeRecordsFromSheetsRefactored(fileOne, fileTwo, inputter.getSheetIndex(fileOne, sheetFromOne.getName()), inputter.getSheetIndex(fileTwo, sheetFromTwo.getName())));
+    				mergedResults.addSheet(mergeRecordsFromSheets(fileOne, fileTwo, inputter.getSheetIndex(fileOne, sheetFromOne.getName()), inputter.getSheetIndex(fileTwo, sheetFromTwo.getName())));
     				sheetNotAdded = false;
     			}
     		}
     		if (sheetNotAdded) {
 				//send sheet one without sheet two
 				logger.info("No matching sheet was found for " + sheetFromOne.getName() + ". Only outputting files from " + fileOne.getName());
-				mergedResults.add(mergeRecordsFromSheetsRefactored(fileOne, null, inputter.getSheetIndex(fileOne, sheetFromOne.getName()), -1));
+				mergedResults.addSheet(mergeRecordsFromSheets(fileOne, null, inputter.getSheetIndex(fileOne, sheetFromOne.getName()), -1));
     		}
     	}
     	
@@ -133,21 +133,21 @@ public class RecordIOUtil {
         	if (!matchFound) {
         		//send sheet two without sheet one
 				logger.info("No matching sheet was found for " + sheetFromTwo.getName() + ". Only outputting files from " + fileTwo.getName());
-				mergedResults.add(mergeRecordsFromSheetsRefactored(fileTwo, null, inputter.getSheetIndex(fileTwo, sheetFromTwo.getName()), -1));
+				mergedResults.addSheet(mergeRecordsFromSheets(fileTwo, null, inputter.getSheetIndex(fileTwo, sheetFromTwo.getName()), -1));
         	}
     	}
     	
     	return mergedResults;
     }
 
-    public RecordSheet mergeRecordsFromSheetsRefactored(File fileOne, File fileTwo, int sheetNumberOne, int sheetNumberTwo) {
+    public RecordSheet mergeRecordsFromSheets(File fileOne, File fileTwo, int sheetNumberOne, int sheetNumberTwo) {
     	RecordSheet storedRecordsOne = inputter.readRecordsFromSheet(fileOne, sheetNumberOne);
     	RecordSheet storedRecordsTwo = inputter.readRecordsFromSheet(fileTwo, sheetNumberTwo);
 		
-		return mergeRecordsFromSetsRefactored(storedRecordsOne, storedRecordsTwo);
+		return mergeRecordsFromSets(storedRecordsOne, storedRecordsTwo);
 	}
     
-    public RecordSheet mergeRecordsFromSetsRefactored(RecordSheet recordSheetOne, RecordSheet recordSheetTwo) {
+    public RecordSheet mergeRecordsFromSets(RecordSheet recordSheetOne, RecordSheet recordSheetTwo) {
     	RecordSheet compiledRecordSheet = new RecordSheet();
     	RecordSheet outerSheet = recordSheetOne.isEmpty()?new RecordSheet():RecordSheet.copy(recordSheetOne);
     	RecordSheet innerSheet = recordSheetTwo.isEmpty()?new RecordSheet():RecordSheet.copy(recordSheetTwo);
@@ -157,17 +157,17 @@ public class RecordIOUtil {
 			for (Record recordTwo : innerSheet.getRecords()) {
 				if (recordOne.matches(recordTwo)) {
 					recordOne.merge(recordTwo);
-					compiledRecordSheet.add(recordOne);
-					recordSheetTwo.remove(recordTwo);
+					compiledRecordSheet.addRecord(recordOne);
+					recordSheetTwo.removeRecord(recordTwo);
 					mergedCount++;
 				} else {
-					compiledRecordSheet.add(recordOne);
-					recordSheetOne.remove(recordOne);
+					compiledRecordSheet.addRecord(recordOne);
+					recordSheetOne.removeRecord(recordOne);
 				}
 			}
 		}
-		compiledRecordSheet.addAll(recordSheetOne);
-		compiledRecordSheet.addAll(recordSheetTwo);
+		compiledRecordSheet.addAllRecords(recordSheetOne);
+		compiledRecordSheet.addAllRecords(recordSheetTwo);
 		logger.info(mergedCount + " records were merged");
 		logger.info(compiledRecordSheet.recordCount() + " total records as a result of the merge");
 		return compiledRecordSheet;

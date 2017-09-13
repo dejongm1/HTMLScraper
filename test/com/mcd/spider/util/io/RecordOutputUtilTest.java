@@ -137,11 +137,11 @@ public class RecordOutputUtilTest {
     public void testCreateWorkbook_MultipleSheets() throws Exception {
     	RecordWorkbook recordBook = new RecordWorkbook();
     	RecordSheet recordSheetOne = new RecordSheet();
-    	recordSheetOne.add(mockRecordOne);
+    	recordSheetOne.addRecord(mockRecordOne);
     	RecordSheet recordSheetTwo = new RecordSheet();
-    	recordSheetOne.add(mockRecordTwo);
-    	recordBook.add(recordSheetOne);
-    	recordBook.add(recordSheetTwo);
+    	recordSheetOne.addRecord(mockRecordTwo);
+    	recordBook.addSheet(recordSheetOne);
+    	recordBook.addSheet(recordSheetTwo);
     	String[] sheetNames = recordBook.getSheetNames();
         outputter.createWorkbook(mainDoc.getPath(), recordBook, true, sheetNames, null);
         Assert.assertTrue(mainDoc.exists());
@@ -180,7 +180,7 @@ public class RecordOutputUtilTest {
             ArrestRecord record = new ArrestRecord();
             record.setId(String.valueOf(r));
             record.setFullName("name" + r);
-            mockedRecordSheet.add(record);
+            mockedRecordSheet.addRecord(record);
         }
         outputter.saveRecordsToWorkbook(mockedRecordSheet, testWorkbook, ArrestDateComparator);
     	//check sizes(rows (minus header) vs list size) match
@@ -226,8 +226,8 @@ public class RecordOutputUtilTest {
     public void testCreateAlcoholFilteredSpreadsheet() throws Exception {
     	//create a list of merged records
     	RecordSheet recordSheet = new RecordSheet();
-    	recordSheet.add(mockRecordOne);
-    	recordSheet.add(mockRecordTwo);
+    	recordSheet.addRecord(mockRecordOne);
+    	recordSheet.addRecord(mockRecordTwo);
     	outputter.createWorkbook(filteredDoc.getPath(), recordSheet, false, ArrestDateComparator);
     	Workbook filteredWorkbook = Workbook.getWorkbook(filteredDoc);
     	
@@ -242,8 +242,8 @@ public class RecordOutputUtilTest {
     public void testCreateMergedSpreadsheet() throws Exception {
     	//create a list of merged records
     	RecordSheet recordSheet = new RecordSheet();
-    	recordSheet.add(mockRecordOne);
-    	recordSheet.add(mockRecordTwo);
+    	recordSheet.addRecord(mockRecordOne);
+    	recordSheet.addRecord(mockRecordTwo);
     	outputter.createWorkbook(mergedDoc.getPath(), recordSheet, false, ArrestDateComparator);
     	Workbook mergedWorkbook = Workbook.getWorkbook(mergedDoc);
     	
@@ -262,81 +262,101 @@ public class RecordOutputUtilTest {
 
     @Test
     public void testSplitIntoSheets_ArrestRecord() throws Exception {
-        RecordWorkbook recordsBook = new RecordWorkbook();
-        RecordSheet recordSheetOne = new RecordSheet();
-        RecordSheet recordSheetTwo = new RecordSheet();
-        Record mockRecordThree = new ArrestRecord();
-        mockRecordThree.setId("123sdf");
-        ((ArrestRecord)mockRecordThree).setFullName("Third record");
-        ((ArrestRecord)mockRecordThree).setCounty("Polk");
-        recordSheetOne.add(mockRecordOne);
-        recordSheetTwo.add(mockRecordTwo);
-        recordSheetOne.add(mockRecordThree);
-        recordsBook.add(recordSheetOne);
-        recordsBook.add(recordSheetTwo);
+        renameMainDoc();
         
-        Assert.assertTrue(mainDoc.exists());
-
-        outputter.splitIntoSheets(mainDoc.getPath(), ArrestRecord.RecordColumnEnum.COUNTY_COLUMN.getColumnTitle(), recordsBook, ArrestRecord.class, ArrestRecord.CountyComparator);
-
-        Workbook splitworkWorkbook = Workbook.getWorkbook(mainDoc);
-        Sheet sheetOne = splitworkWorkbook.getSheet("Polk");
-        Sheet sheetTwo = splitworkWorkbook.getSheet("Johnson");
-        Sheet mainSheet = splitworkWorkbook.getSheet(outputter.getState().getName());
-
-        Assert.assertNotNull(sheetOne);
-        Assert.assertNotNull(sheetTwo);
-        Assert.assertEquals(sheetOne.getRows(), recordSheetOne.recordCount()+1);//+1 for columnHeaders
-        Assert.assertEquals(sheetTwo.getRows(), recordSheetTwo.recordCount()+1);//+1 for columnHeaders
-        Assert.assertEquals(splitworkWorkbook.getNumberOfSheets(), recordsBook.sheetCount()+1);//+1 for mainsheet
-        for (int r=1;r<sheetOne.getRows();r++) {
-        	Assert.assertTrue(sheetOne.getRow(r)[ArrestRecord.RecordColumnEnum.COUNTY_COLUMN.getColumnIndex()].getContents().equalsIgnoreCase("Polk"));
-        }        
-        for (int r=1;r<sheetTwo.getRows();r++) {
-        	Assert.assertTrue(sheetTwo.getRow(r)[ArrestRecord.RecordColumnEnum.COUNTY_COLUMN.getColumnIndex()].getContents().equalsIgnoreCase("Johnson"));
-        }
-    }
-
-    @Test
-    public void testSplitIntoSheets_NullDelimiter() throws Exception {
         RecordWorkbook recordsBook = new RecordWorkbook();
-        RecordSheet recordSheetOne = new RecordSheet();
+        RecordSheet recordSheetMain = new RecordSheet();
         RecordSheet recordSheetTwo = new RecordSheet();
         RecordSheet recordSheetThree = new RecordSheet();
         Record mockRecordThree = new ArrestRecord();
         mockRecordThree.setId("123sdf");
         ((ArrestRecord)mockRecordThree).setFullName("Third record");
-        ((ArrestRecord)mockRecordThree).setCounty(null);
-        recordSheetOne.add(mockRecordOne);
-        recordSheetTwo.add(mockRecordTwo);
-        recordSheetThree.add(mockRecordThree);
-        recordsBook.add(recordSheetOne);
-        recordsBook.add(recordSheetTwo);
-        recordsBook.add(recordSheetThree);
+        ((ArrestRecord)mockRecordThree).setCounty("Polk");
+        recordSheetMain.addRecord(mockRecordOne);
+        recordSheetMain.addRecord(mockRecordTwo);
+        recordSheetMain.addRecord(mockRecordThree);
+        recordSheetTwo.addRecord(mockRecordOne);
+        recordSheetThree.addRecord(mockRecordTwo);
+        recordSheetTwo.addRecord(mockRecordThree);
+        recordsBook.addSheet(recordSheetMain);
+        recordsBook.addSheet(recordSheetTwo);
+        recordsBook.addSheet(recordSheetThree);
+        
+        Assert.assertFalse(mainDoc.exists());
 
         outputter.splitIntoSheets(mainDoc.getPath(), ArrestRecord.RecordColumnEnum.COUNTY_COLUMN.getColumnTitle(), recordsBook, ArrestRecord.class, ArrestRecord.CountyComparator);
 
         Workbook splitworkWorkbook = Workbook.getWorkbook(mainDoc);
-        Sheet sheetOne = splitworkWorkbook.getSheet("Polk");
-        Sheet sheetTwo = splitworkWorkbook.getSheet("Johnson");
-        Sheet sheetThree = splitworkWorkbook.getSheet("empty");
-        Sheet mainSheet = splitworkWorkbook.getSheet(outputter.getState().getName());
+        Sheet mainSheet = splitworkWorkbook.getSheet(SpiderConstants.MAIN_SHEET_NAME);
+        Sheet sheetTwo = splitworkWorkbook.getSheet("Polk");
+        Sheet sheetThree = splitworkWorkbook.getSheet("Johnson");
 
-        Assert.assertNotNull(sheetOne);
+        Assert.assertNotNull(mainSheet);
         Assert.assertNotNull(sheetTwo);
         Assert.assertNotNull(sheetThree);
-        Assert.assertEquals(sheetOne.getRows(), recordSheetOne.recordCount()+1);//+1 for columnHeaders
+        Assert.assertEquals(mainSheet.getRows(), recordSheetMain.recordCount()+1);//+1 for columnHeaders
         Assert.assertEquals(sheetTwo.getRows(), recordSheetTwo.recordCount()+1);//+1 for columnHeaders
         Assert.assertEquals(sheetThree.getRows(), recordSheetThree.recordCount()+1);//+1 for columnHeaders
         Assert.assertEquals(splitworkWorkbook.getNumberOfSheets(), recordsBook.sheetCount()+1);//+1 for mainsheet
-        for (int r=1;r<sheetOne.getRows();r++) {
-        	Assert.assertTrue(sheetOne.getRow(r)[ArrestRecord.RecordColumnEnum.COUNTY_COLUMN.getColumnIndex()].getContents().equalsIgnoreCase("Polk"));
-        }        
         for (int r=1;r<sheetTwo.getRows();r++) {
-        	Assert.assertTrue(sheetTwo.getRow(r)[ArrestRecord.RecordColumnEnum.COUNTY_COLUMN.getColumnIndex()].getContents().equalsIgnoreCase("Johnson"));
-        }
+        	Assert.assertTrue(sheetTwo.getRow(r)[ArrestRecord.RecordColumnEnum.COUNTY_COLUMN.getColumnIndex()].getContents().equalsIgnoreCase("Polk"));
+        }        
         for (int r=1;r<sheetThree.getRows();r++) {
-        	Assert.assertTrue(sheetThree.getRow(r)[ArrestRecord.RecordColumnEnum.COUNTY_COLUMN.getColumnIndex()].getContents().equalsIgnoreCase(""));
+        	Assert.assertTrue(sheetThree.getRow(r)[ArrestRecord.RecordColumnEnum.COUNTY_COLUMN.getColumnIndex()].getContents().equalsIgnoreCase("Johnson"));
+        }
+    }
+
+    @Test
+    public void testSplitIntoSheets_NullDelimiter() throws Exception {
+        renameMainDoc();
+        
+        RecordWorkbook recordsBook = new RecordWorkbook();
+        RecordSheet recordSheetMain = new RecordSheet();
+        RecordSheet recordSheetTwo = new RecordSheet();
+        RecordSheet recordSheetThree = new RecordSheet();
+        RecordSheet recordSheetFour = new RecordSheet();
+        Record mockRecordThree = new ArrestRecord();
+        mockRecordThree.setId("123sdf");
+        ((ArrestRecord)mockRecordThree).setFullName("Third record");
+        ((ArrestRecord)mockRecordThree).setCounty(null);
+        recordSheetMain.addRecord(mockRecordOne);
+        recordSheetMain.addRecord(mockRecordTwo);
+        recordSheetMain.addRecord(mockRecordThree);
+        recordSheetTwo.addRecord(mockRecordOne);
+        recordSheetThree.addRecord(mockRecordTwo);
+        recordSheetFour.addRecord(mockRecordThree);
+        recordsBook.addSheet(recordSheetMain);
+        recordsBook.addSheet(recordSheetTwo);
+        recordsBook.addSheet(recordSheetThree);
+        recordsBook.addSheet(recordSheetFour);
+
+        Assert.assertFalse(mainDoc.exists());
+        
+        outputter.splitIntoSheets(mainDoc.getPath(), ArrestRecord.RecordColumnEnum.COUNTY_COLUMN.getColumnTitle(), recordsBook, ArrestRecord.class, ArrestRecord.CountyComparator);
+
+        Workbook splitworkWorkbook = Workbook.getWorkbook(mainDoc);
+        Sheet mainSheet = splitworkWorkbook.getSheet(SpiderConstants.MAIN_SHEET_NAME);
+        Sheet sheetTwo = splitworkWorkbook.getSheet("Polk");
+        Sheet sheetThree = splitworkWorkbook.getSheet("Johnson");
+        Sheet sheetFour = splitworkWorkbook.getSheet("empty");
+
+        Assert.assertNotNull(mainSheet);
+        Assert.assertNotNull(sheetTwo);
+        Assert.assertNotNull(sheetThree);
+        Assert.assertNotNull(sheetFour);
+        Assert.assertEquals(mainSheet.getRows(), recordSheetMain.recordCount()+1);//+1 for columnHeaders
+        Assert.assertEquals(sheetTwo.getRows(), recordSheetTwo.recordCount()+1);//+1 for columnHeaders
+        Assert.assertEquals(sheetThree.getRows(), recordSheetThree.recordCount()+1);//+1 for columnHeaders
+        Assert.assertEquals(sheetFour.getRows(), recordSheetFour.recordCount()+1);//+1 for columnHeaders
+        Assert.assertEquals(splitworkWorkbook.getNumberOfSheets(), recordsBook.sheetCount()+1);//+1 for mainsheet
+        for (int r=1;r<sheetTwo.getRows();r++) {
+        	Assert.assertTrue(sheetTwo.getRow(r)[ArrestRecord.RecordColumnEnum.COUNTY_COLUMN.getColumnIndex()].getContents().equalsIgnoreCase("Polk"));
+        }        
+        for (int r=1;r<sheetThree.getRows();r++) {
+        	Assert.assertTrue(sheetThree.getRow(r)[ArrestRecord.RecordColumnEnum.COUNTY_COLUMN.getColumnIndex()].getContents().equalsIgnoreCase("Johnson"));
+        }
+        for (int r=1;r<sheetFour.getRows();r++) {
+        	Assert.assertTrue(sheetFour.getRow(r)[ArrestRecord.RecordColumnEnum.COUNTY_COLUMN.getColumnIndex()].getContents().equalsIgnoreCase(""));
         }
     }
 

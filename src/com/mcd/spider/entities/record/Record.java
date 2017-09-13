@@ -19,6 +19,7 @@ import org.apache.log4j.Logger;
 import com.google.common.base.CaseFormat;
 import com.mcd.spider.entities.io.RecordSheet;
 import com.mcd.spider.entities.io.RecordWorkbook;
+import com.mcd.spider.util.SpiderConstants;
 
 import jxl.Sheet;
 import jxl.write.WritableSheet;
@@ -141,6 +142,8 @@ public interface Record {
 
 	static <T> RecordWorkbook splitByField(List<Record> records, String fieldName, Class<T> clazz) {
 		RecordWorkbook recordBook = new RecordWorkbook();
+		RecordSheet allRecordSheet = new RecordSheet(SpiderConstants.MAIN_SHEET_NAME, records);
+		recordBook.addSheet(allRecordSheet);
 		Method fieldGetter = null;
 		for (Method method : clazz.getMethods()) {
 			if (method.getName().equalsIgnoreCase("get" + fieldName)) {
@@ -148,25 +151,25 @@ public interface Record {
 			}
 		}
 		Object groupingDelimiter = null;
-		RecordSheet delimiterList = new RecordSheet();
+		RecordSheet delimiterSheet = new RecordSheet(fieldGetter);
 		for (Record record : records) {
 			try {
 				Object delimiterValue = fieldGetter.invoke(record)==null?"":fieldGetter.invoke(record);
 				if (groupingDelimiter!=null && delimiterValue.equals(groupingDelimiter)) {
-					delimiterList.add(record);
+					delimiterSheet.addRecord(record);
 				} else {
-					if (!delimiterList.isEmpty()) {
-						recordBook.add(delimiterList);
+					if (!delimiterSheet.isEmpty()) {
+						recordBook.addSheet(delimiterSheet);
 					}
 					groupingDelimiter = delimiterValue;
-					delimiterList = new RecordSheet();
-					delimiterList.add(record);
+					delimiterSheet = new RecordSheet(fieldGetter);
+					delimiterSheet.addRecord(record);
 				}
 			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NullPointerException e) {
 				logger.error("Problem while trying to split records by specified field: " + fieldName, e);
 			}
 		}
-		recordBook.add(delimiterList);
+		recordBook.addSheet(delimiterSheet);
 
 		return recordBook;
 	}

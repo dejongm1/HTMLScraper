@@ -92,7 +92,7 @@ public class SpiderEngine {
         	//can wait until a third site is added to any state. Implement RecordWorkbook in conjunction with this
             logger.info("Attempting to merge record output from " + state.getName());
             RecordIOUtil comparingIOUtil = new RecordIOUtil(state, new ArrestRecord(), state.getEngines().get(e).getSite());
-            RecordWorkbook mergedRecords = mainIOutil.mergeRecordsFromWorkbooksRefactored(new File(mainIOutil.getMainDocPath()), new File(comparingIOUtil.getMainDocPath()));
+            RecordWorkbook mergedRecords = mainIOutil.mergeRecordsFromWorkbooks(new File(mainIOutil.getMainDocPath()), new File(comparingIOUtil.getMainDocPath()));
         
             if (!mergedRecords.isEmpty()) {
             	String[] sheetNames = mergedRecords.getSheetNames();
@@ -104,7 +104,7 @@ public class SpiderEngine {
 
             if (!filter.filterName().equals(RecordFilterEnum.NONE.filterName())) {
                 logger.info("Attempting to merge filtered record output from "+state);
-                RecordWorkbook mergedFilteredRecords = mainIOutil.mergeRecordsFromWorkbooksRefactored(new File(mainIOutil.getOutputter().getFilteredDocPath(filter)), new File(comparingIOUtil.getOutputter().getFilteredDocPath(filter)));
+                RecordWorkbook mergedFilteredRecords = mainIOutil.mergeRecordsFromWorkbooks(new File(mainIOutil.getOutputter().getFilteredDocPath(filter)), new File(comparingIOUtil.getOutputter().getFilteredDocPath(filter)));
                 String[] filteredSheetNames = mergedFilteredRecords.getSheetNames();
                 if (!mergedFilteredRecords.isEmpty()) {
                     mainIOutil.getOutputter().createWorkbook(mainIOutil.getOutputter().getMergedDocPath(mainIOutil.getOutputter().getFilteredDocPath(filter)), mergedFilteredRecords, false, filteredSheetNames, ArrestDateComparator);
@@ -154,12 +154,12 @@ public class SpiderEngine {
 			RecordSheet eligibleRecordSheet = new RecordSheet();
 			for (Record record : recordSheet.getRecords()) {
 				if (((ArrestRecord)record).getDob()!=null && ((ArrestRecord)record).getArrestDate()!=null && ((ArrestRecord)record).getFirstName()!=null&& ((ArrestRecord)record).getLastName()!=null) {
-					eligibleRecordSheet.add(record);
+					eligibleRecordSheet.addRecord(record);
 					recordCount++;
 				}
 			}
 			if (!eligibleRecordSheet.isEmpty()) {
-				eligibleRecordBook.add(eligibleRecordSheet);
+				eligibleRecordBook.addSheet(eligibleRecordSheet);
 			}
 		}
 		logger.info(recordCount + " records eligible for Lexis Nexis were found");

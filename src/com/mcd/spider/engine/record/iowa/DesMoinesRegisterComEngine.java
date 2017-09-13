@@ -338,14 +338,14 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
             try {
                 logger.info("Outputting filtered results");
                 List<Record> filteredRecords = filterRecords(arrestRecords);
-                RecordWorkbook splitRecords = Record.splitByField(filteredRecords, delimiter, clazz);
-                if (!splitRecords.isEmpty()) {
+                RecordWorkbook splitFilteredRecordBook = Record.splitByField(filteredRecords, delimiter, clazz);
+                if (!splitFilteredRecordBook.isEmpty()) {
 	                //create a separate sheet with filtered results
 	                logger.info(filteredRecords.size()+" "+filter.filterName()+" "+"records were crawled");
 	                if (!filteredRecords.isEmpty()) {
-	                    recordIOUtil.getOutputter().createWorkbook(recordIOUtil.getOutputter().getFilteredDocPath(filter), new RecordSheet(SpiderConstants.MAIN_SHEET_NAME, filteredRecords), false, ArrestDateComparator);
+//	                    recordIOUtil.getOutputter().createWorkbook(recordIOUtil.getOutputter().getFilteredDocPath(filter), splitFilteredRecordBook, false, splitFilteredRecordBook.getSheetNames(), ArrestDateComparator);
+	                	recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getOutputter().getFilteredDocPath(filter), delimiter, splitFilteredRecordBook, clazz, ArrestDateComparator);
 	                }
-	                recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getOutputter().getFilteredDocPath(filter), delimiter, splitRecords, clazz, ArrestDateComparator);
                 }
             } catch (Exception e) {
                 logger.error("Error trying to create filtered spreadsheet", e);

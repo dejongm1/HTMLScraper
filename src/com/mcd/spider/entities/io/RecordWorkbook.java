@@ -36,9 +36,22 @@ public class RecordWorkbook {
 	public RecordSheet getSheet(int sheetIndex) {
 		return sheets.get(sheetIndex);
 	}
+	
+	public RecordSheet getSheet(String sheetName) {
+		for (RecordSheet sheet : sheets) {
+			if (sheet.getSheetName().equalsIgnoreCase(sheetName)) {
+				return sheet;
+			}
+		}
+		return null;
+	}
 
 	public Record getFirstRecordFromSheet(int sheetIndex) {
 		return this.getSheet(sheetIndex).getFirstRecordFromSheet();
+	}
+
+	public Record getFirstRecordFromSheet(String sheetName) {
+		return this.getSheet(sheetName).getFirstRecordFromSheet();
 	}
 	
 	public void setSheets(List<RecordSheet> recordSheet) {
@@ -53,17 +66,27 @@ public class RecordWorkbook {
 		}
 	}
 	
-	public void add(RecordSheet sheet) {
+	public void addSheet(RecordSheet sheet) {
 		if (this.isEmpty()) { //first sheet gets common name
 			sheet.setSheetName(SpiderConstants.MAIN_SHEET_NAME);
 		} else if (sheet.getSheetName()==null) {
 			sheet.setSheetName(sheet.extractSheetName());
 		}
 		this.sheets.add(sheet);
+		numOfSheets++;
+	}
+
+	public void removeSheet(int sheetIndex) {
+		this.sheets.remove(sheetIndex);
+		numOfSheets--;
 	}
 	
 	public Set<Record> getRecordsFromSheet(int sheetIndex) {
 		return this.getSheet(sheetIndex).getRecords();
+	}
+	
+	public Set<Record> getRecordsFromSheet(String sheetName) {
+		return this.getSheet(sheetName).getRecords();
 	}
 	
 	public String[] getSheetNames() {

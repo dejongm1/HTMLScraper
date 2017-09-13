@@ -1,5 +1,7 @@
 package com.mcd.spider.util.io;
 
+import static com.mcd.spider.entities.record.ArrestRecord.ArrestDateComparator;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -85,9 +87,9 @@ public class RecordOutputUtil {
     }*/
 
     public void createWorkbook(String workbookName, RecordSheet recordSheet, boolean backUpExisting, Comparator comparator) {
-        RecordWorkbook recordSetList = new RecordWorkbook();
-        recordSetList.add(recordSheet==null?new RecordSheet():recordSheet);
-        createWorkbook(workbookName, recordSetList, backUpExisting, null, comparator);
+        RecordWorkbook recordBook = new RecordWorkbook();
+        recordBook.addSheet(recordSheet==null?new RecordSheet():recordSheet);
+        createWorkbook(workbookName, recordBook, backUpExisting, null, comparator);
     }
     
     /*public void createWorkbook(String workbookName, List<Set<Record>> recordSetList, boolean backUpExisting, String[] sheetNames, Comparator comparator) {
@@ -320,7 +322,7 @@ public class RecordOutputUtil {
 
 	public void saveRecordsToWorkbook(RecordSheet recordSheet, WritableWorkbook workbook, Comparator comparator) {
 		RecordWorkbook recordBook = new RecordWorkbook();
-		recordBook.add(recordSheet);
+		recordBook.addSheet(recordSheet);
 		saveRecordsToWorkbook(recordBook, workbook, comparator);
 	}
 
@@ -370,6 +372,12 @@ public class RecordOutputUtil {
                 fieldGetter = method;
             }
         }
+        if (!new File(docName).exists()) {
+        	//create a workbook with first sheet
+        	createWorkbook(docName, recordsBook.getSheet(0), false, comparator);
+        }
+        //remove first sheet from book as it should already be written
+        recordsBook.removeSheet(0);
         try {
             createWorkbookCopy(docName, getTempFileName() + EXT);
             for (int s = 0; s < recordsBook.sheetCount(); s++) {

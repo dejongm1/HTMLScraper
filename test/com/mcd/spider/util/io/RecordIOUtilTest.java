@@ -49,13 +49,13 @@ public class RecordIOUtilTest {
 
 	@Test
 	public void testMergeRecordsFromSheets() {
-		RecordSheet mergedRecordSheet = ioUtil.mergeRecordsFromSheetsRefactored(testMergeFileOne, testMergeFileTwo, 0, 0);
+		RecordSheet mergedRecordSheet = ioUtil.mergeRecordsFromSheets(testMergeFileOne, testMergeFileTwo, 0, 0);
 		Assert.assertEquals(mergedRecordSheet.recordCount(), 12);
 	}
 	
 	@Test
 	public void testMergeRecordsFromSheets_NullFilePassed() {
-		RecordSheet mergedRecordSheet = ioUtil.mergeRecordsFromSheetsRefactored(testMergeFileOne, null, 0, -1);
+		RecordSheet mergedRecordSheet = ioUtil.mergeRecordsFromSheets(testMergeFileOne, null, 0, -1);
 		RecordSheet recordsFromSheet = ioUtil.getInputter().readRecordsFromSheet(testMergeFileOne, 0);
 		
 		Assert.assertEquals(mergedRecordSheet.recordCount(), 8);
@@ -64,7 +64,7 @@ public class RecordIOUtilTest {
 	
 	@Test
 	public void testMergeRecordsFromWorkbooks() {
-		RecordWorkbook mergedRecordBook = ioUtil.mergeRecordsFromWorkbooksRefactored(testMergeFileOne, testMergeFileTwo);		
+		RecordWorkbook mergedRecordBook = ioUtil.mergeRecordsFromWorkbooks(testMergeFileOne, testMergeFileTwo);		
 		
 		Assert.assertEquals(mergedRecordBook.sheetCount(), 1);
 		Assert.assertEquals(mergedRecordBook.getSheet(0).recordCount(), 12);
@@ -72,7 +72,7 @@ public class RecordIOUtilTest {
 	
 	@Test
 	public void testMergeRecordsFromWorkbooks_MoreSheetsBookOne() {
-		RecordWorkbook mergedRecordBook = ioUtil.mergeRecordsFromWorkbooksRefactored(testMergeFileOneExtraSheets, testMergeFileTwo);
+		RecordWorkbook mergedRecordBook = ioUtil.mergeRecordsFromWorkbooks(testMergeFileOneExtraSheets, testMergeFileTwo);
 		RecordSheet recordsFromExtraSheet = ioUtil.getInputter().readRecordsFromSheet(testMergeFileOneExtraSheets, 1);
 		
 		Assert.assertEquals(mergedRecordBook.sheetCount(), 2);
@@ -82,7 +82,7 @@ public class RecordIOUtilTest {
 
 	@Test
 	public void testMergeRecordsFromWorkbooks_MoreSheetsBookTwo() {
-		RecordWorkbook mergedRecordBook = ioUtil.mergeRecordsFromWorkbooksRefactored(testMergeFileOne, testMergeFileTwoExtraSheets);
+		RecordWorkbook mergedRecordBook = ioUtil.mergeRecordsFromWorkbooks(testMergeFileOne, testMergeFileTwoExtraSheets);
 		RecordSheet recordsFromExtraSheet = ioUtil.getInputter().readRecordsFromSheet(testMergeFileTwoExtraSheets, 1);
 
 		Assert.assertEquals(mergedRecordBook.sheetCount(), 2);

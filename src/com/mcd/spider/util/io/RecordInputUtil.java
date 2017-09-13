@@ -118,7 +118,7 @@ public class RecordInputUtil {
                 if (workbook!=null) {
                     for (int s=0;s<workbook.getNumberOfSheets();s++) {
                         //when columns are deleted, "extra rows" are sometimes added to sheet
-                        recordSheets.add(readRecordsFromSheet(fileToRead, s));
+                        recordSheets.addSheet(readRecordsFromSheet(fileToRead, s));
                     }
                 }
             }
@@ -193,7 +193,7 @@ public class RecordInputUtil {
 	                    if (rowIsNotEmpty(sheetToRead.getRow(r))) {
 	                        try {
 	                            //pass in new instance of rowRecord constructor for each row to read in
-	                            storedRecordSheet.add(Record.readRowIntoRecord(clazz, sheetToRead, constructor.newInstance(), r, columnOrder));
+	                            storedRecordSheet.addRecord(Record.readRowIntoRecord(clazz, sheetToRead, constructor.newInstance(), r, columnOrder));
 	                        } catch (IllegalArgumentException e) {
 	                            logger.error("Error trying to read row into record object, row "+r, e);
 	                        }

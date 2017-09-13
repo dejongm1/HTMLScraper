@@ -197,15 +197,15 @@ public class SpiderEngineTest {
 		record4.setDob(new Date());
 
 		RecordSheet recordSheet1 = new RecordSheet();
-		recordSheet1.add(record1);
-		recordSheet1.add(record2);
+		recordSheet1.addRecord(record1);
+		recordSheet1.addRecord(record2);
 		RecordSheet recordSheet2 = new RecordSheet();
-		recordSheet2.add(record4);
-		recordSheet2.add(record3);
+		recordSheet2.addRecord(record4);
+		recordSheet2.addRecord(record3);
 
 		RecordWorkbook recordBook = new RecordWorkbook();
-		recordBook.add(recordSheet2);
-		recordBook.add(recordSheet1);
+		recordBook.addSheet(recordSheet2);
+		recordBook.addSheet(recordSheet1);
 
 		RecordWorkbook eligibleRecordBook = engine.filterOutLexisNexisEligibleRecords(recordBook);
 		Assert.assertEquals(eligibleRecordBook.sheetCount(), recordBook.sheetCount());

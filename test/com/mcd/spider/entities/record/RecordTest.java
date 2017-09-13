@@ -229,9 +229,9 @@ public class RecordTest {
 		Record.readRowIntoRecord(ArrestRecord.class, sortingSheet, record1, 1, null);
         Record.readRowIntoRecord(ArrestRecord.class, sortingSheet, record2, 2, null);
         Record.readRowIntoRecord(ArrestRecord.class, sortingSheet, record4, 4, null);
-    	recordSet.add(record1);
-    	recordSet.add(record2);
-    	recordSet.add(record4);
+    	recordSet.addRecord(record1);
+    	recordSet.addRecord(record2);
+    	recordSet.addRecord(record4);
 
     	for (int t=0;t<=40;t++) {
 	        List<Record> sortedList = Record.getAsSortedList(recordSet.getRecords(), ArrestRecord.CountyComparator);
@@ -250,9 +250,9 @@ public class RecordTest {
 		Record.readRowIntoRecord(ArrestRecord.class, sortingSheet, record1, 1, null);
         Record.readRowIntoRecord(ArrestRecord.class, sortingSheet, record2, 2, null);
         Record.readRowIntoRecord(ArrestRecord.class, sortingSheet, record4, 4, null);
-    	recordSet.add(record1);
-    	recordSet.add(record2);
-    	recordSet.add(record4);
+    	recordSet.addRecord(record1);
+    	recordSet.addRecord(record2);
+    	recordSet.addRecord(record4);
 
     	for (int t=0;t<=40;t++) {
 	        List<Record> sortedList = Record.getAsSortedList(recordSet.getRecords(), ArrestRecord.ArrestDateComparator);
@@ -271,9 +271,9 @@ public class RecordTest {
 		Record.readRowIntoRecord(ArrestRecord.class, sortingSheet, record1, 1, null);
         Record.readRowIntoRecord(ArrestRecord.class, sortingSheet, record2, 2, null);
         Record.readRowIntoRecord(ArrestRecord.class, sortingSheet, record4, 4, null);
-    	recordSet.add(record4);
-    	recordSet.add(record2);
-    	recordSet.add(record1);
+    	recordSet.addRecord(record4);
+    	recordSet.addRecord(record2);
+    	recordSet.addRecord(record1);
 
     	for (int t=0;t<=40;t++) {
 	        List<Record> sortedList = Record.getAsSortedList(recordSet.getRecords(), null);
@@ -288,21 +288,12 @@ public class RecordTest {
 		List<Record> records = new ArrayList<>(ioUtil.getInputter().readRecordsFromSheet(testReadInputFile, "readRecordsIn").getRecords());
         Collections.sort(records, ArrestRecord.CountyComparator);
 		RecordWorkbook splitRecordsBook = Record.splitByField(records, RecordColumnEnum.COUNTY_COLUMN.getColumnTitle(), ArrestRecord.class);
-		int polkCountyIndex = 0;
-		int johnsonCountyIndex = 0;
-		if (((ArrestRecord)splitRecordsBook.getFirstRecordFromSheet(0)).getCounty().equals("Polk")) {
-			polkCountyIndex = 0;
-			johnsonCountyIndex = 1;
-		} else {
-			polkCountyIndex = 1;
-			johnsonCountyIndex = 0;
-		}
-
-		Assert.assertEquals(splitRecordsBook.sheetCount(), 2);
-		Assert.assertEquals(splitRecordsBook.getSheet(polkCountyIndex).recordCount(), 2);
-		Assert.assertEquals(splitRecordsBook.getSheet(johnsonCountyIndex).recordCount(), 1);
-		Assert.assertEquals(((ArrestRecord)splitRecordsBook.getFirstRecordFromSheet(polkCountyIndex)).getCounty(), ((ArrestRecord)splitRecordsBook.getRecordsFromSheet(polkCountyIndex).toArray()[1]).getCounty());
-		Assert.assertNotEquals(((ArrestRecord)splitRecordsBook.getFirstRecordFromSheet(polkCountyIndex)).getCounty(), ((ArrestRecord)splitRecordsBook.getFirstRecordFromSheet(johnsonCountyIndex)).getCounty());
+		
+		Assert.assertEquals(splitRecordsBook.sheetCount(), 3);
+		Assert.assertEquals(splitRecordsBook.getSheet("Polk").recordCount(), 2);
+		Assert.assertEquals(splitRecordsBook.getSheet("Johnson").recordCount(), 1);
+		Assert.assertEquals(((ArrestRecord)splitRecordsBook.getFirstRecordFromSheet("Polk")).getCounty(), ((ArrestRecord)splitRecordsBook.getRecordsFromSheet("Polk").toArray()[1]).getCounty());
+		Assert.assertNotEquals(((ArrestRecord)splitRecordsBook.getFirstRecordFromSheet("Polk")).getCounty(), ((ArrestRecord)splitRecordsBook.getFirstRecordFromSheet("Johnson")).getCounty());
 	}
 
 	@Test
@@ -311,12 +302,12 @@ public class RecordTest {
         Collections.sort(records, ArrestRecord.CityComparator);
 		RecordWorkbook splitRecordsBook = Record.splitByField(records, RecordColumnEnum.CITY_COLUMN.getColumnTitle(), ArrestRecord.class);
 		
-		Assert.assertEquals(splitRecordsBook.sheetCount(), 3);
-		Assert.assertEquals(splitRecordsBook.getSheet(0).recordCount(), 1);
-		Assert.assertEquals(splitRecordsBook.getSheet(1).recordCount(), 1);
-		Assert.assertEquals(splitRecordsBook.getSheet(2).recordCount(), 1);
-		Assert.assertNotEquals(((ArrestRecord)splitRecordsBook.getFirstRecordFromSheet(0)).getCity(), ((ArrestRecord)splitRecordsBook.getFirstRecordFromSheet(1)).getCity());
-		Assert.assertNotEquals(((ArrestRecord)splitRecordsBook.getFirstRecordFromSheet(1)).getCity(), ((ArrestRecord)splitRecordsBook.getFirstRecordFromSheet(2)).getCity());
+		Assert.assertEquals(splitRecordsBook.sheetCount(), 4);
+		Assert.assertEquals(splitRecordsBook.getSheet("Des Moines").recordCount(), 1);
+		Assert.assertEquals(splitRecordsBook.getSheet("Urbandale").recordCount(), 1);
+		Assert.assertEquals(splitRecordsBook.getSheet("UnknownSheet").recordCount(), 1);
+		Assert.assertNotEquals(((ArrestRecord)splitRecordsBook.getFirstRecordFromSheet("Des Moines")).getCity(), ((ArrestRecord)splitRecordsBook.getFirstRecordFromSheet("Urbandale")).getCity());
+		Assert.assertNotEquals(((ArrestRecord)splitRecordsBook.getFirstRecordFromSheet("Urbandale")).getCity(), ((ArrestRecord)splitRecordsBook.getFirstRecordFromSheet("UnknownSheet")).getCity());
 	}
 
 
