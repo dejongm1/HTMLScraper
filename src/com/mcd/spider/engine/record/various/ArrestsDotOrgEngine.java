@@ -54,7 +54,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 
     public static final Logger logger = Logger.getLogger(ArrestsDotOrgEngine.class);
 
-    SpiderUtil spiderUtil = new SpiderUtil();
+    private SpiderUtil spiderUtil = new SpiderUtil();
     private RecordFilterEnum filter;
     private ConnectionUtil connectionUtil;
     private State state;
@@ -72,11 +72,11 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     }
     
     @Override
-    public void getArrestRecords(State state, long maxNumberOfResults, RecordFilterEnum filter, boolean retrieveMissedRecords) throws SpiderException {
+    public void getArrestRecords(State state, RecordFilterEnum filter, SpiderWeb spiderWeb) throws SpiderException {
         long totalTime = System.currentTimeMillis();
         this.state = state;
         this.filter = filter;
-        spiderWeb = new SpiderWeb(maxNumberOfResults, true, retrieveMissedRecords);
+        this.spiderWeb = spiderWeb;
 //        site = new ArrestsDotOrgSite(new String[]{state.getName()}); //moved to constructor
         recordIOUtil = initializeIOUtil(state);
         //Do we want to persist between states in same run? Or not run multiple states at once?

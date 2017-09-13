@@ -75,10 +75,10 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     }
     
     @Override
-    public void getArrestRecords(State state, long maxNumberOfResults, RecordFilterEnum filter, boolean retrieveMissedRecords) throws SpiderException {
+    public void getArrestRecords(State state, RecordFilterEnum filter, SpiderWeb spiderWeb) throws SpiderException {
         long totalTime = System.currentTimeMillis();
     	this.filter = filter;
-    	spiderWeb = new SpiderWeb(maxNumberOfResults, false, retrieveMissedRecords);
+    	this.spiderWeb = spiderWeb;
 //        site = new DesMoinesRegisterComSite(null);
     	if (spiderWeb.isOffline()) {
     		logger.debug("Offline - can't scrape this php site. Try making an offline version");

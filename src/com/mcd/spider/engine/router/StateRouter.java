@@ -3,7 +3,9 @@ package com.mcd.spider.engine.router;
 import com.mcd.spider.engine.record.ArrestRecordEngine;
 import com.mcd.spider.entities.record.State;
 import com.mcd.spider.entities.record.filter.RecordFilter;
+import com.mcd.spider.entities.site.SpiderWeb;
 import com.mcd.spider.exception.SpiderException;
+
 import common.Logger;
 
 /**
@@ -28,7 +30,8 @@ public class StateRouter implements EngineRouter {
 
         for (ArrestRecordEngine engine : state.getEngines()) {
 	        logger.info("Collecting records from " + engine.getClass().getSimpleName() );
-	        engine.getArrestRecords(state, maxNumberOfResults, filter, retrieveMissedRecords);
+			SpiderWeb spiderWeb = new SpiderWeb(maxNumberOfResults, true, retrieveMissedRecords);
+			engine.getArrestRecords(state, filter, spiderWeb);
         }
 	}
 	
@@ -45,7 +48,8 @@ public class StateRouter implements EngineRouter {
 					logger.info("Thread: " + getName() + " running");
 					logger.info("Collecting records from " + engine.getClass().getSimpleName() );
 					try {
-						engine.getArrestRecords(state, maxNumberOfResults, filter, retrieveMissedRecords);
+						SpiderWeb spiderWeb = new SpiderWeb(maxNumberOfResults, true, retrieveMissedRecords);
+						engine.getArrestRecords(state, filter, spiderWeb);
 					} catch (SpiderException e) {
 						logger.error("Thread: " + getName() + " caught an exception", e);
 					}

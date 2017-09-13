@@ -1,23 +1,25 @@
 package com.mcd.spider.engine.record;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
+import org.jsoup.Connection.Response;
+import org.jsoup.nodes.Element;
+
 import com.mcd.spider.entities.record.ArrestRecord;
 import com.mcd.spider.entities.record.Record;
 import com.mcd.spider.entities.record.State;
 import com.mcd.spider.entities.record.filter.RecordFilter;
 import com.mcd.spider.entities.site.Site;
+import com.mcd.spider.entities.site.SpiderWeb;
 import com.mcd.spider.exception.SpiderException;
 import com.mcd.spider.util.io.RecordIOUtil;
-import org.jsoup.Connection.Response;
-import org.jsoup.nodes.Element;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
 
 public interface ArrestRecordEngine {
 
 	Site getSite();
-	void getArrestRecords(State state, long maxNumberOfResults, RecordFilter.RecordFilterEnum filter, boolean retrieveMissedRecords) throws SpiderException;
+	void getArrestRecords(State state, RecordFilter.RecordFilterEnum filter, SpiderWeb spiderWeb) throws SpiderException;
 	void scrapeSite();
 	Map<String,String> parseDocForUrls(Object objectToParse);
 	void scrapeRecords(Map<Object, String> recordsDetailsUrlMap);
