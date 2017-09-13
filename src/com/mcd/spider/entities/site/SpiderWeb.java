@@ -1,17 +1,18 @@
 package com.mcd.spider.entities.site;
 
-import com.mcd.spider.entities.record.Record;
-
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
+
+import com.mcd.spider.entities.io.RecordSheet;
+import com.mcd.spider.entities.record.Record;
 
 public class SpiderWeb {
 	
 	private int attemptCount;
     private Set<String> crawledIds;
     private Set<String> uncrawledIds;
-    private Set<Record> crawledRecords;
+    private RecordSheet crawledRecords;
     private Map<String,String> sessionCookies;
     private Map<String,String> headers;
     private boolean offline;
@@ -57,11 +58,11 @@ public class SpiderWeb {
         this.uncrawledIds = set;
     }
 
-	public Set<Record> getCrawledRecords() {
+	public RecordSheet getCrawledRecords() {
 		return crawledRecords;
 	}
 
-	public void setCrawledRecords(Set<Record> crawledRecords) {
+	public void setCrawledRecords(RecordSheet crawledRecords) {
 		this.crawledRecords = crawledRecords;
 	}
 

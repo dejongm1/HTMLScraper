@@ -11,7 +11,6 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -25,6 +24,8 @@ import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
 
 import com.mcd.spider.engine.record.ArrestRecordEngine;
+import com.mcd.spider.entities.io.RecordSheet;
+import com.mcd.spider.entities.io.RecordWorkbook;
 import com.mcd.spider.entities.record.ArrestRecord;
 import com.mcd.spider.entities.record.ArrestRecord.RecordColumnEnum;
 import com.mcd.spider.entities.record.Record;
@@ -38,6 +39,7 @@ import com.mcd.spider.exception.ExcelOutputException;
 import com.mcd.spider.exception.IDCheckException;
 import com.mcd.spider.exception.SpiderException;
 import com.mcd.spider.util.ConnectionUtil;
+import com.mcd.spider.util.SpiderConstants;
 import com.mcd.spider.util.SpiderUtil;
 import com.mcd.spider.util.io.RecordIOUtil;
 import com.mcd.spider.util.io.RecordOutputUtil;
@@ -181,7 +183,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     public void scrapeRecords(Map<Object,String> recordsDetailsUrlMap) {
     	RecordOutputUtil recordOutputUtil = recordIOUtil.getOutputter();
         List<Record> arrestRecords = new ArrayList<>();
-        arrestRecords.addAll(spiderWeb.getCrawledRecords());
+        arrestRecords.addAll(spiderWeb.getCrawledRecords().getRecords());
         ArrestRecord arrestRecord;
         List<Object> keys = new ArrayList<>(recordsDetailsUrlMap.keySet());
         Collections.shuffle(keys);
@@ -495,11 +497,11 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
                 try {
                     logger.info("Outputting filtered results");
                     List<Record> filteredRecords = filterRecords(arrestRecords);
-                    List<Set<Record>> splitRecords = Record.splitByField(filteredRecords, columnDelimiter, clazz);
+                    RecordWorkbook splitRecords = Record.splitByField(filteredRecords, columnDelimiter, clazz);
                     //create a separate sheet with filtered results
                     logger.info(filteredRecords.size()+" "+filter.filterName()+" "+"records were crawled");
                     if (!filteredRecords.isEmpty()) {
-                        recordIOUtil.getOutputter().createWorkbook(recordIOUtil.getOutputter().getFilteredDocPath(filter), new HashSet<>(filteredRecords), false, ArrestDateComparator);
+                        recordIOUtil.getOutputter().createWorkbook(recordIOUtil.getOutputter().getFilteredDocPath(filter), new RecordSheet(SpiderConstants.MAIN_SHEET_NAME, filteredRecords), false, ArrestDateComparator);
                         recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getOutputter().getFilteredDocPath(filter), columnDelimiter, splitRecords, clazz, ArrestDateComparator);
                     }
                 } catch (Exception e) {
@@ -507,7 +509,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
                 }
             }
             try {
-                List<Set<Record>> splitRecords = Record.splitByField(arrestRecords, columnDelimiter, clazz);
+                RecordWorkbook splitRecords = Record.splitByField(arrestRecords, columnDelimiter, clazz);
                 recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getMainDocPath(), columnDelimiter, splitRecords, clazz, ArrestDateComparator);
             } catch (Exception e) {
                 logger.error("Error trying to split full list of records", e);

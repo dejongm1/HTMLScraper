@@ -417,7 +417,7 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 	private boolean neitherIsNull(Object first, Object second) {
 	    return first!=null && second!=null;
     }
-    public static Comparator<Record> ArrestDateComparator = new Comparator<Record>() {
+    public static final Comparator<Record> ArrestDateComparator = new Comparator<Record>() {
         @Override
         public int compare(Record record1, Record record2) {
             Calendar recordDate1 = ((ArrestRecord) record1).getArrestDate()!=null?((ArrestRecord) record1).getArrestDate():Calendar.getInstance();
@@ -428,7 +428,7 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
         }
     };
 
-	public static Comparator<Record> CountyComparator = new Comparator<Record>() {
+	public static final Comparator<Record> CountyComparator = new Comparator<Record>() {
 		@Override
 		public int compare(Record record1, Record record2) {
 			String recordCounty1 = ((ArrestRecord) record1).getCounty()!=null?((ArrestRecord) record1).getCounty().toUpperCase():"No County";
@@ -439,7 +439,7 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 		}
 	};
 	
-	public static Comparator<Record> CityComparator = new Comparator<Record>() {
+	public static final Comparator<Record> CityComparator = new Comparator<Record>() {
 		@Override
 		public int compare(Record record1, Record record2) {
 			String recordCity1 = ((ArrestRecord) record1).getCity()!=null?((ArrestRecord) record1).getCity().toUpperCase():"No City";

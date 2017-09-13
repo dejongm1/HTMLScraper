@@ -1,6 +1,35 @@
 package com.mcd.spider.engine.record.iowa;
 
+import static com.mcd.spider.entities.record.ArrestRecord.ArrestDateComparator;
+
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import org.apache.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.jsoup.Connection.Response;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import com.mcd.spider.engine.record.ArrestRecordEngine;
+import com.mcd.spider.entities.io.RecordSheet;
+import com.mcd.spider.entities.io.RecordWorkbook;
 import com.mcd.spider.entities.record.ArrestRecord;
 import com.mcd.spider.entities.record.ArrestRecord.RecordColumnEnum;
 import com.mcd.spider.entities.record.Record;
@@ -14,25 +43,10 @@ import com.mcd.spider.exception.ExcelOutputException;
 import com.mcd.spider.exception.IDCheckException;
 import com.mcd.spider.exception.SpiderException;
 import com.mcd.spider.util.ConnectionUtil;
+import com.mcd.spider.util.SpiderConstants;
 import com.mcd.spider.util.SpiderUtil;
 import com.mcd.spider.util.io.RecordIOUtil;
 import com.mcd.spider.util.io.RecordOutputUtil;
-import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.jsoup.Connection.Response;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.*;
-import java.util.Map.Entry;
-
-import static com.mcd.spider.entities.record.ArrestRecord.ArrestDateComparator;
 
 /**
  *
@@ -79,7 +93,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
 
 	        scrapeSite();
 
-            finalizeOutput(new ArrayList<>(recordIOUtil.getInputter().readRecordsFromDefaultWorkbook().get(0)));
+            finalizeOutput(new ArrayList<>(recordIOUtil.getInputter().readRecordsFromDefaultWorkbook().getRecordsFromSheet(0)));
 
 	        //outputUtil.removeColumnsFromSpreadsheet(new int[]{ArrestRecord.RecordColumnEnum.ID_COLUMN.index()});
 
@@ -146,7 +160,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     public void scrapeRecords(Map<Object, String> recordsDetailsUrlMap){
         List<Record> arrestRecords = new ArrayList<>();
         ArrestRecord arrestRecord;
-        arrestRecords.addAll(spiderWeb.getCrawledRecords());
+        arrestRecords.addAll(spiderWeb.getCrawledRecords().getRecords());
         
         RecordOutputUtil recordOutputUtil = recordIOUtil.getOutputter();
         String referer = "";
@@ -324,12 +338,12 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
             try {
                 logger.info("Outputting filtered results");
                 List<Record> filteredRecords = filterRecords(arrestRecords);
-                List<Set<Record>> splitRecords = Record.splitByField(filteredRecords, delimiter, clazz);
+                RecordWorkbook splitRecords = Record.splitByField(filteredRecords, delimiter, clazz);
                 if (!splitRecords.isEmpty()) {
 	                //create a separate sheet with filtered results
 	                logger.info(filteredRecords.size()+" "+filter.filterName()+" "+"records were crawled");
 	                if (!filteredRecords.isEmpty()) {
-	                    recordIOUtil.getOutputter().createWorkbook(recordIOUtil.getOutputter().getFilteredDocPath(filter), new HashSet<>(filteredRecords), false, ArrestDateComparator);
+	                    recordIOUtil.getOutputter().createWorkbook(recordIOUtil.getOutputter().getFilteredDocPath(filter), new RecordSheet(SpiderConstants.MAIN_SHEET_NAME, filteredRecords), false, ArrestDateComparator);
 	                }
 	                recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getOutputter().getFilteredDocPath(filter), delimiter, splitRecords, clazz, ArrestDateComparator);
                 }
@@ -338,7 +352,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
             }
         }
         try {
-            List<Set<Record>> splitRecords = Record.splitByField(arrestRecords, delimiter, clazz);
+            RecordWorkbook splitRecords = Record.splitByField(arrestRecords, delimiter, clazz);
             if (!splitRecords.isEmpty()) {
             	recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getMainDocPath(), delimiter, splitRecords, clazz, ArrestDateComparator);
             }

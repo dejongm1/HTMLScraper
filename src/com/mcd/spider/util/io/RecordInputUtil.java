@@ -105,38 +105,11 @@ public class RecordInputUtil {
         return ids;
     }
 
-    public List<Set<Record>> readRecordsFromDefaultWorkbook() {
+    public RecordWorkbook readRecordsFromDefaultWorkbook() {
 		return readRecordsFromWorkbook(new File(docName));
 	}
-    
-    public RecordWorkbook readRecordsFromDefaultWorkbookRefactored() {
-		return readRecordsFromWorkbookRefactored(new File(docName));
-	}
 
-    public List<Set<Record>> readRecordsFromWorkbook(File fileToRead) {
-        List<Set<Record>> listOfRecordSets = new ArrayList<>();
-    	try {
-    		logger.debug("Attempting to read previous records from workbook " + fileToRead.getName() + " into memory");
-    		if (fileToRead.exists()) {
-                Workbook workbook = Workbook.getWorkbook(fileToRead);
-                if (workbook!=null) {
-                    for (int s=0;s<workbook.getNumberOfSheets();s++) {
-                        //when columns are deleted, "extra rows" are sometimes added to sheet
-                        listOfRecordSets.add(readRecordsFromSheet(fileToRead, s));
-                    }
-                }
-            }
-    	} catch (FileNotFoundException e) {
-    		logger.error("No record file found", e);
-    	} catch (IOException | BiffException e) {
-    		logger.error("Exception caught while trying to read in previous records", e);
-    	} catch (Exception e) {
-    		logger.error("Unexpected exception while trying to read in records, refer to backup file created", e);
-    	}
-    	return listOfRecordSets;
-    }
-
-    public RecordWorkbook readRecordsFromWorkbookRefactored(File fileToRead) {
+    public RecordWorkbook readRecordsFromWorkbook(File fileToRead) {
     	RecordWorkbook recordSheets = new RecordWorkbook();
     	try {
     		logger.debug("Attempting to read previous records from workbook " + fileToRead.getName() + " into memory");
@@ -145,7 +118,7 @@ public class RecordInputUtil {
                 if (workbook!=null) {
                     for (int s=0;s<workbook.getNumberOfSheets();s++) {
                         //when columns are deleted, "extra rows" are sometimes added to sheet
-                        recordSheets.add(readRecordsFromSheetRefactored(fileToRead, s));
+                        recordSheets.add(readRecordsFromSheet(fileToRead, s));
                     }
                 }
             }
@@ -173,7 +146,6 @@ public class RecordInputUtil {
     }
     
     public int getSheetIndex(File fileToRead, String sheetName) {
-        Workbook workbook;
 		Integer sheetNumber = null;
 		final Sheet[] sheets = getSheets(fileToRead);  
 		if (sheets!=null) {
@@ -186,67 +158,16 @@ public class RecordInputUtil {
     	return sheetNumber;
     }
     
-    public Set<Record> readRecordsFromSheet(File fileToRead, String sheetName) {
+    public RecordSheet readRecordsFromSheet(File fileToRead, String sheetName) {
     	int sheetNumber = getSheetIndex(fileToRead, sheetName);
     	if (sheetNumber==-1) {
-    		return new HashSet<Record>();
+    		return new RecordSheet();
     	} else {
     		return readRecordsFromSheet(fileToRead, sheetNumber);
     	}
     }
     
-    public RecordSheet readRecordsFromSheetRefactored(File fileToRead, String sheetName) {
-    	int sheetNumber = getSheetIndex(fileToRead, sheetName);
-    	if (sheetNumber==-1) {
-    		return new RecordSheet();
-    	} else {
-    		return readRecordsFromSheetRefactored(fileToRead, sheetNumber);
-    	}
-    }
-    
-    public Set<Record> readRecordsFromSheet(File fileToRead, int sheetNumber) {
-        Set<Record> storedRecords = new HashSet<>();
-        Class<?> clazz = Record.getRecordClass(record);
-        Constructor<?> constructor = Record.getConstructorForRecord(clazz, record);
-        int foundRecordsCount = 0;
-        int retrievedRecordsCount = 0;
-        //don't try to readRecords if -1 is passed
-        if (sheetNumber!=-1) {
-	        try {
-                Workbook workbook = null;
-                try {
-                    workbook = Workbook.getWorkbook(fileToRead);
-                } catch (FileNotFoundException e) {
-                    logger.error(fileToRead.getName() + " does not exist so there are no records to read in");
-                }
-	            if (workbook!=null) {
-	                Sheet sheetToRead = workbook.getSheet(sheetNumber);
-	                logger.debug("Attempting to read previous records from sheet " + sheetToRead.getName() + " into memory");
-	                //starting with the first data row, read records into set
-	                foundRecordsCount+=getNonEmptyRowCount(sheetToRead);
-	                Object rowRecord = constructor.newInstance();
-	                List<Object> columnOrder = Record.getColumnOrder(clazz, sheetToRead, rowRecord);
-	                for (int r = 1; r<sheetToRead.getRows(); r++) {
-	                    if (rowIsNotEmpty(sheetToRead.getRow(r))) {
-	                        try {
-	                            //pass in new instance of rowRecord contructor for each row to read in
-	                            storedRecords.add(Record.readRowIntoRecord(clazz, sheetToRead, constructor.newInstance(), r, columnOrder));
-	                        } catch (IllegalArgumentException e) {
-	                            logger.error("Error trying to read row into record object, row "+r, e);
-	                        }
-	                    }
-	                }
-	                retrievedRecordsCount+=storedRecords.size();
-	            }
-                logger.debug("Found " +  (foundRecordsCount-1) + " and retrieved " + retrievedRecordsCount);
-	        } catch (BiffException | IOException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-	            logger.error("Exception caught reading sheet into records - " + fileToRead.getName() + " sheet " + sheetNumber, e);
-	        }
-        }
-        return storedRecords;
-    }
-    
-    public RecordSheet readRecordsFromSheetRefactored(File fileToRead, int sheetNumber) {
+    public RecordSheet readRecordsFromSheet(File fileToRead, int sheetNumber) {
         RecordSheet storedRecordSheet = new RecordSheet();
         Class<?> clazz = Record.getRecordClass(record);
         Constructor<?> constructor = Record.getConstructorForRecord(clazz, record);

@@ -25,6 +25,7 @@ import com.mcd.spider.entities.record.Record;
 import com.mcd.spider.entities.record.State;
 import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
 import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
+import com.mcd.spider.util.SpiderConstants;
 
 import jxl.Cell;
 import jxl.Sheet;
@@ -100,7 +101,7 @@ public class RecordOutputUtilTest {
         filteredDoc = new File(outputter.getFilteredDocPath(RecordFilterEnum.findFilter("alcohol")));
         outputter.createWorkbook(mainDoc.getPath(), null, true, null);
         testWorkbook = Workbook.createWorkbook(mainDoc);
-        WritableSheet sheet = testWorkbook.createSheet(outputter.getState().getName(), 0);
+        WritableSheet sheet = testWorkbook.createSheet(SpiderConstants.MAIN_SHEET_NAME, 0);
         outputter.createColumnHeaders(sheet);
         testWorkbook.write();
         testWorkbook.close();
@@ -142,16 +143,16 @@ public class RecordOutputUtilTest {
     	recordBook.add(recordSheetOne);
     	recordBook.add(recordSheetTwo);
     	String[] sheetNames = recordBook.getSheetNames();
-        outputter.createWorkbookRefactored(mainDoc.getPath(), recordBook, true, sheetNames, null);
+        outputter.createWorkbook(mainDoc.getPath(), recordBook, true, sheetNames, null);
         Assert.assertTrue(mainDoc.exists());
 
         Workbook mainWorkbook = Workbook.getWorkbook(mainDoc);
         
         Assert.assertEquals(mainWorkbook.getNumberOfSheets(), recordBook.sheetCount());
-        Assert.assertEquals(mainWorkbook.getSheet(0).getRows(), recordBook.getSheets().get(0).recordCount()+1); //+1 for header row
-        Assert.assertEquals(mainWorkbook.getSheet(1).getRows(), recordBook.getSheets().get(1).recordCount()+1); //+1 for header row
+        Assert.assertEquals(mainWorkbook.getSheet(0).getRows(), recordBook.getSheet(0).recordCount()+1); //+1 for header row
+        Assert.assertEquals(mainWorkbook.getSheet(1).getRows(), recordBook.getSheet(1).recordCount()+1); //+1 for header row
         Assert.assertEquals(mainWorkbook.getSheet(0).getName(), sheetNames[0]);
-        Assert.assertEquals(mainWorkbook.getSheet(0).getName(), ioUtil.getOutputter().getState().getName());
+        Assert.assertEquals(mainWorkbook.getSheet(0).getName(), SpiderConstants.MAIN_SHEET_NAME);
         Assert.assertEquals(mainWorkbook.getSheet(1).getName(), sheetNames[1]);
     }
 
@@ -168,7 +169,7 @@ public class RecordOutputUtilTest {
         Assert.assertFalse(backUpDoc.exists());
         Assert.assertEquals(mainWorkbook.getSheet(0).getRows(), 1);
         Assert.assertEquals(mainWorkbook.getNumberOfSheets(), 1);
-        Assert.assertEquals(mainWorkbook.getSheet(0).getName(), outputter.getState().getName());
+        Assert.assertEquals(mainWorkbook.getSheet(0).getName(), SpiderConstants.MAIN_SHEET_NAME);
     }
 
     @Test
@@ -181,7 +182,7 @@ public class RecordOutputUtilTest {
             record.setFullName("name" + r);
             mockedRecordSheet.add(record);
         }
-        outputter.saveRecordsToWorkbookRefactored(mockedRecordSheet, testWorkbook, ArrestDateComparator);
+        outputter.saveRecordsToWorkbook(mockedRecordSheet, testWorkbook, ArrestDateComparator);
     	//check sizes(rows (minus header) vs list size) match
         Assert.assertEquals(mockedRecordSheet.recordCount(), testWorkbook.getSheet(0).getRows()-1);
     }
@@ -227,7 +228,7 @@ public class RecordOutputUtilTest {
     	RecordSheet recordSheet = new RecordSheet();
     	recordSheet.add(mockRecordOne);
     	recordSheet.add(mockRecordTwo);
-    	outputter.createWorkbookRefactored(filteredDoc.getPath(), recordSheet, false, ArrestDateComparator);
+    	outputter.createWorkbook(filteredDoc.getPath(), recordSheet, false, ArrestDateComparator);
     	Workbook filteredWorkbook = Workbook.getWorkbook(filteredDoc);
     	
     	//TODO future - confirm it creates a backup, if one already exists
@@ -243,7 +244,7 @@ public class RecordOutputUtilTest {
     	RecordSheet recordSheet = new RecordSheet();
     	recordSheet.add(mockRecordOne);
     	recordSheet.add(mockRecordTwo);
-    	outputter.createWorkbookRefactored(mergedDoc.getPath(), recordSheet, false, ArrestDateComparator);
+    	outputter.createWorkbook(mergedDoc.getPath(), recordSheet, false, ArrestDateComparator);
     	Workbook mergedWorkbook = Workbook.getWorkbook(mergedDoc);
     	
     	//TODO future - confirm it creates a backup, if one already exists
@@ -276,7 +277,7 @@ public class RecordOutputUtilTest {
         
         Assert.assertTrue(mainDoc.exists());
 
-        outputter.splitIntoSheetsRefactored(mainDoc.getPath(), ArrestRecord.RecordColumnEnum.COUNTY_COLUMN.getColumnTitle(), recordsBook, ArrestRecord.class, ArrestRecord.CountyComparator);
+        outputter.splitIntoSheets(mainDoc.getPath(), ArrestRecord.RecordColumnEnum.COUNTY_COLUMN.getColumnTitle(), recordsBook, ArrestRecord.class, ArrestRecord.CountyComparator);
 
         Workbook splitworkWorkbook = Workbook.getWorkbook(mainDoc);
         Sheet sheetOne = splitworkWorkbook.getSheet("Polk");
@@ -313,7 +314,7 @@ public class RecordOutputUtilTest {
         recordsBook.add(recordSheetTwo);
         recordsBook.add(recordSheetThree);
 
-        outputter.splitIntoSheetsRefactored(mainDoc.getPath(), ArrestRecord.RecordColumnEnum.COUNTY_COLUMN.getColumnTitle(), recordsBook, ArrestRecord.class, ArrestRecord.CountyComparator);
+        outputter.splitIntoSheets(mainDoc.getPath(), ArrestRecord.RecordColumnEnum.COUNTY_COLUMN.getColumnTitle(), recordsBook, ArrestRecord.class, ArrestRecord.CountyComparator);
 
         Workbook splitworkWorkbook = Workbook.getWorkbook(mainDoc);
         Sheet sheetOne = splitworkWorkbook.getSheet("Polk");

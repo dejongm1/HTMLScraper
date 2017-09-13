@@ -141,8 +141,8 @@ public class RecordIOUtil {
     }
 
     public RecordSheet mergeRecordsFromSheetsRefactored(File fileOne, File fileTwo, int sheetNumberOne, int sheetNumberTwo) {
-    	RecordSheet storedRecordsOne = inputter.readRecordsFromSheetRefactored(fileOne, sheetNumberOne);
-    	RecordSheet storedRecordsTwo = inputter.readRecordsFromSheetRefactored(fileTwo, sheetNumberTwo);
+    	RecordSheet storedRecordsOne = inputter.readRecordsFromSheet(fileOne, sheetNumberOne);
+    	RecordSheet storedRecordsTwo = inputter.readRecordsFromSheet(fileTwo, sheetNumberTwo);
 		
 		return mergeRecordsFromSetsRefactored(storedRecordsOne, storedRecordsTwo);
 	}

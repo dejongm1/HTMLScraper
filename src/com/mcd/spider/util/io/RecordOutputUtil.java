@@ -26,6 +26,7 @@ import com.mcd.spider.entities.record.Record;
 import com.mcd.spider.entities.record.State;
 import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
 import com.mcd.spider.entities.site.Site;
+import com.mcd.spider.util.SpiderConstants;
 
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
@@ -77,19 +78,19 @@ public class RecordOutputUtil {
         return BACKUP_SUFFIX;
     }
 
-    public void createWorkbook(String workbookName, Set<Record> recordSet, boolean backUpExisting, Comparator comparator) {
+/*    public void createWorkbook(String workbookName, Set<Record> recordSet, boolean backUpExisting, Comparator comparator) {
         List<Set<Record>> recordSetList = new ArrayList<>();
         recordSetList.add(recordSet==null?new HashSet<>():recordSet);
         createWorkbook(workbookName, recordSetList, backUpExisting, new String[]{state.getName()}, comparator);
-    }
+    }*/
 
-    public void createWorkbookRefactored(String workbookName, RecordSheet recordSheet, boolean backUpExisting, Comparator comparator) {
+    public void createWorkbook(String workbookName, RecordSheet recordSheet, boolean backUpExisting, Comparator comparator) {
         RecordWorkbook recordSetList = new RecordWorkbook();
         recordSetList.add(recordSheet==null?new RecordSheet():recordSheet);
-        createWorkbookRefactored(workbookName, recordSetList, backUpExisting, new String[]{state.getName()}, comparator);
+        createWorkbook(workbookName, recordSetList, backUpExisting, null, comparator);
     }
     
-    public void createWorkbook(String workbookName, List<Set<Record>> recordSetList, boolean backUpExisting, String[] sheetNames, Comparator comparator) {
+    /*public void createWorkbook(String workbookName, List<Set<Record>> recordSetList, boolean backUpExisting, String[] sheetNames, Comparator comparator) {
         WritableWorkbook newWorkbook = null;
         File mainBook = new File(docPath);
         try {
@@ -131,9 +132,9 @@ public class RecordOutputUtil {
                 }
             }
         }
-    }
+    }*/
 
-    public void createWorkbookRefactored(String workbookName, RecordWorkbook recordBook, boolean backUpExisting, String[] sheetNames, Comparator comparator) {
+    public void createWorkbook(String workbookName, RecordWorkbook recordBook, boolean backUpExisting, String[] sheetNames, Comparator comparator) {
         WritableWorkbook newWorkbook = null;
         File mainBook = new File(docPath);
         try {
@@ -154,14 +155,16 @@ public class RecordOutputUtil {
                     logger.error("Couldn't sleep for 15 seconds");
                 }
             }
-            
+            if (sheetNames==null) {
+            	sheetNames = new String[]{SpiderConstants.MAIN_SHEET_NAME};
+            }
             logger.info("Creating " + sheetNames.length + " sheets in workbook " + workbookName);
             for (int rs = 0;rs<recordBook.sheetCount();rs++) {
 	            WritableSheet excelSheet = newWorkbook.createSheet(sheetNames[rs], rs);
 	            createColumnHeaders(excelSheet);
             }
-            if (!recordBook.isEmpty() && !recordBook.getSheets().get(0).isEmpty()) {
-            	saveRecordsToWorkbookRefactored(recordBook, newWorkbook, comparator);
+            if (!recordBook.isEmpty() && !recordBook.getSheet(0).isEmpty()) {
+            	saveRecordsToWorkbook(recordBook, newWorkbook, comparator);
             }
             newWorkbook.write();
         } catch (IOException | WriteException | BiffException e) {
@@ -234,7 +237,7 @@ public class RecordOutputUtil {
 		}
 	}
 
-	public void saveRecordsToWorkbook(List<Set<Record>> recordSetList, WritableWorkbook workbook, Comparator comparator) {
+/*	public void saveRecordsToWorkbook(List<Set<Record>> recordSetList, WritableWorkbook workbook, Comparator comparator) {
 		try {
 			logger.info("Beginning to add " + recordSetList.size() + " sheets to workbook");
 			int rs = 0;
@@ -253,9 +256,9 @@ public class RecordOutputUtil {
 		} catch (IllegalAccessException e) {
 			logger.error("Error trying to save data to workbook", e);
 		}
-	}
+	}*/
 
-	public void saveRecordsToWorkbookRefactored(RecordWorkbook recordBook, WritableWorkbook workbook, Comparator comparator) {
+	public void saveRecordsToWorkbook(RecordWorkbook recordBook, WritableWorkbook workbook, Comparator comparator) {
 		try {
 			logger.info("Beginning to add " + recordBook.sheetCount() + " sheets to workbook");
 			int rs = 0;
@@ -309,19 +312,19 @@ public class RecordOutputUtil {
 		return successful;
 	}
 
-	public void saveRecordsToWorkbook(Set<Record> records, WritableWorkbook workbook, Comparator comparator) {
+/*	public void saveRecordsToWorkbook(Set<Record> records, WritableWorkbook workbook, Comparator comparator) {
 		List<Set<Record>> recordSetList = new ArrayList<>();
 		recordSetList.add(records);
 		saveRecordsToWorkbook(recordSetList, workbook, comparator);
-	}
+	}*/
 
-	public void saveRecordsToWorkbookRefactored(RecordSheet recordSheet, WritableWorkbook workbook, Comparator comparator) {
+	public void saveRecordsToWorkbook(RecordSheet recordSheet, WritableWorkbook workbook, Comparator comparator) {
 		RecordWorkbook recordBook = new RecordWorkbook();
 		recordBook.add(recordSheet);
-		saveRecordsToWorkbookRefactored(recordBook, workbook, comparator);
+		saveRecordsToWorkbook(recordBook, workbook, comparator);
 	}
 
-    public boolean splitIntoSheets(String docName, String delimiterColumn, List<Set<Record>> recordsSetList, Class clazz, Comparator comparator) {
+   /* public boolean splitIntoSheets(String docName, String delimiterColumn, List<Set<Record>> recordsSetList, Class clazz, Comparator comparator) {
     	logger.info("Splitting " + docName + " into sheets by " + delimiterColumn);
         boolean successful = false;
         Method fieldGetter = null;
@@ -356,9 +359,9 @@ public class RecordOutputUtil {
             logger.error("Error trying split workbook into sheets", e);
         }
         return successful;
-    }
+    }*/
 
-    public boolean splitIntoSheetsRefactored(String docName, String delimiterColumn, RecordWorkbook recordsBook, Class clazz, Comparator comparator) {
+    public boolean splitIntoSheets(String docName, String delimiterColumn, RecordWorkbook recordsBook, Class clazz, Comparator comparator) {
     	logger.info("Splitting " + docName + " into sheets by " + delimiterColumn);
         boolean successful = false;
         Method fieldGetter = null;
@@ -371,7 +374,7 @@ public class RecordOutputUtil {
             createWorkbookCopy(docName, getTempFileName() + EXT);
             for (int s = 0; s < recordsBook.sheetCount(); s++) {
                 try {
-                    String delimitValue = (String) fieldGetter.invoke(recordsBook.getSheets().get(s).getRecords().toArray()[0]);
+                    String delimitValue = (String) fieldGetter.invoke(recordsBook.getFirstRecordFromSheet(s));
                     WritableSheet excelSheet = copyWorkbook.getSheet(delimitValue);
                     if (excelSheet == null) {
                         //append a new sheet for each
@@ -380,7 +383,7 @@ public class RecordOutputUtil {
                     createColumnHeaders(excelSheet);
 //                    Record[] recordArray = recordsSetList.get(s).toArray(new Record[recordsSetList.get(s).size()]);
                     logger.info("Sorting records before trying to save");
-                    List<Record> sortedList = Record.getAsSortedList(recordsBook.getSheets().get(s).getRecords(), comparator);
+                    List<Record> sortedList = Record.getAsSortedList(recordsBook.getRecordsFromSheet(s), comparator);
                     for (int r = 0; r < sortedList.size(); r++) {
                     	sortedList.get(r).addToExcelSheet(r+1, excelSheet);
                     }

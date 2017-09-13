@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.mcd.spider.entities.record.Record;
+import com.mcd.spider.util.SpiderConstants;
 
 /**
  * 
@@ -31,7 +32,15 @@ public class RecordWorkbook {
 	public List<RecordSheet> getSheets() {
 		return sheets;
 	}
+	
+	public RecordSheet getSheet(int sheetIndex) {
+		return sheets.get(sheetIndex);
+	}
 
+	public Record getFirstRecordFromSheet(int sheetIndex) {
+		return this.getSheet(sheetIndex).getFirstRecordFromSheet();
+	}
+	
 	public void setSheets(List<RecordSheet> recordSheet) {
 		this.sheets = recordSheet;
 	}
@@ -45,28 +54,24 @@ public class RecordWorkbook {
 	}
 	
 	public void add(RecordSheet sheet) {
+		if (this.isEmpty()) { //first sheet gets common name
+			sheet.setSheetName(SpiderConstants.MAIN_SHEET_NAME);
+		} else if (sheet.getSheetName()==null) {
+			sheet.setSheetName(sheet.extractSheetName());
+		}
 		this.sheets.add(sheet);
+	}
+	
+	public Set<Record> getRecordsFromSheet(int sheetIndex) {
+		return this.getSheet(sheetIndex).getRecords();
 	}
 	
 	public String[] getSheetNames() {
 		String[] sheetNames = new String[this.getSheets().size()];
 		for (int s=0; s<this.getSheets().size();s++) {
-			sheetNames[s] = this.getSheets().get(s).getSheetName();
+			sheetNames[s] = this.getSheet(s).getSheetName();
 		}
 		return sheetNames;
-	}
-	
-	//TODO remove when done refactoring
-	public static boolean isEmpty(List<Set<Record>> book) {
-		boolean empty = true;
-		if (book!=null && !book.isEmpty()) {
-			for (Set<Record> recordSet : book) {
-				if (recordSet.size()>0) {
-					empty = false;
-				}
-			}
-		}
-		return empty;
 	}
 	
 	public boolean isEmpty() {

@@ -96,7 +96,7 @@ public class SpiderEngine {
         
             if (!mergedRecords.isEmpty()) {
             	String[] sheetNames = mergedRecords.getSheetNames();
-                mainIOutil.getOutputter().createWorkbookRefactored(mainIOutil.getOutputter().getMergedDocPath(null), mergedRecords, false, sheetNames, ArrestDateComparator);
+                mainIOutil.getOutputter().createWorkbook(mainIOutil.getOutputter().getMergedDocPath(null), mergedRecords, false, sheetNames, ArrestDateComparator);
                 logger.info("Merge of all records complete.");
             } else {
                 logger.info("Nothing found to merge");
@@ -107,7 +107,7 @@ public class SpiderEngine {
                 RecordWorkbook mergedFilteredRecords = mainIOutil.mergeRecordsFromWorkbooksRefactored(new File(mainIOutil.getOutputter().getFilteredDocPath(filter)), new File(comparingIOUtil.getOutputter().getFilteredDocPath(filter)));
                 String[] filteredSheetNames = mergedFilteredRecords.getSheetNames();
                 if (!mergedFilteredRecords.isEmpty()) {
-                    mainIOutil.getOutputter().createWorkbookRefactored(mainIOutil.getOutputter().getMergedDocPath(mainIOutil.getOutputter().getFilteredDocPath(filter)), mergedFilteredRecords, false, filteredSheetNames, ArrestDateComparator);
+                    mainIOutil.getOutputter().createWorkbook(mainIOutil.getOutputter().getMergedDocPath(mainIOutil.getOutputter().getFilteredDocPath(filter)), mergedFilteredRecords, false, filteredSheetNames, ArrestDateComparator);
                     logger.info("Merge of filtered records complete.");
                 } else {
                     logger.info("No filtered records found to merge");
@@ -124,11 +124,11 @@ public class SpiderEngine {
         		eligibleRecordsBook = filterOutLexisNexisEligibleRecords(allMergedRecords);
         	} else {
 	            //read records in from main workbook
-        		eligibleRecordsBook = filterOutLexisNexisEligibleRecords(mainIOutil.getInputter().readRecordsFromWorkbookRefactored(docPathtoConvert));
+        		eligibleRecordsBook = filterOutLexisNexisEligibleRecords(mainIOutil.getInputter().readRecordsFromWorkbook(docPathtoConvert));
         	}
         	if (!eligibleRecordsBook.isEmpty()) {
         		String[] sheetNames = eligibleRecordsBook.getSheetNames();
-	        	mainIOutil.getOutputter().createWorkbookRefactored(mainIOutil.getOutputter().getLNPath(), eligibleRecordsBook, false, sheetNames, ArrestDateComparator);
+	        	mainIOutil.getOutputter().createWorkbook(mainIOutil.getOutputter().getLNPath(), eligibleRecordsBook, false, sheetNames, ArrestDateComparator);
 	        	List<Integer> columnsToRemove = new ArrayList<>();
 	        	for (RecordColumnEnum columnEnum : RecordColumnEnum.values()) {
 	        		if (!columnEnum.equals(RecordColumnEnum.ARRESTDATE_COLUMN) && !columnEnum.equals(RecordColumnEnum.DOB_COLUMN)

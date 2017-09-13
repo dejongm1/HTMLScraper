@@ -8,7 +8,7 @@
     <property name="dir.test" value="test"/>
     <property name="dir.lib" value="lib"/>
     <property name="dir.build" value="build"/>
-    <property name="version" value="1.0"/>
+    <property name="version" value="1.1"/>
 
     <path id="dir.classpath">
         <fileset dir="./resources">

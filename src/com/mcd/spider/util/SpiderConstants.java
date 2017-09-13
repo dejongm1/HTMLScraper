@@ -9,6 +9,8 @@ public class SpiderConstants {
     public static final String BOOLEAN_VALIDATION = "boolean";
 	public static final String NO_VALIDATION = "";
 	
+	public static final String MAIN_SHEET_NAME = "ALL";
+	
 	public static final String PROMPT = "What do you want to do?\n "
 											+ "\t 1 - Get words by frequency\n "
 											+ "\t 2 - Scrape for text\n "

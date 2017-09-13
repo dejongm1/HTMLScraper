@@ -1,6 +1,7 @@
 package com.mcd.spider.entities.io;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.mcd.spider.entities.record.ArrestRecord;
@@ -14,7 +15,6 @@ import com.mcd.spider.entities.record.Record;
 
 public class RecordSheet {
 
-	//	private Cell[] headerRow;
 	private String sheetName;
 	private Set<Record> records;
 
@@ -29,21 +29,16 @@ public class RecordSheet {
 		//		this.headerRow = headerRow;
 	}
 	
+	public RecordSheet(String sheetName, List<Record> sheetRecords) {
+		this(sheetName, new HashSet<>(sheetRecords));
+	}
+	
 	public static RecordSheet copy(RecordSheet recordSheet){
 		RecordSheet rs = new RecordSheet();
 		rs.setSheetName(recordSheet.getSheetName());
 		rs.setRecords(new HashSet<>(recordSheet.getRecords()));
 		return rs;
 	}
-
-	//	public Cell[] getHeaderRow() {
-	//		return headerRow;
-	//	}
-	//
-	//	public void setHeaderRow(Cell[] headerRow) {
-	//		this.headerRow = headerRow;
-	//	}
-
 	public String getSheetName() {
 		return sheetName;
 	}
@@ -57,8 +52,8 @@ public class RecordSheet {
 		this.records = sheetRecords;
 	}
 	public void add(Record sheetRecord) {
-		if (this.sheetName==null && sheetRecord instanceof ArrestRecord) {
-			this.sheetName = ((ArrestRecord)sheetRecord).getCounty();
+		if (this.sheetName==null) {
+			this.sheetName = extractSheetName(sheetRecord);
 		}
 		this.records.add(sheetRecord);
 	}
@@ -76,8 +71,24 @@ public class RecordSheet {
 	public int recordCount(){
 		return records.size();
 	}
-
-	//method to get specific row
-	//methods to call output/input methods?
-
+	public Record getFirstRecordFromSheet() {
+		return (Record) this.getRecords().toArray()[0];
+	}
+	public String extractSheetName(Record record) {
+		if (record instanceof ArrestRecord) {
+			return ((ArrestRecord)record).getCounty();
+		} else {
+			return "UnknownSheet";
+		}
+	}
+	public String extractSheetName() {
+		String sheetName = "UnknownSheet";
+		if (!this.getRecords().isEmpty()) {
+			Record record = this.getRecords().toArray(new Record[this.getRecords().size()])[0];
+			if (record instanceof ArrestRecord) {
+				sheetName = ((ArrestRecord)record).getCounty();
+			}
+		}
+		return sheetName;
+	}
 }

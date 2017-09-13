@@ -1,10 +1,5 @@
 package com.mcd.spider.entities.record;
 
-import com.google.common.base.CaseFormat;
-import jxl.Sheet;
-import jxl.write.WritableSheet;
-import org.apache.log4j.Logger;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -12,7 +7,21 @@ import java.lang.reflect.Method;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+
+import org.apache.log4j.Logger;
+
+import com.google.common.base.CaseFormat;
+import com.mcd.spider.entities.io.RecordSheet;
+import com.mcd.spider.entities.io.RecordWorkbook;
+
+import jxl.Sheet;
+import jxl.write.WritableSheet;
 
 /**
  * Created by MikeyDizzle on 7/18/2017.
@@ -130,8 +139,8 @@ public interface Record {
 
     WritableSheet addToExcelSheet(int rowNumber, WritableSheet sheet) throws IllegalAccessException;
 
-	static <T> List<Set<Record>> splitByField(List<Record> records, String fieldName, Class<T> clazz) {
-		List<Set<Record>> recordListList = new ArrayList<>();
+	static <T> RecordWorkbook splitByField(List<Record> records, String fieldName, Class<T> clazz) {
+		RecordWorkbook recordBook = new RecordWorkbook();
 		Method fieldGetter = null;
 		for (Method method : clazz.getMethods()) {
 			if (method.getName().equalsIgnoreCase("get" + fieldName)) {
@@ -139,7 +148,7 @@ public interface Record {
 			}
 		}
 		Object groupingDelimiter = null;
-		Set<Record> delimiterList = new HashSet<>();
+		RecordSheet delimiterList = new RecordSheet();
 		for (Record record : records) {
 			try {
 				Object delimiterValue = fieldGetter.invoke(record)==null?"":fieldGetter.invoke(record);
@@ -147,19 +156,19 @@ public interface Record {
 					delimiterList.add(record);
 				} else {
 					if (!delimiterList.isEmpty()) {
-						recordListList.add(delimiterList);
+						recordBook.add(delimiterList);
 					}
 					groupingDelimiter = delimiterValue;
-					delimiterList = new HashSet<>();
+					delimiterList = new RecordSheet();
 					delimiterList.add(record);
 				}
 			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NullPointerException e) {
 				logger.error("Problem while trying to split records by specified field: " + fieldName, e);
 			}
 		}
-		recordListList.add(delimiterList);
+		recordBook.add(delimiterList);
 
-		return recordListList;
+		return recordBook;
 	}
 
 	static Class<?> getRecordClass(Record record) {

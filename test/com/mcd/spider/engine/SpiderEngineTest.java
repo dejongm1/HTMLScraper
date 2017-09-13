@@ -209,8 +209,8 @@ public class SpiderEngineTest {
 
 		RecordWorkbook eligibleRecordBook = engine.filterOutLexisNexisEligibleRecords(recordBook);
 		Assert.assertEquals(eligibleRecordBook.sheetCount(), recordBook.sheetCount());
-		Assert.assertEquals(eligibleRecordBook.getSheets().get(0).recordCount(), 1);
-		Assert.assertEquals(eligibleRecordBook.getSheets().get(1).recordCount(), 1);
+		Assert.assertEquals(eligibleRecordBook.getSheet(0).recordCount(), 1);
+		Assert.assertEquals(eligibleRecordBook.getSheet(1).recordCount(), 1);
 
 	}
 }

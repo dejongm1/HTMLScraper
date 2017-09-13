@@ -2,8 +2,8 @@ package com.mcd.spider.entities.record;
 
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
+import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,7 +13,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.testng.Assert;
@@ -21,6 +20,8 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import com.mcd.spider.entities.io.RecordSheet;
+import com.mcd.spider.entities.io.RecordWorkbook;
 import com.mcd.spider.entities.record.ArrestRecord.RecordColumnEnum;
 import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
 import com.mcd.spider.util.io.RecordIOUtil;
@@ -220,7 +221,7 @@ public class RecordTest {
 
     @Test
     public void testGetAsSortedList_ArrestCounty() {
-    	Set<Record> recordSet = new HashSet<>(); 
+    	RecordSheet recordSet = new RecordSheet(); 
 		ArrestRecord record1 = new ArrestRecord();
         ArrestRecord record2 = new ArrestRecord();
         ArrestRecord record4 = new ArrestRecord();
@@ -233,7 +234,7 @@ public class RecordTest {
     	recordSet.add(record4);
 
     	for (int t=0;t<=40;t++) {
-	        List<Record> sortedList = Record.getAsSortedList(recordSet, ArrestRecord.CountyComparator);
+	        List<Record> sortedList = Record.getAsSortedList(recordSet.getRecords(), ArrestRecord.CountyComparator);
 	        
 	        assertThat(sortedList, contains(record4, record1, record2));
     	}
@@ -241,7 +242,7 @@ public class RecordTest {
 
     @Test
     public void testGetAsSortedList_ArrestDate() {
-    	Set<Record> recordSet = new HashSet<>(); 
+    	RecordSheet recordSet = new RecordSheet(); 
 		ArrestRecord record1 = new ArrestRecord();
         ArrestRecord record2 = new ArrestRecord();
         ArrestRecord record4 = new ArrestRecord();
@@ -254,7 +255,7 @@ public class RecordTest {
     	recordSet.add(record4);
 
     	for (int t=0;t<=40;t++) {
-	        List<Record> sortedList = Record.getAsSortedList(recordSet, ArrestRecord.ArrestDateComparator);
+	        List<Record> sortedList = Record.getAsSortedList(recordSet.getRecords(), ArrestRecord.ArrestDateComparator);
 	        
 	        assertThat(sortedList, contains(record2, record1, record4));
     	}
@@ -262,7 +263,7 @@ public class RecordTest {
 
     @Test
     public void testGetAsSortedList_NoComparator() {
-    	Set<Record> recordSet = new HashSet<>(); 
+    	RecordSheet recordSet = new RecordSheet(); 
 		ArrestRecord record1 = new ArrestRecord();
         ArrestRecord record2 = new ArrestRecord();
         ArrestRecord record4 = new ArrestRecord();
@@ -275,7 +276,7 @@ public class RecordTest {
     	recordSet.add(record1);
 
     	for (int t=0;t<=40;t++) {
-	        List<Record> sortedList = Record.getAsSortedList(recordSet, null);
+	        List<Record> sortedList = Record.getAsSortedList(recordSet.getRecords(), null);
 	        
 	        assertThat(sortedList, containsInAnyOrder(record4, record2, record1));
 	    	Assert.assertEquals(sortedList,  sortedList);
@@ -284,12 +285,12 @@ public class RecordTest {
 
     @Test
 	public void splitByField_ArrestRecordsByCounty() throws InterruptedException {
-		List<Record> records = new ArrayList<>(ioUtil.getInputter().readRecordsFromSheet(testReadInputFile, "readRecordsIn"));
+		List<Record> records = new ArrayList<>(ioUtil.getInputter().readRecordsFromSheet(testReadInputFile, "readRecordsIn").getRecords());
         Collections.sort(records, ArrestRecord.CountyComparator);
-		List<Set<Record>> splitRecords = Record.splitByField(records, RecordColumnEnum.COUNTY_COLUMN.getColumnTitle(), ArrestRecord.class);
+		RecordWorkbook splitRecordsBook = Record.splitByField(records, RecordColumnEnum.COUNTY_COLUMN.getColumnTitle(), ArrestRecord.class);
 		int polkCountyIndex = 0;
 		int johnsonCountyIndex = 0;
-		if (((ArrestRecord)splitRecords.get(0).toArray()[0]).getCounty().equals("Polk")) {
+		if (((ArrestRecord)splitRecordsBook.getFirstRecordFromSheet(0)).getCounty().equals("Polk")) {
 			polkCountyIndex = 0;
 			johnsonCountyIndex = 1;
 		} else {
@@ -297,25 +298,25 @@ public class RecordTest {
 			johnsonCountyIndex = 0;
 		}
 
-		Assert.assertEquals(splitRecords.size(), 2);
-		Assert.assertEquals(splitRecords.get(polkCountyIndex).size(), 2);
-		Assert.assertEquals(splitRecords.get(johnsonCountyIndex).size(), 1);
-		Assert.assertEquals(((ArrestRecord)splitRecords.get(polkCountyIndex).toArray()[0]).getCounty(), ((ArrestRecord)splitRecords.get(polkCountyIndex).toArray()[1]).getCounty());
-		Assert.assertNotEquals(((ArrestRecord)splitRecords.get(polkCountyIndex).toArray()[0]).getCounty(), ((ArrestRecord)splitRecords.get(johnsonCountyIndex).toArray()[0]).getCounty());
+		Assert.assertEquals(splitRecordsBook.sheetCount(), 2);
+		Assert.assertEquals(splitRecordsBook.getSheet(polkCountyIndex).recordCount(), 2);
+		Assert.assertEquals(splitRecordsBook.getSheet(johnsonCountyIndex).recordCount(), 1);
+		Assert.assertEquals(((ArrestRecord)splitRecordsBook.getFirstRecordFromSheet(polkCountyIndex)).getCounty(), ((ArrestRecord)splitRecordsBook.getRecordsFromSheet(polkCountyIndex).toArray()[1]).getCounty());
+		Assert.assertNotEquals(((ArrestRecord)splitRecordsBook.getFirstRecordFromSheet(polkCountyIndex)).getCounty(), ((ArrestRecord)splitRecordsBook.getFirstRecordFromSheet(johnsonCountyIndex)).getCounty());
 	}
 
 	@Test
 	public void splitByField_ArrestRecordsByCity_NullDelimiter() {
-		List<Record> records = new ArrayList<>(ioUtil.getInputter().readRecordsFromSheet(testReadInputFile, "readRecordsIn"));
+		List<Record> records = new ArrayList<>(ioUtil.getInputter().readRecordsFromSheet(testReadInputFile, "readRecordsIn").getRecords());
         Collections.sort(records, ArrestRecord.CityComparator);
-		List<Set<Record>> splitRecords = Record.splitByField(records, RecordColumnEnum.CITY_COLUMN.getColumnTitle(), ArrestRecord.class);
+		RecordWorkbook splitRecordsBook = Record.splitByField(records, RecordColumnEnum.CITY_COLUMN.getColumnTitle(), ArrestRecord.class);
 		
-		Assert.assertEquals(splitRecords.size(), 3);
-		Assert.assertEquals(splitRecords.get(0).size(), 1);
-		Assert.assertEquals(splitRecords.get(1).size(), 1);
-		Assert.assertEquals(splitRecords.get(2).size(), 1);
-		Assert.assertNotEquals(((ArrestRecord)splitRecords.get(0).toArray()[0]).getCity(), ((ArrestRecord)splitRecords.get(1).toArray()[0]).getCity());
-		Assert.assertNotEquals(((ArrestRecord)splitRecords.get(1).toArray()[0]).getCity(), ((ArrestRecord)splitRecords.get(2).toArray()[0]).getCity());
+		Assert.assertEquals(splitRecordsBook.sheetCount(), 3);
+		Assert.assertEquals(splitRecordsBook.getSheet(0).recordCount(), 1);
+		Assert.assertEquals(splitRecordsBook.getSheet(1).recordCount(), 1);
+		Assert.assertEquals(splitRecordsBook.getSheet(2).recordCount(), 1);
+		Assert.assertNotEquals(((ArrestRecord)splitRecordsBook.getFirstRecordFromSheet(0)).getCity(), ((ArrestRecord)splitRecordsBook.getFirstRecordFromSheet(1)).getCity());
+		Assert.assertNotEquals(((ArrestRecord)splitRecordsBook.getFirstRecordFromSheet(1)).getCity(), ((ArrestRecord)splitRecordsBook.getFirstRecordFromSheet(2)).getCity());
 	}
 
 

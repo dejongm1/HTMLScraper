@@ -57,7 +57,7 @@ public class RecordInputUtilTest {
 	
 	@Test(groups={"Inputter"})
 	public void testReadRecordsFromSheet() {
-		RecordSheet readRecordSheet = inputter.readRecordsFromSheetRefactored(testReadInputFile, "readRecordsIn");
+		RecordSheet readRecordSheet = inputter.readRecordsFromSheet(testReadInputFile, "readRecordsIn");
 		Record[] readRecordArray = new Record[readRecordSheet.recordCount()];
 		readRecordSheet.getRecords().toArray(readRecordArray);
 		
@@ -67,18 +67,18 @@ public class RecordInputUtilTest {
 	
 	@Test(groups={"Inputter"})
 	public void testReadRecordsFromWorkbook() {
-		RecordWorkbook recordsBook = inputter.readRecordsFromWorkbookRefactored(testReadInputFile);
+		RecordWorkbook recordsBook = inputter.readRecordsFromWorkbook(testReadInputFile);
 		Sheet readSheet1 = workbook.getSheet("readRecordsIn");
 		Sheet readSheet2 = workbook.getSheet("readRecordsInDiffColumns");
 		Sheet readSheet3 = workbook.getSheet("emptyRows");
 		
 		Assert.assertEquals(recordsBook.sheetCount(), 11);
-		Assert.assertEquals(recordsBook.getSheets().get(inputter.getSheetIndex(testReadInputFile, "readRecordsIn")).recordCount(), inputter.getNonEmptyRowCount(readSheet1)-1); //compare sheet (minus header) to respective set
-		Assert.assertEquals(recordsBook.getSheets().get(inputter.getSheetIndex(testReadInputFile, "readRecordsInDiffColumns")).recordCount(), inputter.getNonEmptyRowCount(readSheet2)-1); //compare sheet (minus header) to respective set
-		Assert.assertEquals(recordsBook.getSheets().get(inputter.getSheetIndex(testReadInputFile, "emptyRows")).recordCount(), inputter.getNonEmptyRowCount(readSheet3)-1); //compare sheet (minus header) to respective set
+		Assert.assertEquals(recordsBook.getSheet(inputter.getSheetIndex(testReadInputFile, "readRecordsIn")).recordCount(), inputter.getNonEmptyRowCount(readSheet1)-1); //compare sheet (minus header) to respective set
+		Assert.assertEquals(recordsBook.getSheet(inputter.getSheetIndex(testReadInputFile, "readRecordsInDiffColumns")).recordCount(), inputter.getNonEmptyRowCount(readSheet2)-1); //compare sheet (minus header) to respective set
+		Assert.assertEquals(recordsBook.getSheet(inputter.getSheetIndex(testReadInputFile, "emptyRows")).recordCount(), inputter.getNonEmptyRowCount(readSheet3)-1); //compare sheet (minus header) to respective set
 		//first 4 sheet are empty
 		for (int s=0;s<4;s++) {
-			Assert.assertEquals(recordsBook.getSheets().get(s).recordCount(), inputter.getNonEmptyRowCount(workbook.getSheet(s)));
+			Assert.assertEquals(recordsBook.getSheet(s).recordCount(), inputter.getNonEmptyRowCount(workbook.getSheet(s)));
 		}
 		Assert.assertEquals(recordsBook.sheetCount(), workbook.getNumberOfSheets());
 	}
