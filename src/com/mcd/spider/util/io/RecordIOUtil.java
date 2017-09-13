@@ -168,7 +168,7 @@ public class RecordIOUtil {
 		}
 		compiledRecordSheet.addAllRecords(recordSheetOne);
 		compiledRecordSheet.addAllRecords(recordSheetTwo);
-		logger.info(mergedCount + " records were merged");
+		logger.info(mergedCount + " records were merged into sheet " + compiledRecordSheet.getSheetName());
 		logger.info(compiledRecordSheet.recordCount() + " total records as a result of the merge");
 		return compiledRecordSheet;
     }

@@ -501,7 +501,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
                     //create a separate sheet with filtered results
                     logger.info(filteredRecords.size()+" "+filter.filterName()+" "+"records were crawled");
                     if (!filteredRecords.isEmpty()) {
-                        recordIOUtil.getOutputter().createWorkbook(recordIOUtil.getOutputter().getFilteredDocPath(filter), new RecordSheet(SpiderConstants.MAIN_SHEET_NAME, filteredRecords), false, ArrestDateComparator);
+//                        recordIOUtil.getOutputter().createWorkbook(recordIOUtil.getOutputter().getFilteredDocPath(filter), new RecordSheet(SpiderConstants.MAIN_SHEET_NAME, filteredRecords), false, ArrestDateComparator);
                         recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getOutputter().getFilteredDocPath(filter), columnDelimiter, splitRecords, clazz, ArrestDateComparator);
                     }
                 } catch (Exception e) {
