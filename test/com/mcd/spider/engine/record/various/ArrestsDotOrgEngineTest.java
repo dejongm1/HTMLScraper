@@ -27,7 +27,7 @@ public class ArrestsDotOrgEngineTest {
 	
 	@BeforeClass
 	public void beforeClass() {
-		this.web = new SpiderWeb(1, false, false, RecordFilterEnum.NONE, State.getState("IA"));
+		web = new SpiderWeb(1, false, false, RecordFilterEnum.NONE, State.IA);
 		engine = new ArrestsDotOrgEngine(web);
 		alcoholRecordOne = new ArrestRecord();
 		alcoholRecordOne.setId("1231");
@@ -91,7 +91,9 @@ public class ArrestsDotOrgEngineTest {
 	}
 
 	@Test
-	public void filterRecords() {
+	public void filterRecords_Alcohol() {
+		web = new SpiderWeb(1, false, false, RecordFilterEnum.ALCOHOL, State.IA);
+		engine = new ArrestsDotOrgEngine(web);
 		List<Record> oneMatchingAlcoholRecord = new ArrayList<>();
 		List<Record> twoMatchingAlcoholRecord = new ArrayList<>();
 		List<Record> noMatchingAlcoholRecord = new ArrayList<>();
@@ -113,9 +115,6 @@ public class ArrestsDotOrgEngineTest {
 		Assert.assertFalse(engine.filterRecords(twoMatchingAlcoholRecord).contains(violentRecordOne));
 		Assert.assertEquals(engine.filterRecords(noMatchingAlcoholRecord).size(), 0);
 		Assert.assertFalse(engine.filterRecords(noMatchingAlcoholRecord).contains(violentRecordOne));
-		
-
-		throw new RuntimeException("Test not implemented");
 	}
 
 	@Test
