@@ -54,9 +54,9 @@ public class SpiderEngineTest {
 		logger.info("********** Starting Test cases for SpiderEngine *****************");
 		System.setProperty("TestingSpider", "true");
 		engine = new SpiderEngine();
-		state = State.getState("IA");
-		mainIOUtil = new RecordIOUtil(state, new ArrestRecord(), state.getEngines().get(0).getSite(), true);
-		secondaryIOUtil = new RecordIOUtil(state, new ArrestRecord(), new DesMoinesRegisterComSite(new String[]{state.getName()}), true);
+		state = State.IA;
+		mainIOUtil = new RecordIOUtil(state.getName(), new ArrestRecord(), state.getEngines().get(0).getSite(), true);
+		secondaryIOUtil = new RecordIOUtil(state.getName(), new ArrestRecord(), new DesMoinesRegisterComSite(new String[]{state.getName()}), true);
 	}
 
 	@BeforeMethod
@@ -139,7 +139,7 @@ public class SpiderEngineTest {
 		//lexis nexis book created
 		State state = State.OK;
 		state.setEngines(Arrays.asList(new ArrestsDotOrgEngine(state.getName())));
-		RecordIOUtil iOUtil = new RecordIOUtil(state, new ArrestRecord(), new ArrestsDotOrgSite(new String[]{state.getName()}), true);
+		RecordIOUtil iOUtil = new RecordIOUtil(state.getName(), new ArrestRecord(), new ArrestsDotOrgSite(new String[]{state.getName()}), true);
 		File mockFile = new File(iOUtil.getMainDocPath());
 		testOutputFileLN.renameTo(mockFile);
 		engine.customizeArrestOutputs(iOUtil, state, RecordFilterEnum.NONE);
@@ -160,7 +160,7 @@ public class SpiderEngineTest {
 		//lexis nexis book not created because no eligible records were found
 		State state = State.OK;
 		state.setEngines(Arrays.asList(new ArrestsDotOrgEngine(state.getName())));
-		RecordIOUtil iOUtil = new RecordIOUtil(state, new ArrestRecord(), new ArrestsDotOrgSite(new String[]{state.getName()}), true);
+		RecordIOUtil iOUtil = new RecordIOUtil(state.getName(), new ArrestRecord(), new ArrestsDotOrgSite(new String[]{state.getName()}), true);
 		File mockFile = new File(iOUtil.getMainDocPath());
 		testOutputFileLNIneligible.renameTo(mockFile);
 		engine.customizeArrestOutputs(iOUtil, state, RecordFilterEnum.NONE);

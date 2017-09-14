@@ -11,7 +11,6 @@ import org.apache.log4j.Logger;
 import com.mcd.spider.entities.io.RecordSheet;
 import com.mcd.spider.entities.io.RecordWorkbook;
 import com.mcd.spider.entities.record.Record;
-import com.mcd.spider.entities.record.State;
 import com.mcd.spider.entities.site.Site;
 
 import jxl.Sheet;
@@ -36,11 +35,11 @@ public class RecordIOUtil {
     private File uncrawledIdFile;
 	private Record record;
 	
-	public RecordIOUtil(State state, Record record, Site site) {
-		this(state, record, site, Boolean.parseBoolean(System.getProperty("TestingSpider")));
+	public RecordIOUtil(String stateName, Record record, Site site) {
+		this(stateName, record, site, Boolean.parseBoolean(System.getProperty("TestingSpider")));
 	}
 
-    public RecordIOUtil(State state, Record record, Site site, boolean testing) {
+    public RecordIOUtil(String stateName, Record record, Site site, boolean testing) {
         if (!new File(TRACKING_DIR).exists()) {
             new File(TRACKING_DIR).mkdirs();
         }
@@ -48,16 +47,16 @@ public class RecordIOUtil {
             if (!new File("output\\testing\\tracking\\").exists()) {
                 new File("output\\testing\\tracking\\").mkdirs();
             }
-	        this.crawledIdFile = new File("output\\testing\\tracking\\" + state.getName() + "_" + site.getName() + "_Archive.txt");
-	        this.uncrawledIdFile = new File("output\\testing\\tracking\\" + state.getName() + "_" + site.getName() + "_Uncrawled.txt");
-	        this.mainDocPath = "output\\testing\\" + state.getName() + "_" + record.getClass().getSimpleName() + "_" + site.getName() + EXT;
+	        this.crawledIdFile = new File("output\\testing\\tracking\\" + stateName + "_" + site.getName() + "_Archive.txt");
+	        this.uncrawledIdFile = new File("output\\testing\\tracking\\" + stateName + "_" + site.getName() + "_Uncrawled.txt");
+	        this.mainDocPath = "output\\testing\\" + stateName + "_" + record.getClass().getSimpleName() + "_" + site.getName() + EXT;
         } else {
-	        this.crawledIdFile = new File(TRACKING_DIR + state.getName() + "_" + site.getName() + "_Archive.txt");
-	        this.uncrawledIdFile = new File(TRACKING_DIR + state.getName() + "_" + site.getName() + "_Uncrawled.txt");
-	        this.mainDocPath = OUTPUT_DIR + state.getName() + "_" + record.getClass().getSimpleName() + "_" + site.getName() + EXT;
+	        this.crawledIdFile = new File(TRACKING_DIR + stateName + "_" + site.getName() + "_Archive.txt");
+	        this.uncrawledIdFile = new File(TRACKING_DIR + stateName + "_" + site.getName() + "_Uncrawled.txt");
+	        this.mainDocPath = OUTPUT_DIR + stateName + "_" + record.getClass().getSimpleName() + "_" + site.getName() + EXT;
         }
         this.record = record;
-        this.outputter = new RecordOutputUtil(this, state, site);
+        this.outputter = new RecordOutputUtil(this, site);
         this.inputter = new RecordInputUtil(this);
     }
 

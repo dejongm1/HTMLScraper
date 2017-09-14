@@ -55,7 +55,7 @@ public class RecordTest {
             mainSheet = workbook.getSheet("readRecordsIn");
         }
         Assert.assertNotNull(mainSheet);
-        ioUtil = new RecordIOUtil(State.getState("IA"), new ArrestRecord(), new ArrestsDotOrgSite(new String[]{"iowa"}), true);
+        ioUtil = new RecordIOUtil("Iowa", new ArrestRecord(), new ArrestsDotOrgSite(new String[]{"iowa"}), true);
 	}
 	
 	@AfterClass

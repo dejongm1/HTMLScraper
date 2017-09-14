@@ -1,6 +1,6 @@
 package com.mcd.spider.engine.router;
 
-import com.mcd.spider.entities.record.filter.RecordFilter;
+import com.mcd.spider.entities.site.SpiderWeb;
 import com.mcd.spider.exception.SpiderException;
 
 /**
@@ -11,7 +11,7 @@ import com.mcd.spider.exception.SpiderException;
 
 public interface EngineRouter {
 	
-	void collectRecords(long maxNumberOfResults, RecordFilter.RecordFilterEnum filter, boolean retrieveMissedRecords) throws SpiderException;
-	void collectRecordsUsingThreading(long maxNumberOfResults, RecordFilter.RecordFilterEnum filter, boolean retrieveMissedRecords) throws SpiderException;
+	void collectRecords(SpiderWeb spiderWeb) throws SpiderException;
+	void collectRecordsUsingThreading(SpiderWeb spiderWeb) throws SpiderException;
 
 }

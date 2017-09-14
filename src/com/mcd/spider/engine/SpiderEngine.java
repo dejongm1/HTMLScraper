@@ -21,6 +21,7 @@ import com.mcd.spider.entities.record.ArrestRecord.RecordColumnEnum;
 import com.mcd.spider.entities.record.Record;
 import com.mcd.spider.entities.record.State;
 import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
+import com.mcd.spider.entities.site.SpiderWeb;
 import com.mcd.spider.exception.SpiderException;
 import com.mcd.spider.exception.StateNotReadyException;
 import com.mcd.spider.util.io.RecordIOUtil;
@@ -39,9 +40,11 @@ public class SpiderEngine {
 	public void getArrestRecordsByState(List<State> states, long maxNumberOfResults, RecordFilterEnum filter, boolean retrieveMissedRecords) throws SpiderException {
 		for (State state : states) {
 			if (!state.getEngines().isEmpty()) {
+				SpiderWeb spiderWeb = new SpiderWeb(maxNumberOfResults, true, retrieveMissedRecords, filter, state);
+				state.primeStateEngines(spiderWeb);
 				StateRouter router = new StateRouter(state);
-				router.collectRecordsUsingThreading(maxNumberOfResults, filter, retrieveMissedRecords);
-		        RecordIOUtil mainIOutil = new RecordIOUtil(state, new ArrestRecord(), state.getEngines().get(0).getSite());
+				router.collectRecordsUsingThreading(spiderWeb);
+		        RecordIOUtil mainIOutil = new RecordIOUtil(state.getName(), new ArrestRecord(), state.getEngines().get(0).getSite());
 				customizeArrestOutputs(mainIOutil, state, filter);
 			} else {
 				throw new StateNotReadyException(state);
@@ -54,10 +57,11 @@ public class SpiderEngine {
 		for (State state : states) {
 			state.getEngines().clear();
 //            state.addEngine(new ArrestsDotOrgEngine());
-			state.addEngine(new DesMoinesRegisterComEngine());
+			SpiderWeb spiderWeb = new SpiderWeb(maxNumberOfResults, true, retrieveMissedRecords, filter, state);
+			state.addEngine(new DesMoinesRegisterComEngine(spiderWeb));
 //			state.addEngine(new MugShotsDotComEngine());
 			StateRouter router = new StateRouter(state);
-			router.collectRecords(maxNumberOfResults, filter, retrieveMissedRecords);
+			router.collectRecords(spiderWeb);
 		}
 		logger.info("Spider has finished crawling through backdoors and cracks in the walls. Going back to it's web.");
 	}
@@ -91,7 +95,7 @@ public class SpiderEngine {
             //try simply gathering merged records from all engines, then outputting everything at the end
         	//can wait until a third site is added to any state. Implement RecordWorkbook in conjunction with this
             logger.info("Attempting to merge record output from " + state.getName());
-            RecordIOUtil comparingIOUtil = new RecordIOUtil(state, new ArrestRecord(), state.getEngines().get(e).getSite());
+            RecordIOUtil comparingIOUtil = new RecordIOUtil(state.getName(), new ArrestRecord(), state.getEngines().get(e).getSite());
             RecordWorkbook mergedRecords = mainIOutil.mergeRecordsFromWorkbooks(new File(mainIOutil.getMainDocPath()), new File(comparingIOUtil.getMainDocPath()));
         
             if (!mergedRecords.isEmpty()) {

@@ -5,7 +5,8 @@ import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 import com.mcd.spider.entities.io.RecordSheet;
-import com.mcd.spider.entities.record.Record;
+import com.mcd.spider.entities.record.State;
+import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
 
 public class SpiderWeb {
 	
@@ -23,8 +24,10 @@ public class SpiderWeb {
     private boolean addMisc;
     private boolean retrieveMissedRecords;
     private int recordCap;
+    private RecordFilterEnum filter;
+    private State state;
     
-    public SpiderWeb(long maxNumberOfResults, boolean addMisc, boolean retrieveMissedRecords) {
+    public SpiderWeb(long maxNumberOfResults, boolean addMisc, boolean retrieveMissedRecords, RecordFilterEnum filter, State state) {
     	attemptCount = 1;
     	this.maxNumberOfResults = maxNumberOfResults;
 	    offline = System.getProperty("offline").equals("true");
@@ -32,6 +35,8 @@ public class SpiderWeb {
 	    this.addMisc = addMisc;
 	    this.retrieveMissedRecords = retrieveMissedRecords;
 	    recordCap = ThreadLocalRandom.current().nextInt(150, 250);
+	    this.filter = filter;
+	    this.state = state;
     }
  
 	public int getAttemptCount() {
@@ -133,4 +138,20 @@ public class SpiderWeb {
     public void setHeaders(Map<String,String> headers) {
         this.headers = headers;
     }
+
+	public RecordFilterEnum getFilter() {
+		return filter;
+	}
+
+	public void setFilter(RecordFilterEnum filter) {
+		this.filter = filter;
+	}
+
+	public State getState() {
+		return state;
+	}
+
+	public void setState(State state) {
+		this.state = state;
+	}
 }

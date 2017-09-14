@@ -55,15 +55,24 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     public static final Logger logger = Logger.getLogger(ArrestsDotOrgEngine.class);
 
     private SpiderUtil spiderUtil = new SpiderUtil();
-    private RecordFilterEnum filter;
     private ConnectionUtil connectionUtil;
-    private State state;
     private ArrestsDotOrgSite site;
     private RecordIOUtil recordIOUtil;
     private SpiderWeb spiderWeb;
 
+    public ArrestsDotOrgEngine(SpiderWeb web) {
+    	this.spiderWeb = web;
+    	this.site = new ArrestsDotOrgSite(new String[]{web.getState().getName()});
+    }
+
+    //mostly for testing
     public ArrestsDotOrgEngine(String stateName) {
     	this.site = new ArrestsDotOrgSite(new String[]{stateName});
+    }
+    
+    @Override
+    public void setSpiderWeb(SpiderWeb web) {
+    	this.spiderWeb = web;
     }
     
     @Override
@@ -72,17 +81,14 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     }
     
     @Override
-    public void getArrestRecords(State state, RecordFilterEnum filter, SpiderWeb spiderWeb) throws SpiderException {
+    public void getArrestRecords(String stateName) throws SpiderException {
         long totalTime = System.currentTimeMillis();
-        this.state = state;
-        this.filter = filter;
-        this.spiderWeb = spiderWeb;
-//        site = new ArrestsDotOrgSite(new String[]{state.getName()}); //moved to constructor
-        recordIOUtil = initializeIOUtil(state);
+//        site = new ArrestsDotOrgSite(new String[]{stateName}); //moved to constructor
+        recordIOUtil = initializeIOUtil(stateName);
         //Do we want to persist between states in same run? Or not run multiple states at once?
         connectionUtil = new ConnectionUtil(true);
 
-        logger.info("----Site: " + site.getName() + "-" + state.getName() + "----");
+        logger.info("----Site: " + site.getName() + "-" + stateName + "----");
         logger.debug("Sending spider " + (spiderWeb.isOffline()?"offline":"online" ));
         
         int sleepTimeAverage = spiderWeb.isOffline()?0:(site.getPerRecordSleepRange()[0]+site.getPerRecordSleepRange()[1])/2000;
@@ -91,7 +97,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 
         //outputUtil.removeColumnsFromSpreadsheet(new int[]{ArrestRecord.RecordColumnEnum.ID_COLUMN.index()});
 
-        spiderUtil.sendEmail(state);
+        spiderUtil.sendEmail(stateName);
         
         totalTime = System.currentTimeMillis() - totalTime;
         if (!spiderWeb.isOffline()) {
@@ -135,7 +141,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
                 } else {
                     spiderWeb.setNumberOfPages(getNumberOfResultsPages(mainPageDoc));
 
-                    logger.info("Generating list of results pages for : "+site.getName()+" - "+state.getName());
+                    logger.info("Generating list of results pages for : "+site.getName()+" - " + spiderWeb.getState().getName());
                     Map<Object, String> resultsUrlPlusMiscMap = compileResultsUrlMap(mainPageDoc);
 
                     logger.info("Retrieving results page docs");
@@ -215,7 +221,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 	            			spiderWeb.addToRecordsProcessed(1);
 	            			arrestRecord = populateArrestRecord(profileDetailDoc);
 	            			//try to match the record/county to the state being crawled
-	            			if (arrestRecord.getState()==null || arrestRecord.getState().equalsIgnoreCase(state.getName())) {
+	            			if (arrestRecord.getState()==null || arrestRecord.getState().equalsIgnoreCase(spiderWeb.getState().getName())) {
 	            				arrestRecords.add(arrestRecord);
 	            				//save each record in case of failures mid-crawling
 	            				recordOutputUtil.addRecordToMainWorkbook(arrestRecord);
@@ -421,8 +427,8 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     }
 
     @Override
-    public RecordIOUtil initializeIOUtil(State state) throws SpiderException {
-    	RecordIOUtil ioUtil = new RecordIOUtil(state, new ArrestRecord(), site);
+    public RecordIOUtil initializeIOUtil(String stateName) throws SpiderException {
+    	RecordIOUtil ioUtil = new RecordIOUtil(stateName, new ArrestRecord(), site);
         try {
             //load previously written records IDs into memory
         	spiderWeb.setCrawledIds(ioUtil.getInputter().getCrawledIds());
@@ -493,16 +499,16 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             Collections.sort(arrestRecords, CountyComparator);
             String columnDelimiter = RecordColumnEnum.COUNTY_COLUMN.getFieldName();
             Class<ArrestRecord> clazz = ArrestRecord.class;
-            if (filter!=null && filter!=RecordFilterEnum.NONE) {
+            if (spiderWeb.getFilter()!=null && spiderWeb.getFilter()!=RecordFilterEnum.NONE) {
                 try {
                     logger.info("Outputting filtered results");
                     List<Record> filteredRecords = filterRecords(arrestRecords);
                     RecordWorkbook splitRecords = Record.splitByField(filteredRecords, columnDelimiter, clazz);
                     //create a separate sheet with filtered results
-                    logger.info(filteredRecords.size()+" "+filter.filterName()+" "+"records were crawled");
+                    logger.info(filteredRecords.size()+" "+spiderWeb.getFilter().filterName()+" "+"records were crawled");
                     if (!filteredRecords.isEmpty()) {
 //                        recordIOUtil.getOutputter().createWorkbook(recordIOUtil.getOutputter().getFilteredDocPath(filter), new RecordSheet(SpiderConstants.MAIN_SHEET_NAME, filteredRecords), false, ArrestDateComparator);
-                        recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getOutputter().getFilteredDocPath(filter), columnDelimiter, splitRecords, clazz, ArrestDateComparator);
+                        recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getOutputter().getFilteredDocPath(spiderWeb.getFilter()), columnDelimiter, splitRecords, clazz, ArrestDateComparator);
                     }
                 } catch (Exception e) {
                     logger.error("Error trying to create filtered spreadsheet", e);
@@ -556,7 +562,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 	                String[] charges = ((ArrestRecord)record).getCharges();
 	                for (String charge : charges) {
 	                    if (!recordMatches) {
-	                        recordMatches = RecordFilter.filter(charge, filter);
+	                        recordMatches = RecordFilter.filter(charge, spiderWeb.getFilter());
 	                    }
 	                }
 	                if (recordMatches) {

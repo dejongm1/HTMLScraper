@@ -1,7 +1,7 @@
 package com.mcd.spider.util;
 
 import com.mcd.spider.engine.SpiderEngine;
-import com.mcd.spider.entities.record.State;
+
 import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -163,12 +163,12 @@ public class SpiderUtil {
         }
     }
 	
-	public boolean sendEmail(State state) {
+	public boolean sendEmail(String stateName) {
 		try {
 			EmailUtil.send("dejong.c.michael@gmail.com",
 					"Pack##92", //need to encrypt
 					"dejong.c.michael@gmail.com",
-					"Arrest record parsing for " + state.getName(),
+					"Arrest record parsing for " + stateName,
 					"Michael's a stud, he just successfully parsed the interwebs for arrest records");
 			return true;
 		} catch (RuntimeException re) {

@@ -91,7 +91,7 @@ public class RecordOutputUtilTest {
     @BeforeMethod
     public void setUpMethod() throws IOException, WriteException {
     	System.setProperty("offline", "false");
-        ioUtil = new RecordIOUtil(State.getState("IA"), new ArrestRecord(), new ArrestsDotOrgSite(new String[]{"iowa"}), true);
+        ioUtil = new RecordIOUtil("IOWA", new ArrestRecord(), new ArrestsDotOrgSite(new String[]{"iowa"}), true);
     	System.setProperty("offline", "true");
         outputter = ioUtil.getOutputter();
     	backUpDoc = new File(ioUtil.getMainDocPath().substring(0, ioUtil.getMainDocPath().indexOf(RecordIOUtil.getEXT())) + RecordOutputUtil.getBackupSuffix() + RecordIOUtil.getEXT());
@@ -160,7 +160,7 @@ public class RecordOutputUtilTest {
     public void testCreateWorkbook_MainDocDoesntExist() throws Exception {
         renameMainDoc();
 
-        ioUtil = new RecordIOUtil(State.getState("IA"), new ArrestRecord(), new ArrestsDotOrgSite(new String[]{"iowa"}), true);
+        ioUtil = new RecordIOUtil("IOWA", new ArrestRecord(), new ArrestsDotOrgSite(new String[]{"iowa"}), true);
         outputter = ioUtil.getOutputter();
 
         outputter.createWorkbook(mainDoc.getPath(), null, true, null);
@@ -383,7 +383,7 @@ public class RecordOutputUtilTest {
         mainDoc.renameTo(mainDocRenamed);
         Assert.assertTrue(mainDocRenamed.exists());
         testWorkbook = Workbook.createWorkbook(mainDocRenamed);
-        WritableSheet sheet = testWorkbook.createSheet(outputter.getState().getName(), 0);
+        WritableSheet sheet = testWorkbook.createSheet(SpiderConstants.MAIN_SHEET_NAME, 0);
         outputter.createColumnHeaders(sheet);
         testWorkbook.write();
         testWorkbook.close();

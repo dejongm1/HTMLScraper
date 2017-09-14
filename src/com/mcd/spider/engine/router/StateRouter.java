@@ -25,18 +25,17 @@ public class StateRouter implements EngineRouter {
 	
 	
 	@Override
-	public void collectRecords(long maxNumberOfResults, RecordFilter.RecordFilterEnum filter, boolean retrieveMissedRecords) throws SpiderException {
+	public void collectRecords(SpiderWeb spiderWeb) throws SpiderException {
         logger.info("Routing record collection to " + state.getName() + " engines");
 
         for (ArrestRecordEngine engine : state.getEngines()) {
 	        logger.info("Collecting records from " + engine.getClass().getSimpleName() );
-			SpiderWeb spiderWeb = new SpiderWeb(maxNumberOfResults, true, retrieveMissedRecords);
-			engine.getArrestRecords(state, filter, spiderWeb);
+			engine.getArrestRecords(state.getName());
         }
 	}
 	
 	@Override
-	public void collectRecordsUsingThreading(long maxNumberOfResults, RecordFilter.RecordFilterEnum filter, boolean retrieveMissedRecords) {
+	public void collectRecordsUsingThreading(SpiderWeb spiderWeb) {
 		logger.info("Routing record collection to " + state.getName() + " engines");
 
 		Thread[] threads = new Thread[state.getEngines().size()];
@@ -48,8 +47,7 @@ public class StateRouter implements EngineRouter {
 					logger.info("Thread: " + getName() + " running");
 					logger.info("Collecting records from " + engine.getClass().getSimpleName() );
 					try {
-						SpiderWeb spiderWeb = new SpiderWeb(maxNumberOfResults, true, retrieveMissedRecords);
-						engine.getArrestRecords(state, filter, spiderWeb);
+						engine.getArrestRecords(state.getName());
 					} catch (SpiderException e) {
 						logger.error("Thread: " + getName() + " caught an exception", e);
 					}

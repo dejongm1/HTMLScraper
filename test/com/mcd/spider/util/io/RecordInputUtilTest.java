@@ -39,7 +39,8 @@ public class RecordInputUtilTest {
 	public void setUpClass() throws BiffException, IOException {
 		logger.info("********** Starting Test cases for RecordInputUtil *****************");
 		System.setProperty("TestingSpider", "true");
-		ioUtil = new RecordIOUtil(State.getState("IA"), new ArrestRecord(), new ArrestsDotOrgSite(new String[]{"iowa"}));
+		System.setProperty("offline", "true");
+		ioUtil = new RecordIOUtil("IOWA", new ArrestRecord(), new ArrestsDotOrgSite(new String[]{"iowa"}));
 		inputter = ioUtil.getInputter();
 		Assert.assertTrue(testReadInputFile.exists());
 		workbook = Workbook.getWorkbook(testReadInputFile);

@@ -52,7 +52,6 @@ public class RecordOutputUtil {
                                                     + WORKBOOK_CREATE_DATE.get(Calendar.YEAR);
 
 	private String docPath;
-	private State state;
 	private Site site;
 	private File crawledIdFile;
 	private File uncrawledIdFile;
@@ -63,9 +62,8 @@ public class RecordOutputUtil {
 	private WritableWorkbook copyWorkbook;
 	private RecordIOUtil ioUtil;
 
-	public RecordOutputUtil(RecordIOUtil ioUtil, State state, Site site) {
+	public RecordOutputUtil(RecordIOUtil ioUtil, Site site) {
         this.docPath = ioUtil.getMainDocPath();
-		this.state = state;
 		this.record = ioUtil.getRecord();
 		this.crawledIdFile = ioUtil.getCrawledIdFile();
 		this.ioUtil = ioUtil;
@@ -73,9 +71,6 @@ public class RecordOutputUtil {
         this.site = site;
 	}
 
-	public State getState() {
-		return state;
-	}
     public static String getBackupSuffix() {
         return BACKUP_SUFFIX;
     }

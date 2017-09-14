@@ -34,11 +34,12 @@ public class RecordIOUtilTest {
 	public void setUp() throws IOException {
 		logger.info("********** Starting Test cases for RecordIOUtil *****************");
 		System.setProperty("TestingSpider", "true");
+		System.setProperty("offline", "true");
 		Assert.assertTrue(testMergeFileOne.exists());
 		Assert.assertTrue(testMergeFileTwo.exists());
 		Assert.assertTrue(testMergeFileOneExtraSheets.exists());
 		Assert.assertTrue(testMergeFileTwoExtraSheets.exists());
-		ioUtil = new RecordIOUtil(State.getState("IA"), new ArrestRecord(), new ArrestsDotOrgSite(new String[]{"iowa"}));
+		ioUtil = new RecordIOUtil("IOWA", new ArrestRecord(), new ArrestsDotOrgSite(new String[]{"iowa"}));
 	}
 
 	@AfterClass

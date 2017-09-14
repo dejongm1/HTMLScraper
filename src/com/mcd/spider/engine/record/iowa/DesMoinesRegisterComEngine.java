@@ -28,12 +28,10 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.mcd.spider.engine.record.ArrestRecordEngine;
-import com.mcd.spider.entities.io.RecordSheet;
 import com.mcd.spider.entities.io.RecordWorkbook;
 import com.mcd.spider.entities.record.ArrestRecord;
 import com.mcd.spider.entities.record.ArrestRecord.RecordColumnEnum;
 import com.mcd.spider.entities.record.Record;
-import com.mcd.spider.entities.record.State;
 import com.mcd.spider.entities.record.filter.RecordFilter;
 import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
 import com.mcd.spider.entities.site.Site;
@@ -43,7 +41,6 @@ import com.mcd.spider.exception.ExcelOutputException;
 import com.mcd.spider.exception.IDCheckException;
 import com.mcd.spider.exception.SpiderException;
 import com.mcd.spider.util.ConnectionUtil;
-import com.mcd.spider.util.SpiderConstants;
 import com.mcd.spider.util.SpiderUtil;
 import com.mcd.spider.util.io.RecordIOUtil;
 import com.mcd.spider.util.io.RecordOutputUtil;
@@ -59,14 +56,23 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     public static final Logger logger = Logger.getLogger(DesMoinesRegisterComEngine.class);
     
     private SpiderUtil spiderUtil = new SpiderUtil();
-    private RecordFilterEnum filter;
     private ConnectionUtil connectionUtil;
     private DesMoinesRegisterComSite site;
     private RecordIOUtil recordIOUtil;
     private SpiderWeb spiderWeb;
 
+    public DesMoinesRegisterComEngine(SpiderWeb web) {
+    	this.spiderWeb = web;
+    	this.site = new DesMoinesRegisterComSite(null);
+    }
+
     public DesMoinesRegisterComEngine() {
     	this.site = new DesMoinesRegisterComSite(null);
+    }
+    
+    @Override
+    public void setSpiderWeb(SpiderWeb web) {
+    	this.spiderWeb = web;
     }
     
     @Override
@@ -75,15 +81,13 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     }
     
     @Override
-    public void getArrestRecords(State state, RecordFilterEnum filter, SpiderWeb spiderWeb) throws SpiderException {
+    public void getArrestRecords(String stateName) throws SpiderException {
         long totalTime = System.currentTimeMillis();
-    	this.filter = filter;
-    	this.spiderWeb = spiderWeb;
 //        site = new DesMoinesRegisterComSite(null);
     	if (spiderWeb.isOffline()) {
     		logger.debug("Offline - can't scrape this php site. Try making an offline version");
     	} else {
-            recordIOUtil = initializeIOUtil(state);
+            recordIOUtil = initializeIOUtil(stateName);
             connectionUtil = new ConnectionUtil(true);
 
 	        logger.info("----Site: " + site.getName() + "----");
@@ -97,7 +101,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
 
 	        //outputUtil.removeColumnsFromSpreadsheet(new int[]{ArrestRecord.RecordColumnEnum.ID_COLUMN.index()});
 
-	        spiderUtil.sendEmail(state);
+	        spiderUtil.sendEmail(stateName);
 
 	        totalTime = System.currentTimeMillis() - totalTime;
 	        if (!spiderWeb.isOffline()) {
@@ -215,8 +219,8 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     }
 
     @Override
-    public RecordIOUtil initializeIOUtil(State state) throws SpiderException {
-        RecordIOUtil ioUtil = new RecordIOUtil(state, new ArrestRecord(), site);
+    public RecordIOUtil initializeIOUtil(String stateName) throws SpiderException {
+        RecordIOUtil ioUtil = new RecordIOUtil(stateName, new ArrestRecord(), site);
         try {
             //load previously written records IDs into memory
         	spiderWeb.setCrawledIds(ioUtil.getInputter().getCrawledIds());
@@ -334,17 +338,17 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
         Collections.sort(arrestRecords, ArrestRecord.CountyComparator);
         String delimiter = RecordColumnEnum.COUNTY_COLUMN.getColumnTitle();
         Class<ArrestRecord> clazz = ArrestRecord.class;
-        if (filter!=null && filter!=RecordFilterEnum.NONE) {
+        if (spiderWeb.getFilter()!=null && spiderWeb.getFilter()!=RecordFilterEnum.NONE) {
             try {
                 logger.info("Outputting filtered results");
                 List<Record> filteredRecords = filterRecords(arrestRecords);
                 RecordWorkbook splitFilteredRecordBook = Record.splitByField(filteredRecords, delimiter, clazz);
                 if (!splitFilteredRecordBook.isEmpty()) {
 	                //create a separate sheet with filtered results
-	                logger.info(filteredRecords.size()+" "+filter.filterName()+" "+"records were crawled");
+	                logger.info(filteredRecords.size()+" "+spiderWeb.getFilter().filterName()+" "+"records were crawled");
 	                if (!filteredRecords.isEmpty()) {
 //	                    recordIOUtil.getOutputter().createWorkbook(recordIOUtil.getOutputter().getFilteredDocPath(filter), splitFilteredRecordBook, false, splitFilteredRecordBook.getSheetNames(), ArrestDateComparator);
-	                	recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getOutputter().getFilteredDocPath(filter), delimiter, splitFilteredRecordBook, clazz, ArrestDateComparator);
+	                	recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getOutputter().getFilteredDocPath(spiderWeb.getFilter()), delimiter, splitFilteredRecordBook, clazz, ArrestDateComparator);
 	                }
                 }
             } catch (Exception e) {
@@ -427,7 +431,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     		String[] charges = ((ArrestRecord) record).getCharges();
     		for (String charge : charges) {
     			if (!recordMatches) {
-    				recordMatches = RecordFilter.filter(charge, filter);
+    				recordMatches = RecordFilter.filter(charge, spiderWeb.getFilter());
     			}
     		}
     		if (recordMatches) {

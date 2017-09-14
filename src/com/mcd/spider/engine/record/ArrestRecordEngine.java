@@ -9,7 +9,6 @@ import org.jsoup.nodes.Element;
 
 import com.mcd.spider.entities.record.ArrestRecord;
 import com.mcd.spider.entities.record.Record;
-import com.mcd.spider.entities.record.State;
 import com.mcd.spider.entities.record.filter.RecordFilter;
 import com.mcd.spider.entities.site.Site;
 import com.mcd.spider.entities.site.SpiderWeb;
@@ -19,7 +18,7 @@ import com.mcd.spider.util.io.RecordIOUtil;
 public interface ArrestRecordEngine {
 
 	Site getSite();
-	void getArrestRecords(State state, RecordFilter.RecordFilterEnum filter, SpiderWeb spiderWeb) throws SpiderException;
+	void getArrestRecords(String stateName) throws SpiderException;
 	void scrapeSite();
 	Map<String,String> parseDocForUrls(Object objectToParse);
 	void scrapeRecords(Map<Object, String> recordsDetailsUrlMap);
@@ -28,10 +27,11 @@ public interface ArrestRecordEngine {
 	void formatName(ArrestRecord record, Element profileDetail);
 	String extractValue(Element profileDetail);
 	void formatArrestTime(ArrestRecord record, Element profileDetail);
-	RecordIOUtil initializeIOUtil(State state) throws SpiderException;
+	RecordIOUtil initializeIOUtil(String stateName) throws SpiderException;
 	List<Record> filterRecords(List<Record> fullArrestRecords);
 	Object initiateConnection(String arg) throws IOException;
 	void finalizeOutput(List<Record> arrestRecords);
 	void setCookies(Response response);
+	void setSpiderWeb(SpiderWeb web);
 	
 }
