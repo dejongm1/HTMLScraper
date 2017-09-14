@@ -543,7 +543,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             String arrestTimeText = profileDetail.text().replaceAll("(?i)time:", "").trim();
             arrestDate.set(Calendar.HOUR, Integer.parseInt(arrestTimeText.substring(0, arrestTimeText.indexOf(':'))));
             arrestDate.set(Calendar.MINUTE, Integer.parseInt(arrestTimeText.substring(arrestTimeText.indexOf(':')+1, arrestTimeText.indexOf(' '))));
-            arrestDate.set(Calendar.AM, arrestTimeText.substring(arrestTimeText.indexOf(' ')+1)=="AM"?1:0);
+            arrestDate.set(Calendar.AM_PM, arrestTimeText.substring(arrestTimeText.indexOf(' ')+1)=="AM"?Calendar.AM:Calendar.PM);
             record.setArrestDate(arrestDate);
         }
     }

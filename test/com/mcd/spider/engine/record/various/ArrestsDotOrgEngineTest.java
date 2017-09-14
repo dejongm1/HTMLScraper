@@ -1,8 +1,15 @@
 package com.mcd.spider.engine.record.various;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -23,10 +30,12 @@ public class ArrestsDotOrgEngineTest {
 	private Record violentRecordOne;
 	private Record violentRecordTwo;
 	private Record violentRecordThree;
+	private Document detailDoc;
 	
 	
 	@BeforeClass
-	public void beforeClass() {
+	public void beforeClass() throws IOException {
+		detailDoc = Jsoup.parse(new File("test/resources/htmls/recordDetailPage.html"), "UTF-8");
 		web = new SpiderWeb(1, false, false, RecordFilterEnum.NONE, State.IA);
 		engine = new ArrestsDotOrgEngine(web);
 		alcoholRecordOne = new ArrestRecord();
@@ -122,14 +131,33 @@ public class ArrestsDotOrgEngineTest {
 		throw new RuntimeException("Test not implemented");
 	}
 
+	@SuppressWarnings("deprecation")
 	@Test
 	public void formatArrestTime() {
-		throw new RuntimeException("Test not implemented");
+		Element profileDetail = detailDoc.select(".info .section-content div").get(2);  //third div in test file is arrest time
+		ArrestRecord record = new ArrestRecord();
+		Calendar arrestCalendar = Calendar.getInstance();
+		arrestCalendar.setTime(new Date("09/14/2017"));
+		record.setArrestDate(arrestCalendar);
+		
+		engine.formatArrestTime(record, profileDetail);
+		
+		Assert.assertEquals(record.getArrestDate().get(Calendar.HOUR), 6);
+		Assert.assertEquals(record.getArrestDate().get(Calendar.MINUTE), 15);
+		Assert.assertEquals(record.getArrestDate().get(Calendar.AM_PM), Calendar.PM);
 	}
 
 	@Test
 	public void formatName() {
-		throw new RuntimeException("Test not implemented");
+		Element profileDetail = detailDoc.select(".info .section-content div").get(0); //first div in test file is name
+		ArrestRecord record = new ArrestRecord();
+		
+		engine.formatName(record, profileDetail);
+		
+		Assert.assertEquals(record.getFullName(), "Brad Roderick Smith");
+		Assert.assertEquals(record.getFirstName(), "Brad");
+		Assert.assertEquals(record.getLastName(), "Smith");
+		Assert.assertEquals(record.getMiddleName(), "Roderick");
 	}
 
 	@Test
