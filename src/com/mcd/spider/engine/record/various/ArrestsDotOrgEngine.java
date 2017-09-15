@@ -351,10 +351,11 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 
     public int getNumberOfResultsPages(Document mainPageDoc) {
         int numberOfPages = site.getTotalPages(mainPageDoc);
-        if (numberOfPages > spiderWeb.getMaxNumberOfResults() / site.getResultsPerPage()) {
+        if (!spiderWeb.retrieveMissedRecords() && (numberOfPages>spiderWeb.getMaxNumberOfResults()/site.getResultsPerPage())) {
             numberOfPages = (int) spiderWeb.getMaxNumberOfResults() / site.getResultsPerPage();
             numberOfPages = (int) spiderWeb.getMaxNumberOfResults() % site.getResultsPerPage()>0?numberOfPages+1:numberOfPages+0;
         }
+    
         if (numberOfPages==0) {
             numberOfPages = 1;
         }

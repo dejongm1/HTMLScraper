@@ -31,12 +31,14 @@ public class ArrestsDotOrgEngineTest {
 	private Record violentRecordTwo;
 	private Record violentRecordThree;
 	private Document detailDoc;
+	private Document mainPageDoc;
 	
 	
 	@BeforeClass
 	public void beforeClass() throws IOException {
+		mainPageDoc = Jsoup.parse(new File("test/resources/htmls/mainPageDoc.html"), "UTF-8");
 		detailDoc = Jsoup.parse(new File("test/resources/htmls/recordDetailPage.html"), "UTF-8");
-		web = new SpiderWeb(1, false, false, RecordFilterEnum.NONE, State.IA);
+		web = new SpiderWeb(9999, true, false, RecordFilterEnum.NONE, State.IA);
 		engine = new ArrestsDotOrgEngine(web);
 		alcoholRecordOne = new ArrestRecord();
 		alcoholRecordOne.setId("1231");
@@ -101,8 +103,8 @@ public class ArrestsDotOrgEngineTest {
 
 	@Test
 	public void filterRecords_Alcohol() {
-		web = new SpiderWeb(1, false, false, RecordFilterEnum.ALCOHOL, State.IA);
-		engine = new ArrestsDotOrgEngine(web);
+		SpiderWeb web = new SpiderWeb(9999, true, false, RecordFilterEnum.ALCOHOL, State.IA);
+		ArrestsDotOrgEngine engine = new ArrestsDotOrgEngine(web);
 		List<Record> oneMatchingAlcoholRecord = new ArrayList<>();
 		List<Record> twoMatchingAlcoholRecord = new ArrayList<>();
 		List<Record> noMatchingAlcoholRecord = new ArrayList<>();
@@ -167,7 +169,23 @@ public class ArrestsDotOrgEngineTest {
 
 	@Test
 	public void getNumberOfResultsPages() {
-		throw new RuntimeException("Test not implemented");
+		Assert.assertEquals(engine.getNumberOfResultsPages(mainPageDoc), 18);
+	}
+
+	@Test
+	public void getNumberOfResultsPages_maxResults50() {
+		SpiderWeb web = new SpiderWeb(50, true, false, RecordFilterEnum.ALCOHOL, State.IA);
+		ArrestsDotOrgEngine engine = new ArrestsDotOrgEngine(web);
+
+		Assert.assertEquals(engine.getNumberOfResultsPages(mainPageDoc), 1);
+	}
+
+	@Test
+	public void getNumberOfResultsPages_retrieveMissedMax50() {
+		SpiderWeb web = new SpiderWeb(50, true, true, RecordFilterEnum.ALCOHOL, State.IA);
+		ArrestsDotOrgEngine engine = new ArrestsDotOrgEngine(web);
+		
+		Assert.assertEquals(engine.getNumberOfResultsPages(mainPageDoc), 18);
 	}
 
 	@Test
