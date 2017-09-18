@@ -1,6 +1,6 @@
 package com.mcd.spider.util;
 
-import com.mcd.spider.entities.audit.OfflineResponse;
+import com.mcd.spider.entities.site.OfflineResponse;
 import com.mcd.spider.entities.site.Site;
 import org.apache.log4j.Logger;
 import org.jsoup.Connection;

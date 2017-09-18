@@ -45,7 +45,7 @@ public class SpiderUtil {
 
 	public static Document getOfflinePage(String url) throws IOException {
 		String htmlLocation = url.replace("/", "").replace(":", "").replace("?", "");
-		File input = new File("htmls/" + htmlLocation);
+		File input = new File("test/resources/htmls/" + htmlLocation);
 		return Jsoup.parse(input, "UTF-8", url);
 	}
 

@@ -1,4 +1,4 @@
-package com.mcd.spider.entities.audit;
+package com.mcd.spider.entities.site;
 
 import com.mcd.spider.util.SpiderUtil;
 import org.jsoup.Connection.Method;
