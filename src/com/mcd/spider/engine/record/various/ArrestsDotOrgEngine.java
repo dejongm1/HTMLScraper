@@ -63,30 +63,35 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     public ArrestsDotOrgEngine(SpiderWeb web) {
     	this.spiderWeb = web;
     	this.site = new ArrestsDotOrgSite(new String[]{web.getState().getName()});
+        connectionUtil = new ConnectionUtil(true);
     }
 
     //mostly for testing
     public ArrestsDotOrgEngine(String stateName) {
     	this.site = new ArrestsDotOrgSite(new String[]{stateName});
+        connectionUtil = new ConnectionUtil(true);
     }
     
     @Override
     public void setSpiderWeb(SpiderWeb web) {
     	this.spiderWeb = web;
     }
-    
+
+    public SpiderWeb getSpiderWeb() {
+		return spiderWeb;
+	}
+
     @Override
     public Site getSite() {
     	return site;
     }
     
-    @Override
+	@Override
     public void getArrestRecords(String stateName) throws SpiderException {
         long totalTime = System.currentTimeMillis();
 //        site = new ArrestsDotOrgSite(new String[]{stateName}); //moved to constructor
         recordIOUtil = initializeIOUtil(stateName);
         //Do we want to persist between states in same run? Or not run multiple states at once?
-        connectionUtil = new ConnectionUtil(true);
 
         logger.info("----Site: " + site.getName() + "-" + stateName + "----");
         logger.debug("Sending spider " + (spiderWeb.isOffline()?"offline":"online" ));
@@ -331,8 +336,8 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     }
 
     @Override
-    public Object initiateConnection(String firstPageResults) throws IOException {
-        Connection.Response response = connectionUtil.retrieveConnectionResponse(firstPageResults, "www.google.com");
+    public Object initiateConnection(String firstResultsPageUrl) throws IOException {
+        Connection.Response response = connectionUtil.retrieveConnectionResponse(firstResultsPageUrl, "www.google.com");
         for (Map.Entry<String,String> cookieEntry : response.cookies().entrySet()){
             logger.debug(cookieEntry.getKey() + "=" + cookieEntry.getValue());
         }

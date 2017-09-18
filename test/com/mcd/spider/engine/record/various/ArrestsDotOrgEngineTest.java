@@ -10,6 +10,7 @@ import java.util.List;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -20,6 +21,7 @@ import com.mcd.spider.entities.record.Record;
 import com.mcd.spider.entities.record.State;
 import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
 import com.mcd.spider.entities.site.SpiderWeb;
+import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
 
 public class ArrestsDotOrgEngineTest {
 	
@@ -190,7 +192,8 @@ public class ArrestsDotOrgEngineTest {
 
 	@Test
 	public void getSite() {
-		throw new RuntimeException("Test not implemented");
+		Assert.assertEquals(engine.getSite().getBaseUrl(), "http://iowa.arrests.org");
+		Assert.assertEquals(engine.getSite().getBaseUrl(), "http://" + web.getState().getName().toLowerCase() + ".arrests.org");
 	}
 
 	@Test
@@ -198,9 +201,30 @@ public class ArrestsDotOrgEngineTest {
 		throw new RuntimeException("Test not implemented");
 	}
 
+	@Test(groups="online", enabled=false) //make these dependent on a test that gathers a handful of docs instead of each test creating a new connection
+	public void initiateConnection() throws IOException {
+		Object mainDoc = engine.initiateConnection(((ArrestsDotOrgSite)engine.getSite()).generateResultsPageUrl(1));
+		
+		Assert.assertTrue(mainDoc instanceof Document);
+		Assert.assertEquals(engine.getSpiderWeb().getHeaders().size(), 7);
+		Assert.assertTrue(engine.getSpiderWeb().getSessionCookies().size()>0);
+		Assert.assertTrue(engine.getSpiderWeb().getSessionCookies().get("PHPSESSID")!=null);
+		Assert.assertTrue(engine.getSpiderWeb().getSessionCookies().get("views_session")!=null);
+		Assert.assertTrue(((ArrestsDotOrgSite) engine.getSite()).getRecordElements((Document)mainDoc).size()>0);
+		Assert.assertFalse(((Document)mainDoc).toString().contains("flibberdigibit"));//should not exist on live site
+	}
+
 	@Test
-	public void initiateConnection() {
-		throw new RuntimeException("Test not implemented");
+	public void initiateConnection_Offline() throws IOException {
+		Object mainDoc = engine.initiateConnection(((ArrestsDotOrgSite)engine.getSite()).generateResultsPageUrl(1));
+		
+		Assert.assertTrue(mainDoc instanceof Document);
+		Assert.assertEquals(engine.getSpiderWeb().getHeaders().size(), 7);
+		Assert.assertTrue(engine.getSpiderWeb().getSessionCookies().size()>0);
+		Assert.assertTrue(engine.getSpiderWeb().getSessionCookies().get("PHPSESSID")!=null);
+		Assert.assertTrue(engine.getSpiderWeb().getSessionCookies().get("views_session")!=null);
+		Assert.assertTrue(((ArrestsDotOrgSite) engine.getSite()).getRecordElements((Document)mainDoc).size()>0);
+		Assert.assertTrue(((Document)mainDoc).toString().contains("flibberdigibit"));
 	}
 
 	@Test
@@ -208,9 +232,26 @@ public class ArrestsDotOrgEngineTest {
 		throw new RuntimeException("Test not implemented");
 	}
 
+	@Test(groups="online", enabled=false) //make these dependent on a test that gathers a handful of docs instead of each test creating a new connection
+	public void obtainRecordDetailDoc() throws IOException {
+		Document mainDoc = (Document) engine.initiateConnection(((ArrestsDotOrgSite)engine.getSite()).generateResultsPageUrl(1));
+		Elements recordUrl = ((ArrestsDotOrgSite) engine.getSite()).getRecordElements((Document)mainDoc);
+		String detaiLUrl = ((ArrestsDotOrgSite) engine.getSite()).getRecordDetailDocUrl(recordUrl.get(0));
+		
+		Document detailDoc = engine.obtainRecordDetailDoc(detaiLUrl, "www.google.com");
+		
+		Assert.assertNotNull(detailDoc);
+		Assert.assertFalse(detailDoc.text().equals(""));
+		Assert.assertTrue(((ArrestsDotOrgSite) engine.getSite()).getRecordDetailElements(detailDoc).size()>0);
+	}
+
 	@Test
-	public void obtainRecordDetailDoc() {
-		throw new RuntimeException("Test not implemented");
+	public void obtainRecordDetailDoc_Offline() throws IOException {
+		Document detailDoc = engine.obtainRecordDetailDoc("http://iowa.arrests.org/Arrests/Justin_Wilde_33799480/?d=1", "www.google.com");
+
+		Assert.assertFalse(detailDoc.text().equals(""));
+		Assert.assertEquals(detailDoc.title(), "Justin Wilde Mugshot | 07/27/17 Iowa Arrest");
+		Assert.assertTrue(((ArrestsDotOrgSite) engine.getSite()).getRecordDetailElements(detailDoc).size()>0);
 	}
 
 	@Test
