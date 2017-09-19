@@ -5,8 +5,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -20,52 +25,53 @@ import com.mcd.spider.entities.record.ArrestRecord;
 import com.mcd.spider.entities.record.Record;
 import com.mcd.spider.entities.record.State;
 import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
+import com.mcd.spider.entities.site.OfflineResponse;
 import com.mcd.spider.entities.site.SpiderWeb;
 import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
 
 public class ArrestsDotOrgEngineTest {
 	
-	private ArrestsDotOrgEngine engine;
-	private SpiderWeb web;
-	private Record alcoholRecordOne;
-	private Record alcoholRecordTwo;
-	private Record violentRecordOne;
-	private Record violentRecordTwo;
-	private Record violentRecordThree;
-	private Document detailDoc;
-	private Document mainPageDoc;
+	private ArrestsDotOrgEngine mockEngine;
+	private SpiderWeb mockWeb;
+	private Record mockAlcoholRecordOne;
+	private Record mockAlcoholRecordTwo;
+	private Record mockViolentRecordOne;
+	private Record mockViolentRecordTwo;
+	private Record mockViolentRecordThree;
+	private Document mockDetailDoc;
+	private Document mockMainPageDoc;
 	
 	
 	@BeforeClass
 	public void beforeClass() throws IOException {
-		mainPageDoc = Jsoup.parse(new File("test/resources/htmls/mainPageDoc.html"), "UTF-8");
-		detailDoc = Jsoup.parse(new File("test/resources/htmls/recordDetailPage.html"), "UTF-8");
-		web = new SpiderWeb(9999, true, false, RecordFilterEnum.NONE, State.IA);
-		engine = new ArrestsDotOrgEngine(web);
-		alcoholRecordOne = new ArrestRecord();
-		alcoholRecordOne.setId("1231");
-		((ArrestRecord)alcoholRecordOne).setFullName("Suzie Q Public");
-		((ArrestRecord)alcoholRecordOne).setCharges(new String[]{"Resisting Arrest", "2#DUI"});
+		mockMainPageDoc = Jsoup.parse(new File("test/resources/htmls/mainPageDoc.html"), "UTF-8");
+		mockDetailDoc = Jsoup.parse(new File("test/resources/htmls/recordDetailPage.html"), "UTF-8");
+		mockWeb = new SpiderWeb(9999, true, false, RecordFilterEnum.NONE, State.IA);
+		mockEngine = new ArrestsDotOrgEngine(mockWeb);
+		mockAlcoholRecordOne = new ArrestRecord();
+		mockAlcoholRecordOne.setId("1231");
+		((ArrestRecord)mockAlcoholRecordOne).setFullName("Suzie Q Public");
+		((ArrestRecord)mockAlcoholRecordOne).setCharges(new String[]{"Resisting Arrest", "2#DUI"});
 
-		alcoholRecordTwo = new ArrestRecord();
-		alcoholRecordTwo.setId("1232");
-		((ArrestRecord)alcoholRecordTwo).setFullName("John Q Public");
-		((ArrestRecord)alcoholRecordTwo).setCharges(new String[]{"1: Public Consumption"});
+		mockAlcoholRecordTwo = new ArrestRecord();
+		mockAlcoholRecordTwo.setId("1232");
+		((ArrestRecord)mockAlcoholRecordTwo).setFullName("John Q Public");
+		((ArrestRecord)mockAlcoholRecordTwo).setCharges(new String[]{"1: Public Consumption"});
 
-		violentRecordOne = new ArrestRecord();
-		violentRecordOne.setId("2231");
-		((ArrestRecord)violentRecordOne).setFullName("Will W. Williams");
-		((ArrestRecord)violentRecordOne).setCharges(new String[]{"1) Battery", "2) Assault", "Psodomy"});
+		mockViolentRecordOne = new ArrestRecord();
+		mockViolentRecordOne.setId("2231");
+		((ArrestRecord)mockViolentRecordOne).setFullName("Will W. Williams");
+		((ArrestRecord)mockViolentRecordOne).setCharges(new String[]{"1) Battery", "2) Assault", "Psodomy"});
 		
-		violentRecordTwo = new ArrestRecord();
-		violentRecordTwo.setId("2232");
-		((ArrestRecord)violentRecordTwo).setFullName("Billy Shatner");
-		((ArrestRecord)violentRecordTwo).setCharges(new String[]{"Jay Walking", "Murder in the First"});
+		mockViolentRecordTwo = new ArrestRecord();
+		mockViolentRecordTwo.setId("2232");
+		((ArrestRecord)mockViolentRecordTwo).setFullName("Billy Shatner");
+		((ArrestRecord)mockViolentRecordTwo).setCharges(new String[]{"Jay Walking", "Murder in the First"});
 		
-		violentRecordThree = new ArrestRecord();
-		violentRecordThree.setId("2233");
-		((ArrestRecord)violentRecordThree).setFullName("JO Sonsimp");
-		((ArrestRecord)violentRecordThree).setCharges(new String[]{"Crusifixion"});
+		mockViolentRecordThree = new ArrestRecord();
+		mockViolentRecordThree.setId("2233");
+		((ArrestRecord)mockViolentRecordThree).setFullName("JO Sonsimp");
+		((ArrestRecord)mockViolentRecordThree).setCharges(new String[]{"Crusifixion"});
 	}
 
 	@AfterClass
@@ -111,23 +117,23 @@ public class ArrestsDotOrgEngineTest {
 		List<Record> twoMatchingAlcoholRecord = new ArrayList<>();
 		List<Record> noMatchingAlcoholRecord = new ArrayList<>();
 		
-		oneMatchingAlcoholRecord.add(alcoholRecordOne);
-		twoMatchingAlcoholRecord.add(alcoholRecordOne);
-		twoMatchingAlcoholRecord.add(alcoholRecordTwo);
-		twoMatchingAlcoholRecord.add(violentRecordOne);
-		noMatchingAlcoholRecord.add(violentRecordOne);
-		noMatchingAlcoholRecord.add(violentRecordThree);
-		noMatchingAlcoholRecord.add(violentRecordTwo);
+		oneMatchingAlcoholRecord.add(mockAlcoholRecordOne);
+		twoMatchingAlcoholRecord.add(mockAlcoholRecordOne);
+		twoMatchingAlcoholRecord.add(mockAlcoholRecordTwo);
+		twoMatchingAlcoholRecord.add(mockViolentRecordOne);
+		noMatchingAlcoholRecord.add(mockViolentRecordOne);
+		noMatchingAlcoholRecord.add(mockViolentRecordThree);
+		noMatchingAlcoholRecord.add(mockViolentRecordTwo);
 		
 
 		Assert.assertEquals(engine.filterRecords(oneMatchingAlcoholRecord).size(), 1);
-		Assert.assertTrue(engine.filterRecords(oneMatchingAlcoholRecord).contains(alcoholRecordOne));
+		Assert.assertTrue(engine.filterRecords(oneMatchingAlcoholRecord).contains(mockAlcoholRecordOne));
 		Assert.assertEquals(engine.filterRecords(twoMatchingAlcoholRecord).size(), 2);
-		Assert.assertTrue(engine.filterRecords(twoMatchingAlcoholRecord).contains(alcoholRecordOne));
-		Assert.assertTrue(engine.filterRecords(twoMatchingAlcoholRecord).contains(alcoholRecordTwo));
-		Assert.assertFalse(engine.filterRecords(twoMatchingAlcoholRecord).contains(violentRecordOne));
+		Assert.assertTrue(engine.filterRecords(twoMatchingAlcoholRecord).contains(mockAlcoholRecordOne));
+		Assert.assertTrue(engine.filterRecords(twoMatchingAlcoholRecord).contains(mockAlcoholRecordTwo));
+		Assert.assertFalse(engine.filterRecords(twoMatchingAlcoholRecord).contains(mockViolentRecordOne));
 		Assert.assertEquals(engine.filterRecords(noMatchingAlcoholRecord).size(), 0);
-		Assert.assertFalse(engine.filterRecords(noMatchingAlcoholRecord).contains(violentRecordOne));
+		Assert.assertFalse(engine.filterRecords(noMatchingAlcoholRecord).contains(mockViolentRecordOne));
 	}
 
 	@Test
@@ -138,13 +144,13 @@ public class ArrestsDotOrgEngineTest {
 	@SuppressWarnings("deprecation")
 	@Test
 	public void formatArrestTime() {
-		Element profileDetail = detailDoc.select(".info .section-content div").get(2);  //third div in test file is arrest time
+		Element profileDetail = mockDetailDoc.select(".info .section-content div").get(2);  //third div in test file is arrest time
 		ArrestRecord record = new ArrestRecord();
 		Calendar arrestCalendar = Calendar.getInstance();
 		arrestCalendar.setTime(new Date("09/14/2017"));
 		record.setArrestDate(arrestCalendar);
 		
-		engine.formatArrestTime(record, profileDetail);
+		mockEngine.formatArrestTime(record, profileDetail);
 		
 		Assert.assertEquals(record.getArrestDate().get(Calendar.HOUR), 6);
 		Assert.assertEquals(record.getArrestDate().get(Calendar.MINUTE), 15);
@@ -153,10 +159,10 @@ public class ArrestsDotOrgEngineTest {
 
 	@Test
 	public void formatName() {
-		Element profileDetail = detailDoc.select(".info .section-content div").get(0); //first div in test file is name
+		Element profileDetail = mockDetailDoc.select(".info .section-content div").get(0); //first div in test file is name
 		ArrestRecord record = new ArrestRecord();
 		
-		engine.formatName(record, profileDetail);
+		mockEngine.formatName(record, profileDetail);
 		
 		Assert.assertEquals(record.getFullName(), "Brad Roderick Smith");
 		Assert.assertEquals(record.getFirstName(), "Brad");
@@ -171,7 +177,7 @@ public class ArrestsDotOrgEngineTest {
 
 	@Test
 	public void getNumberOfResultsPages() {
-		Assert.assertEquals(engine.getNumberOfResultsPages(mainPageDoc), 18);
+		Assert.assertEquals(mockEngine.getNumberOfResultsPages(mockMainPageDoc), 18);
 	}
 
 	@Test
@@ -179,7 +185,7 @@ public class ArrestsDotOrgEngineTest {
 		SpiderWeb web = new SpiderWeb(50, true, false, RecordFilterEnum.ALCOHOL, State.IA);
 		ArrestsDotOrgEngine engine = new ArrestsDotOrgEngine(web);
 
-		Assert.assertEquals(engine.getNumberOfResultsPages(mainPageDoc), 1);
+		Assert.assertEquals(engine.getNumberOfResultsPages(mockMainPageDoc), 1);
 	}
 
 	@Test
@@ -187,13 +193,13 @@ public class ArrestsDotOrgEngineTest {
 		SpiderWeb web = new SpiderWeb(50, true, true, RecordFilterEnum.ALCOHOL, State.IA);
 		ArrestsDotOrgEngine engine = new ArrestsDotOrgEngine(web);
 		
-		Assert.assertEquals(engine.getNumberOfResultsPages(mainPageDoc), 18);
+		Assert.assertEquals(engine.getNumberOfResultsPages(mockMainPageDoc), 18);
 	}
 
 	@Test
 	public void getSite() {
-		Assert.assertEquals(engine.getSite().getBaseUrl(), "http://iowa.arrests.org");
-		Assert.assertEquals(engine.getSite().getBaseUrl(), "http://" + web.getState().getName().toLowerCase() + ".arrests.org");
+		Assert.assertEquals(mockEngine.getSite().getBaseUrl(), "http://iowa.arrests.org");
+		Assert.assertEquals(mockEngine.getSite().getBaseUrl(), "http://" + mockWeb.getState().getName().toLowerCase() + ".arrests.org");
 	}
 
 	@Test
@@ -201,29 +207,30 @@ public class ArrestsDotOrgEngineTest {
 		throw new RuntimeException("Test not implemented");
 	}
 
-	@Test(groups="online", enabled=false) //make these dependent on a test that gathers a handful of docs instead of each test creating a new connection
-	public void initiateConnection() throws IOException {
-		Object mainDoc = engine.initiateConnection(((ArrestsDotOrgSite)engine.getSite()).generateResultsPageUrl(1));
+	@Test(groups="online", enabled=false) //make these dependent on a test that gathers a handful of docs on class load instead of each test creating a new connection
+	public void initiateConnection_Online() throws IOException {
+		Object mainDoc = mockEngine.initiateConnection(((ArrestsDotOrgSite)mockEngine.getSite()).generateResultsPageUrl(1));
 		
 		Assert.assertTrue(mainDoc instanceof Document);
-		Assert.assertEquals(engine.getSpiderWeb().getHeaders().size(), 7);
-		Assert.assertTrue(engine.getSpiderWeb().getSessionCookies().size()>0);
-		Assert.assertTrue(engine.getSpiderWeb().getSessionCookies().get("PHPSESSID")!=null);
-		Assert.assertTrue(engine.getSpiderWeb().getSessionCookies().get("views_session")!=null);
-		Assert.assertTrue(((ArrestsDotOrgSite) engine.getSite()).getRecordElements((Document)mainDoc).size()>0);
+		Assert.assertEquals(mockEngine.getSpiderWeb().getHeaders().size(), 7);
+		Assert.assertTrue(mockEngine.getSpiderWeb().getSessionCookies().size()>0);
+		Assert.assertTrue(mockEngine.getSpiderWeb().getSessionCookies().get("PHPSESSID")!=null);
+		Assert.assertTrue(mockEngine.getSpiderWeb().getSessionCookies().get("views_session")!=null);
+		Assert.assertTrue(((ArrestsDotOrgSite) mockEngine.getSite()).getRecordElements((Document)mainDoc).size()>0);
 		Assert.assertFalse(((Document)mainDoc).toString().contains("flibberdigibit"));//should not exist on live site
+		throw new RuntimeException("Test not finished");
 	}
 
 	@Test
-	public void initiateConnection_Offline() throws IOException {
-		Object mainDoc = engine.initiateConnection(((ArrestsDotOrgSite)engine.getSite()).generateResultsPageUrl(1));
+	public void initiateConnection() throws IOException {
+		Object mainDoc = mockEngine.initiateConnection(((ArrestsDotOrgSite)mockEngine.getSite()).generateResultsPageUrl(1));
 		
 		Assert.assertTrue(mainDoc instanceof Document);
-		Assert.assertEquals(engine.getSpiderWeb().getHeaders().size(), 7);
-		Assert.assertTrue(engine.getSpiderWeb().getSessionCookies().size()>0);
-		Assert.assertTrue(engine.getSpiderWeb().getSessionCookies().get("PHPSESSID")!=null);
-		Assert.assertTrue(engine.getSpiderWeb().getSessionCookies().get("views_session")!=null);
-		Assert.assertTrue(((ArrestsDotOrgSite) engine.getSite()).getRecordElements((Document)mainDoc).size()>0);
+		Assert.assertEquals(mockEngine.getSpiderWeb().getHeaders().size(), 7);
+		Assert.assertTrue(mockEngine.getSpiderWeb().getSessionCookies().size()>0);
+		Assert.assertTrue(mockEngine.getSpiderWeb().getSessionCookies().get("PHPSESSID")!=null);
+		Assert.assertTrue(mockEngine.getSpiderWeb().getSessionCookies().get("views_session")!=null);
+		Assert.assertTrue(((ArrestsDotOrgSite) mockEngine.getSite()).getRecordElements((Document)mainDoc).size()>0);
 		Assert.assertTrue(((Document)mainDoc).toString().contains("flibberdigibit"));
 	}
 
@@ -232,36 +239,97 @@ public class ArrestsDotOrgEngineTest {
 		throw new RuntimeException("Test not implemented");
 	}
 
-	@Test(groups="online", enabled=false) //make these dependent on a test that gathers a handful of docs instead of each test creating a new connection
-	public void obtainRecordDetailDoc() throws IOException {
-		Document mainDoc = (Document) engine.initiateConnection(((ArrestsDotOrgSite)engine.getSite()).generateResultsPageUrl(1));
-		Elements recordUrl = ((ArrestsDotOrgSite) engine.getSite()).getRecordElements((Document)mainDoc);
-		String detaiLUrl = ((ArrestsDotOrgSite) engine.getSite()).getRecordDetailDocUrl(recordUrl.get(0));
+	@Test(groups="online", enabled=false) //make these dependent on a test that gathers a handful of docs on class load instead of each test creating a new connection
+	public void obtainRecordDetailDoc_Online() throws IOException {
+		Elements recordUrl = ((ArrestsDotOrgSite) mockEngine.getSite()).getRecordElements(mockMainPageDoc);
+		String detaiLUrl = ((ArrestsDotOrgSite) mockEngine.getSite()).getRecordDetailDocUrl(recordUrl.get(0));
 		
-		Document detailDoc = engine.obtainRecordDetailDoc(detaiLUrl, "www.google.com");
+		Document detailDoc = mockEngine.obtainRecordDetailDoc(detaiLUrl, "www.google.com");
 		
 		Assert.assertNotNull(detailDoc);
 		Assert.assertFalse(detailDoc.text().equals(""));
-		Assert.assertTrue(((ArrestsDotOrgSite) engine.getSite()).getRecordDetailElements(detailDoc).size()>0);
+		Assert.assertTrue(((ArrestsDotOrgSite) mockEngine.getSite()).getRecordDetailElements(detailDoc).size()>0);
+		throw new RuntimeException("Test not finished");
 	}
 
 	@Test
-	public void obtainRecordDetailDoc_Offline() throws IOException {
-		Document detailDoc = engine.obtainRecordDetailDoc("http://iowa.arrests.org/Arrests/Justin_Wilde_33799480/?d=1", "www.google.com");
+	public void obtainRecordDetailDoc() throws IOException {
+		Document detailDoc = mockEngine.obtainRecordDetailDoc("http://iowa.arrests.org/Arrests/Justin_Wilde_33799480/?d=1", "www.google.com");
 
 		Assert.assertFalse(detailDoc.text().equals(""));
 		Assert.assertEquals(detailDoc.title(), "Justin Wilde Mugshot | 07/27/17 Iowa Arrest");
-		Assert.assertTrue(((ArrestsDotOrgSite) engine.getSite()).getRecordDetailElements(detailDoc).size()>0);
+		Assert.assertTrue(((ArrestsDotOrgSite) mockEngine.getSite()).getRecordDetailElements(detailDoc).size()>0);
+	}
+
+	@Test(groups="online", enabled=false) //make these dependent on a test that gathers a handful of docs on class load instead of each test creating a new connection
+	public void parseDocForUrls_Online() {
+		mockWeb.setCrawledIds(new HashSet<>());
+		mockEngine.setSpiderWeb(mockWeb);
+		Map<String,String> recordUrlMap = mockEngine.parseDocForUrls(mockMainPageDoc);
+
+		Assert.assertEquals(recordUrlMap.size(), 56);
+		Assert.assertEquals(mockMainPageDoc.select(".profile-card").size(), recordUrlMap.size());
+		throw new RuntimeException("Test not finished");
+	}
+
+	@Test
+	public void parseDocForUrls_SomeAlreadyCrawled() {
+		//add some records that exist in test maindoc
+		Set<String> mockCrawledIds = new HashSet<>();
+		mockCrawledIds.add("Brett_Wilkins_33797797");
+		mockCrawledIds.add("Craig_Mitchell_33793872");
+		mockCrawledIds.add("Justin_Wilde_33799480");
+		mockWeb.setCrawledIds(mockCrawledIds);
+		mockEngine.setSpiderWeb(mockWeb);
+
+		Map<String,String> recordUrlMap = mockEngine.parseDocForUrls(mockMainPageDoc);
+
+		Assert.assertEquals(recordUrlMap.size(), 52);
+		Assert.assertTrue(mockMainPageDoc.select(".search-results .profile-card").size() > recordUrlMap.size());
 	}
 
 	@Test
 	public void parseDocForUrls() {
-		throw new RuntimeException("Test not implemented");
+		mockWeb.setCrawledIds(new HashSet<>());
+		mockEngine.setSpiderWeb(mockWeb);
+		Map<String,String> recordUrlMap = mockEngine.parseDocForUrls(mockMainPageDoc);
+		
+		Assert.assertEquals(recordUrlMap.size(), 55);
+		Assert.assertEquals(mockMainPageDoc.select(".search-results .profile-card").size(), recordUrlMap.size());
+	}
+	
+	@Test(groups="online", enabled=false) //make these dependent on a test that gathers a handful of docs on class load instead of each test creating a new connection
+	public void populateArrestRecord_Online() {
+		//just test that certain values are populated, not the specific values
+		ArrestRecord resultRecord = mockEngine.populateArrestRecord(mockDetailDoc);
+		
+		Assert.assertNotNull(resultRecord.getId());		
+		Assert.assertNotNull(resultRecord.getFullName());	
+		Assert.assertNotNull(resultRecord.getFirstName());	
+		Assert.assertNotNull(resultRecord.getLastName());	
+		throw new RuntimeException("Test not finished");
 	}
 
 	@Test
 	public void populateArrestRecord() {
-		throw new RuntimeException("Test not implemented");
+		mockDetailDoc.setBaseUri("http://iowa.arrests.org/Arrests/Brad_Smith_12323232/?d=1");
+		ArrestRecord resultRecord = mockEngine.populateArrestRecord(mockDetailDoc);
+
+		Assert.assertEquals(resultRecord.getId(), "Brad_Smith_12323232");		
+		Assert.assertEquals(resultRecord.getFullName(), "Brad Roderick Smith");	
+		Assert.assertEquals(resultRecord.getFirstName(), "Brad");	
+		Assert.assertEquals(resultRecord.getMiddleName(), "Roderick");	
+		Assert.assertEquals(resultRecord.getLastName(), "Smith");	
+		Assert.assertEquals(resultRecord.getCounty(), "Polk");	
+		Assert.assertEquals(resultRecord.getGender(), "Male");	
+		Assert.assertEquals(resultRecord.getArrestAge(), new Integer(21));	
+		Assert.assertEquals(resultRecord.getHeight(), "5\'10\"");	
+		Assert.assertEquals(resultRecord.getWeight(), "200 lbs");	
+		Assert.assertEquals(resultRecord.getHairColor(), "Black");	
+		Assert.assertEquals(resultRecord.getEyeColor(), "Brown");	
+		Assert.assertEquals(resultRecord.getTotalBond(), new Long(300));	
+		Assert.assertEquals(resultRecord.getCharges().length, 2);	
+		Assert.assertEquals(resultRecord.getCharges()[0], "#1 POSSESSION OF DRUG PARAPHERNALIA (SMMS) BOND: $300");
 	}
 
 	@Test
@@ -275,7 +343,48 @@ public class ArrestsDotOrgEngineTest {
 	}
 
 	@Test
-	public void setCookies() {
-		throw new RuntimeException("Test not implemented");
+	public void setCookies_Initial() {
+		mockWeb.getSessionCookies().clear();
+		Connection.Response response = new OfflineResponse(200, "http://iowa.arrests.org");
+		mockEngine.setCookies(response);
+		
+		Assert.assertNotNull(mockWeb.getSessionCookies().get("PHPSESSID"));
+		Assert.assertNotNull(mockWeb.getSessionCookies().get("__cfduid"));
+		Assert.assertEquals(mockWeb.getSessionCookies().get("views_session"), "1");
+		Assert.assertEquals(mockWeb.getSessionCookies().get("views_24"), "1");
+	}
+	
+	@Test
+	public void setCookies_Overwrite() {
+		Map<String,String> currentCookies = new HashMap<>();
+		currentCookies.put("PHPSESSID", "1283unlnc-wq0932e");
+		currentCookies.put("views_session", "2");
+		currentCookies.put("views_24", "4");
+		Connection.Response response = new OfflineResponse(200, "http://iowa.arrests.org", currentCookies);
+		mockWeb.setSessionCookies(currentCookies);
+		
+		mockEngine.setCookies(response);
+		
+		Assert.assertEquals(mockWeb.getSessionCookies().get("PHPSESSID"), response.cookie("PHPSESSID"));
+		Assert.assertEquals(mockWeb.getSessionCookies().get("views_session"), response.cookie("views_session"));
+		Assert.assertEquals(mockWeb.getSessionCookies().get("views_24"), response.cookie("views_24"));
+	}
+	
+	@Test
+	public void setCookies_RecordCap() {
+		Map<String,String> currentCookies = new HashMap<>();
+		currentCookies.put("PHPSESSID", "1283unlnc-wq0932e");
+		currentCookies.put("views_session", "99");
+		currentCookies.put("views_24", "99");
+		Connection.Response response = new OfflineResponse(200, "http://iowa.arrests.org");
+		mockWeb.setSessionCookies(currentCookies);
+		mockWeb.setRecordCap(100);
+		mockWeb.addToRecordsProcessed(100);
+		
+		mockEngine.setCookies(response);
+		
+		Assert.assertNull(mockWeb.getSessionCookies().get("PHPSESSID"));
+		Assert.assertEquals(mockWeb.getSessionCookies().get("views_session"), "1");
+		Assert.assertEquals(mockWeb.getSessionCookies().get("views_24"), "1");
 	}
 }

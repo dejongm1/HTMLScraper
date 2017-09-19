@@ -42,6 +42,7 @@ public class OfflineResponse implements Response {
         this.cookies.put("__uzmd", String.valueOf(Calendar.getInstance().getTimeInMillis()));
         this.cookies.put("PHPSESSID", cookies.get("PHPSESSID"));
         this.cookies.put("views_session", String.valueOf(Integer.valueOf(cookies.get("views_session"))+1));
+        this.cookies.put("views_24", String.valueOf(Integer.valueOf(cookies.get("views_24"))+1));
         this.cookies.put("__cfduid", cookies.get("__cfduid"));
         this.contentType = determineContentType();
     }

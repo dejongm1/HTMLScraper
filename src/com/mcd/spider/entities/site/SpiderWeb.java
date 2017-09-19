@@ -131,6 +131,10 @@ public class SpiderWeb {
         return recordCap;
     }
 
+    public void setRecordCap(int cap) {
+        recordCap = cap;
+    }
+
     public Map<String, String> getHeaders() {
         return headers;
     }
