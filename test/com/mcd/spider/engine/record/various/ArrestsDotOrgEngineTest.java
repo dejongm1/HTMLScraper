@@ -235,8 +235,67 @@ public class ArrestsDotOrgEngineTest {
 	}
 
 	@Test
-	public void matchPropertyToField() {
-		throw new RuntimeException("Test not implemented");
+	public void matchPropertyToField_Misc() {
+		ArrestRecord recordToMap = new ArrestRecord();
+		//pulled the selector from Site.getRecordDetailElements()
+		Elements profileDetailSections = mockDetailDoc.select(".info .section-content div");
+		Calendar mockCalendar = Calendar.getInstance(); //setting a test date of 08/24/2017 6:15 PM
+		mockCalendar.setTime(new Date("08/24/2017"));
+		mockCalendar.set(Calendar.HOUR, 6);
+		mockCalendar.set(Calendar.MINUTE, 15);
+		mockCalendar.set(Calendar.AM_PM, Calendar.PM);
+		for (Element profileElement : profileDetailSections) {
+			mockEngine.matchPropertyToField(recordToMap, profileElement);
+		}
+		
+		Assert.assertEquals(recordToMap.getFullName(), "Brad Roderick Smith");
+		Assert.assertEquals(recordToMap.getFirstName(), "Brad");
+		Assert.assertEquals(recordToMap.getMiddleName(), "Roderick");
+		Assert.assertEquals(recordToMap.getLastName(), "Smith");
+		Assert.assertEquals(recordToMap.getArrestDate().get(Calendar.HOUR), mockCalendar.get(Calendar.HOUR));
+		Assert.assertEquals(recordToMap.getArrestDate().get(Calendar.MINUTE), mockCalendar.get(Calendar.MINUTE));
+		Assert.assertEquals(recordToMap.getArrestDate().get(Calendar.AM_PM), mockCalendar.get(Calendar.AM_PM));
+		Assert.assertEquals(recordToMap.getArrestDate().get(Calendar.MONTH), mockCalendar.get(Calendar.MONTH));
+		Assert.assertEquals(recordToMap.getArrestDate().get(Calendar.DAY_OF_MONTH), mockCalendar.get(Calendar.DAY_OF_MONTH));
+		Assert.assertEquals(recordToMap.getArrestDate().get(Calendar.YEAR), mockCalendar.get(Calendar.YEAR));
+		Assert.assertEquals(recordToMap.getArrestAge(), new Integer(21));
+		Assert.assertEquals(recordToMap.getGender(), "Male");
+		Assert.assertEquals(recordToMap.getHeight(), "5\'10\"");
+		Assert.assertEquals(recordToMap.getWeight(), "200 lbs");
+		Assert.assertEquals(recordToMap.getHairColor(), "Black");
+		Assert.assertEquals(recordToMap.getEyeColor(), "Brown");
+	}
+
+	@Test
+	public void matchPropertyToField_Charges() {
+		ArrestRecord recordToMap = new ArrestRecord();
+		//pulled the selector from Site.getRecordDetailElements()
+		Element profileDetailChargesSection = mockDetailDoc.select(".section-content.charges").get(0);
+		mockEngine.matchPropertyToField(recordToMap, profileDetailChargesSection);
+		
+		Assert.assertEquals(recordToMap.getCharges().length, 2);
+		Assert.assertEquals(recordToMap.getCharges()[0], "#1 POSSESSION OF DRUG PARAPHERNALIA (SMMS) BOND: $300");
+		Assert.assertEquals(recordToMap.getCharges()[1], "#2 VIOLATION OF PROBATION - 1985 STATUTE: FE300086");
+	}
+
+	@Test
+	public void matchPropertyToField_County() {
+		ArrestRecord recordToMap = new ArrestRecord();
+		//pulled the selector from Site.getRecordDetailElements()
+		Element profileDetailCountySection = mockDetailDoc.select("img[src^=\"/mugs/\"]").get(0);
+		mockEngine.matchPropertyToField(recordToMap, profileDetailCountySection);
+		
+		Assert.assertEquals(recordToMap.getCounty(), "Polk");
+	}
+
+	@Test
+	public void matchPropertyToField_CountyAlternate() {
+		ArrestRecord recordToMap = new ArrestRecord();
+		//pulled the selector from Site.getRecordDetailElements()
+		Element profileDetailCountySection = mockDetailDoc.select(".content-box.profile.profile-full h3").get(0);
+		mockEngine.matchPropertyToField(recordToMap, profileDetailCountySection);
+		
+		Assert.assertEquals(recordToMap.getCounty(), "Polk");
 	}
 
 	@Test(groups="online", enabled=false) //make these dependent on a test that gathers a handful of docs on class load instead of each test creating a new connection
