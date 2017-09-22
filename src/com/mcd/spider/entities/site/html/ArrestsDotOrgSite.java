@@ -80,7 +80,7 @@ public class ArrestsDotOrgSite implements SiteHTML {
 //	}
 	@Override
 	public Elements getRecordElements(Document doc) {
-		return doc.select(".search-results .profile-card .title a");
+		return doc.select(".content-box .search-results .profile-card .title a");
 	}
 	@Override
 	public String getRecordDetailDocUrl(Element record) {

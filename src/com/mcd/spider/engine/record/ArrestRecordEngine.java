@@ -33,5 +33,6 @@ public interface ArrestRecordEngine {
 	void finalizeOutput(List<Record> arrestRecords);
 	void setCookies(Response response);
 	void setSpiderWeb(SpiderWeb web);
+	RecordIOUtil getRecordIOUtil();
 	
 }
