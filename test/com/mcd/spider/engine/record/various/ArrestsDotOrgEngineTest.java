@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.validator.routines.UrlValidator;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -28,6 +29,7 @@ import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
 import com.mcd.spider.entities.site.OfflineResponse;
 import com.mcd.spider.entities.site.SpiderWeb;
 import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
+import com.mcd.spider.util.io.RecordIOUtil;
 
 public class ArrestsDotOrgEngineTest {
 	
@@ -80,18 +82,93 @@ public class ArrestsDotOrgEngineTest {
 
 
 	@Test
-	public void ArrestsDotOrgEngine() {
+	public void ArrestsDotOrgEngine_ConstructorWeb() {
 		throw new RuntimeException("Test not implemented");
 	}
 
 	@Test
-	public void compileRecordDetailUrlMapDocumentMapIntegerDocument() {
+	public void ArrestsDotOrgEngine_ConstructorStateName() {
 		throw new RuntimeException("Test not implemented");
 	}
 
 	@Test
-	public void compileRecordDetailUrlMapDocumentSetString() {
-		throw new RuntimeException("Test not implemented");
+	public void compileRecordDetailUrlMap() throws IOException {
+		Map<Integer, Document> resultsPageDocMap = new HashMap<>();
+		mockWeb.setCrawledIds(new HashSet<>());
+		resultsPageDocMap.put(1, Jsoup.parse(new File("test/resources/htmls/httpiowa.arrests.orgpage=1&results=56"), "UTF-8"));
+		resultsPageDocMap.put(2, Jsoup.parse(new File("test/resources/htmls/httpiowa.arrests.orgpage=2&results=56"), "UTF-8"));
+		UrlValidator urlValidator = new UrlValidator(new String[]{"http","https"});
+		
+		Map<Object, String> resultMap = mockEngine.compileRecordDetailUrlMap(mockMainPageDoc, resultsPageDocMap);
+		
+		Assert.assertTrue(resultMap.size() > resultsPageDocMap.size()*56);
+		for (Map.Entry<Object, String> urlEntry : resultMap.entrySet()) {
+			Assert.assertTrue(urlValidator.isValid(urlEntry.getValue()));
+		}
+	}
+
+	@Test
+	public void compileRecordDetailUrlMap_NoMisc() throws IOException {
+		SpiderWeb mockWeb = new SpiderWeb(9999, false, false, RecordFilterEnum.NONE, State.IA);
+		mockWeb.setCrawledIds(new HashSet<>());
+		ArrestsDotOrgEngine mockEngine = new ArrestsDotOrgEngine(mockWeb);
+		Map<Integer, Document> resultsPageDocMap = new HashMap<>();
+		resultsPageDocMap.put(1, Jsoup.parse(new File("test/resources/htmls/httpiowa.arrests.orgpage=1&results=56"), "UTF-8"));
+		resultsPageDocMap.put(2, Jsoup.parse(new File("test/resources/htmls/httpiowa.arrests.orgpage=2&results=56"), "UTF-8"));
+		UrlValidator urlValidator = new UrlValidator(new String[]{"http","https"});
+		
+		Map<Object, String> resultMap = mockEngine.compileRecordDetailUrlMap(mockMainPageDoc, resultsPageDocMap);
+		
+		Assert.assertEquals(resultMap.size(), resultsPageDocMap.size()*56);
+		for (Map.Entry<Object, String> urlEntry : resultMap.entrySet()) {
+			Assert.assertTrue(urlValidator.isValid(urlEntry.getValue()));
+		}
+	}
+
+	@Test
+	public void compileRecordDetailUrlMap_SomeAlreadyCrawled() throws IOException {
+		SpiderWeb mockWeb = new SpiderWeb(9999, false, false, RecordFilterEnum.NONE, State.IA);
+		Set<String> crawledIds = new HashSet<>();
+		crawledIds.add("Justin_Wilde_33799480");
+		crawledIds.add("Craig_Mitchell_33793872");
+		crawledIds.add("Brett_Wilkins_33797797");
+		mockWeb.setCrawledIds(crawledIds);
+		ArrestsDotOrgEngine mockEngine = new ArrestsDotOrgEngine(mockWeb);
+		mockEngine.setRecordIOUtil(new RecordIOUtil(State.IA.getName(), new ArrestRecord(), mockEngine.getSite(), true));
+		Map<Integer, Document> resultsPageDocMap = new HashMap<>();
+		resultsPageDocMap.put(1, Jsoup.parse(new File("test/resources/htmls/httpiowa.arrests.orgpage=1&results=56"), "UTF-8"));
+		resultsPageDocMap.put(2, Jsoup.parse(new File("test/resources/htmls/httpiowa.arrests.orgpage=2&results=56"), "UTF-8"));
+		UrlValidator urlValidator = new UrlValidator(new String[]{"http","https"});
+		
+		Map<Object, String> resultMap = mockEngine.compileRecordDetailUrlMap(mockMainPageDoc, resultsPageDocMap);
+		
+		Assert.assertEquals(resultMap.size(), resultsPageDocMap.size()*56-crawledIds.size());
+		for (Map.Entry<Object, String> urlEntry : resultMap.entrySet()) {
+			Assert.assertTrue(urlValidator.isValid(urlEntry.getValue()));
+		}
+	}
+
+	@Test
+	public void compileRecordDetailUrlMapFromBackup() throws IOException {
+		mockWeb.setCrawledIds(new HashSet<>());
+		Set<String> uncrawledIds = new HashSet<>();
+		uncrawledIds.add("Joe_Blow_123123");
+		uncrawledIds.add("Stacy_Cooper_0923023");
+		uncrawledIds.add("Ferdinand_Egnacios_891382");
+		mockWeb.setUncrawledIds(uncrawledIds);
+		ArrestsDotOrgEngine mockEngine = new ArrestsDotOrgEngine(mockWeb);
+		mockEngine.setRecordIOUtil(new RecordIOUtil(State.IA.getName(), new ArrestRecord(), mockEngine.getSite(), true));
+		UrlValidator urlValidator = new UrlValidator(new String[]{"http","https"});
+		File uncrawledIDFile = new File(mockEngine.getRecordIOUtil().getUncrawledIdFile().getPath());
+		uncrawledIDFile.createNewFile();
+		
+		Map<Object, String> resultMap = mockEngine.compileRecordDetailUrlMapFromBackup(mockMainPageDoc, uncrawledIds);
+		
+		Assert.assertTrue(resultMap.size() > uncrawledIds.size());
+		for (Map.Entry<Object, String> urlEntry : resultMap.entrySet()) {
+			Assert.assertTrue(urlValidator.isValid(urlEntry.getValue()));
+		}
+		Assert.assertFalse(mockEngine.getRecordIOUtil().getUncrawledIdFile().exists());
 	}
 
 	@Test

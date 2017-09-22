@@ -79,6 +79,15 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     public Site getSite() {
     	return site;
     }
+
+    @Override
+    public RecordIOUtil getRecordIOUtil() {
+    	return recordIOUtil;
+    }
+
+    public void setRecordIOUtil(RecordIOUtil recordIOUtil) {
+    	this.recordIOUtil = recordIOUtil;
+    }
     
     @Override
     public void getArrestRecords(String stateName) throws SpiderException {

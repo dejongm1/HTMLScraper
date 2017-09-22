@@ -241,7 +241,7 @@ Per page
 </div>
 </li>
 <li>
-<div class="profile-card">
+<div class='profile-card'>
 <div class="title"><a href="/Arrests/Dominic_Lacava_34065316/?d=1">Dominic<br>Lacava</a></div>
 <div class="picture"><a href="/Arrests/Dominic_Lacava_34065316/?d=1"><img src="/thumbs/Polk/257617.jpg" width="120" height="160" alt=""></a></div>
 <div class="description"><a href="/Polk/">Polk</a></div>
@@ -251,27 +251,6 @@ Per page
 <div class='profile-card'>
 <div class='title'><a href='/Arrests/Joyce_Bell_33798903/?d=1'>Joyce<br/>Bell</a></div>
 <div class='picture'><a href='/Arrests/Joyce_Bell_33798903/?d=1'><img src='/thumbs/Polk/255839.jpg' width='120' height='160' alt=''/></a></div>
-<div class='description'><a href='/Polk/'>Polk</a></div>
-</div>
-</li>
-<li>
-<div class='profile-card'>
-<div class='title'><a href='/Arrests/Nyumah_Peter_33798904/?d=1'>Nyumah<br/>Peter</a></div>
-<div class='picture'><a href='/Arrests/Nyumah_Peter_33798904/?d=1'><img src='/thumbs/Polk/255838.jpg' width='120' height='160' alt=''/></a></div>
-<div class='description'><a href='/Polk/'>Polk</a></div>
-</div>
-</li>
-<li>
-<div class='profile-card'>
-<div class='title'><a href='/Arrests/Emil_Mehic_33798905/?d=1'>Emil<br/>Mehic</a></div>
-<div class='picture'><a href='/Arrests/Emil_Mehic_33798905/?d=1'><img src='/thumbs/Polk/255836.jpg' width='120' height='160' alt=''/></a></div>
-<div class='description'><a href='/Polk/'>Polk</a></div>
-</div>
-</li>
-<li>
-<div class='profile-card'>
-<div class='title'><a href='/Arrests/Richard_Grylls_33798906/?d=1'>Richard<br/>Grylls</a></div>
-<div class='picture'><a href='/Arrests/Richard_Grylls_33798906/?d=1'><img src='/thumbs/Polk/255835.jpg' width='120' height='160' alt=''/></a></div>
 <div class='description'><a href='/Polk/'>Polk</a></div>
 </div>
 </li>
@@ -583,6 +562,30 @@ Per page
 <div class='description'><a href='/Polk/'>Polk</a></div>
 </div>
 </li>
+<li>
+<div class='profile-card'>
+<div class='title'><a href='/Arrests/Nyanwier_Mawier_33783332/?d=1'>Nyanwier<br/>Mawier</a></div>
+<div class='picture'><a href='/Arrests/Nyanwier_Mawier_33783332/?d=1'><img src='/thumbs/Story/2017-07-26_MAWIER-NYANWIER.jpg' width='120' height='160' alt=''/></a></div>
+</div>
+</li>
+<li>
+<div class='profile-card'>
+<div class='title'><a href='/Arrests/Trisha_Goldensoph_33788861/?d=1'>Trisha<br/>Goldensoph</a></div>
+<div class='picture'><a href='/Arrests/Trisha_Goldensoph_33788861/?d=1'><img src='/thumbs/Story/2017-07-26_GOLDENSOPH-TRISHA.jpg' width='120' height='160' alt=''/></a></div>
+</div>
+</li>
+<li>
+<div class='profile-card'>
+<div class='title'><a href='/Arrests/Alina_Douglas_33775376/?d=1'>Alina<br/>Douglas</a></div>
+<div class='picture'><a href='/Arrests/Alina_Douglas_33775376/?d=1'><img src='/thumbs/Story/2017-07-25_DOUGLAS-ALINA.jpg' width='120' height='160' alt=''/></a></div>
+</div>
+</li>
+<li>
+<div class='profile-card'>
+<div class='title'><a href='/Arrests/Samantha_Reda_33783847/?d=1'>Samantha<br/>Reda</a></div>
+<div class='picture'><a href='/Arrests/Samantha_Reda_33783847/?d=1'><img src='/thumbs/Johnson/96304.jpg' width='120' height='160' alt=''/></a></div>
+</div>
+</li>
 </ul>
 <div class="clear"></div>
 </div>
@@ -748,27 +751,33 @@ Per page
 <div class="wrapper">
 <ul>
 <li>
-<div class='profile-card'>
-<div class='title'><a href='/Arrests/Nyanwier_Mawier_33783332/?d=1'>Nyanwier<br/>Mawier</a></div>
-<div class='picture'><a href='/Arrests/Nyanwier_Mawier_33783332/?d=1'><img src='/thumbs/Story/2017-07-26_MAWIER-NYANWIER.jpg' width='120' height='160' alt=''/></a></div>
+<div  class='profile-card'>
+<div class='title'><a href='/Arrests/Nyanwier_Mawier_337833322/?d=1'>Nyanwier<br/>Mawier</a></div>
+<div class='picture'><a href='/Arrests/Nyanwier_Mawier_337833322/?d=1'><img src='/thumbs/Story/2017-07-26_MAWIER-NYANWIER.jpg' width='120' height='160' alt=''/></a></div>
 </div>
 </li>
 <li>
-<div class='profile-card'>
-<div class='title'><a href='/Arrests/Trisha_Goldensoph_33788861/?d=1'>Trisha<br/>Goldensoph</a></div>
-<div class='picture'><a href='/Arrests/Trisha_Goldensoph_33788861/?d=1'><img src='/thumbs/Story/2017-07-26_GOLDENSOPH-TRISHA.jpg' width='120' height='160' alt=''/></a></div>
+<div  class='profile-card'>
+<div class='title'><a href='/Arrests/Alina_Douglas_337753762/?d=1'>Alina<br/>Douglas</a></div>
+<div class='picture'><a href='/Arrests/Alina_Douglas_337753762/?d=1'><img src='/thumbs/Story/2017-07-25_DOUGLAS-ALINA.jpg' width='120' height='160' alt=''/></a></div>
 </div>
 </li>
 <li>
-<div class='profile-card'>
-<div class='title'><a href='/Arrests/Alina_Douglas_33775376/?d=1'>Alina<br/>Douglas</a></div>
-<div class='picture'><a href='/Arrests/Alina_Douglas_33775376/?d=1'><img src='/thumbs/Story/2017-07-25_DOUGLAS-ALINA.jpg' width='120' height='160' alt=''/></a></div>
+<div  class='profile-card'>
+<div class='title'><a href='/Arrests/Trisha_Goldensoph_337888612/?d=1'>Trisha<br/>Goldensoph</a></div>
+<div class='picture'><a href='/Arrests/Trisha_Goldensoph_337888612/?d=1'><img src='/thumbs/Story/2017-07-26_GOLDENSOPH-TRISHA.jpg' width='120' height='160' alt=''/></a></div>
 </div>
 </li>
 <li>
-<div class='profile-card'>
-<div class='title'><a href='/Arrests/Samantha_Reda_33783847/?d=1'>Samantha<br/>Reda</a></div>
-<div class='picture'><a href='/Arrests/Samantha_Reda_33783847/?d=1'><img src='/thumbs/Johnson/96304.jpg' width='120' height='160' alt=''/></a></div>
+<div  class='profile-card'>
+<div class='title'><a href='/Arrests/Samantha_Reda_337838472/?d=1'>Samantha<br/>Reda</a></div>
+<div class='picture'><a href='/Arrests/Samantha_Reda_337838472/?d=1'><img src='/thumbs/Johnson/96304.jpg' width='120' height='160' alt=''/></a></div>
+</div>
+</li>
+<li class='last'>
+<div  class='profile-card'>
+<div class='title'><a href='/Arrests/Audrey_Tamulewicz_337934132/?d=1'>Audrey<br/>Tamulewicz</a></div>
+<div class='picture'><a href='/Arrests/Audrey_Tamulewicz_337934132/?d=1'><img src='/thumbs/Story/2017-07-27_TAMULEWICZ-AUDREY.jpg' width='120' height='160' alt=''/></a></div>
 </div>
 </li>
 </ul>

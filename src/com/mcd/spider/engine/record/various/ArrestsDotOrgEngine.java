@@ -86,6 +86,15 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     	return site;
     }
     
+    @Override
+    public RecordIOUtil getRecordIOUtil() {
+    	return recordIOUtil;
+    }
+
+    public void setRecordIOUtil(RecordIOUtil recordIOUtil) {
+    	this.recordIOUtil = recordIOUtil;
+    }
+    
 	@Override
     public void getArrestRecords(String stateName) throws SpiderException {
         long totalTime = System.currentTimeMillis();
@@ -140,7 +149,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
                     logger.info("Generating details page urls from backup file");
 
                     //build a list of details page urls by reading in uncrawled ids file
-                    recordDetailUrlMap = compileRecordDetailUrlMap(mainPageDoc, spiderWeb.getUncrawledIds());
+                    recordDetailUrlMap = compileRecordDetailUrlMapFromBackup(mainPageDoc, spiderWeb.getUncrawledIds());
                     logger.info("Gathered links for "+recordDetailUrlMap.size()+" record profiles and misc pages");
 
                 } else {
@@ -579,7 +588,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     	return filteredArrestRecords;
     }
     
-    public Map<Object,String> compileRecordDetailUrlMap(Document mainPageDoc, Set<String> idList) {
+    public Map<Object,String> compileRecordDetailUrlMapFromBackup(Document mainPageDoc, Set<String> idList) {
         Map<Object,String> recordDetailUrlMap = new HashMap<>();
         for (String id : idList) {
             //list should only have uncrawled records but adding this check to be safe
