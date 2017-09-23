@@ -18,6 +18,7 @@ SE Audit
 	    - total search count at end
 	obtaining actual sitemap
 		-getting truncated?? or only offline??
+    Measure performance with JMeter/Selenium
 
 
 deployment package
@@ -67,6 +68,10 @@ getRecords()
 	
 	Keep properties file separate from jar?
 		-use it to tweak things like site(s), columns to export/exclude, flags, etc
+
+	Make it work for any site, by passing in parameters to locate records (xml file, gui form, other)
+
+	Zip to compress and protect outputs/tracking files
 	
 
 Court Records
