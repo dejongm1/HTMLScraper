@@ -1,6 +1,19 @@
 package com.mcd.spider.util.io;
 
-import static com.mcd.spider.entities.record.ArrestRecord.ArrestDateComparator;
+import com.google.common.base.CaseFormat;
+import com.mcd.spider.entities.io.RecordSheet;
+import com.mcd.spider.entities.io.RecordWorkbook;
+import com.mcd.spider.entities.record.Record;
+import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
+import com.mcd.spider.entities.site.Site;
+import com.mcd.spider.util.SpiderConstants;
+import jxl.Workbook;
+import jxl.read.biff.BiffException;
+import jxl.write.Label;
+import jxl.write.WritableSheet;
+import jxl.write.WritableWorkbook;
+import jxl.write.WriteException;
+import org.apache.log4j.Logger;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -9,33 +22,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.log4j.Logger;
-
-import com.google.common.base.CaseFormat;
-import com.mcd.spider.entities.io.RecordSheet;
-import com.mcd.spider.entities.io.RecordWorkbook;
-import com.mcd.spider.entities.record.Record;
-import com.mcd.spider.entities.record.State;
-import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
-import com.mcd.spider.entities.site.Site;
-import com.mcd.spider.util.SpiderConstants;
-
-import jxl.Workbook;
-import jxl.read.biff.BiffException;
-import jxl.write.Label;
-import jxl.write.WritableSheet;
-import jxl.write.WritableWorkbook;
-import jxl.write.WriteException;
+import java.util.*;
 
 /**
  * 
@@ -385,7 +372,6 @@ public class RecordOutputUtil {
                     }
                     createColumnHeaders(excelSheet);
 //                    Record[] recordArray = recordsSetList.get(s).toArray(new Record[recordsSetList.get(s).size()]);
-                    logger.info("Sorting records before trying to save");
                     List<Record> sortedList = Record.getAsSortedList(recordsBook.getRecordsFromSheet(s), comparator);
                     for (int r = 0; r < sortedList.size(); r++) {
                     	sortedList.get(r).addToExcelSheet(r+1, excelSheet);

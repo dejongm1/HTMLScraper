@@ -232,7 +232,7 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
 					fieldValueString.append(String.valueOf(field.get(this)));
 				}
 				try {
-					Label label = new Label(columnNumber, rowNumber, fieldValueString.toString());
+					Label label = new Label(columnNumber, rowNumber, fieldValueString.toString().toUpperCase());
 					sheet.addCell(label);
 
 				} catch (WriteException | NullPointerException e) {
