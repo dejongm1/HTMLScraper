@@ -377,16 +377,16 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     }
     
     public Map<Object,String> compileResultsUrlMap(Document mainPageDoc) {
-        Map<Object,String> resultsUrlPlusMiscMap = new HashMap<>();
-        Map<Object,String> miscUrls = site.getMiscSafeUrlsFromDoc(mainPageDoc, spiderWeb.getNumberOfPages());
+        Map<Object,String> resultsUrlMap = new HashMap<>();
         for (int p=1; p<=spiderWeb.getNumberOfPages();p++) {
-            resultsUrlPlusMiscMap.put(p, site.generateResultsPageUrl(p));
+            resultsUrlMap.put(p, site.generateResultsPageUrl(p));
         }
         //also get misc urls
         if (spiderWeb.getMisc()) {
-            resultsUrlPlusMiscMap.putAll(miscUrls);
+            Map<Object,String> miscUrls = site.getMiscSafeUrlsFromDoc(mainPageDoc, spiderWeb.getNumberOfPages());
+            resultsUrlMap.putAll(miscUrls);
         }
-        return resultsUrlPlusMiscMap;
+        return resultsUrlMap;
     }
     
     public Map<Integer,Document> compileResultsDocMap(Map<Object,String> resultsUrlPlusMiscMap) {

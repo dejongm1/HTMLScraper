@@ -172,12 +172,51 @@ public class ArrestsDotOrgEngineTest {
 	}
 
 	@Test
-	public void compileResultsDocMap() {
-		throw new RuntimeException("Test not implemented");
+	public void compileResultsUrlMap() {
+		UrlValidator urlValidator = new UrlValidator(new String[]{"http","https"});
+		SpiderWeb mockWeb = new SpiderWeb(9999, true, false, RecordFilterEnum.NONE, State.IA);
+		mockWeb.setNumberOfPages(mockEngine.getNumberOfResultsPages(mockMainPageDoc));
+		ArrestsDotOrgEngine mockEngine = new ArrestsDotOrgEngine(mockWeb);
+		Map<Object,String> resultMap = mockEngine.compileResultsUrlMap(mockMainPageDoc);
+		
+		Assert.assertTrue(resultMap.size() > mockWeb.getNumberOfPages());
+		Assert.assertTrue(resultMap.size() <= mockWeb.getNumberOfPages()*2);
+		for (Map.Entry<Object, String> urlEntry : resultMap.entrySet()) {
+			Assert.assertTrue(urlValidator.isValid(urlEntry.getValue()));
+		}
 	}
 
 	@Test
-	public void compileResultsUrlMap() {
+	public void compileResultsUrlMap_Limit4ResultsPages() {
+		SpiderWeb mockWeb = new SpiderWeb(56*4, true, false, RecordFilterEnum.NONE, State.IA);
+		mockWeb.setNumberOfPages(4);
+		ArrestsDotOrgEngine mockEngine = new ArrestsDotOrgEngine(mockWeb);
+		UrlValidator urlValidator = new UrlValidator(new String[]{"http","https"});
+		Map<Object,String> resultMap = mockEngine.compileResultsUrlMap(mockMainPageDoc);
+		
+		Assert.assertTrue(resultMap.size() > 4);
+		Assert.assertTrue(resultMap.size() <= mockWeb.getNumberOfPages()*2);
+		for (Map.Entry<Object, String> urlEntry : resultMap.entrySet()) {
+			Assert.assertTrue(urlValidator.isValid(urlEntry.getValue()));
+		}
+	}
+
+	@Test
+	public void compileResultsUrlMap_NoMisc() {
+		UrlValidator urlValidator = new UrlValidator(new String[]{"http","https"});		
+		SpiderWeb mockWeb = new SpiderWeb(9999, false, false, RecordFilterEnum.NONE, State.IA);
+		mockWeb.setNumberOfPages(mockEngine.getNumberOfResultsPages(mockMainPageDoc));
+		ArrestsDotOrgEngine mockEngine = new ArrestsDotOrgEngine(mockWeb);
+		Map<Object,String> resultMap = mockEngine.compileResultsUrlMap(mockMainPageDoc);
+		
+		Assert.assertTrue(resultMap.size() == mockWeb.getNumberOfPages());
+		for (Map.Entry<Object, String> urlEntry : resultMap.entrySet()) {
+			Assert.assertTrue(urlValidator.isValid(urlEntry.getValue()));
+		}
+	}
+
+	@Test
+	public void compileResultsDocMap() {
 		throw new RuntimeException("Test not implemented");
 	}
 
