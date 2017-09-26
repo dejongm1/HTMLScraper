@@ -123,6 +123,10 @@ public class SpiderWeb {
 		return addMisc;
 	}
 
+	public void setMisc(boolean addMisc) {
+		this.addMisc = addMisc;
+	}
+
 	public boolean retrieveMissedRecords() {
         return retrieveMissedRecords;
     }

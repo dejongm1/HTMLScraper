@@ -49,6 +49,8 @@ public class ArrestsDotOrgEngineTest {
 		mockMainPageDoc = Jsoup.parse(new File("test/resources/htmls/mainPageDoc.html"), "UTF-8");
 		mockDetailDoc = Jsoup.parse(new File("test/resources/htmls/recordDetailPage.html"), "UTF-8");
 		mockWeb = new SpiderWeb(9999, true, false, RecordFilterEnum.NONE, State.IA);
+		mockWeb.setSessionCookies(new HashMap<>());
+		mockWeb.setCrawledIds(new HashSet<>());
 		mockEngine = new ArrestsDotOrgEngine(mockWeb);
 		mockAlcoholRecordOne = new ArrestRecord();
 		mockAlcoholRecordOne.setId("1231");
@@ -94,7 +96,6 @@ public class ArrestsDotOrgEngineTest {
 	@Test
 	public void compileRecordDetailUrlMap() throws IOException {
 		Map<Integer, Document> resultsPageDocMap = new HashMap<>();
-		mockWeb.setCrawledIds(new HashSet<>());
 		resultsPageDocMap.put(1, Jsoup.parse(new File("test/resources/htmls/httpiowa.arrests.orgpage=1&results=56"), "UTF-8"));
 		resultsPageDocMap.put(2, Jsoup.parse(new File("test/resources/htmls/httpiowa.arrests.orgpage=2&results=56"), "UTF-8"));
 		UrlValidator urlValidator = new UrlValidator(new String[]{"http","https"});
@@ -150,6 +151,7 @@ public class ArrestsDotOrgEngineTest {
 
 	@Test
 	public void compileRecordDetailUrlMapFromBackup() throws IOException {
+		SpiderWeb mockWeb = new SpiderWeb(9999, true, false, RecordFilterEnum.NONE, State.IA);
 		mockWeb.setCrawledIds(new HashSet<>());
 		Set<String> uncrawledIds = new HashSet<>();
 		uncrawledIds.add("Joe_Blow_123123");
@@ -215,9 +217,67 @@ public class ArrestsDotOrgEngineTest {
 		}
 	}
 
-	@Test
-	public void compileResultsDocMap() {
+	@Test(groups="online", enabled=false) //make these dependent on a test that gathers a handful of docs on class load instead of each test creating a new connection
+	public void compileResultsDocMap_Online() {
+		//override sleeptime to expedite tests
+		
+
+//		Assert.assertEquals(resultUrlMap.size(), resultUrlMap.size());
 		throw new RuntimeException("Test not implemented");
+	}
+	
+	@Test
+	public void compileResultsDocMap_NoneCrawled() {
+	    OfflineResponse mockResponse = new OfflineResponse(200, "www.google.com");
+		SpiderWeb mockWeb = new SpiderWeb(9999, true, false, RecordFilterEnum.NONE, State.IA);
+		mockWeb.setNumberOfPages(mockEngine.getNumberOfResultsPages(mockMainPageDoc));
+		mockWeb.setSessionCookies(mockResponse.cookies());
+		mockWeb.setCrawledIds(new HashSet<>());
+		ArrestsDotOrgEngine mockEngine = new ArrestsDotOrgEngine(mockWeb);
+		Map<Object,String> resultUrlMap = mockEngine.compileResultsUrlMap(mockMainPageDoc);
+		Map<Integer,Document> resultDocMap = mockEngine.compileResultsDocMap(resultUrlMap);
+		
+		Assert.assertEquals(resultDocMap.size(), 2);//only have 2 html pages saved
+		Assert.assertEquals(mockEngine.getSpiderWeb().getFurthestPageToCheck(), 9999);
+		Assert.assertEquals(mockEngine.getSpiderWeb().getAttemptCount(), 1);
+	}
+	
+	@Test
+	public void compileResultsDocMap_PreviousRecordCrawled() {
+		OfflineResponse mockResponse = new OfflineResponse(200, "www.google.com");
+		SpiderWeb mockWeb = new SpiderWeb(9999, true, false, RecordFilterEnum.NONE, State.IA);
+		mockWeb.setNumberOfPages(mockEngine.getNumberOfResultsPages(mockMainPageDoc));
+		mockWeb.setSessionCookies(mockResponse.cookies());
+		Set<String> crawledRecords = new HashSet<>();
+		crawledRecords.add("Mark_Pitt_33798910"); //in results page 1
+		mockWeb.setCrawledIds(crawledRecords);
+		ArrestsDotOrgEngine mockEngine = new ArrestsDotOrgEngine(mockWeb);
+		Map<Object,String> resultUrlMap = mockEngine.compileResultsUrlMap(mockMainPageDoc);
+		Map<Integer,Document> resultDocMap = mockEngine.compileResultsDocMap(resultUrlMap);
+		
+		Assert.assertEquals(mockEngine.getSpiderWeb().getFurthestPageToCheck(), 1);
+		Assert.assertEquals(mockEngine.getSpiderWeb().getAttemptCount(), 1);
+	}
+	
+	@Test(groups="online", enabled=false) //make these dependent on a test that gathers a handful of docs on class load instead of each test creating a new connection
+	public void compileResultsDocMap_FailedAttemptsMaxReached_Online() {
+		OfflineResponse mockResponse = new OfflineResponse(200, "www.google.com");
+		SpiderWeb mockWeb = new SpiderWeb(9999, true, false, RecordFilterEnum.NONE, State.IA);
+		mockWeb.setNumberOfPages(mockEngine.getNumberOfResultsPages(mockMainPageDoc));
+		mockWeb.setSessionCookies(mockResponse.cookies());
+		mockWeb.setCrawledIds(new HashSet<>());
+		ArrestsDotOrgEngine mockEngine = new ArrestsDotOrgEngine(mockWeb);
+		Map<Object,String> resultUrlMap = new HashMap<>();
+		resultUrlMap.put(1, "http://www.thisisabadURL.com");
+		resultUrlMap.put(2, "http://www.thisisanotherbadURL.com");
+		resultUrlMap.put(3, "http://www.badURL3.com");
+		resultUrlMap.put(4, "http://www.fourthbadURL.html");
+		resultUrlMap.put(5, "http://www.lastbadURL.html");
+		Map<Integer,Document> resultDocMap = mockEngine.compileResultsDocMap(resultUrlMap);
+
+		Assert.assertEquals(resultDocMap.size(), 0);
+		Assert.assertEquals(mockEngine.getSpiderWeb().getFurthestPageToCheck(), 9999);
+		Assert.assertEquals(mockEngine.getSpiderWeb().getAttemptCount(), 5);
 	}
 
 	@Test
