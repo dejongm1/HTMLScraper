@@ -29,6 +29,7 @@ import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
 import com.mcd.spider.entities.site.OfflineResponse;
 import com.mcd.spider.entities.site.SpiderWeb;
 import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
+import com.mcd.spider.util.ConnectionUtil;
 import com.mcd.spider.util.io.RecordIOUtil;
 
 public class ArrestsDotOrgEngineTest {
@@ -80,17 +81,33 @@ public class ArrestsDotOrgEngineTest {
 
 	@AfterClass
 	public void afterClass() {
+		
 	}
-
 
 	@Test
 	public void ArrestsDotOrgEngine_ConstructorWeb() {
-		throw new RuntimeException("Test not implemented");
+	    ArrestsDotOrgEngine mockEngine = new ArrestsDotOrgEngine(mockWeb);
+
+	    Assert.assertNotNull(mockEngine.getSpiderWeb());
+	    Assert.assertNotNull(mockEngine.getSite());
+	    Assert.assertEquals(mockEngine.getSpiderWeb().getMaxNumberOfResults(), mockWeb.getMaxNumberOfResults());
+	    Assert.assertEquals(mockEngine.getSpiderWeb().getFilter(), mockWeb.getFilter());
+	    Assert.assertEquals(mockEngine.getSpiderWeb().getState(), mockWeb.getState());
+	    Assert.assertEquals(mockEngine.getSpiderWeb().getMisc(), mockWeb.getMisc());
+	    Assert.assertEquals(mockEngine.getSpiderWeb().retrieveMissedRecords(), mockWeb.retrieveMissedRecords());
+	    Assert.assertNotNull(mockEngine.getSite());
+	    Assert.assertEquals(mockEngine.getSite().getBaseUrl(), "http://iowa.arrests.org");
 	}
 
 	@Test
 	public void ArrestsDotOrgEngine_ConstructorStateName() {
-		throw new RuntimeException("Test not implemented");
+	    ArrestsDotOrgEngine mockEngine = new ArrestsDotOrgEngine(mockWeb);
+	    ArrestsDotOrgEngine mockTestEngine = new ArrestsDotOrgEngine("Iowa");
+		
+	    Assert.assertNotNull(mockEngine.getSite());
+	    Assert.assertNotNull(mockTestEngine.getSite());
+	    Assert.assertEquals(mockEngine.getSite().getBaseUrl(), "http://iowa.arrests.org");
+	    Assert.assertEquals(mockEngine.getSite().getBaseUrl(), mockTestEngine.getSite().getBaseUrl());
 	}
 
 	@Test
@@ -282,7 +299,30 @@ public class ArrestsDotOrgEngineTest {
 
 	@Test
 	public void extractValue() {
-		throw new RuntimeException("Test not implemented");
+		Element mockElement = new Element("div");
+		mockElement.append("<b>Full Name:</b> <span itemprop=\"name\"><span itemprop=\"givenName\">Brad</span><span itemprop=\"additionalName\"> Roderick</span><span itemprop=\"familyName\"> Smith</span></span>");
+		Assert.assertEquals(mockEngine.extractValue(mockElement), "Brad Roderick Smith");
+		mockElement = new Element("div");
+		mockElement.append("<b>Date:</b><time datetime=\"2017-08-24\">08/24/2017</time>");
+		Assert.assertEquals(mockEngine.extractValue(mockElement), "08/24/2017");
+		mockElement = new Element("div");
+		mockElement.append("<b>Time:</b> 6:15 PM");
+		Assert.assertEquals(mockEngine.extractValue(mockElement), "6:15 PM");
+		mockElement = new Element("div");
+		mockElement.append("<b>Total Bond:</b> $300");
+		Assert.assertEquals(mockEngine.extractValue(mockElement), "$300");
+		mockElement = new Element("div");
+		mockElement.append("<b class=\"property\">Arrest Age:</b><span itemprop=\"age\">21</span>");
+		Assert.assertEquals(mockEngine.extractValue(mockElement), "21");
+		mockElement = new Element("div");
+		mockElement.append("<b class=\"property\">Height:</b> 5&#39;10&quot;");
+		Assert.assertEquals(mockEngine.extractValue(mockElement), "5'10\"");
+		mockElement = new Element("div");
+		mockElement.append("<b class=\"property\">Hair Color:</b> Black");
+		Assert.assertEquals(mockEngine.extractValue(mockElement), "Black");
+		mockElement = new Element("div");
+		mockElement.append("<b class=\"property\">Weight:</b> 200 lbs");
+		Assert.assertEquals(mockEngine.extractValue(mockElement), "200 lbs");
 	}
 
 	@Test
@@ -519,7 +559,7 @@ public class ArrestsDotOrgEngineTest {
 
 		Map<String,String> recordUrlMap = mockEngine.parseDocForUrls(mockMainPageDoc);
 
-		Assert.assertEquals(recordUrlMap.size(), 52);
+		Assert.assertEquals(recordUrlMap.size(), 53);
 		Assert.assertTrue(mockMainPageDoc.select(".search-results .profile-card").size() > recordUrlMap.size());
 	}
 
@@ -529,7 +569,7 @@ public class ArrestsDotOrgEngineTest {
 		mockEngine.setSpiderWeb(mockWeb);
 		Map<String,String> recordUrlMap = mockEngine.parseDocForUrls(mockMainPageDoc);
 		
-		Assert.assertEquals(recordUrlMap.size(), 55);
+		Assert.assertEquals(recordUrlMap.size(), 56);
 		Assert.assertEquals(mockMainPageDoc.select(".search-results .profile-card").size(), recordUrlMap.size());
 	}
 	

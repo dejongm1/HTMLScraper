@@ -201,7 +201,7 @@ public class RecordOutputUtilTest {
         Cell[] rowInserted = mainWorkbook.getSheet(0).getRow(currentRowCount);
         
         Assert.assertEquals(mainWorkbook.getSheet(0).getRows(), currentRowCount+1);
-        Assert.assertEquals(rowInserted[0].getContents(), "1233afsasf");
+        Assert.assertEquals(rowInserted[0].getContents(), "1233AFSASF");
         Assert.assertEquals(idFileLength+1, ioUtil.getInputter().getCrawledIds().size());
     }
 

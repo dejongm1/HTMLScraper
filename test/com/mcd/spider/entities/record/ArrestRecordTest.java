@@ -63,10 +63,10 @@ public class ArrestRecordTest {
 	
 	@BeforeTest
 	public void setUp() {
-		mockRecordOne.setId("Ashley_Graves_34029315");
-		mockRecordOne.setFullName("Ashley  Graves");
-		mockRecordOne.setFirstName("Ashley");
-		mockRecordOne.setLastName("Graves");
+		mockRecordOne.setId("ASHLEY_GRAVES_34029315");
+		mockRecordOne.setFullName("ASHLEY  GRAVES");
+		mockRecordOne.setFirstName("ASHLEY");
+		mockRecordOne.setLastName("GRAVES");
 		Calendar arrestDate = Calendar.getInstance();
 		Date date = new Date("Aug-20-2017");
 		arrestDate.setTime(date);
@@ -76,14 +76,14 @@ public class ArrestRecordTest {
         arrestDate.set(Calendar.AM, arrestTimeText.substring(arrestTimeText.indexOf(' ')+1)=="AM"?1:0);
         mockRecordOne.setArrestDate(arrestDate);
         mockRecordOne.setArrestAge(28);
-        mockRecordOne.setGender("Female");
-        mockRecordOne.setCity("Urbandale");
-        mockRecordOne.setState("Iowa");
-        mockRecordOne.setCounty("Polk");
+        mockRecordOne.setGender("FEMALE");
+        mockRecordOne.setCity("URBANDALE");
+        mockRecordOne.setState("IOWA");
+        mockRecordOne.setCounty("POLK");
         mockRecordOne.setHeight(null);
-        mockRecordOne.setWeight("200 lbs");
-        mockRecordOne.setHairColor("Black");
-        mockRecordOne.setEyeColor("Brown");
+        mockRecordOne.setWeight("200 LBS");
+        mockRecordOne.setHairColor("BLACK");
+        mockRecordOne.setEyeColor("BROWN");
         mockRecordOne.setCharges(new String[]{"#1 ASSAULT CAUSING BODILY INJURY OR MENTAL ILLNESS STATUTE: SR308623 BOND: $1000"});
 		
 		mockRecordTwo.setId("115922");
@@ -103,10 +103,10 @@ public class ArrestRecordTest {
         mockRecordTwo.setCity(null);
         mockRecordTwo.setState(null);
         mockRecordTwo.setCounty("POLK");
-        mockRecordTwo.setHeight("5 foot, 5 inches");
-        mockRecordTwo.setWeight("200 pounds");
-        mockRecordTwo.setHairColor("black");
-        mockRecordTwo.setEyeColor("brown");
+        mockRecordTwo.setHeight("5 FOOT, 5 INCHES");
+        mockRecordTwo.setWeight("200 POUNDS");
+        mockRecordTwo.setHairColor("BLACK");
+        mockRecordTwo.setEyeColor("BROWN");
         mockRecordTwo.setCharges(new String[]{"ASSAULT CAUSING BODILY INJURY OR MENTAL ILLNESS"});
 	}
 	
@@ -121,7 +121,7 @@ public class ArrestRecordTest {
 	public void testMerge() {
 		mockRecordTwo.merge(mockRecordOne);
 
-		Assert.assertEquals(mockRecordTwo.getId(), "115922---Ashley_Graves_34029315");
+		Assert.assertEquals(mockRecordTwo.getId(), "115922---ASHLEY_GRAVES_34029315");
 		Assert.assertEquals(mockRecordTwo.getFullName(), "ASHLEY GRAVES");
 		Assert.assertEquals(mockRecordTwo.getFirstName(), mockRecordOne.getFirstName());
 		Assert.assertNull(mockRecordTwo.getMiddleName());
@@ -131,10 +131,10 @@ public class ArrestRecordTest {
 		Assert.assertEquals(mockRecordTwo.getCity(), mockRecordOne.getCity());
 		Assert.assertEquals(mockRecordTwo.getState(), mockRecordOne.getState());
 		Assert.assertEquals(mockRecordTwo.getCounty(), "POLK");
-		Assert.assertEquals(mockRecordTwo.getHeight(), "5 foot, 5 inches");
-		Assert.assertEquals(mockRecordTwo.getWeight(), "200 pounds");
-		Assert.assertEquals(mockRecordTwo.getHairColor(), "black");
-		Assert.assertEquals(mockRecordTwo.getEyeColor(), "brown");
+		Assert.assertEquals(mockRecordTwo.getHeight(), "5 FOOT, 5 INCHES");
+		Assert.assertEquals(mockRecordTwo.getWeight(), "200 POUNDS");
+		Assert.assertEquals(mockRecordTwo.getHairColor(), "BLACK");
+		Assert.assertEquals(mockRecordTwo.getEyeColor(), "BROWN");
 		Assert.assertEquals(mockRecordTwo.getCharges(), new String[]{"ASSAULT CAUSING BODILY INJURY OR MENTAL ILLNESS"});
 		Assert.assertNull(mockRecordTwo.getOffenderId());
 		Assert.assertNull(mockRecordTwo.getRace());
