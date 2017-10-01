@@ -437,7 +437,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             //load previously written records IDs into memory
         	spiderWeb.setCrawledIds(ioUtil.getInputter().getCrawledIds());
         	if (spiderWeb.retrieveMissedRecords()) {
-                spiderWeb.setUncrawledIds(ioUtil.getInputter().getUncrawledIds());
+                spiderWeb.setUncrawledIds(ioUtil.getInputter().getUnCrawledIds());
             }
         	//load records in current spreadsheet into memory
             spiderWeb.setCrawledRecords(ioUtil.getInputter().readRecordsFromSheet(new File(ioUtil.getMainDocPath()),0));

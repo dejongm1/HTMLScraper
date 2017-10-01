@@ -1,38 +1,30 @@
 package com.mcd.spider.util.io;
 
-import static com.mcd.spider.entities.record.ArrestRecord.ArrestDateComparator;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.log4j.Logger;
-import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-
 import com.mcd.spider.entities.io.RecordSheet;
 import com.mcd.spider.entities.io.RecordWorkbook;
 import com.mcd.spider.entities.record.ArrestRecord;
 import com.mcd.spider.entities.record.Record;
-import com.mcd.spider.entities.record.State;
 import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
 import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
 import com.mcd.spider.util.SpiderConstants;
-
 import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
+import org.apache.log4j.Logger;
+import org.testng.Assert;
+import org.testng.annotations.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+import static com.mcd.spider.entities.record.ArrestRecord.ArrestDateComparator;
 
 public class RecordOutputUtilTest {
 
@@ -369,7 +361,7 @@ public class RecordOutputUtilTest {
     	urlsMap.put("345", "www.google.com/345");
     	urlsMap.put("456", "www.google.com/456");
     	outputter.backupUnCrawledRecords(urlsMap);
-    	String[] ids = ioUtil.getInputter().getUncrawledIds().toArray(new String[urlsMap.size()]);
+    	String[] ids = ioUtil.getInputter().getUnCrawledIds().toArray(new String[urlsMap.size()]);
     	//size of mocked list should match rows in file
     	Assert.assertEquals(urlsMap.size(), ids.length);
     	int e = 0;

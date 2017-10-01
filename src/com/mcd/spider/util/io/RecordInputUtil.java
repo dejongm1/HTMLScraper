@@ -33,6 +33,8 @@ public class RecordInputUtil {
 	private File uncrawledIdFile;
 	private Record record;
 	private RecordIOUtil ioUtil;
+	private Set<String> crawledIds;
+    private Set<String> unCrawledIds;
 
 	public RecordInputUtil(RecordIOUtil ioUtil) {
 		this.docName = ioUtil.getMainDocPath();
@@ -45,57 +47,65 @@ public class RecordInputUtil {
 
     public Set<String> getCrawledIds() throws SpiderException {
         Set<String> ids = new HashSet<>();
-        BufferedReader br = null;
-        if (!offline) {
-            try {
-                if (!crawledIdFile.exists()) {
-                    crawledIdFile.createNewFile();
-                }
-                br = new BufferedReader(new FileReader(crawledIdFile));
-                String sCurrentLine;
-                while ((sCurrentLine = br.readLine()) != null && !sCurrentLine.equals("")) {
-                    ids.add(sCurrentLine);
-                }
-                //add an empty line
-                ioUtil.getOutputter().writeIdToFile(crawledIdFile, "");
-            } catch (IOException e) {
-                throw new IDCheckException();
-            } finally {
+	    if (crawledIds==null || crawledIds.isEmpty()) {
+            BufferedReader br = null;
+            if (!offline) {
                 try {
-                    if (br != null) {
-                        br.close();
+                    if (!crawledIdFile.exists()) {
+                        crawledIdFile.createNewFile();
                     }
-                } catch (IOException ioe) {
-                    logger.error("Error closing previous IDs file", ioe);
+                    br = new BufferedReader(new FileReader(crawledIdFile));
+                    String sCurrentLine;
+                    while ((sCurrentLine = br.readLine())!=null && !sCurrentLine.equals("")) {
+                        ids.add(sCurrentLine);
+                    }
+                    //add an empty line
+                    if (!ids.isEmpty()) {
+                        ioUtil.getOutputter().writeIdToFile(crawledIdFile, "");
+                    }
+                } catch (IOException e) {
+                    throw new IDCheckException();
+                } finally {
+                    try {
+                        if (br!=null) {
+                            br.close();
+                        }
+                    } catch (IOException ioe) {
+                        logger.error("Error closing previous IDs file", ioe);
+                    }
                 }
             }
+            this.crawledIds = ids;
         }
         return ids;
     }
 
-    public Set<String> getUncrawledIds() throws SpiderException {
+    public Set<String> getUnCrawledIds() throws SpiderException {
         Set<String> ids = new HashSet<>();
-        BufferedReader br = null;
-        if (!offline) {
-            try {
-                if (uncrawledIdFile.exists()) {
-                    br = new BufferedReader(new FileReader(uncrawledIdFile));
-                    String sCurrentLine;
-                    while ((sCurrentLine = br.readLine())!=null) {
-                        ids.add(sCurrentLine);
-                    }
-                }
-            } catch (IOException e) {
-                throw new IDCheckException();
-            } finally {
+        if (unCrawledIds==null || unCrawledIds.isEmpty()) {
+            BufferedReader br = null;
+            if (!offline) {
                 try {
-                    if (br != null) {
-                        br.close();
+                    if (uncrawledIdFile.exists()) {
+                        br = new BufferedReader(new FileReader(uncrawledIdFile));
+                        String sCurrentLine;
+                        while ((sCurrentLine = br.readLine())!=null) {
+                            ids.add(sCurrentLine);
+                        }
                     }
-                } catch (IOException ioe) {
-                    logger.error("Error closing uncrawled IDs file", ioe);
+                } catch (IOException e) {
+                    throw new IDCheckException();
+                } finally {
+                    try {
+                        if (br!=null) {
+                            br.close();
+                        }
+                    } catch (IOException ioe) {
+                        logger.error("Error closing uncrawled IDs file", ioe);
+                    }
                 }
             }
+            this.unCrawledIds = ids;
         }
         return ids;
     }
