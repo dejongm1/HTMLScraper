@@ -1,29 +1,22 @@
 package com.mcd.spider.util.io;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.log4j.Logger;
-
 import com.mcd.spider.entities.io.RecordSheet;
 import com.mcd.spider.entities.io.RecordWorkbook;
 import com.mcd.spider.entities.record.Record;
 import com.mcd.spider.exception.IDCheckException;
 import com.mcd.spider.exception.SpiderException;
-
 import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
+import org.apache.log4j.Logger;
+
+import java.io.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * 
@@ -39,7 +32,7 @@ public class RecordInputUtil {
 	private File crawledIdFile;
 	private File uncrawledIdFile;
 	private Record record;
-//	private RecordIOUtil ioUtil;
+	private RecordIOUtil ioUtil;
 
 	public RecordInputUtil(RecordIOUtil ioUtil) {
 		this.docName = ioUtil.getMainDocPath();
@@ -47,7 +40,7 @@ public class RecordInputUtil {
         this.offline = System.getProperty("offline").equals("true");
         this.crawledIdFile = ioUtil.getCrawledIdFile();
         this.uncrawledIdFile = ioUtil.getUncrawledIdFile();
-//        this.ioUtil = ioUtil;
+        this.ioUtil = ioUtil;
 	}
 
     public Set<String> getCrawledIds() throws SpiderException {
@@ -60,9 +53,11 @@ public class RecordInputUtil {
                 }
                 br = new BufferedReader(new FileReader(crawledIdFile));
                 String sCurrentLine;
-                while ((sCurrentLine = br.readLine()) != null) {
+                while ((sCurrentLine = br.readLine()) != null && !sCurrentLine.equals("")) {
                     ids.add(sCurrentLine);
                 }
+                //add an empty line
+                ioUtil.getOutputter().writeIdToFile(crawledIdFile, "");
             } catch (IOException e) {
                 throw new IDCheckException();
             } finally {

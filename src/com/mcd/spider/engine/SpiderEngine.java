@@ -1,15 +1,5 @@
 package com.mcd.spider.engine;
 
-import static com.mcd.spider.entities.record.ArrestRecord.ArrestDateComparator;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.log4j.Logger;
-
 import com.mcd.spider.engine.audit.AuditEngine;
 import com.mcd.spider.engine.record.iowa.DesMoinesRegisterComEngine;
 import com.mcd.spider.engine.router.StateRouter;
@@ -25,6 +15,13 @@ import com.mcd.spider.entities.site.SpiderWeb;
 import com.mcd.spider.exception.SpiderException;
 import com.mcd.spider.exception.StateNotReadyException;
 import com.mcd.spider.util.io.RecordIOUtil;
+import org.apache.log4j.Logger;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.mcd.spider.entities.record.ArrestRecord.ArrestDateComparator;
 
 /**
  * 
@@ -43,7 +40,7 @@ public class SpiderEngine {
 				SpiderWeb spiderWeb = new SpiderWeb(maxNumberOfResults, true, retrieveMissedRecords, filter, state);
 				state.primeStateEngines(spiderWeb);
 				StateRouter router = new StateRouter(state);
-				router.collectRecordsUsingThreading(spiderWeb);
+				router.collectRecordsUsingThreading();
 		        RecordIOUtil mainIOutil = new RecordIOUtil(state.getName(), new ArrestRecord(), state.getEngines().get(0).getSite());
 				customizeArrestOutputs(mainIOutil, state, filter);
 			} else {
@@ -51,39 +48,6 @@ public class SpiderEngine {
 			}
 		}
 		logger.info("Spider has finished crawling. Going back to it's web.");
-	}
-	
-	public void getArrestRecordsThroughTheBackDoor(List<State> states, long maxNumberOfResults, RecordFilterEnum filter, boolean retrieveMissedRecords) throws SpiderException {
-		for (State state : states) {
-			state.getEngines().clear();
-//            state.addEngine(new ArrestsDotOrgEngine());
-			SpiderWeb spiderWeb = new SpiderWeb(maxNumberOfResults, true, retrieveMissedRecords, filter, state);
-			state.addEngine(new DesMoinesRegisterComEngine(spiderWeb));
-//			state.addEngine(new MugShotsDotComEngine());
-			StateRouter router = new StateRouter(state);
-			router.collectRecords(spiderWeb);
-		}
-		logger.info("Spider has finished crawling through backdoors and cracks in the walls. Going back to it's web.");
-	}
-	
-	public void performSEOAudit(AuditParameters auditParams) {
-		AuditEngine engine = new AuditEngine();
-		engine.performSEOAudit(auditParams);
-	}
-	
-	public void search(String url, String words, int levelOfGenerosity) {
-		AuditEngine engine = new AuditEngine();
-		engine.search(url, words, levelOfGenerosity);
-	}
-	
-	public void getPopularWords(String url, int numberOfWords) {
-		AuditEngine engine = new AuditEngine();
-		engine.getPopularWords(url, numberOfWords);
-	}
-	
-	public void getTextBySelector(String url, String selector) {
-		AuditEngine engine = new AuditEngine();
-		engine.getTextBySelector(url, selector);
 	}
 	
 	protected void customizeArrestOutputs(RecordIOUtil mainIOutil, State state, RecordFilterEnum filter) {
@@ -97,7 +61,7 @@ public class SpiderEngine {
             logger.info("Attempting to merge record output from " + state.getName());
             RecordIOUtil comparingIOUtil = new RecordIOUtil(state.getName(), new ArrestRecord(), state.getEngines().get(e).getSite());
             RecordWorkbook mergedRecords = mainIOutil.mergeRecordsFromWorkbooks(new File(mainIOutil.getMainDocPath()), new File(comparingIOUtil.getMainDocPath()));
-        
+
             if (!mergedRecords.isEmpty()) {
             	String[] sheetNames = mergedRecords.getSheetNames();
                 mainIOutil.getOutputter().createWorkbook(mainIOutil.getOutputter().getMergedDocPath(null), mergedRecords, false, sheetNames, ArrestDateComparator);
@@ -107,7 +71,7 @@ public class SpiderEngine {
             }
 
             if (!filter.filterName().equals(RecordFilterEnum.NONE.filterName())) {
-                logger.info("Attempting to merge filtered record output from "+state);
+                logger.info("Attempting to merge filtered record output from " + state.getName());
                 RecordWorkbook mergedFilteredRecords = mainIOutil.mergeRecordsFromWorkbooks(new File(mainIOutil.getOutputter().getFilteredDocPath(filter)), new File(comparingIOUtil.getOutputter().getFilteredDocPath(filter)));
                 String[] filteredSheetNames = mergedFilteredRecords.getSheetNames();
                 if (!mergedFilteredRecords.isEmpty()) {
@@ -141,7 +105,7 @@ public class SpiderEngine {
 	        		}
 	        	}
 	        	mainIOutil.getOutputter().removeColumnsFromSpreadsheet(columnsToRemove.toArray(new Integer[columnsToRemove.size()]), mainIOutil.getOutputter().getLNPath());
-	        	
+
 	            logger.info("Lexis Nexis input sheet complete.");
         	} else {
         		logger.info("No records eligible for Lexis Nexis were found");
@@ -150,6 +114,39 @@ public class SpiderEngine {
             logger.info("This state does not meet the criteria for Lexis Nexis");
         }
     }
+	
+	public void performSEOAudit(AuditParameters auditParams) {
+		AuditEngine engine = new AuditEngine();
+		engine.performSEOAudit(auditParams);
+	}
+	
+	public void search(String url, String words, int levelOfGenerosity) {
+		AuditEngine engine = new AuditEngine();
+		engine.search(url, words, levelOfGenerosity);
+	}
+	
+	public void getPopularWords(String url, int numberOfWords) {
+		AuditEngine engine = new AuditEngine();
+		engine.getPopularWords(url, numberOfWords);
+	}
+	
+	public void getTextBySelector(String url, String selector) {
+		AuditEngine engine = new AuditEngine();
+		engine.getTextBySelector(url, selector);
+	}
+	
+	public void getArrestRecordsThroughTheBackDoor(List<State> states, long maxNumberOfResults, RecordFilterEnum filter, boolean retrieveMissedRecords) throws SpiderException {
+		for (State state : states) {
+			state.getEngines().clear();
+//            state.addEngine(new ArrestsDotOrgEngine());
+			SpiderWeb spiderWeb = new SpiderWeb(maxNumberOfResults, true, retrieveMissedRecords, filter, state);
+			state.addEngine(new DesMoinesRegisterComEngine(spiderWeb));
+//			state.addEngine(new MugShotsDotComEngine());
+			StateRouter router = new StateRouter(state);
+			router.collectRecords();
+		}
+		logger.info("Spider has finished crawling through backdoors and cracks in the walls. Going back to it's web.");
+	}
 	
 	protected RecordWorkbook filterOutLexisNexisEligibleRecords(RecordWorkbook recordBook) {
 		int recordCount = 0;

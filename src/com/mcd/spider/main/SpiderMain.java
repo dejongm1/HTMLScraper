@@ -9,6 +9,7 @@ import com.mcd.spider.exception.SpiderException;
 import com.mcd.spider.exception.StateNotReadyException;
 import com.mcd.spider.util.MainInputUtil;
 import com.mcd.spider.util.SpiderConstants;
+import com.mcd.spider.util.SpiderUtil;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
@@ -114,7 +115,8 @@ public class SpiderMain {
 		String url = args.length>=2?mainInputUtil.convertToUrl(args[1]):(String) mainInputUtil.getInput("URL: ", 3, SpiderConstants.URL_VALIDATION);
 		int numberOfWords = args.length>=3?mainInputUtil.convertToNumber(args[2]):(int) mainInputUtil.getInput("Number of words: ", 3, SpiderConstants.NUMBER_VALIDATION);
 
-        String confirmationPrompt = "You chose \n" +
+        String confirmationPrompt = "You are " + (SpiderUtil.offline()?"OFFLINE":"ONLINE") + " and " +
+                                    "you chose \n" +
                                     "URL: " + url + "\n" +
                                     "Number of words: " + numberOfWords + "\n" +
                                     "   Is that correct?";
@@ -129,7 +131,8 @@ public class SpiderMain {
 		String url = args.length>=2?mainInputUtil.convertToUrl(args[1]):(String) mainInputUtil.getInput("URL: ", 3, SpiderConstants.URL_VALIDATION);
 		String selector = args.length>=3?args[2]:(String) mainInputUtil.getInput("Selector(s): ", 1, SpiderConstants.NO_VALIDATION);
 
-        String confirmationPrompt = "You chose \n" +
+        String confirmationPrompt = "You are " + (SpiderUtil.offline()?"OFFLINE":"ONLINE") + " and " +
+                "you chose \n" +
                 "URL: " + url + "\n" +
                 "Selector(s): " + selector + "\n" +
                 "   Is that correct?";
@@ -145,7 +148,8 @@ public class SpiderMain {
 		String words = args.length>=3?args[2]:(String) mainInputUtil.getInput("Words: ", 1, SpiderConstants.NO_VALIDATION);
 		int flexibility = 0; //(int) mainInputUtil.getInput("Flexibility of search (1-3): ", 1, SpiderConstants.NUMBER_VALIDATION);
 
-        String confirmationPrompt = "You chose \n" +
+        String confirmationPrompt = "You are " + (SpiderUtil.offline()?"OFFLINE":"ONLINE") + " and " +
+                "you chose \n" +
                 "URL: " + url + "\n" +
                 "Words: " + words + "\n" +
                 "Flexibility: " + flexibility + "\n" +
@@ -162,21 +166,22 @@ public class SpiderMain {
 		List<State> states = args.length>=2?mainInputUtil.convertToStates(args[1]):(List<State>) mainInputUtil.getInput("State(s) or \"All\": ", 3, SpiderConstants.STATE_VALIDATION);
         RecordFilterEnum filter = args.length>=3?mainInputUtil.convertToFilter(args[2]):(RecordFilterEnum) mainInputUtil.getInput("Filter: ", 3, SpiderConstants.FILTER_VALIDATION);
         long maxNumberOfResults = args.length>=4?mainInputUtil.convertToNumber(args[3]):(int) mainInputUtil.getInput("Maximum Number of Records: ", 3, SpiderConstants.NUMBER_VALIDATION);
-        boolean retrieveMissedRecords = args.length>=5?mainInputUtil.convertToBoolean(args[4]):(boolean) mainInputUtil.getInput("Start from Last Crawled: ", 3, SpiderConstants.BOOLEAN_VALIDATION);
+        boolean dontRetrieveMissedRecords = args.length>=5?mainInputUtil.convertToBoolean(args[4]):(boolean) mainInputUtil.getInput("Start from Last Crawled: ", 3, SpiderConstants.BOOLEAN_VALIDATION);
 
         StringBuilder stateSB = new StringBuilder();
         for (int s = 0;s<states.size();s++) {
             stateSB.append(states.get(s).getName());
             stateSB.append(s+1<states.size()?", ":"");
         }
-        String confirmationPrompt = "You chose \n" +
+        String confirmationPrompt = "You are " + (SpiderUtil.offline()?"OFFLINE":"ONLINE") + " and " +
+                "you chose \n" +
                 "State(s): " + stateSB.toString() + "\n" +
                 "Filter: " + filter.filterName() + "\n" +
                 "Max Number of Records: " + maxNumberOfResults + "\n" +
-                "Start from Last Crawled: " + retrieveMissedRecords + "\n" +
+                "Start from Last Crawled: " + dontRetrieveMissedRecords + "\n" +
                 "   Is that correct?";
         if ((boolean) mainInputUtil.getInput(confirmationPrompt, 2, SpiderConstants.BOOLEAN_VALIDATION)) {
-            engine.getArrestRecordsByState(states, maxNumberOfResults, filter, retrieveMissedRecords);
+            engine.getArrestRecordsByState(states, maxNumberOfResults, filter, !dontRetrieveMissedRecords);
         } else {
             main(new String[] {args[0]});
         }
@@ -187,21 +192,22 @@ public class SpiderMain {
 		List<State> states = args.length>=2?mainInputUtil.convertToStates(args[1]):(List<State>) mainInputUtil.getInput("State(s) or \"All\": ", 3, SpiderConstants.STATE_VALIDATION);
 		RecordFilterEnum filter = args.length>=3?mainInputUtil.convertToFilter(args[2]):(RecordFilterEnum) mainInputUtil.getInput("Filter: ", 3, SpiderConstants.FILTER_VALIDATION);
 		long maxNumberOfResults = args.length>=4?mainInputUtil.convertToNumber(args[3]):(int) mainInputUtil.getInput("Maximum Number of Records: ", 3, SpiderConstants.NUMBER_VALIDATION);
-        boolean retrieveMissedRecords = args.length>=5?mainInputUtil.convertToBoolean(args[4]):(boolean) mainInputUtil.getInput("Start from Last Crawled: ", 3, SpiderConstants.BOOLEAN_VALIDATION);
+        boolean dontRetrieveMissedRecords = args.length>=5?mainInputUtil.convertToBoolean(args[4]):(boolean) mainInputUtil.getInput("Start from Last Crawled: ", 3, SpiderConstants.BOOLEAN_VALIDATION);
 
         StringBuilder stateSB = new StringBuilder();
         for (int s = 0;s<states.size();s++) {
             stateSB.append(states.get(s).getName());
             stateSB.append(s+1<states.size()?", ":"");
         }
-        String confirmationPrompt = "You chose \n" +
+        String confirmationPrompt = "You are " + (SpiderUtil.offline()?"OFFLINE":"ONLINE") + " and " +
+                "you chose \n" +
                 "State(s): " + stateSB.toString() + "\n" +
                 "Filter: " + filter.filterName() + "\n" +
                 "Max Number of Records: " + maxNumberOfResults + "\n" +
-                "Start from Last Crawled: " + retrieveMissedRecords + "\n" +
+                "Start from Last Crawled: " + dontRetrieveMissedRecords + "\n" +
                 "   Is that correct?";
         if ((boolean) mainInputUtil.getInput(confirmationPrompt, 2, SpiderConstants.BOOLEAN_VALIDATION)) {
-            engine.getArrestRecordsThroughTheBackDoor(states, maxNumberOfResults, filter, retrieveMissedRecords);
+            engine.getArrestRecordsThroughTheBackDoor(states, maxNumberOfResults, filter, !dontRetrieveMissedRecords);
         } else {
             main(new String[] {args[0]});
         }

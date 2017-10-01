@@ -1,32 +1,5 @@
 package com.mcd.spider.engine.record.iowa;
 
-import static com.mcd.spider.entities.record.ArrestRecord.ArrestDateComparator;
-
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.jsoup.Connection.Response;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
 import com.mcd.spider.engine.record.ArrestRecordEngine;
 import com.mcd.spider.entities.io.RecordWorkbook;
 import com.mcd.spider.entities.record.ArrestRecord;
@@ -44,6 +17,22 @@ import com.mcd.spider.util.ConnectionUtil;
 import com.mcd.spider.util.SpiderUtil;
 import com.mcd.spider.util.io.RecordIOUtil;
 import com.mcd.spider.util.io.RecordOutputUtil;
+import org.apache.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.jsoup.Connection.Response;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.*;
+import java.util.Map.Entry;
+
+import static com.mcd.spider.entities.record.ArrestRecord.ArrestDateComparator;
 
 /**
  *

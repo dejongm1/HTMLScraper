@@ -387,7 +387,7 @@ public class RecordOutputUtil {
         return successful;
     }
 
-    private void writeIdToFile(File outputFile, String id) {
+    protected void writeIdToFile(File outputFile, String id) {
 		FileWriter fw = null;
 		BufferedWriter bw = null;
 		try {

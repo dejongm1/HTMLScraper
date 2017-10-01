@@ -1,7 +1,6 @@
 package com.mcd.spider.util;
 
 import com.mcd.spider.engine.SpiderEngine;
-
 import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -33,7 +32,7 @@ public class SpiderUtil {
 //	}
 
 	
-	public boolean offline(){
+	public static boolean offline(){
 		try {
 			return (Boolean.valueOf(System.getProperty("runInEclipse")) 
 					|| Boolean.valueOf(System.getProperty("runOffline"))

@@ -2,10 +2,7 @@ package com.mcd.spider.engine.router;
 
 import com.mcd.spider.engine.record.ArrestRecordEngine;
 import com.mcd.spider.entities.record.State;
-import com.mcd.spider.entities.record.filter.RecordFilter;
-import com.mcd.spider.entities.site.SpiderWeb;
 import com.mcd.spider.exception.SpiderException;
-
 import common.Logger;
 
 /**
@@ -25,7 +22,7 @@ public class StateRouter implements EngineRouter {
 	
 	
 	@Override
-	public void collectRecords(SpiderWeb spiderWeb) throws SpiderException {
+	public void collectRecords() throws SpiderException {
         logger.info("Routing record collection to " + state.getName() + " engines");
 
         for (ArrestRecordEngine engine : state.getEngines()) {
@@ -35,7 +32,7 @@ public class StateRouter implements EngineRouter {
 	}
 	
 	@Override
-	public void collectRecordsUsingThreading(SpiderWeb spiderWeb) {
+	public void collectRecordsUsingThreading() {
 		logger.info("Routing record collection to " + state.getName() + " engines");
 
 		Thread[] threads = new Thread[state.getEngines().size()];

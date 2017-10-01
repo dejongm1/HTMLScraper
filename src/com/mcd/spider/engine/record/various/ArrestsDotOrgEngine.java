@@ -181,7 +181,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
             String url = site.getRecordDetailDocUrl(recordDetailElements.get(e));
             String id = site.generateRecordId(url);
             //only add if we haven't already crawled it
-            if (!spiderWeb.getCrawledIds().contains(id)) {
+            if (id != null && !spiderWeb.getCrawledIds().contains(id)) {
             	recordDetailUrlMap.put(id, url);
             }
         }
@@ -436,7 +436,9 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         try {
             //load previously written records IDs into memory
         	spiderWeb.setCrawledIds(ioUtil.getInputter().getCrawledIds());
-            spiderWeb.setUncrawledIds(ioUtil.getInputter().getUncrawledIds());
+        	if (spiderWeb.retrieveMissedRecords()) {
+                spiderWeb.setUncrawledIds(ioUtil.getInputter().getUncrawledIds());
+            }
         	//load records in current spreadsheet into memory
             spiderWeb.setCrawledRecords(ioUtil.getInputter().readRecordsFromSheet(new File(ioUtil.getMainDocPath()),0));
             ioUtil.getOutputter().createWorkbook(ioUtil.getMainDocPath(), spiderWeb.getCrawledRecords(), true, ArrestDateComparator);
@@ -511,7 +513,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
                     //create a separate sheet with filtered results
                     logger.info(filteredRecords.size()+" "+spiderWeb.getFilter().filterName()+" records have been stored");
                     if (!filteredRecords.isEmpty()) {
-//                      recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getOutputter().getFilteredDocPath(spiderWeb.getFilter()), columnDelimiter, splitRecords, clazz, ArrestDateComparator);
+                      recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getOutputter().getFilteredDocPath(spiderWeb.getFilter()), columnDelimiter, splitRecords, clazz, ArrestDateComparator);
                     }
                 } catch (Exception e) {
                     logger.error("Error trying to create filtered spreadsheet", e);

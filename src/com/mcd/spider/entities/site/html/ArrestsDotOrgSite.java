@@ -80,6 +80,7 @@ public class ArrestsDotOrgSite implements SiteHTML {
 //	}
 	@Override
 	public Elements getRecordElements(Document doc) {
+	    //TODO is this working properly?
 		return doc.select(".content-box .search-results .profile-card .title a");
 	}
 	@Override
@@ -177,7 +178,11 @@ public class ArrestsDotOrgSite implements SiteHTML {
 
 	@Override
 	public String generateRecordId(String url) {
-		return url.substring(url.indexOf("/Arrests/")+9, url.indexOf("/?d=1"));
+	    if (url.contains("/Arrests/") && url.contains("/?d=1")) {
+            return url.substring(url.indexOf("/Arrests/")+9, url.indexOf("/?d=1"));
+        } else {
+	        return null;
+        }
 	}
 
     public String generateDetailUrl(String id) {

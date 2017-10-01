@@ -1,15 +1,11 @@
 package com.mcd.spider.entities.record;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.mcd.spider.engine.record.ArrestRecordEngine;
 import com.mcd.spider.engine.record.iowa.DesMoinesRegisterComEngine;
 import com.mcd.spider.engine.record.various.ArrestsDotOrgEngine;
 import com.mcd.spider.entities.site.SpiderWeb;
+
+import java.util.*;
 
 public final class State {
 	private static Map<String, State> abbreviationToState = new HashMap<>();
@@ -135,7 +131,9 @@ public final class State {
 	}
 	public void primeStateEngines(SpiderWeb web) {
 		for (ArrestRecordEngine engine : this.getEngines()) {
-			engine.setSpiderWeb(web);
+		    //give each engine it's own web
+            SpiderWeb engineWeb = new SpiderWeb(web.getMaxNumberOfResults(), web.getMisc(), web.retrieveMissedRecords(), web.getFilter(), this);
+			engine.setSpiderWeb(engineWeb);
 		}
 	}
 }
