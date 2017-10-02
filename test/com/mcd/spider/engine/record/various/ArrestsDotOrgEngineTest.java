@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.validator.routines.UrlValidator;
+import org.apache.log4j.Logger;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -29,11 +30,12 @@ import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
 import com.mcd.spider.entities.site.OfflineResponse;
 import com.mcd.spider.entities.site.SpiderWeb;
 import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
-import com.mcd.spider.util.ConnectionUtil;
+import com.mcd.spider.exception.SpiderException;
 import com.mcd.spider.util.io.RecordIOUtil;
 
 public class ArrestsDotOrgEngineTest {
-	
+
+	private static Logger logger = Logger.getLogger(ArrestsDotOrgEngineTest.class);
 	private ArrestsDotOrgEngine mockEngine;
 	private SpiderWeb mockWeb;
 	private Record mockAlcoholRecordOne;
@@ -43,45 +45,61 @@ public class ArrestsDotOrgEngineTest {
 	private Record mockViolentRecordThree;
 	private Document mockDetailDoc;
 	private Document mockMainPageDoc;
+	private String mainOutputPath;
+	private String filteredOutputPath;
 	
 	
 	@BeforeClass
-	public void beforeClass() throws IOException {
+	public void setUpClass() throws IOException, SpiderException {
+		logger.info("********** Starting Test cases for ArrestsDotOrgEngine *****************");
+		System.setProperty("TestingSpider", "true");
 		mockMainPageDoc = Jsoup.parse(new File("test/resources/htmls/mainPageDoc.html"), "UTF-8");
 		mockDetailDoc = Jsoup.parse(new File("test/resources/htmls/recordDetailPage.html"), "UTF-8");
 		mockWeb = new SpiderWeb(9999, true, false, RecordFilterEnum.NONE, State.IA);
 		mockWeb.setSessionCookies(new HashMap<>());
 		mockWeb.setCrawledIds(new HashSet<>());
 		mockEngine = new ArrestsDotOrgEngine(mockWeb);
+		RecordIOUtil ioUtil = new RecordIOUtil("IA", new ArrestRecord(), new ArrestsDotOrgSite(new String[]{"IA"}), true);
+		mainOutputPath = ioUtil.getMainDocPath();
+		filteredOutputPath = ioUtil.getOutputter().getFilteredDocPath(RecordFilterEnum.ALCOHOL);
+		
 		mockAlcoholRecordOne = new ArrestRecord();
 		mockAlcoholRecordOne.setId("1231");
 		((ArrestRecord)mockAlcoholRecordOne).setFullName("Suzie Q Public");
+		((ArrestRecord)mockAlcoholRecordOne).setCounty("Reed");
 		((ArrestRecord)mockAlcoholRecordOne).setCharges(new String[]{"Resisting Arrest", "2#DUI"});
 
 		mockAlcoholRecordTwo = new ArrestRecord();
 		mockAlcoholRecordTwo.setId("1232");
 		((ArrestRecord)mockAlcoholRecordTwo).setFullName("John Q Public");
+		((ArrestRecord)mockAlcoholRecordTwo).setCounty("Polk");
 		((ArrestRecord)mockAlcoholRecordTwo).setCharges(new String[]{"1: Public Consumption"});
 
 		mockViolentRecordOne = new ArrestRecord();
 		mockViolentRecordOne.setId("2231");
 		((ArrestRecord)mockViolentRecordOne).setFullName("Will W. Williams");
+		((ArrestRecord)mockViolentRecordOne).setCounty("Guthrie");
 		((ArrestRecord)mockViolentRecordOne).setCharges(new String[]{"1) Battery", "2) Assault", "Psodomy"});
 		
 		mockViolentRecordTwo = new ArrestRecord();
 		mockViolentRecordTwo.setId("2232");
 		((ArrestRecord)mockViolentRecordTwo).setFullName("Billy Shatner");
+		((ArrestRecord)mockViolentRecordTwo).setCounty("Polk");
 		((ArrestRecord)mockViolentRecordTwo).setCharges(new String[]{"Jay Walking", "Murder in the First"});
 		
 		mockViolentRecordThree = new ArrestRecord();
 		mockViolentRecordThree.setId("2233");
 		((ArrestRecord)mockViolentRecordThree).setFullName("JO Sonsimp");
+		((ArrestRecord)mockViolentRecordThree).setCounty("Reed");
 		((ArrestRecord)mockViolentRecordThree).setCharges(new String[]{"Crusifixion"});
 	}
 
 	@AfterClass
-	public void afterClass() {
-		
+	public void tearDownClass() {
+		new File(mainOutputPath).delete();
+		new File(filteredOutputPath).delete();
+		System.setProperty("TestingSpider", "false");
+		logger.info("********** Finishing Test cases for ArrestsDotOrgEngine *****************");
 	}
 
 	@Test
@@ -352,9 +370,91 @@ public class ArrestsDotOrgEngineTest {
 		Assert.assertFalse(engine.filterRecords(noMatchingAlcoholRecord).contains(mockViolentRecordOne));
 	}
 
-	@Test
-	public void finalizeOutput() {
-		throw new RuntimeException("Test not implemented");
+	@Test(groups="output")
+	public void finalizeOutput() throws SpiderException {
+		List<Record> mockRecords = new ArrayList<>();
+		mockRecords.add(mockAlcoholRecordOne);
+		mockRecords.add(mockAlcoholRecordTwo);
+		mockRecords.add(mockViolentRecordOne);
+		mockRecords.add(mockViolentRecordTwo);
+		mockRecords.add(mockViolentRecordThree);
+		SpiderWeb mockWeb = new SpiderWeb(9999, true, false, RecordFilterEnum.ALCOHOL, State.IA);
+		ArrestsDotOrgEngine mockEngine = new ArrestsDotOrgEngine(mockWeb);
+		mockEngine.setRecordIOUtil(mockEngine.initializeIOUtil("IA"));
+		long mainDocLengthBefore = new File(mockEngine.getRecordIOUtil().getMainDocPath()).length();
+		mockEngine.finalizeOutput(mockRecords);
+		
+		Assert.assertTrue(new File(mockEngine.getRecordIOUtil().getMainDocPath()).exists());
+		Assert.assertTrue(mainDocLengthBefore < new File(mockEngine.getRecordIOUtil().getMainDocPath()).length());
+		Assert.assertTrue(new File(mockEngine.getRecordIOUtil().getOutputter().getFilteredDocPath(RecordFilterEnum.ALCOHOL)).exists());
+		
+		new File(mockEngine.getRecordIOUtil().getMainDocPath()).delete();
+		new File(mockEngine.getRecordIOUtil().getOutputter().getFilteredDocPath(RecordFilterEnum.ALCOHOL)).delete();
+	}
+
+	@Test(groups="output")
+	public void finalizeOutput_NoFilter() throws SpiderException {
+		List<Record> mockRecords = new ArrayList<>();
+		mockRecords.add(mockAlcoholRecordOne);
+		mockRecords.add(mockAlcoholRecordTwo);
+		mockRecords.add(mockViolentRecordOne);
+		mockRecords.add(mockViolentRecordTwo);
+		mockRecords.add(mockViolentRecordThree);
+		
+		SpiderWeb mockWeb = new SpiderWeb(9999, true, false, RecordFilterEnum.NONE, State.IA);
+		ArrestsDotOrgEngine mockEngine = new ArrestsDotOrgEngine(mockWeb);
+		mockEngine.setRecordIOUtil(mockEngine.initializeIOUtil("IA"));
+		long mainDocLengthBefore = new File(mockEngine.getRecordIOUtil().getMainDocPath()).length();
+		mockEngine.finalizeOutput(mockRecords);
+		
+		Assert.assertTrue(new File(mockEngine.getRecordIOUtil().getMainDocPath()).exists());
+		Assert.assertTrue(mainDocLengthBefore < new File(mockEngine.getRecordIOUtil().getMainDocPath()).length());
+		Assert.assertFalse(new File(mockEngine.getRecordIOUtil().getOutputter().getFilteredDocPath(RecordFilterEnum.ALCOHOL)).exists());
+		
+		new File(mockEngine.getRecordIOUtil().getMainDocPath()).delete();
+	}
+
+	@Test(groups="output")
+	public void finalizeOutput_NoFilteredRecords() throws SpiderException {
+		List<Record> mockRecords = new ArrayList<>();
+//		Record mockRecord4 = new ArrestRecord();
+//		Record mockRecord5 = new ArrestRecord();
+//		mockRecord4.setId("232re32");
+//		mockRecord5.setId("232redsgsf");
+		mockRecords.add(mockViolentRecordOne);
+		mockRecords.add(mockViolentRecordTwo);
+		mockRecords.add(mockViolentRecordThree);
+//		mockRecords.add(mockRecord4);
+//		mockRecords.add(mockRecord5);
+		
+		SpiderWeb mockWeb = new SpiderWeb(9999, true, false, RecordFilterEnum.ALCOHOL, State.IA);
+		ArrestsDotOrgEngine mockEngine = new ArrestsDotOrgEngine(mockWeb);
+		mockEngine.setRecordIOUtil(mockEngine.initializeIOUtil("IA"));
+		long mainDocLengthBefore = new File(mockEngine.getRecordIOUtil().getMainDocPath()).length();
+		mockEngine.finalizeOutput(mockRecords);
+		
+		long temp = new File(mockEngine.getRecordIOUtil().getMainDocPath()).length();
+		Assert.assertTrue(new File(mockEngine.getRecordIOUtil().getMainDocPath()).exists());
+		Assert.assertTrue(mainDocLengthBefore < temp);
+		Assert.assertFalse(new File(mockEngine.getRecordIOUtil().getOutputter().getFilteredDocPath(RecordFilterEnum.ALCOHOL)).exists());
+
+		new File(mockEngine.getRecordIOUtil().getMainDocPath()).delete();
+	}
+
+	@Test(groups="output")
+	public void finalizeOutput_NoRecords() throws SpiderException {
+		List<Record> mockRecords = new ArrayList<>();
+		
+		SpiderWeb mockWeb = new SpiderWeb(9999, true, false, RecordFilterEnum.ALCOHOL, State.IA);
+		ArrestsDotOrgEngine mockEngine = new ArrestsDotOrgEngine(mockWeb);
+		mockEngine.setRecordIOUtil(mockEngine.initializeIOUtil("IA"));
+		long mainDocLengthBefore = new File(mockEngine.getRecordIOUtil().getMainDocPath()).length();
+		mockEngine.finalizeOutput(mockRecords);
+
+		Assert.assertEquals(mainDocLengthBefore, new File(mockEngine.getRecordIOUtil().getMainDocPath()).length());
+		Assert.assertFalse(new File(mockEngine.getRecordIOUtil().getOutputter().getFilteredDocPath(RecordFilterEnum.ALCOHOL)).exists());
+
+		new File(mockEngine.getRecordIOUtil().getMainDocPath()).delete();
 	}
 
 	@SuppressWarnings("deprecation")
