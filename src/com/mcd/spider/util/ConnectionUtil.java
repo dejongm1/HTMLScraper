@@ -23,7 +23,7 @@ public class ConnectionUtil {
 	private static final Logger logger = Logger.getLogger(ConnectionUtil.class);
 	
 	private String userAgent;
-	private static boolean offline = Boolean.parseBoolean(System.getProperty("offline"));
+	private static boolean offline = Boolean.parseBoolean(System.getProperty("TestingSpider")) || Boolean.parseBoolean(System.getProperty("offline"));
 	
 	public ConnectionUtil(boolean useSameUserAgent){
 		if (useSameUserAgent) {

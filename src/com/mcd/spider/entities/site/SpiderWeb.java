@@ -1,12 +1,12 @@
 package com.mcd.spider.entities.site;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ThreadLocalRandom;
-
 import com.mcd.spider.entities.io.RecordSheet;
 import com.mcd.spider.entities.record.State;
 import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
+
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class SpiderWeb {
 	
@@ -28,9 +28,12 @@ public class SpiderWeb {
     private State state;
     
     public SpiderWeb(long maxNumberOfResults, boolean addMisc, boolean retrieveMissedRecords, RecordFilterEnum filter, State state) {
+        this(maxNumberOfResults, addMisc, retrieveMissedRecords, filter, state, Boolean.parseBoolean(System.getProperty("TestingSpider")));
+    }
+    public SpiderWeb(long maxNumberOfResults, boolean addMisc, boolean retrieveMissedRecords, RecordFilterEnum filter, State state, boolean testing) {
     	attemptCount = 1;
     	this.maxNumberOfResults = maxNumberOfResults;
-	    offline = System.getProperty("offline").equals("true");
+	    offline = testing || System.getProperty("offline").equals("true");
 	    furthestPageToCheck = 9999;
 	    this.addMisc = addMisc;
 	    this.retrieveMissedRecords = retrieveMissedRecords;
