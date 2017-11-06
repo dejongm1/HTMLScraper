@@ -28,7 +28,7 @@ public class RecordInputUtil {
 	public static final Logger logger = Logger.getLogger(RecordInputUtil.class);
 
 	private String docName;
-	private boolean offline;
+	private boolean offlineNotTesting;
 	private File crawledIdFile;
 	private File uncrawledIdFile;
 	private Record record;
@@ -36,10 +36,14 @@ public class RecordInputUtil {
 	private Set<String> crawledIds;
     private Set<String> unCrawledIds;
 
-	public RecordInputUtil(RecordIOUtil ioUtil) {
+    public RecordInputUtil(RecordIOUtil ioUtil) {
+    	this(ioUtil, Boolean.parseBoolean(System.getProperty("TestingSpider")));
+    }
+    
+	public RecordInputUtil(RecordIOUtil ioUtil, boolean testing) {
 		this.docName = ioUtil.getMainDocPath();
 		this.record = ioUtil.getRecord();
-        this.offline = System.getProperty("offline").equals("true");
+        this.offlineNotTesting = System.getProperty("offline").equals("true") && !testing;
         this.crawledIdFile = ioUtil.getCrawledIdFile();
         this.uncrawledIdFile = ioUtil.getUncrawledIdFile();
         this.ioUtil = ioUtil;
@@ -49,19 +53,21 @@ public class RecordInputUtil {
         Set<String> ids = new HashSet<>();
 	    if (crawledIds==null || crawledIds.isEmpty()) {
             BufferedReader br = null;
-            if (!offline) {
+            if (!offlineNotTesting) {
                 try {
                     if (!crawledIdFile.exists()) {
                         crawledIdFile.createNewFile();
                     }
                     br = new BufferedReader(new FileReader(crawledIdFile));
                     String sCurrentLine;
-                    while ((sCurrentLine = br.readLine())!=null && !sCurrentLine.equals("")) {
-                        ids.add(sCurrentLine);
+                    while ((sCurrentLine = br.readLine())!=null) {
+                    	if (!sCurrentLine.equals("***")) {
+                    		ids.add(sCurrentLine);
+                    	}
                     }
-                    //add an empty line
+                    //add an marker line for separating crawls
                     if (!ids.isEmpty()) {
-                        ioUtil.getOutputter().writeIdToFile(crawledIdFile, "");
+                        ioUtil.getOutputter().writeIdToFile(crawledIdFile, "***");
                     }
                 } catch (IOException e) {
                     throw new IDCheckException();
@@ -84,7 +90,7 @@ public class RecordInputUtil {
         Set<String> ids = new HashSet<>();
         if (unCrawledIds==null || unCrawledIds.isEmpty()) {
             BufferedReader br = null;
-            if (!offline) {
+            if (!offlineNotTesting) {
                 try {
                     if (uncrawledIdFile.exists()) {
                         br = new BufferedReader(new FileReader(uncrawledIdFile));

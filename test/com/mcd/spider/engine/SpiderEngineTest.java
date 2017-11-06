@@ -61,7 +61,6 @@ public class SpiderEngineTest {
 
 	@BeforeMethod
 	public void setUpMethod() {
-		//create output books
 		Assert.assertTrue(testOutputFileOne.exists());
 		Assert.assertTrue(testOutputFileTwo.exists());
 		Assert.assertTrue(testOutputFileLN.exists());
