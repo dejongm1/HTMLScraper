@@ -21,6 +21,7 @@ import org.jsoup.select.Elements;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import com.mcd.spider.entities.record.ArrestRecord;
@@ -32,6 +33,7 @@ import com.mcd.spider.entities.site.SpiderWeb;
 import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
 import com.mcd.spider.exception.SpiderException;
 import com.mcd.spider.util.io.RecordIOUtil;
+import com.mcd.spider.util.io.RecordOutputUtil;
 
 public class ArrestsDotOrgEngineTest {
 
@@ -59,7 +61,7 @@ public class ArrestsDotOrgEngineTest {
 		mockWeb.setSessionCookies(new HashMap<>());
 		mockWeb.setCrawledIds(new HashSet<>());
 		mockEngine = new ArrestsDotOrgEngine(mockWeb);
-		RecordIOUtil ioUtil = new RecordIOUtil("IA", new ArrestRecord(), new ArrestsDotOrgSite(new String[]{"IA"}), true);
+		RecordIOUtil ioUtil = new RecordIOUtil(State.IA.getName(), new ArrestRecord(), new ArrestsDotOrgSite(new String[]{"IA"}), true);
 		mainOutputPath = ioUtil.getMainDocPath();
 		filteredOutputPath = ioUtil.getOutputter().getFilteredDocPath(RecordFilterEnum.ALCOHOL);
 		
@@ -380,7 +382,7 @@ public class ArrestsDotOrgEngineTest {
 		mockRecords.add(mockViolentRecordThree);
 		SpiderWeb mockWeb = new SpiderWeb(9999, true, false, RecordFilterEnum.ALCOHOL, State.IA);
 		ArrestsDotOrgEngine mockEngine = new ArrestsDotOrgEngine(mockWeb);
-		mockEngine.setRecordIOUtil(mockEngine.initializeIOUtil("IA"));
+		mockEngine.setRecordIOUtil(mockEngine.initializeIOUtil(State.IA.getName()));
 		long mainDocLengthBefore = new File(mockEngine.getRecordIOUtil().getMainDocPath()).length();
 		mockEngine.finalizeOutput(mockRecords);
 		
@@ -403,7 +405,7 @@ public class ArrestsDotOrgEngineTest {
 		
 		SpiderWeb mockWeb = new SpiderWeb(9999, true, false, RecordFilterEnum.NONE, State.IA);
 		ArrestsDotOrgEngine mockEngine = new ArrestsDotOrgEngine(mockWeb);
-		mockEngine.setRecordIOUtil(mockEngine.initializeIOUtil("IA"));
+		mockEngine.setRecordIOUtil(mockEngine.initializeIOUtil(State.IA.getName()));
 		long mainDocLengthBefore = new File(mockEngine.getRecordIOUtil().getMainDocPath()).length();
 		mockEngine.finalizeOutput(mockRecords);
 		
@@ -429,7 +431,7 @@ public class ArrestsDotOrgEngineTest {
 		
 		SpiderWeb mockWeb = new SpiderWeb(9999, true, false, RecordFilterEnum.ALCOHOL, State.IA);
 		ArrestsDotOrgEngine mockEngine = new ArrestsDotOrgEngine(mockWeb);
-		mockEngine.setRecordIOUtil(mockEngine.initializeIOUtil("IA"));
+		mockEngine.setRecordIOUtil(mockEngine.initializeIOUtil(State.IA.getName()));
 		long mainDocLengthBefore = new File(mockEngine.getRecordIOUtil().getMainDocPath()).length();
 		mockEngine.finalizeOutput(mockRecords);
 		
@@ -447,7 +449,7 @@ public class ArrestsDotOrgEngineTest {
 		
 		SpiderWeb mockWeb = new SpiderWeb(9999, true, false, RecordFilterEnum.ALCOHOL, State.IA);
 		ArrestsDotOrgEngine mockEngine = new ArrestsDotOrgEngine(mockWeb);
-		mockEngine.setRecordIOUtil(mockEngine.initializeIOUtil("IA"));
+		mockEngine.setRecordIOUtil(mockEngine.initializeIOUtil(State.IA.getName()));
 		long mainDocLengthBefore = new File(mockEngine.getRecordIOUtil().getMainDocPath()).length();
 		mockEngine.finalizeOutput(mockRecords);
 
@@ -519,8 +521,31 @@ public class ArrestsDotOrgEngineTest {
 	}
 
 	@Test
-	public void initializeIOUtil() {
-		throw new RuntimeException("Test not implemented");
+	public void initializeIOUtil() throws SpiderException {
+	    ArrestsDotOrgEngine mockEngine = new ArrestsDotOrgEngine(mockWeb);
+	    RecordIOUtil mockIOUtil = mockEngine.initializeIOUtil(State.IA.getName());
+	    
+		Assert.assertTrue(mockIOUtil.getMainDocPath().contains(State.IA.getName()));
+		Assert.assertEquals(mockEngine.getSpiderWeb().getCrawledIds().size(), 3);
+		Assert.assertNull(mockEngine.getSpiderWeb().getUncrawledIds());
+		Assert.assertNotNull(mockEngine.getSpiderWeb().getCrawledRecords());
+		Assert.assertTrue(new File(mockIOUtil.getMainDocPath()).exists());
+		Assert.assertTrue(new File(mockIOUtil.getMainDocPath()).delete());
+		
+	}
+
+	@Test
+	public void initializeIOUtil_NoneCrawledRetrieveUncrawled() throws SpiderException {
+		SpiderWeb mockWeb = new SpiderWeb(9999, true, true, RecordFilterEnum.NONE, State.OK);
+	    ArrestsDotOrgEngine mockEngine = new ArrestsDotOrgEngine(mockWeb);
+	    RecordIOUtil mockIOUtil = mockEngine.initializeIOUtil(State.OK.getName());
+	    
+		Assert.assertTrue(mockIOUtil.getMainDocPath().contains(State.OK.getName()));
+		Assert.assertEquals(mockEngine.getSpiderWeb().getCrawledIds().size(), 0);
+		Assert.assertEquals(mockEngine.getSpiderWeb().getUncrawledIds().size(), 1);
+		Assert.assertNotNull(mockEngine.getSpiderWeb().getCrawledRecords());
+		Assert.assertTrue(new File(mockIOUtil.getMainDocPath()).exists());
+		Assert.assertTrue(new File(mockIOUtil.getMainDocPath()).delete());
 	}
 
 	@Test(groups="online", enabled=false) //make these dependent on a test that gathers a handful of docs on class load instead of each test creating a new connection
