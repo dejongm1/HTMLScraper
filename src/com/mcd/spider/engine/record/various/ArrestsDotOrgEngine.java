@@ -98,8 +98,6 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         
         scrapeSite();
 
-        //outputUtil.removeColumnsFromSpreadsheet(new int[]{ArrestRecord.RecordColumnEnum.ID_COLUMN.index()});
-
         spiderUtil.sendEmail(stateName);
         
         totalTime = System.currentTimeMillis() - totalTime;

@@ -733,7 +733,21 @@ public class ArrestsDotOrgEngineTest {
 	}
 
 	@Test
-	public void scrapeRecords() {
+	public void scrapeRecords() throws SpiderException {
+		SpiderWeb mockWeb = new SpiderWeb(9999, true, false, RecordFilterEnum.ALCOHOL, State.IA);
+		ArrestsDotOrgEngine mockEngine = new ArrestsDotOrgEngine(mockWeb);
+		mockEngine.setRecordIOUtil(mockEngine.initializeIOUtil(State.IA.getName()));
+		//mock up a recordsDetailsUrlMap
+		
+		
+		//mockEngine.scrapeRecords(recordsDetailsUrlMap);
+		
+		//check that the output matches the input
+		
+		
+		new File(mockEngine.getRecordIOUtil().getMainDocPath()).delete();
+		new File(mockEngine.getRecordIOUtil().getOutputter().getFilteredDocPath(RecordFilterEnum.ALCOHOL)).delete();
+
 		throw new RuntimeException("Test not implemented");
 	}
 
