@@ -139,7 +139,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 
                     //build a list of details page urls by reading in uncrawled ids file
                     recordDetailUrlMap = compileRecordDetailUrlMapFromBackup(mainPageDoc, spiderWeb.getUncrawledIds());
-                    logger.info("Gathered links for "+recordDetailUrlMap.size()+" record profiles and misc pages");
+                    logger.info("Gathered links for "+recordDetailUrlMap.size()+" uncrawled record profiles and misc pages");
 
                 } else {
                     spiderWeb.setNumberOfPages(getNumberOfResultsPages(mainPageDoc));

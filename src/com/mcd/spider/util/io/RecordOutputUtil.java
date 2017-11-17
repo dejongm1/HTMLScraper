@@ -412,7 +412,8 @@ public class RecordOutputUtil {
 	public void backupUnCrawledRecords(Map<Object, String> recordsDetailsUrlMap) {
 		for (Map.Entry<Object, String> entry : recordsDetailsUrlMap.entrySet()) {
 			try {
-			    if (!entry.getValue().startsWith("CRAWLED")) {
+			    //make sure it hasn't been crawled and it's a url that contains a record i.e. has a recordId
+			    if (!entry.getValue().startsWith("CRAWLED") && site.generateRecordId(entry.getValue())!=null) {
                     writeIdToFile(uncrawledIdFile, String.valueOf(entry.getKey()));
                 }
 			} catch (Exception e) {
