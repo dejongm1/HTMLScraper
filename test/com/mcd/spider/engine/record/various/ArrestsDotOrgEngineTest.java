@@ -1,16 +1,14 @@
 package com.mcd.spider.engine.record.various;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import com.mcd.spider.entities.record.ArrestRecord;
+import com.mcd.spider.entities.record.Record;
+import com.mcd.spider.entities.record.State;
+import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
+import com.mcd.spider.entities.site.OfflineResponse;
+import com.mcd.spider.entities.site.SpiderWeb;
+import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
+import com.mcd.spider.exception.SpiderException;
+import com.mcd.spider.util.io.RecordIOUtil;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.log4j.Logger;
 import org.jsoup.Connection;
@@ -21,19 +19,11 @@ import org.jsoup.select.Elements;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import com.mcd.spider.entities.record.ArrestRecord;
-import com.mcd.spider.entities.record.Record;
-import com.mcd.spider.entities.record.State;
-import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
-import com.mcd.spider.entities.site.OfflineResponse;
-import com.mcd.spider.entities.site.SpiderWeb;
-import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
-import com.mcd.spider.exception.SpiderException;
-import com.mcd.spider.util.io.RecordIOUtil;
-import com.mcd.spider.util.io.RecordOutputUtil;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 
 public class ArrestsDotOrgEngineTest {
 
@@ -64,6 +54,7 @@ public class ArrestsDotOrgEngineTest {
 		RecordIOUtil ioUtil = new RecordIOUtil(State.IA.getName(), new ArrestRecord(), new ArrestsDotOrgSite(new String[]{"IA"}), true);
 		mainOutputPath = ioUtil.getMainDocPath();
 		filteredOutputPath = ioUtil.getOutputter().getFilteredDocPath(RecordFilterEnum.ALCOHOL);
+
 		
 		mockAlcoholRecordOne = new ArrestRecord();
 		mockAlcoholRecordOne.setId("1231");
@@ -522,17 +513,19 @@ public class ArrestsDotOrgEngineTest {
 
 	@Test
 	public void initializeIOUtil() throws SpiderException {
+	    //TODO create simple text file with 3 records, named as the crawledIdFile
+        
 	    ArrestsDotOrgEngine mockEngine = new ArrestsDotOrgEngine(mockWeb);
 	    RecordIOUtil mockIOUtil = mockEngine.initializeIOUtil(State.IA.getName());
-	    
+
 		Assert.assertTrue(mockIOUtil.getMainDocPath().contains(State.IA.getName()));
 		Assert.assertEquals(mockEngine.getSpiderWeb().getCrawledIds().size(), 3);
 		Assert.assertNull(mockEngine.getSpiderWeb().getUncrawledIds());
 		Assert.assertNotNull(mockEngine.getSpiderWeb().getCrawledRecords());
 		Assert.assertTrue(new File(mockIOUtil.getMainDocPath()).exists());
 		Assert.assertTrue(new File(mockIOUtil.getMainDocPath()).delete());
-		
-	}
+        Assert.assertTrue(mockIOUtil.getCrawledIdFile().delete());
+    }
 
 	@Test
 	public void initializeIOUtil_NoneCrawledRetrieveUncrawled() throws SpiderException {
@@ -558,7 +551,7 @@ public class ArrestsDotOrgEngineTest {
 		Assert.assertTrue(mockEngine.getSpiderWeb().getSessionCookies().get("PHPSESSID")!=null);
 		Assert.assertTrue(mockEngine.getSpiderWeb().getSessionCookies().get("views_session")!=null);
 		Assert.assertTrue(((ArrestsDotOrgSite) mockEngine.getSite()).getRecordElements((Document)mainDoc).size()>0);
-		Assert.assertFalse(((Document)mainDoc).toString().contains("flibberdigibit"));//should not exist on live site
+		Assert.assertFalse(mainDoc.toString().contains("flibberdigibit"));//should not exist on live site
 		throw new RuntimeException("Test not finished");
 	}
 
@@ -572,7 +565,7 @@ public class ArrestsDotOrgEngineTest {
 		Assert.assertTrue(mockEngine.getSpiderWeb().getSessionCookies().get("PHPSESSID")!=null);
 		Assert.assertTrue(mockEngine.getSpiderWeb().getSessionCookies().get("views_session")!=null);
 		Assert.assertTrue(((ArrestsDotOrgSite) mockEngine.getSite()).getRecordElements((Document)mainDoc).size()>0);
-		Assert.assertTrue(((Document)mainDoc).toString().contains("flibberdigibit"));
+		Assert.assertTrue(mainDoc.toString().contains("flibberdigibit"));
 	}
 
 	@Test
@@ -733,22 +726,27 @@ public class ArrestsDotOrgEngineTest {
 	}
 
 	@Test
-	public void scrapeRecords() throws SpiderException {
+	public void scrapeRecords() throws SpiderException, IOException {
 		SpiderWeb mockWeb = new SpiderWeb(9999, true, false, RecordFilterEnum.ALCOHOL, State.IA);
 		ArrestsDotOrgEngine mockEngine = new ArrestsDotOrgEngine(mockWeb);
 		mockEngine.setRecordIOUtil(mockEngine.initializeIOUtil(State.IA.getName()));
-		//mock up a recordsDetailsUrlMap
-		
-		
-		//mockEngine.scrapeRecords(recordsDetailsUrlMap);
-		
-		//check that the output matches the input
-		
-		
-		new File(mockEngine.getRecordIOUtil().getMainDocPath()).delete();
-		new File(mockEngine.getRecordIOUtil().getOutputter().getFilteredDocPath(RecordFilterEnum.ALCOHOL)).delete();
+        mockEngine.initiateConnection(((ArrestsDotOrgSite)mockEngine.getSite()).generateResultsPageUrl(1));
+        Map<Object,String> recordsDetailsUrlMap = new HashMap<>();
+        recordsDetailsUrlMap.put(1, "http://iowa.arrests.org/Irrevlavent/page");
+        recordsDetailsUrlMap.put("33799480", "http://iowa.arrests.org/Arrests/Justin_Wilde_33799480/?d=1");
+        recordsDetailsUrlMap.put("34065316", "http://iowa.arrests.org/Arrests/Dominic_Lacava_34065316/?d=1");
+        recordsDetailsUrlMap.put(2, "http://iowa.arrests.org/County/AdSpam");
 
-		throw new RuntimeException("Test not implemented");
+		mockEngine.scrapeRecords(recordsDetailsUrlMap);
+
+		File mainOutput = new File(mockEngine.getRecordIOUtil().getMainDocPath());
+
+		Assert.assertTrue(mainOutput.exists());
+		Assert.assertTrue(recordsDetailsUrlMap.containsValue("CRAWLEDhttp://iowa.arrests.org/Arrests/Justin_Wilde_33799480/?d=1"));
+        Assert.assertTrue(recordsDetailsUrlMap.containsValue("CRAWLEDhttp://iowa.arrests.org/Arrests/Dominic_Lacava_34065316/?d=1"));
+        Assert.assertFalse(recordsDetailsUrlMap.containsKey("CRAWLED1"));
+        Assert.assertFalse(recordsDetailsUrlMap.containsKey("CRAWLED2"));
+        Assert.assertTrue(mainOutput.delete());
 	}
 
 	@Test

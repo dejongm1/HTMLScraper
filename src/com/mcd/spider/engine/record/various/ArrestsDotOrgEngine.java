@@ -248,7 +248,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
                     spiderUtil.sleep(ConnectionUtil.getSleepTime(site)/2, false);
 	            }
 
-                //don't change previous key (referer) if current url is detail page, they're just popups
+                //don't change previous key (referer) if current url is detail page, they're just layovers
                 if (!site.isARecordDetailDoc(profileDetailDoc)) {
                     previousKey = String.valueOf(k);
                 }
