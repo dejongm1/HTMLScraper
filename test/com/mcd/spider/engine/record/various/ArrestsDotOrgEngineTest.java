@@ -514,7 +514,7 @@ public class ArrestsDotOrgEngineTest {
 	@Test
 	public void initializeIOUtil() throws SpiderException {
 	    //TODO create simple text file with 3 records, named as the crawledIdFile
-        
+
 	    ArrestsDotOrgEngine mockEngine = new ArrestsDotOrgEngine(mockWeb);
 	    RecordIOUtil mockIOUtil = mockEngine.initializeIOUtil(State.IA.getName());
 
