@@ -749,6 +749,49 @@ public class ArrestsDotOrgEngineTest {
         Assert.assertTrue(mainOutput.delete());
 	}
 
+	@Test(groups="online", enabled=false) //make these dependent on a test that gathers a handful of docs on class load instead of each test creating a new connection
+	public void scrapeRecords_OnlineIOException() throws SpiderException, IOException {
+		SpiderWeb mockWeb = new SpiderWeb(9999, true, false, RecordFilterEnum.ALCOHOL, State.IA);
+		ArrestsDotOrgEngine mockEngine = new ArrestsDotOrgEngine(mockWeb);
+		mockEngine.setRecordIOUtil(mockEngine.initializeIOUtil(State.IA.getName()));
+        mockEngine.initiateConnection(((ArrestsDotOrgSite)mockEngine.getSite()).generateResultsPageUrl(1));
+        Map<Object,String> recordsDetailsUrlMap = new HashMap<>();
+        recordsDetailsUrlMap.put("", ""); //pass in a detail page that exists
+        recordsDetailsUrlMap.put(2, "http://iowa.arrests.org/County/AdSpam");//this should cause exception
+
+		mockEngine.scrapeRecords(recordsDetailsUrlMap);
+
+		File mainOutput = new File(mockEngine.getRecordIOUtil().getMainDocPath());
+
+		Assert.assertTrue(mainOutput.exists());
+		Assert.assertTrue(recordsDetailsUrlMap.containsValue("CRAWLED"));//existing page
+		Assert.assertEquals(mockEngine.getSpiderWeb().getAttemptCount(), 2);
+        Assert.assertTrue(mainOutput.delete());
+	}
+
+	@Test(groups="online", enabled=false) //make these dependent on a test that gathers a handful of docs on class load instead of each test creating a new connection
+	public void scrapeRecords_OnlineIOExceptionMaxFailures() throws SpiderException, IOException {
+		SpiderWeb mockWeb = new SpiderWeb(9999, true, false, RecordFilterEnum.ALCOHOL, State.IA);
+		ArrestsDotOrgEngine mockEngine = new ArrestsDotOrgEngine(mockWeb);
+		mockEngine.setRecordIOUtil(mockEngine.initializeIOUtil(State.IA.getName()));
+        mockEngine.initiateConnection(((ArrestsDotOrgSite)mockEngine.getSite()).generateResultsPageUrl(1));
+        Map<Object,String> recordsDetailsUrlMap = new HashMap<>();
+        recordsDetailsUrlMap.put(1, "http://iowa.arrests.org/County/NotReal");//this should cause exception
+        recordsDetailsUrlMap.put(2, "http://iowa.arrests.org/County/AdSpam");
+        recordsDetailsUrlMap.put(3, "http://iowa.arrests.org/Page/NotFound");
+        recordsDetailsUrlMap.put(4, "http://iowa.arrests.org/Error/Error");
+        recordsDetailsUrlMap.put("34065316", "http://iowa.arrests.org/Arrests/Dominic_Lacava_34065316/?d=1");
+        recordsDetailsUrlMap.put("34065317", "http://iowa.arrests.org/Arrests/Cominid_Aacavl_34065317/?d=1");
+		mockEngine.scrapeRecords(recordsDetailsUrlMap);
+
+		File mainOutput = new File(mockEngine.getRecordIOUtil().getMainDocPath());
+
+		Assert.assertTrue(mainOutput.exists());
+		Assert.assertTrue(recordsDetailsUrlMap.isEmpty());
+		//confirm uncrawled records were backed up 
+        Assert.assertTrue(mainOutput.delete());
+	}
+
 	@Test
 	public void scrapeSite() {
 		throw new RuntimeException("Test not implemented");
