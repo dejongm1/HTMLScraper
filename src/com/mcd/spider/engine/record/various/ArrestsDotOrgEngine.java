@@ -121,7 +121,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 	        	mainPageDoc = (Document) initiateConnection(firstPageResultsUrl);
 	        } catch (IOException e) {
 	            logger.error("Couldn't make initial connection to site. Trying again " + (maxAttempts-spiderWeb.getAttemptCount()) + " more times", e);
-	            //if it's a 500, we're probably blocked. TODO Try a new user-agent and IP if possible, else bail
+	            //if it's a 500, we're probably blocked. TODO Try a new IP if possible, else bail
 	            if (e instanceof HttpStatusException && ((HttpStatusException) e).getStatusCode()==500) {
 	            	connectionUtil = new ConnectionUtil(true);
 	            }
@@ -509,7 +509,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
                     List<Record> filteredRecords = filterRecords(arrestRecords);
                     RecordWorkbook splitRecords = Record.splitByField(filteredRecords, columnDelimiter, clazz);
                     //create a separate sheet with filtered results
-                    logger.info(filteredRecords.size()+" "+spiderWeb.getFilter().filterName()+" records have been stored");
+                    logger.info(filteredRecords.size()+" "+spiderWeb.getFilter().filterName()+" records have been crawled");
                     if (!filteredRecords.isEmpty()) {
                       recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getOutputter().getFilteredDocPath(spiderWeb.getFilter()), columnDelimiter, splitRecords, clazz, ArrestDateComparator);
                     }

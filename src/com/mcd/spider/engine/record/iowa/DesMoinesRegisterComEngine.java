@@ -124,7 +124,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
             }
             if (spiderWeb.getAttemptCount()<=maxAttempts) {
                 logger.info("Retrieving details page urls");
-                //build a list of details page urls by parsing results page docs
+                //build a list of details page urls by parsing json response
                 Map<Object,String> recordDetailUrlMap = compileRecordDetailUrlMap(response);
 
                 logger.info("Gathered links for " + recordDetailUrlMap.size() + " record profiles");

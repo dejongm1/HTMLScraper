@@ -25,8 +25,8 @@ public class ConnectionUtil {
 	private String userAgent;
 	private static boolean offline = Boolean.parseBoolean(System.getProperty("TestingSpider")) || Boolean.parseBoolean(System.getProperty("offline"));
 	
-	public ConnectionUtil(boolean useSameUserAgent){
-		if (useSameUserAgent) {
+	public ConnectionUtil(boolean useDifferentUserAgent){
+		if (useDifferentUserAgent) {
 			userAgent = getRandomUserAgent();
 		}
 	}
