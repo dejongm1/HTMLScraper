@@ -23,6 +23,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import static com.mcd.spider.entities.record.ArrestRecord.ArrestDateComparator;
 
@@ -356,19 +357,31 @@ public class RecordOutputUtilTest {
     public void testBackupUnCrawledRecords() throws Exception {
     	//mock a list of ids
     	Map<Object, String> urlsMap = new HashMap<>();
-    	urlsMap.put("123", "www.google.com/123");
-    	urlsMap.put("234", "www.google.com/234");
-    	urlsMap.put("345", "www.google.com/345");
-    	urlsMap.put("456", "www.google.com/456");
+    	urlsMap.put("337480", "http://iowa.arrests.org/Arrests/Barry_Allen_337480/?d=1");
+    	urlsMap.put("235490", "http://iowa.arrests.org/Arrests/Peter_Parker_235490/?d=1");
+    	urlsMap.put("23434343", "http://iowa.arrests.org/Arrests/Steve_Rodgers_23434343/?d=1");
     	outputter.backupUnCrawledRecords(urlsMap);
-    	String[] ids = ioUtil.getInputter().getUnCrawledIds().toArray(new String[urlsMap.size()]);
+    	String[] ids = ioUtil.getInputter().getUnCrawledIds().toArray(new String[3]);
     	//size of mocked list should match rows in file
-    	Assert.assertEquals(urlsMap.size(), ids.length);
+    	Assert.assertEquals(ids.length, urlsMap.size());
     	int e = 0;
     	for (Map.Entry<Object, String> entry : urlsMap.entrySet()) {
     		Assert.assertEquals(ids[e], (String) entry.getKey());
     		e++;
     	}
+    }
+
+    @Test
+    public void testBackupUnCrawledRecords_OneInvalidRecordUrl() throws Exception {
+    	//mock a list of ids
+    	Map<Object, String> urlsMap = new HashMap<>();
+    	urlsMap.put("345", "www.google.com/345");
+    	urlsMap.put("235490", "http://iowa.arrests.org/Arrests/Peter_Parker_235490/?d=1");
+    	outputter.backupUnCrawledRecords(urlsMap);
+    	String[] ids = ioUtil.getInputter().getUnCrawledIds().toArray(new String[1]);
+    	//1 good, 1 bad that shouldn't be added
+    	Assert.assertEquals(ids.length, 1);
+		Assert.assertEquals(ids[0], "235490");
     }
     
     private void renameMainDoc() throws Exception {

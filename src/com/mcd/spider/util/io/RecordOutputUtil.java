@@ -187,7 +187,7 @@ public class RecordOutputUtil {
 	public String getMergedDocPath(String baseDocPath) {
 		String mergedName;
 		if (baseDocPath!=null) {
-			mergedName = baseDocPath.substring(0, baseDocPath.indexOf(EXT)).replace(site.getName() + "_", "") + "_" + "MERGED" + EXT;
+			mergedName = baseDocPath.substring(0, baseDocPath.indexOf(EXT)).replace("_" + site.getName(), "") + "_" + "MERGED" + EXT;
 		} else {
 			mergedName = docPath.substring(0, docPath.lastIndexOf('_')) + "_" + "MERGED" + EXT;
 		}

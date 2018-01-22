@@ -21,7 +21,9 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
@@ -39,6 +41,7 @@ public class ArrestsDotOrgEngineTest {
 	private Document mockMainPageDoc;
 	private String mainOutputPath;
 	private String filteredOutputPath;
+	private RecordIOUtil ioUtil;
 	
 	
 	@BeforeClass
@@ -51,7 +54,7 @@ public class ArrestsDotOrgEngineTest {
 		mockWeb.setSessionCookies(new HashMap<>());
 		mockWeb.setCrawledIds(new HashSet<>());
 		mockEngine = new ArrestsDotOrgEngine(mockWeb);
-		RecordIOUtil ioUtil = new RecordIOUtil(State.IA.getName(), new ArrestRecord(), new ArrestsDotOrgSite(new String[]{"IA"}), true);
+		ioUtil = new RecordIOUtil(State.IA.getName(), new ArrestRecord(), new ArrestsDotOrgSite(new String[]{"IA"}), true);
 		mainOutputPath = ioUtil.getMainDocPath();
 		filteredOutputPath = ioUtil.getOutputter().getFilteredDocPath(RecordFilterEnum.ALCOHOL);
 
@@ -91,6 +94,7 @@ public class ArrestsDotOrgEngineTest {
 	public void tearDownClass() {
 		new File(mainOutputPath).delete();
 		new File(filteredOutputPath).delete();
+		ioUtil.getCrawledIdFile().delete();
 		System.setProperty("TestingSpider", "false");
 		logger.info("********** Finishing Test cases for ArrestsDotOrgEngine *****************");
 	}
@@ -513,8 +517,31 @@ public class ArrestsDotOrgEngineTest {
 
 	@Test
 	public void initializeIOUtil() throws SpiderException {
-	    //TODO create simple text file with 3 records, named as the crawledIdFile
-
+		//mock a tracking file with 3 records
+		FileWriter fw = null;
+		BufferedWriter bw = null;
+		try {
+			fw = new FileWriter(ioUtil.getCrawledIdFile(), true);
+			bw = new BufferedWriter(fw);
+			bw.write("Dominic_Lacava_34065316");
+			bw.newLine();
+			bw.write("Justin_Wilde_33799480");
+			bw.newLine();
+			bw.write("Joe_Smith_32791487");
+			bw.newLine();
+		} catch (IOException e) {
+			Assert.fail("Failure setting up tracking file for test");
+		} finally {
+			try {
+				if (bw != null)
+					bw.close();
+				if (fw != null)
+					fw.close();
+			} catch (IOException e) {
+				Assert.fail("Failure closing tracking file for test");
+			}
+		}
+		
 	    ArrestsDotOrgEngine mockEngine = new ArrestsDotOrgEngine(mockWeb);
 	    RecordIOUtil mockIOUtil = mockEngine.initializeIOUtil(State.IA.getName());
 
@@ -529,6 +556,28 @@ public class ArrestsDotOrgEngineTest {
 
 	@Test
 	public void initializeIOUtil_NoneCrawledRetrieveUncrawled() throws SpiderException {
+		//create uncrawled IDs file with 1 record
+		RecordIOUtil ioUtil = new RecordIOUtil(State.OK.getName(), new ArrestRecord(), new ArrestsDotOrgSite(new String[]{"OK"}), true);
+		FileWriter fw = null;
+		BufferedWriter bw = null;
+		try {
+			fw = new FileWriter(ioUtil.getUncrawledIdFile(), true);
+			bw = new BufferedWriter(fw);
+			bw.write("Thomas_Reiling_33796661");
+			bw.newLine();
+		} catch (IOException e) {
+			Assert.fail("Failure setting up tracking file for test");
+		} finally {
+			try {
+				if (bw != null)
+					bw.close();
+				if (fw != null)
+					fw.close();
+			} catch (IOException e) {
+				Assert.fail("Failure closing tracking file for test");
+			}
+		}
+				
 		SpiderWeb mockWeb = new SpiderWeb(9999, true, true, RecordFilterEnum.NONE, State.OK);
 	    ArrestsDotOrgEngine mockEngine = new ArrestsDotOrgEngine(mockWeb);
 	    RecordIOUtil mockIOUtil = mockEngine.initializeIOUtil(State.OK.getName());
@@ -539,6 +588,8 @@ public class ArrestsDotOrgEngineTest {
 		Assert.assertNotNull(mockEngine.getSpiderWeb().getCrawledRecords());
 		Assert.assertTrue(new File(mockIOUtil.getMainDocPath()).exists());
 		Assert.assertTrue(new File(mockIOUtil.getMainDocPath()).delete());
+		Assert.assertTrue(mockIOUtil.getUncrawledIdFile().delete());
+		Assert.assertTrue(mockIOUtil.getCrawledIdFile().delete());
 	}
 
 	@Test(groups="online", enabled=false) //make these dependent on a test that gathers a handful of docs on class load instead of each test creating a new connection
@@ -746,6 +797,26 @@ public class ArrestsDotOrgEngineTest {
         Assert.assertTrue(recordsDetailsUrlMap.containsValue("CRAWLEDhttp://iowa.arrests.org/Arrests/Dominic_Lacava_34065316/?d=1"));
         Assert.assertFalse(recordsDetailsUrlMap.containsKey("CRAWLED1"));
         Assert.assertFalse(recordsDetailsUrlMap.containsKey("CRAWLED2"));
+        Assert.assertTrue(mainOutput.delete());
+	}
+
+	@Test
+	public void scrapeRecords_MiscPageCrawl() throws SpiderException, IOException {
+		SpiderWeb mockWeb = new SpiderWeb(9999, true, false, RecordFilterEnum.ALCOHOL, State.IA);
+		ArrestsDotOrgEngine mockEngine = new ArrestsDotOrgEngine(mockWeb);
+		mockEngine.setRecordIOUtil(mockEngine.initializeIOUtil(State.IA.getName()));
+        mockEngine.initiateConnection(((ArrestsDotOrgSite)mockEngine.getSite()).generateResultsPageUrl(1));
+        Map<Object,String> recordsDetailsUrlMap = new HashMap<>();
+        recordsDetailsUrlMap.put(1, "http://iowa.arrests.org/Irrevlavent/page");
+        recordsDetailsUrlMap.put("33799480", "http://iowa.arrests.org/Arrests/Justin_Wilde_33799480/?d=1");
+
+		mockEngine.scrapeRecords(recordsDetailsUrlMap);
+
+		File mainOutput = new File(mockEngine.getRecordIOUtil().getMainDocPath());
+
+		Assert.assertTrue(mainOutput.exists());
+		Assert.assertTrue(recordsDetailsUrlMap.containsValue("CRAWLEDhttp://iowa.arrests.org/Arrests/Justin_Wilde_33799480/?d=1"));
+        Assert.assertFalse(recordsDetailsUrlMap.containsKey("CRAWLED1"));
         Assert.assertTrue(mainOutput.delete());
 	}
 

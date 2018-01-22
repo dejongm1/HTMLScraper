@@ -47,6 +47,7 @@ public class SpiderEngineTest {
 	private File mockOutputFileTwoFiltered;
 	private RecordIOUtil mainIOUtil;
 	private RecordIOUtil secondaryIOUtil;
+	private RecordIOUtil tertiaryIOUtil;
 
 
 	@BeforeClass
@@ -57,6 +58,7 @@ public class SpiderEngineTest {
 		state = State.IA;
 		mainIOUtil = new RecordIOUtil(state.getName(), new ArrestRecord(), state.getEngines().get(0).getSite(), true);
 		secondaryIOUtil = new RecordIOUtil(state.getName(), new ArrestRecord(), new DesMoinesRegisterComSite(new String[]{state.getName()}), true);
+		tertiaryIOUtil = new RecordIOUtil(State.OK.getName(), new ArrestRecord(), State.OK.getEngines().get(0).getSite(), true);
 	}
 
 	@BeforeMethod
@@ -95,8 +97,8 @@ public class SpiderEngineTest {
 	}
 	@AfterClass
 	public void tearDownClass() {
-		new File("output/testing/IOWA_ArrestRecord_Alcohol-related_MERGED.xls").delete();
-		new File("output/testing/IOWA_ArrestRecord_MERGED.xls").delete();
+		Assert.assertTrue(new File(mainIOUtil.getOutputter().getMergedDocPath(mainIOUtil.getOutputter().getFilteredDocPath(RecordFilterEnum.ALCOHOL))).delete());
+		Assert.assertTrue(new File(mainIOUtil.getOutputter().getMergedDocPath(mainIOUtil.getMainDocPath())).delete());
 		System.setProperty("TestingSpider", "false");
 		logger.info("********** Finishing Test cases for SpiderEngine *****************");
 	}
@@ -149,8 +151,7 @@ public class SpiderEngineTest {
 		
 		//rename testOutputFileLN
 		mockFile.renameTo(testOutputFileLN);
-		new File(iOUtil.getOutputter().getLNPath()).delete();
-
+		Assert.assertTrue(new File(iOUtil.getOutputter().getLNPath()).delete());
 	}
 
 	@Test
