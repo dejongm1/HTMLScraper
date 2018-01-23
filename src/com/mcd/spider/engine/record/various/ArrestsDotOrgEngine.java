@@ -177,7 +177,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         Elements recordDetailElements = site.getRecordElements((Document) doc);
         for(int e=0;e<recordDetailElements.size();e++) {
             String url = site.getRecordDetailDocUrl(recordDetailElements.get(e));
-            String id = site.generateRecordId(url);
+            String id = site.obtainRecordId(url);
             //only add if we haven't already crawled it
             if (id != null && !spiderWeb.getCrawledIds().contains(id)) {
             	recordDetailUrlMap.put(id, url);
@@ -261,7 +261,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     public ArrestRecord populateArrestRecord(Object profileDetailObj) {
         Elements profileDetails = site.getRecordDetailElements((Document) profileDetailObj);
         ArrestRecord record = new ArrestRecord();
-        record.setId(site.generateRecordId(((Node) profileDetailObj).baseUri()));
+        record.setId(site.obtainRecordId(((Node) profileDetailObj).baseUri()));
         for (Element profileDetail : profileDetails) {
             matchPropertyToField(record, profileDetail);
             logger.debug("\t" + profileDetail.text());
@@ -581,7 +581,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         for (String id : idList) {
             //list should only have uncrawled records but adding this check to be safe
             if (!spiderWeb.getCrawledIds().contains(id)) {
-                recordDetailUrlMap.put(id, site.generateDetailUrl(id));
+                recordDetailUrlMap.put(id, site.obtainDetailUrl(id));
             }
         }
         recordIOUtil.getUncrawledIdFile().delete();

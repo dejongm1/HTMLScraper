@@ -7,6 +7,7 @@ public interface Site {
 	String getName();
 	Url getUrl();
 	int getMaxAttempts();
-	String generateRecordId(String url);
+	String obtainRecordId(String url);
 	int[] getPerRecordSleepRange();
+	String obtainDetailUrl(String id);
 }

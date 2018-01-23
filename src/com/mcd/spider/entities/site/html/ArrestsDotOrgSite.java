@@ -41,21 +41,11 @@ public class ArrestsDotOrgSite implements SiteHTML {
 	public int getResultsPerPage() {
 		return resultsPerPage;
 	}
-	@Override
-	public String generateResultsPageUrl(int page/*, int resultsPerPage*/) {
+	public String generateResultsPageUrl(int page) {
 		String builtUrl = baseUrl;
 		builtUrl += "/?page="+page;
-		/*if (resultsPerPage % 14 == 0) {
-			builtUrl += "&results="+resultsPerPage;
-		} else {*/
-			builtUrl += "&results=" + resultsPerPage;
-		/*}*/
+		builtUrl += "&results=" + resultsPerPage;
 		return builtUrl;
-	}
-
-	@Override
-	public Map<String, Document> getResultsPageDocuments() {
-		return this.resultsPageDocuments;
 	}
 	@Override
 	public void setBaseUrl(String[] args) {
@@ -90,10 +80,6 @@ public class ArrestsDotOrgSite implements SiteHTML {
 		return baseUrl+pdLink;
 	}
 	@Override
-	public Map<String,String> getRecordDetailDocUrls(List<Document> resultsPageDocs) {
-		return null;
-	}
-	@Override
 	public Elements getRecordDetailElements(Document doc) {
 		return doc.select(".content-box.profile.profile-full h3, .info .section-content div, .section-content.charges, img[src^=\"/mugs/\"]");
 	}
@@ -125,7 +111,6 @@ public class ArrestsDotOrgSite implements SiteHTML {
 		}
 		return totalRecordCount;
 	}
-	@Override
 	public int getPageNumberFromDoc(Document doc) {
 		String baseUri = doc.baseUri();
 		return Character.getNumericValue(baseUri.charAt(baseUri.indexOf('&')-1));
@@ -177,7 +162,7 @@ public class ArrestsDotOrgSite implements SiteHTML {
     }
 
 	@Override
-	public String generateRecordId(String url) {
+	public String obtainRecordId(String url) {
 	    if (url.contains("/Arrests/") && url.contains("/?d=1")) {
             return url.substring(url.indexOf("/Arrests/")+9, url.indexOf("/?d=1"));
         } else {
@@ -185,7 +170,8 @@ public class ArrestsDotOrgSite implements SiteHTML {
         }
 	}
 
-    public String generateDetailUrl(String id) {
+	@Override
+    public String obtainDetailUrl(String id) {
         return baseUrl + "/Arrests/" + id + "/?d=1";
     }
 

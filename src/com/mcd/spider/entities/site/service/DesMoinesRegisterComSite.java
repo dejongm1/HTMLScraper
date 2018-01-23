@@ -134,7 +134,7 @@ public class DesMoinesRegisterComSite implements SiteService {
 
         //iterate over counties and add to list
         //try something other than getmugs
-        String urlParameters = "action=getdetails&id=" + this.generateRecordId(url);
+        String urlParameters = "action=getdetails&id=" + this.obtainRecordId(url);
 
         // Send post request
         StringBuffer response = engine.sendRequest(con, urlParameters);
@@ -145,13 +145,6 @@ public class DesMoinesRegisterComSite implements SiteService {
         return detailsDoc;
         //return Jsoup.parse(response.toString());
     }
-	public String getRecordDetailDocUrl(Element record) {
-		String pdId = record.attr("id");
-		return baseUrl+ "&id=" + pdId;
-	}
-	public Map<String,String> getRecordDetailDocUrls(List<Document> resultsPageDocs) {
-		return null;
-	}
 	public Elements getRecordDetailElements(Document doc) {
 		return doc.select("h1, p");
 	}
@@ -163,7 +156,7 @@ public class DesMoinesRegisterComSite implements SiteService {
         }
     }
     @Override
-	public String generateRecordId(String url) {
+	public String obtainRecordId(String url) {
 		return url.substring(url.indexOf("&id=")+4, url.length());
 	}
 	public int[] getPerRecordSleepRange() {
@@ -176,5 +169,10 @@ public class DesMoinesRegisterComSite implements SiteService {
 	@Override
 	public int getMaxAttempts() {
 		return maxAttempts;
+	}
+
+	@Override
+	public String obtainDetailUrl(String id) {
+		return baseUrl+ "&id=" + id;
 	}
 }

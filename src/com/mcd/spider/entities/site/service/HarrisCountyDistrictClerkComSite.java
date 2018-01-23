@@ -44,7 +44,7 @@ public class HarrisCountyDistrictClerkComSite implements SiteService {
 	}
 
 	@Override
-	public String generateRecordId(String param) {
+	public String obtainRecordId(String param) {
         //id is the 18th element in line
 		String[] stringList = param.split("\t");
 		return stringList[17];
@@ -137,5 +137,11 @@ public class HarrisCountyDistrictClerkComSite implements SiteService {
 	
 	public String getUpgradeInsecureRequests() {
 		return "1";
+	}
+
+	@Override
+	public String obtainDetailUrl(String id) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

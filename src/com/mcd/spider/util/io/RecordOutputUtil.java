@@ -413,7 +413,7 @@ public class RecordOutputUtil {
 		for (Map.Entry<Object, String> entry : recordsDetailsUrlMap.entrySet()) {
 			try {
 			    //make sure it hasn't been crawled and it's a url that contains a record i.e. has a recordId
-			    if (!entry.getValue().startsWith("CRAWLED") && site.generateRecordId(entry.getValue())!=null) {
+			    if (!entry.getValue().startsWith("CRAWLED") && site.obtainRecordId(entry.getValue())!=null) {
                     writeIdToFile(uncrawledIdFile, String.valueOf(entry.getKey()));
                 }
 			} catch (Exception e) {

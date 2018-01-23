@@ -207,7 +207,7 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     public ArrestRecord populateArrestRecord(Object profileDetailObj) {
         Elements profileDetails = site.getRecordDetailElements((Document) profileDetailObj);
         ArrestRecord record = new ArrestRecord();
-        record.setId(site.generateRecordId(((Element) profileDetailObj).select("#permalink-url a").get(0).attr("href")));
+        record.setId(site.obtainRecordId(((Element) profileDetailObj).select("#permalink-url a").get(0).attr("href")));
         //made it here
         for (Element profileDetail : profileDetails) {
             matchPropertyToField(record, profileDetail);
