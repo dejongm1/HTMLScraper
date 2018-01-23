@@ -12,7 +12,7 @@ import java.util.Map;
 
 public class ArrestsDotOrgSite implements SiteHTML {
 
-	private static final Url url = new Url("http://", "arrests.org", new String[]{});
+	private static final Url url = new Url("https://", "arrests.org", new String[]{});
 	private static final String name = "ArrestsOrg";
 	private String baseUrl;
 	private int pages;
@@ -71,7 +71,7 @@ public class ArrestsDotOrgSite implements SiteHTML {
 	}
 	@Override
 	public String getBaseUrl() {
-		return this.baseUrl;
+		return baseUrl;
 	}
 //	@Override
 //	public Element getRecordElement(Document doc) {
