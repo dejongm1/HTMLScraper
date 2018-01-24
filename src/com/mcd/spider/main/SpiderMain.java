@@ -17,7 +17,7 @@ import java.util.List;
 
 /**
  *
- * @author U569220
+ * @author Michael De Jong
  *
  */
 

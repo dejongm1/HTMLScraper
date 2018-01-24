@@ -25,7 +25,7 @@ import com.mcd.spider.util.io.RecordIOUtil;
 
 /**
  * 
- * @author u569220
+ * @author Michael De Jong
  *
  */
 

@@ -1,7 +1,15 @@
 package com.mcd.spider.engine;
 
+import static com.mcd.spider.entities.record.ArrestRecord.ArrestDateComparator;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.log4j.Logger;
+
 import com.mcd.spider.engine.audit.AuditEngine;
-import com.mcd.spider.engine.record.iowa.DesMoinesRegisterComEngine;
+import com.mcd.spider.engine.record.various.MugshotsDotComEngine;
 import com.mcd.spider.engine.router.StateRouter;
 import com.mcd.spider.entities.audit.AuditParameters;
 import com.mcd.spider.entities.io.RecordSheet;
@@ -15,17 +23,10 @@ import com.mcd.spider.entities.site.SpiderWeb;
 import com.mcd.spider.exception.SpiderException;
 import com.mcd.spider.exception.StateNotReadyException;
 import com.mcd.spider.util.io.RecordIOUtil;
-import org.apache.log4j.Logger;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.mcd.spider.entities.record.ArrestRecord.ArrestDateComparator;
 
 /**
  * 
- * @author U569220
+ * @author Michael De Jong
  *
  */
 
@@ -48,6 +49,23 @@ public class SpiderEngine {
 			}
 		}
 		logger.info("Spider has finished crawling. Going back to it's web.");
+	}
+
+	//method used for testing new features/engines
+	public void getArrestRecordsThroughTheBackDoor(List<State> states, long maxNumberOfResults, RecordFilterEnum filter, boolean retrieveMissedRecords) throws SpiderException {
+		for (State state : states) {
+			state.getEngines().clear();
+			SpiderWeb spiderWeb = new SpiderWeb(maxNumberOfResults, true, retrieveMissedRecords, filter, state);
+//          state.addEngine(new ArrestsDotOrgEngine());
+//			state.addEngine(new DesMoinesRegisterComEngine());
+			state.addEngine(new MugshotsDotComEngine("", "", ""));
+			state.primeStateEngines(spiderWeb);
+			StateRouter router = new StateRouter(state);
+			router.collectRecords();
+			RecordIOUtil mainIOutil = new RecordIOUtil(state.getName(), new ArrestRecord(), state.getEngines().get(0).getSite());
+			customizeArrestOutputs(mainIOutil, state, filter);
+		}
+		logger.info("Spider has finished crawling through backdoors and cracks in the walls. Going back to it's web.");
 	}
 	
 	protected void customizeArrestOutputs(RecordIOUtil mainIOutil, State state, RecordFilterEnum filter) {
@@ -133,19 +151,6 @@ public class SpiderEngine {
 	public void getTextBySelector(String url, String selector) {
 		AuditEngine engine = new AuditEngine();
 		engine.getTextBySelector(url, selector);
-	}
-	
-	public void getArrestRecordsThroughTheBackDoor(List<State> states, long maxNumberOfResults, RecordFilterEnum filter, boolean retrieveMissedRecords) throws SpiderException {
-		for (State state : states) {
-			state.getEngines().clear();
-//            state.addEngine(new ArrestsDotOrgEngine());
-			SpiderWeb spiderWeb = new SpiderWeb(maxNumberOfResults, true, retrieveMissedRecords, filter, state);
-			state.addEngine(new DesMoinesRegisterComEngine(spiderWeb));
-//			state.addEngine(new MugShotsDotComEngine());
-			StateRouter router = new StateRouter(state);
-			router.collectRecords();
-		}
-		logger.info("Spider has finished crawling through backdoors and cracks in the walls. Going back to it's web.");
 	}
 	
 	protected RecordWorkbook filterOutLexisNexisEligibleRecords(RecordWorkbook recordBook) {

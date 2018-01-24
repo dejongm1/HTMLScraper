@@ -13,7 +13,7 @@ import com.mcd.spider.entities.record.Record;
 
 /**
  * 
- * @author u569220
+ * @author Michael De Jong
  *
  */
 

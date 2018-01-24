@@ -4,7 +4,7 @@ import java.util.*;
 
 /**
  * 
- * @author u569220
+ * @author Michael De Jong
  *
  */
 

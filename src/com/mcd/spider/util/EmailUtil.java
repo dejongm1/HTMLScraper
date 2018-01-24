@@ -8,7 +8,7 @@ import javax.mail.internet.MimeMessage;
 
 /**
  * 
- * @author U569220
+ * @author Michael De Jong
  *
  */
 

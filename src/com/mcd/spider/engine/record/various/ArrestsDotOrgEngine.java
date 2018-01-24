@@ -55,7 +55,6 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         connectionUtil = new ConnectionUtil(true);
     }
 
-    //mostly for testing
     public ArrestsDotOrgEngine(String stateName) {
     	this.site = new ArrestsDotOrgSite(new String[]{stateName});
         connectionUtil = new ConnectionUtil(true);
@@ -66,6 +65,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     	this.spiderWeb = web;
     }
 
+    @Override
     public SpiderWeb getSpiderWeb() {
 		return spiderWeb;
 	}
@@ -89,7 +89,6 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         long totalTime = System.currentTimeMillis();
 //        site = new ArrestsDotOrgSite(new String[]{stateName}); //moved to constructor
         recordIOUtil = initializeIOUtil(stateName);
-        //Do we want to persist between states in same run? Or not run multiple states at once?
 
         logger.info("----Site: " + site.getName() + "-" + stateName + "----");
         logger.debug("Sending spider " + (spiderWeb.isOffline()?"offline":"online" ));
@@ -113,7 +112,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     @Override
     public void scrapeSite() {
     	int maxAttempts = site.getMaxAttempts();
-        String firstPageResultsUrl = site.generateResultsPageUrl(1);
+        String firstPageResultsUrl = site.generateResultsPageUrl("1");
         Document mainPageDoc = null;
         if (spiderWeb.getAttemptCount()<=maxAttempts) {
 	        try {
@@ -366,7 +365,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     public Map<Object,String> compileResultsUrlMap(Document mainPageDoc) {
         Map<Object,String> resultsUrlMap = new HashMap<>();
         for (int p=1; p<=spiderWeb.getNumberOfPages();p++) {
-            resultsUrlMap.put(p, site.generateResultsPageUrl(p));
+            resultsUrlMap.put(p, site.generateResultsPageUrl(String.valueOf(p)));
         }
         //also get misc urls
         if (spiderWeb.getMisc()) {

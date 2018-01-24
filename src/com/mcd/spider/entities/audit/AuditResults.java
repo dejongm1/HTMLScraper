@@ -8,7 +8,7 @@ import java.util.TreeSet;
 
 /**
  * 
- * @author u569220
+ * @author Michael De Jong
  *
  */
 

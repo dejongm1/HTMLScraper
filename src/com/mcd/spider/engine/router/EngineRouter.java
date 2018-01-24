@@ -4,7 +4,7 @@ import com.mcd.spider.exception.SpiderException;
 
 /**
  * 
- * @author u569220
+ * @author Michael De Jong
  *
  */
 

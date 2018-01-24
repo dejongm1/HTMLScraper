@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
 
 /**
  * 
- * @author u569220
+ * @author Michael De Jong
  *
  */
 

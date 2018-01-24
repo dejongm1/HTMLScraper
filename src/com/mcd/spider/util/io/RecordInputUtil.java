@@ -20,7 +20,7 @@ import java.util.Set;
 
 /**
  * 
- * @author u569220
+ * @author Michael De Jong
  *
  */
 public class RecordInputUtil {

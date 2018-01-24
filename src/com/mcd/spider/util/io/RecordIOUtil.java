@@ -17,7 +17,7 @@ import jxl.Sheet;
 
 /**
  * 
- * @author u569220
+ * @author Michael De Jong
  *
  */
 

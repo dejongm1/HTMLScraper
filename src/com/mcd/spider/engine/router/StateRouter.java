@@ -7,7 +7,7 @@ import common.Logger;
 
 /**
  * 
- * @author u569220
+ * @author Michael De Jong
  *
  */
 

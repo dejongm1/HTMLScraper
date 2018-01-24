@@ -4,7 +4,7 @@ import com.mcd.spider.entities.record.State;
 
 /**
  * 
- * @author u569220
+ * @author Michael De Jong
  *
  */
 

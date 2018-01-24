@@ -63,7 +63,11 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
     public void setSpiderWeb(SpiderWeb web) {
     	this.spiderWeb = web;
     }
-    
+
+	@Override
+	public SpiderWeb getSpiderWeb() {
+		return spiderWeb;
+	}
     @Override
     public Site getSite() {
     	return site;

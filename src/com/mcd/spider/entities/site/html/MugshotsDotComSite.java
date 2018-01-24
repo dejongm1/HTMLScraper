@@ -10,14 +10,24 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ *
+ * @author Michael De Jong
+ *
+ */
+
 public class MugshotsDotComSite  implements SiteHTML{
 
     private static final Url url = new Url("https://", "mugshots.com", new String[]{"US-Counties"});
     private static final String name = "Mugshots.com";
-    private static final int[] perRecordSleepRange = new int[]{1000,2000};
+    private static final int[] perRecordSleepRange = new int[]{1000,5000};
     private String baseUrl;
     private int maxAttempts = 5;
 
+	public MugshotsDotComSite (String[] args) {
+		setBaseUrl(args);
+	}
+	
     @Override
     public String getBaseUrl() {
         return baseUrl;
@@ -25,9 +35,16 @@ public class MugshotsDotComSite  implements SiteHTML{
 
     @Override
     public void setBaseUrl(String[] args) {
+		//expect state name, county name, abbreviation
+		//example http://mugshots.com/US-Counties/Mississippi/Scott-County-MS/
         if (baseUrl==null) {
             Url urlResult = getUrl();
-            String builtUrl = urlResult.getProtocol() + urlResult.getDomain() + (args[0]!=null?args[0]+"/":"");
+            String countyString = args[1]!=null?(args[1].replaceAll(" ", "-") + "County-"):"";
+            String builtUrl = urlResult.getProtocol() + urlResult.getDomain() + (args[0]!=null?args[0]+"/":"")
+            					+ countyString 
+            					+ "-" + args[2]!=null?args[2]:""
+            					+ "/";
+            
             baseUrl =  builtUrl;
         }
     }
@@ -93,6 +110,15 @@ public class MugshotsDotComSite  implements SiteHTML{
         return 0;
     }
 
+	@Override
+	public String generateResultsPageUrl(String noArg) {
+		return baseUrl;
+	}
+
+	public String generateFirstResultsPageUrl() {
+		return generateResultsPageUrl("");
+	}
+	
     @Override
     public Map<Object, String> getMiscSafeUrlsFromDoc(Document doc, int pagesToMatch) {
     	//TODO refine 
@@ -157,4 +183,5 @@ public class MugshotsDotComSite  implements SiteHTML{
 	public String obtainDetailUrl(String id) {
         return baseUrl + "/" + id + ".html";
 	}
+
 }

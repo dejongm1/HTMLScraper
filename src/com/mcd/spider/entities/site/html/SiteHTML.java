@@ -15,8 +15,7 @@ public interface SiteHTML extends Site{
 	Elements getRecordDetailElements(Document doc);
 	int getTotalPages(Document doc);
 	int getTotalRecordCount(Document doc);
-//	String generateResultsPageUrl(int page);
-//	int getPageNumberFromDoc(Document doc);
+	String generateResultsPageUrl(String arg);
 	Map<Object, String> getMiscSafeUrlsFromDoc(Document doc, int pagesToMatch);
 	boolean isAResultsDoc(Document doc);
     boolean isARecordDetailDoc(Document doc);

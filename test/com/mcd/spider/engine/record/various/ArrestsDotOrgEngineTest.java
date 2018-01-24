@@ -111,7 +111,7 @@ public class ArrestsDotOrgEngineTest {
 	    Assert.assertEquals(mockEngine.getSpiderWeb().getMisc(), mockWeb.getMisc());
 	    Assert.assertEquals(mockEngine.getSpiderWeb().retrieveMissedRecords(), mockWeb.retrieveMissedRecords());
 	    Assert.assertNotNull(mockEngine.getSite());
-	    Assert.assertEquals(mockEngine.getSite().getBaseUrl(), "http://iowa.arrests.org");
+	    Assert.assertEquals(mockEngine.getSite().getBaseUrl(), "https://iowa.arrests.org");
 	}
 
 	@Test
@@ -121,15 +121,15 @@ public class ArrestsDotOrgEngineTest {
 		
 	    Assert.assertNotNull(mockEngine.getSite());
 	    Assert.assertNotNull(mockTestEngine.getSite());
-	    Assert.assertEquals(mockEngine.getSite().getBaseUrl(), "http://iowa.arrests.org");
+	    Assert.assertEquals(mockEngine.getSite().getBaseUrl(), "https://iowa.arrests.org");
 	    Assert.assertEquals(mockEngine.getSite().getBaseUrl(), mockTestEngine.getSite().getBaseUrl());
 	}
 
 	@Test
 	public void compileRecordDetailUrlMap() throws IOException {
 		Map<Integer, Document> resultsPageDocMap = new HashMap<>();
-		resultsPageDocMap.put(1, Jsoup.parse(new File("test/resources/htmls/httpiowa.arrests.orgpage=1&results=56"), "UTF-8"));
-		resultsPageDocMap.put(2, Jsoup.parse(new File("test/resources/htmls/httpiowa.arrests.orgpage=2&results=56"), "UTF-8"));
+		resultsPageDocMap.put(1, Jsoup.parse(new File("test/resources/htmls/httpsiowa.arrests.orgpage=1&results=56"), "UTF-8"));
+		resultsPageDocMap.put(2, Jsoup.parse(new File("test/resources/htmls/httpsiowa.arrests.orgpage=2&results=56"), "UTF-8"));
 		UrlValidator urlValidator = new UrlValidator(new String[]{"http","https"});
 		
 		Map<Object, String> resultMap = mockEngine.compileRecordDetailUrlMap(mockMainPageDoc, resultsPageDocMap);
@@ -146,8 +146,8 @@ public class ArrestsDotOrgEngineTest {
 		mockWeb.setCrawledIds(new HashSet<>());
 		ArrestsDotOrgEngine mockEngine = new ArrestsDotOrgEngine(mockWeb);
 		Map<Integer, Document> resultsPageDocMap = new HashMap<>();
-		resultsPageDocMap.put(1, Jsoup.parse(new File("test/resources/htmls/httpiowa.arrests.orgpage=1&results=56"), "UTF-8"));
-		resultsPageDocMap.put(2, Jsoup.parse(new File("test/resources/htmls/httpiowa.arrests.orgpage=2&results=56"), "UTF-8"));
+		resultsPageDocMap.put(1, Jsoup.parse(new File("test/resources/htmls/httpsiowa.arrests.orgpage=1&results=56"), "UTF-8"));
+		resultsPageDocMap.put(2, Jsoup.parse(new File("test/resources/htmls/httpsiowa.arrests.orgpage=2&results=56"), "UTF-8"));
 		UrlValidator urlValidator = new UrlValidator(new String[]{"http","https"});
 		
 		Map<Object, String> resultMap = mockEngine.compileRecordDetailUrlMap(mockMainPageDoc, resultsPageDocMap);
@@ -169,8 +169,8 @@ public class ArrestsDotOrgEngineTest {
 		ArrestsDotOrgEngine mockEngine = new ArrestsDotOrgEngine(mockWeb);
 		mockEngine.setRecordIOUtil(new RecordIOUtil(State.IA.getName(), new ArrestRecord(), mockEngine.getSite(), true));
 		Map<Integer, Document> resultsPageDocMap = new HashMap<>();
-		resultsPageDocMap.put(1, Jsoup.parse(new File("test/resources/htmls/httpiowa.arrests.orgpage=1&results=56"), "UTF-8"));
-		resultsPageDocMap.put(2, Jsoup.parse(new File("test/resources/htmls/httpiowa.arrests.orgpage=2&results=56"), "UTF-8"));
+		resultsPageDocMap.put(1, Jsoup.parse(new File("test/resources/htmls/httpsiowa.arrests.orgpage=1&results=56"), "UTF-8"));
+		resultsPageDocMap.put(2, Jsoup.parse(new File("test/resources/htmls/httpsiowa.arrests.orgpage=2&results=56"), "UTF-8"));
 		UrlValidator urlValidator = new UrlValidator(new String[]{"http","https"});
 		
 		Map<Object, String> resultMap = mockEngine.compileRecordDetailUrlMap(mockMainPageDoc, resultsPageDocMap);
@@ -300,11 +300,11 @@ public class ArrestsDotOrgEngineTest {
 		mockWeb.setCrawledIds(new HashSet<>());
 		ArrestsDotOrgEngine mockEngine = new ArrestsDotOrgEngine(mockWeb);
 		Map<Object,String> resultUrlMap = new HashMap<>();
-		resultUrlMap.put(1, "http://www.thisisabadURL.com");
-		resultUrlMap.put(2, "http://www.thisisanotherbadURL.com");
-		resultUrlMap.put(3, "http://www.badURL3.com");
-		resultUrlMap.put(4, "http://www.fourthbadURL.html");
-		resultUrlMap.put(5, "http://www.lastbadURL.html");
+		resultUrlMap.put(1, "https://www.thisisabadURL.com");
+		resultUrlMap.put(2, "https://www.thisisanotherbadURL.com");
+		resultUrlMap.put(3, "https://www.badURL3.com");
+		resultUrlMap.put(4, "https://www.fourthbadURL.html");
+		resultUrlMap.put(5, "https://www.lastbadURL.html");
 		Map<Integer,Document> resultDocMap = mockEngine.compileResultsDocMap(resultUrlMap);
 
 		Assert.assertEquals(resultDocMap.size(), 0);
@@ -511,8 +511,8 @@ public class ArrestsDotOrgEngineTest {
 
 	@Test
 	public void getSite() {
-		Assert.assertEquals(mockEngine.getSite().getBaseUrl(), "http://iowa.arrests.org");
-		Assert.assertEquals(mockEngine.getSite().getBaseUrl(), "http://" + mockWeb.getState().getName().toLowerCase() + ".arrests.org");
+		Assert.assertEquals(mockEngine.getSite().getBaseUrl(), "https://iowa.arrests.org");
+		Assert.assertEquals(mockEngine.getSite().getBaseUrl(), "https://" + mockWeb.getState().getName().toLowerCase() + ".arrests.org");
 	}
 
 	@Test
@@ -594,7 +594,7 @@ public class ArrestsDotOrgEngineTest {
 
 	@Test(groups="online", enabled=false) //make these dependent on a test that gathers a handful of docs on class load instead of each test creating a new connection
 	public void initiateConnection_Online() throws IOException {
-		Object mainDoc = mockEngine.initiateConnection(((ArrestsDotOrgSite)mockEngine.getSite()).generateResultsPageUrl(1));
+		Object mainDoc = mockEngine.initiateConnection(((ArrestsDotOrgSite)mockEngine.getSite()).generateResultsPageUrl("1"));
 		
 		Assert.assertTrue(mainDoc instanceof Document);
 		Assert.assertEquals(mockEngine.getSpiderWeb().getHeaders().size(), 7);
@@ -608,7 +608,7 @@ public class ArrestsDotOrgEngineTest {
 
 	@Test
 	public void initiateConnection() throws IOException {
-		Object mainDoc = mockEngine.initiateConnection(((ArrestsDotOrgSite)mockEngine.getSite()).generateResultsPageUrl(1));
+		Object mainDoc = mockEngine.initiateConnection(((ArrestsDotOrgSite)mockEngine.getSite()).generateResultsPageUrl("1"));
 		
 		Assert.assertTrue(mainDoc instanceof Document);
 		Assert.assertEquals(mockEngine.getSpiderWeb().getHeaders().size(), 7);
@@ -698,7 +698,7 @@ public class ArrestsDotOrgEngineTest {
 
 	@Test
 	public void obtainRecordDetailDoc() throws IOException {
-		Document detailDoc = mockEngine.obtainRecordDetailDoc("http://iowa.arrests.org/Arrests/Justin_Wilde_33799480/?d=1", "www.google.com");
+		Document detailDoc = mockEngine.obtainRecordDetailDoc("https://iowa.arrests.org/Arrests/Justin_Wilde_33799480/?d=1", "www.google.com");
 
 		Assert.assertFalse(detailDoc.text().equals(""));
 		Assert.assertEquals(detailDoc.title(), "Justin Wilde Mugshot | 07/27/17 Iowa Arrest");
@@ -756,7 +756,7 @@ public class ArrestsDotOrgEngineTest {
 
 	@Test
 	public void populateArrestRecord() {
-		mockDetailDoc.setBaseUri("http://iowa.arrests.org/Arrests/Brad_Smith_12323232/?d=1");
+		mockDetailDoc.setBaseUri("https://iowa.arrests.org/Arrests/Brad_Smith_12323232/?d=1");
 		ArrestRecord resultRecord = mockEngine.populateArrestRecord(mockDetailDoc);
 
 		Assert.assertEquals(resultRecord.getId(), "Brad_Smith_12323232");		
@@ -781,20 +781,20 @@ public class ArrestsDotOrgEngineTest {
 		SpiderWeb mockWeb = new SpiderWeb(9999, true, false, RecordFilterEnum.ALCOHOL, State.IA);
 		ArrestsDotOrgEngine mockEngine = new ArrestsDotOrgEngine(mockWeb);
 		mockEngine.setRecordIOUtil(mockEngine.initializeIOUtil(State.IA.getName()));
-        mockEngine.initiateConnection(((ArrestsDotOrgSite)mockEngine.getSite()).generateResultsPageUrl(1));
+        mockEngine.initiateConnection(((ArrestsDotOrgSite)mockEngine.getSite()).generateResultsPageUrl("1"));
         Map<Object,String> recordsDetailsUrlMap = new HashMap<>();
-        recordsDetailsUrlMap.put(1, "http://iowa.arrests.org/Irrevlavent/page");
-        recordsDetailsUrlMap.put("33799480", "http://iowa.arrests.org/Arrests/Justin_Wilde_33799480/?d=1");
-        recordsDetailsUrlMap.put("34065316", "http://iowa.arrests.org/Arrests/Dominic_Lacava_34065316/?d=1");
-        recordsDetailsUrlMap.put(2, "http://iowa.arrests.org/County/AdSpam");
+        recordsDetailsUrlMap.put(1, "https://iowa.arrests.org/Irrevlavent/page");
+        recordsDetailsUrlMap.put("33799480", "https://iowa.arrests.org/Arrests/Justin_Wilde_33799480/?d=1");
+        recordsDetailsUrlMap.put("34065316", "https://iowa.arrests.org/Arrests/Dominic_Lacava_34065316/?d=1");
+        recordsDetailsUrlMap.put(2, "https://iowa.arrests.org/County/AdSpam");
 
 		mockEngine.scrapeRecords(recordsDetailsUrlMap);
 
 		File mainOutput = new File(mockEngine.getRecordIOUtil().getMainDocPath());
 
 		Assert.assertTrue(mainOutput.exists());
-		Assert.assertTrue(recordsDetailsUrlMap.containsValue("CRAWLEDhttp://iowa.arrests.org/Arrests/Justin_Wilde_33799480/?d=1"));
-        Assert.assertTrue(recordsDetailsUrlMap.containsValue("CRAWLEDhttp://iowa.arrests.org/Arrests/Dominic_Lacava_34065316/?d=1"));
+		Assert.assertTrue(recordsDetailsUrlMap.containsValue("CRAWLEDhttps://iowa.arrests.org/Arrests/Justin_Wilde_33799480/?d=1"));
+        Assert.assertTrue(recordsDetailsUrlMap.containsValue("CRAWLEDhttps://iowa.arrests.org/Arrests/Dominic_Lacava_34065316/?d=1"));
         Assert.assertFalse(recordsDetailsUrlMap.containsKey("CRAWLED1"));
         Assert.assertFalse(recordsDetailsUrlMap.containsKey("CRAWLED2"));
         Assert.assertTrue(mainOutput.delete());
@@ -805,17 +805,17 @@ public class ArrestsDotOrgEngineTest {
 		SpiderWeb mockWeb = new SpiderWeb(9999, true, false, RecordFilterEnum.ALCOHOL, State.IA);
 		ArrestsDotOrgEngine mockEngine = new ArrestsDotOrgEngine(mockWeb);
 		mockEngine.setRecordIOUtil(mockEngine.initializeIOUtil(State.IA.getName()));
-        mockEngine.initiateConnection(((ArrestsDotOrgSite)mockEngine.getSite()).generateResultsPageUrl(1));
+        mockEngine.initiateConnection(((ArrestsDotOrgSite)mockEngine.getSite()).generateResultsPageUrl("1"));
         Map<Object,String> recordsDetailsUrlMap = new HashMap<>();
-        recordsDetailsUrlMap.put(1, "http://iowa.arrests.org/Irrevlavent/page");
-        recordsDetailsUrlMap.put("33799480", "http://iowa.arrests.org/Arrests/Justin_Wilde_33799480/?d=1");
+        recordsDetailsUrlMap.put(1, "https://iowa.arrests.org/Irrevlavent/page");
+        recordsDetailsUrlMap.put("33799480", "https://iowa.arrests.org/Arrests/Justin_Wilde_33799480/?d=1");
 
 		mockEngine.scrapeRecords(recordsDetailsUrlMap);
 
 		File mainOutput = new File(mockEngine.getRecordIOUtil().getMainDocPath());
 
 		Assert.assertTrue(mainOutput.exists());
-		Assert.assertTrue(recordsDetailsUrlMap.containsValue("CRAWLEDhttp://iowa.arrests.org/Arrests/Justin_Wilde_33799480/?d=1"));
+		Assert.assertTrue(recordsDetailsUrlMap.containsValue("CRAWLEDhttps://iowa.arrests.org/Arrests/Justin_Wilde_33799480/?d=1"));
         Assert.assertFalse(recordsDetailsUrlMap.containsKey("CRAWLED1"));
         Assert.assertTrue(mainOutput.delete());
 	}
@@ -825,10 +825,10 @@ public class ArrestsDotOrgEngineTest {
 		SpiderWeb mockWeb = new SpiderWeb(9999, true, false, RecordFilterEnum.ALCOHOL, State.IA);
 		ArrestsDotOrgEngine mockEngine = new ArrestsDotOrgEngine(mockWeb);
 		mockEngine.setRecordIOUtil(mockEngine.initializeIOUtil(State.IA.getName()));
-        mockEngine.initiateConnection(((ArrestsDotOrgSite)mockEngine.getSite()).generateResultsPageUrl(1));
+        mockEngine.initiateConnection(((ArrestsDotOrgSite)mockEngine.getSite()).generateResultsPageUrl("1"));
         Map<Object,String> recordsDetailsUrlMap = new HashMap<>();
         recordsDetailsUrlMap.put("", ""); //pass in a detail page that exists
-        recordsDetailsUrlMap.put(2, "http://iowa.arrests.org/County/AdSpam");//this should cause exception
+        recordsDetailsUrlMap.put(2, "https://iowa.arrests.org/County/AdSpam");//this should cause exception
 
 		mockEngine.scrapeRecords(recordsDetailsUrlMap);
 
@@ -845,14 +845,14 @@ public class ArrestsDotOrgEngineTest {
 		SpiderWeb mockWeb = new SpiderWeb(9999, true, false, RecordFilterEnum.ALCOHOL, State.IA);
 		ArrestsDotOrgEngine mockEngine = new ArrestsDotOrgEngine(mockWeb);
 		mockEngine.setRecordIOUtil(mockEngine.initializeIOUtil(State.IA.getName()));
-        mockEngine.initiateConnection(((ArrestsDotOrgSite)mockEngine.getSite()).generateResultsPageUrl(1));
+        mockEngine.initiateConnection(((ArrestsDotOrgSite)mockEngine.getSite()).generateResultsPageUrl("1"));
         Map<Object,String> recordsDetailsUrlMap = new HashMap<>();
-        recordsDetailsUrlMap.put(1, "http://iowa.arrests.org/County/NotReal");//this should cause exception
-        recordsDetailsUrlMap.put(2, "http://iowa.arrests.org/County/AdSpam");
-        recordsDetailsUrlMap.put(3, "http://iowa.arrests.org/Page/NotFound");
-        recordsDetailsUrlMap.put(4, "http://iowa.arrests.org/Error/Error");
-        recordsDetailsUrlMap.put("34065316", "http://iowa.arrests.org/Arrests/Dominic_Lacava_34065316/?d=1");
-        recordsDetailsUrlMap.put("34065317", "http://iowa.arrests.org/Arrests/Cominid_Aacavl_34065317/?d=1");
+        recordsDetailsUrlMap.put(1, "https://iowa.arrests.org/County/NotReal");//this should cause exception
+        recordsDetailsUrlMap.put(2, "https://iowa.arrests.org/County/AdSpam");
+        recordsDetailsUrlMap.put(3, "https://iowa.arrests.org/Page/NotFound");
+        recordsDetailsUrlMap.put(4, "https://iowa.arrests.org/Error/Error");
+        recordsDetailsUrlMap.put("34065316", "https://iowa.arrests.org/Arrests/Dominic_Lacava_34065316/?d=1");
+        recordsDetailsUrlMap.put("34065317", "https://iowa.arrests.org/Arrests/Cominid_Aacavl_34065317/?d=1");
 		mockEngine.scrapeRecords(recordsDetailsUrlMap);
 
 		File mainOutput = new File(mockEngine.getRecordIOUtil().getMainDocPath());
@@ -871,7 +871,7 @@ public class ArrestsDotOrgEngineTest {
 	@Test
 	public void setCookies_Initial() {
 		mockWeb.getSessionCookies().clear();
-		Connection.Response response = new OfflineResponse(200, "http://iowa.arrests.org");
+		Connection.Response response = new OfflineResponse(200, "https://iowa.arrests.org");
 		mockEngine.setCookies(response);
 		
 		Assert.assertNotNull(mockWeb.getSessionCookies().get("PHPSESSID"));
@@ -886,7 +886,7 @@ public class ArrestsDotOrgEngineTest {
 		currentCookies.put("PHPSESSID", "1283unlnc-wq0932e");
 		currentCookies.put("views_session", "2");
 		currentCookies.put("views_24", "4");
-		Connection.Response response = new OfflineResponse(200, "http://iowa.arrests.org", currentCookies);
+		Connection.Response response = new OfflineResponse(200, "https://iowa.arrests.org", currentCookies);
 		mockWeb.setSessionCookies(currentCookies);
 		
 		mockEngine.setCookies(response);
@@ -902,7 +902,7 @@ public class ArrestsDotOrgEngineTest {
 		currentCookies.put("PHPSESSID", "1283unlnc-wq0932e");
 		currentCookies.put("views_session", "99");
 		currentCookies.put("views_24", "99");
-		Connection.Response response = new OfflineResponse(200, "http://iowa.arrests.org");
+		Connection.Response response = new OfflineResponse(200, "https://iowa.arrests.org");
 		mockWeb.setSessionCookies(currentCookies);
 		mockWeb.setRecordCap(100);
 		mockWeb.addToRecordsProcessed(100);

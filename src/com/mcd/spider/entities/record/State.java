@@ -95,6 +95,9 @@ public final class State {
 	public String getName() {
 		return this.name;
 	}
+	public String getAbbreviation() {
+		return this.abbreviation;
+	}
 	public List<ArrestRecordEngine> getEngines() {
 		return this.engines;
 	}	

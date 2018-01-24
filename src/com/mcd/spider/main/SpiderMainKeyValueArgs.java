@@ -18,7 +18,7 @@ import java.util.Map;
 
 /**
  *
- * @author U569220
+ * @author Michael De Jong
  *
  */
 

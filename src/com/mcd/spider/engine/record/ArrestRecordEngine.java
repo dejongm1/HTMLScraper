@@ -18,21 +18,22 @@ import com.mcd.spider.util.io.RecordIOUtil;
 public interface ArrestRecordEngine {
 
 	Site getSite();
+	void setSpiderWeb(SpiderWeb web);
+	RecordIOUtil getRecordIOUtil();
+	SpiderWeb getSpiderWeb();
 	void getArrestRecords(String stateName) throws SpiderException;
 	void scrapeSite();
 	Map<String,String> parseDocForUrls(Object objectToParse);
 	void scrapeRecords(Map<Object, String> recordsDetailsUrlMap);
 	ArrestRecord populateArrestRecord(Object profileDetailObj);
 	void matchPropertyToField(ArrestRecord record, Object profileDetail);
-	void formatName(ArrestRecord record, Element profileDetail);
-	String extractValue(Element profileDetail);
-	void formatArrestTime(ArrestRecord record, Element profileDetail);
-	RecordIOUtil initializeIOUtil(String stateName) throws SpiderException;
-	List<Record> filterRecords(List<Record> fullArrestRecords);
 	Object initiateConnection(String arg) throws IOException;
-	void finalizeOutput(List<Record> arrestRecords);
+	RecordIOUtil initializeIOUtil(String stateName) throws SpiderException;
 	void setCookies(Response response);
-	void setSpiderWeb(SpiderWeb web);
-	RecordIOUtil getRecordIOUtil();
+	void finalizeOutput(List<Record> arrestRecords);
+	void formatName(ArrestRecord record, Element profileDetail);
+	void formatArrestTime(ArrestRecord record, Element profileDetail);
+	String extractValue(Element profileDetail);
+	List<Record> filterRecords(List<Record> fullArrestRecords);
 	
 }

@@ -9,7 +9,7 @@ import com.mcd.spider.util.SpiderConstants;
 
 /**
  * 
- * @author u569220
+ * @author Michael De Jong
  *
  */
 
