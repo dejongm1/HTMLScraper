@@ -1,6 +1,7 @@
 package com.mcd.spider.engine.record.various;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -37,12 +38,13 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
     private MugshotsDotComSite site;
     private RecordIOUtil recordIOUtil;
     private SpiderWeb spiderWeb;
-//
-//    public MugshotsDotComEngine(SpiderWeb web) {
-//    	this.spiderWeb = web;
-//    	this.site = new MugshotsDotComSite(new String[]{web.getState().getName(), county, web.getState().getAbbreviation()});
-//        connectionUtil = new ConnectionUtil(true);
-//    }
+    List<Record> arrestRecords = new ArrayList<>();
+
+    public MugshotsDotComEngine(SpiderWeb web) {
+    	this.spiderWeb = web;
+    	this.site = new MugshotsDotComSite(new String[]{web.getState().getName(), web.getState().getAbbreviation()});
+        connectionUtil = new ConnectionUtil(true);
+    }
 
     public MugshotsDotComEngine(String stateName, String countyName, String stateAbbreviation) {
     	this.site = new MugshotsDotComSite(new String[]{stateName, countyName, stateAbbreviation});
@@ -95,6 +97,8 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
 
 	@Override
 	public void scrapeSite() {
+    	arrestRecords = new ArrayList<>();
+	      //TODO loop through for each county? need to adjust splitting if that's the case
 		int maxAttempts = site.getMaxAttempts();
         String firstPageResultsUrl = site.generateFirstResultsPageUrl();
         Document mainPageDoc = null;
@@ -152,6 +156,7 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
         } else {
         	logger.error("Too many attempts accessing " + site.getBaseUrl()+ ". Quitting.");
         }
+		finalizeOutput(arrestRecords);
 	}
 
 	@Override

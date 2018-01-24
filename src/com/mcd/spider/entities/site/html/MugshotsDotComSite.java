@@ -35,16 +35,13 @@ public class MugshotsDotComSite  implements SiteHTML{
 
     @Override
     public void setBaseUrl(String[] args) {
-		//expect state name, county name, abbreviation
-		//example http://mugshots.com/US-Counties/Mississippi/Scott-County-MS/
+		//expect state name, abbreviation
+		//example http://mugshots.com/US-Counties/Mississippi/-County-MI/
         if (baseUrl==null) {
             Url urlResult = getUrl();
-            String countyString = args[1]!=null?(args[1].replaceAll(" ", "-") + "County-"):"";
             String builtUrl = urlResult.getProtocol() + urlResult.getDomain() + (args[0]!=null?args[0]+"/":"")
-            					+ countyString 
-            					+ "-" + args[2]!=null?args[2]:""
-            					+ "/";
-            
+            		+ args[1]!=null?("-County-" + args[2]):""
+            		+ "/";
             baseUrl =  builtUrl;
         }
     }
@@ -111,8 +108,11 @@ public class MugshotsDotComSite  implements SiteHTML{
     }
 
 	@Override
-	public String generateResultsPageUrl(String noArg) {
-		return baseUrl;
+	public String generateResultsPageUrl(String county) {
+		//expect county name
+		//example http://mugshots.com/US-Counties/Mississippi/Scott-County-MS/
+		String builtUrl = baseUrl;
+		return builtUrl.replace("-County-", county.replaceAll(" ", "-") + "-County-");
 	}
 
 	public String generateFirstResultsPageUrl() {

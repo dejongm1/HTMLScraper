@@ -48,6 +48,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     private ArrestsDotOrgSite site;
     private RecordIOUtil recordIOUtil;
     private SpiderWeb spiderWeb;
+    List<Record> arrestRecords = new ArrayList<>();
 
     public ArrestsDotOrgEngine(SpiderWeb web) {
     	this.spiderWeb = web;
@@ -86,8 +87,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     
 	@Override
     public void getArrestRecords(String stateName) throws SpiderException {
-        long totalTime = System.currentTimeMillis();
-//        site = new ArrestsDotOrgSite(new String[]{stateName}); //moved to constructor
+        long totalTime = System.currentTimeMillis();  
         recordIOUtil = initializeIOUtil(stateName);
 
         logger.info("----Site: " + site.getName() + "-" + stateName + "----");
@@ -111,6 +111,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 
     @Override
     public void scrapeSite() {
+    	arrestRecords = new ArrayList<>();
     	int maxAttempts = site.getMaxAttempts();
         String firstPageResultsUrl = site.generateResultsPageUrl("1");
         Document mainPageDoc = null;
@@ -168,6 +169,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         } else {
         	logger.error("Too many attempts accessing " + site.getBaseUrl()+ ". Quitting.");
         }
+		finalizeOutput(arrestRecords);
     }
 
     @Override
@@ -188,7 +190,6 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 	@Override
     public void scrapeRecords(Map<Object,String> recordsDetailsUrlMap) {
     	RecordOutputUtil recordOutputUtil = recordIOUtil.getOutputter();
-        List<Record> arrestRecords = new ArrayList<>();
         arrestRecords.addAll(spiderWeb.getCrawledRecords().getRecords());
         ArrestRecord arrestRecord;
         List<Object> keys = new ArrayList<>(recordsDetailsUrlMap.keySet());
@@ -210,7 +211,6 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 	            		//TODO or retry with new connection/IP?
 	            		logger.error("Hit the limit of failed connections. Saving list of unprocessed records, formatting the current output and quitting");
 	            		recordOutputUtil.backupUnCrawledRecords(recordsDetailsUrlMap);
-	            		finalizeOutput(arrestRecords);
 	            		return;
 	            	}
 	            }
@@ -253,7 +253,6 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
                 }
         	}
         }
-        finalizeOutput(arrestRecords);
     }
 
     @Override
