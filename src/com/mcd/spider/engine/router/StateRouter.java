@@ -27,7 +27,7 @@ public class StateRouter implements EngineRouter {
 
         for (ArrestRecordEngine engine : state.getEngines()) {
 	        logger.info("Collecting records from " + engine.getClass().getSimpleName() );
-			engine.getArrestRecords(state.getName());
+			engine.getArrestRecords();
         }
 	}
 	
@@ -44,7 +44,7 @@ public class StateRouter implements EngineRouter {
 					logger.info("Thread: " + getName() + " running");
 					logger.info("Collecting records from " + engine.getClass().getSimpleName() );
 					try {
-						engine.getArrestRecords(state.getName());
+						engine.getArrestRecords();
 					} catch (SpiderException e) {
 						logger.error("Thread: " + getName() + " caught an exception", e);
 					}

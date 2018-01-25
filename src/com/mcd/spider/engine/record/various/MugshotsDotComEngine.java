@@ -6,17 +6,17 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.jsoup.HttpStatusException;
 import org.jsoup.Connection.Response;
+import org.jsoup.HttpStatusException;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import com.mcd.spider.engine.record.ArrestRecordEngine;
 import com.mcd.spider.entities.record.ArrestRecord;
 import com.mcd.spider.entities.record.Record;
+import com.mcd.spider.entities.record.State;
 import com.mcd.spider.entities.site.Site;
 import com.mcd.spider.entities.site.SpiderWeb;
-import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
 import com.mcd.spider.entities.site.html.MugshotsDotComSite;
 import com.mcd.spider.exception.SpiderException;
 import com.mcd.spider.util.ConnectionUtil;
@@ -72,33 +72,33 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
 	}
 
 	@Override
-	public void getArrestRecords(String stateName) throws SpiderException {
-		long totalTime = System.currentTimeMillis();
-      recordIOUtil = initializeIOUtil(stateName);
-
-      logger.info("----Site: " + site.getName() + "-" + stateName + "----");
-      logger.debug("Sending spider " + (spiderWeb.isOffline()?"offline":"online" ));
-      
-      int sleepTimeAverage = spiderWeb.isOffline()?0:(site.getPerRecordSleepRange()[0]+site.getPerRecordSleepRange()[1])/2000;
-      
-      scrapeSite();
-
-      spiderUtil.sendEmail(stateName);
-      
-      totalTime = System.currentTimeMillis() - totalTime;
-      if (!spiderWeb.isOffline()) {
-          logger.info("Sleep time was approximately " + sleepTimeAverage*spiderWeb.getRecordsProcessed() + " ms");
-          logger.info("Processing time was approximately " + (totalTime-(sleepTimeAverage*spiderWeb.getRecordsProcessed())) + " ms");
-      } else {
-          logger.info("Total time taken was " + totalTime + " ms");
-      }
-      logger.info(spiderWeb.getRecordsProcessed() + " total records were processed");
+	public void getArrestRecords() throws SpiderException {
+	  long totalTime = System.currentTimeMillis();
+	  recordIOUtil = initializeIOUtil(spiderWeb.getState().getName());
+	
+	  logger.info("----Site: " + site.getName() + "-" + spiderWeb.getState().getName() + "----");
+	  logger.debug("Sending spider " + (spiderWeb.isOffline()?"offline":"online" ));
+	  
+	  int sleepTimeAverage = spiderWeb.isOffline()?0:(site.getPerRecordSleepRange()[0]+site.getPerRecordSleepRange()[1])/2000;
+	  
+	  scrapeSite();
+	
+	  spiderUtil.sendEmail(spiderWeb.getState().getName());
+	  
+	  totalTime = System.currentTimeMillis() - totalTime;
+	  if (!spiderWeb.isOffline()) {
+	      logger.info("Sleep time was approximately " + sleepTimeAverage*spiderWeb.getRecordsProcessed() + " ms");
+	  logger.info("Processing time was approximately " + (totalTime-(sleepTimeAverage*spiderWeb.getRecordsProcessed())) + " ms");
+	  } else {
+	      logger.info("Total time taken was " + totalTime + " ms");
+	  }
+	  logger.info(spiderWeb.getRecordsProcessed() + " total records were processed");
 	}
 
 	@Override
 	public void scrapeSite() {
     	arrestRecords = new ArrayList<>();
-	      //TODO loop through for each county? need to adjust splitting if that's the case
+	      //TODO loop through for each county? may need to adjust splitting if that's the case
 		int maxAttempts = site.getMaxAttempts();
         String firstPageResultsUrl = site.generateFirstResultsPageUrl();
         Document mainPageDoc = null;

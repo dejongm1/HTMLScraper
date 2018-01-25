@@ -1,5 +1,28 @@
 package com.mcd.spider.engine.record.various;
 
+import static com.mcd.spider.entities.record.ArrestRecord.ArrestDateComparator;
+import static com.mcd.spider.entities.record.ArrestRecord.CountyComparator;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.log4j.Logger;
+import org.jsoup.Connection;
+import org.jsoup.HttpStatusException;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
+import org.jsoup.select.Elements;
+
 import com.mcd.spider.engine.record.ArrestRecordEngine;
 import com.mcd.spider.entities.io.RecordWorkbook;
 import com.mcd.spider.entities.record.ArrestRecord;
@@ -17,21 +40,6 @@ import com.mcd.spider.util.ConnectionUtil;
 import com.mcd.spider.util.SpiderUtil;
 import com.mcd.spider.util.io.RecordIOUtil;
 import com.mcd.spider.util.io.RecordOutputUtil;
-import org.apache.log4j.Logger;
-import org.jsoup.Connection;
-import org.jsoup.HttpStatusException;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
-import org.jsoup.select.Elements;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.*;
-
-import static com.mcd.spider.entities.record.ArrestRecord.ArrestDateComparator;
-import static com.mcd.spider.entities.record.ArrestRecord.CountyComparator;
 
 /**
  *
@@ -84,20 +92,20 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     public void setRecordIOUtil(RecordIOUtil recordIOUtil) {
     	this.recordIOUtil = recordIOUtil;
     }
-    
-	@Override
-    public void getArrestRecords(String stateName) throws SpiderException {
-        long totalTime = System.currentTimeMillis();  
-        recordIOUtil = initializeIOUtil(stateName);
 
-        logger.info("----Site: " + site.getName() + "-" + stateName + "----");
+	@Override
+    public void getArrestRecords() throws SpiderException {
+        long totalTime = System.currentTimeMillis();  
+        recordIOUtil = initializeIOUtil(spiderWeb.getState().getName());
+
+        logger.info("----Site: " + site.getName() + "-" + spiderWeb.getState().getName() + "----");
         logger.debug("Sending spider " + (spiderWeb.isOffline()?"offline":"online" ));
         
         int sleepTimeAverage = spiderWeb.isOffline()?0:(site.getPerRecordSleepRange()[0]+site.getPerRecordSleepRange()[1])/2000;
         
         scrapeSite();
 
-        spiderUtil.sendEmail(stateName);
+        spiderUtil.sendEmail(spiderWeb.getState().getName());
         
         totalTime = System.currentTimeMillis() - totalTime;
         if (!spiderWeb.isOffline()) {

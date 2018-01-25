@@ -60,6 +60,9 @@ public class SpiderEngine {
 //			state.addEngine(new DesMoinesRegisterComEngine());
 			state.addEngine(new MugshotsDotComEngine("", "", ""));
 			state.primeStateEngines(spiderWeb);
+			//TODO remove after county retrieval is set up
+			state.addCounty("Black Hawk");
+//			state.addCounty("Polk");
 			StateRouter router = new StateRouter(state);
 			router.collectRecords();
 			RecordIOUtil mainIOutil = new RecordIOUtil(state.getName(), new ArrestRecord(), state.getEngines().get(0).getSite());
