@@ -1,6 +1,9 @@
 package com.mcd.spider.entities.site.html;
 
+import com.mcd.spider.engine.SpiderEngine;
 import com.mcd.spider.entities.site.Url;
+
+import org.apache.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -11,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 
 public class ArrestsDotOrgSite implements SiteHTML {
+
+	public static final Logger logger = Logger.getLogger(ArrestsDotOrgSite.class);
 
 	private static final Url url = new Url("https://", "arrests.org", new String[]{});
 	private static final String name = "ArrestsOrg";
@@ -76,7 +81,7 @@ public class ArrestsDotOrgSite implements SiteHTML {
 	public Elements getRecordDetailElements(Document doc) {
 		return doc.select(".content-box.profile.profile-full h3, .info .section-content div, .section-content.charges, img[src^=\"/mugs/\"]");
 	}
-	@Override
+	//@Override
 	public int getTotalPages(Document doc) {
 		if (pages==0) {
 			Elements pageCountElements = doc.select(".content-box .pager :nth-last-child(2)");
@@ -88,7 +93,7 @@ public class ArrestsDotOrgSite implements SiteHTML {
 		}
 		return pages;
 	}
-	@Override
+//	@Override
 	public int getTotalRecordCount(Document doc) {
 		if (totalRecordCount==0) {
 			int recordsPerPage = 14;//default

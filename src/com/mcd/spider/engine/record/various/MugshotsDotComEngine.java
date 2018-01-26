@@ -1,12 +1,15 @@
 package com.mcd.spider.engine.record.various;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.jsoup.Connection.Response;
+import org.jsoup.Connection;
 import org.jsoup.HttpStatusException;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -14,7 +17,6 @@ import org.jsoup.nodes.Element;
 import com.mcd.spider.engine.record.ArrestRecordEngine;
 import com.mcd.spider.entities.record.ArrestRecord;
 import com.mcd.spider.entities.record.Record;
-import com.mcd.spider.entities.record.State;
 import com.mcd.spider.entities.site.Site;
 import com.mcd.spider.entities.site.SpiderWeb;
 import com.mcd.spider.entities.site.html.MugshotsDotComSite;
@@ -100,65 +102,91 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
     	arrestRecords = new ArrayList<>();
 	      //TODO loop through for each county? may need to adjust splitting if that's the case
 		int maxAttempts = site.getMaxAttempts();
-        String firstPageResultsUrl = site.generateFirstResultsPageUrl();
-        Document mainPageDoc = null;
-        if (spiderWeb.getAttemptCount()<=maxAttempts) {
-	        try {
-	            logger.info("Trying to make initial connection to " + site.getName());
-	        	mainPageDoc = (Document) initiateConnection(firstPageResultsUrl);
-	        } catch (IOException e) {
-	            logger.error("Couldn't make initial connection to site. Trying again " + (maxAttempts-spiderWeb.getAttemptCount()) + " more times", e);
-	            //if it's a 500, we're probably blocked. TODO Try a new IP if possible, else bail
-	            if (e instanceof HttpStatusException && ((HttpStatusException) e).getStatusCode()==500) {
-	            	connectionUtil = new ConnectionUtil(true);
-	            }
-                spiderUtil.sleep(5000, true);
-	            spiderWeb.increaseAttemptCount();
-	            scrapeSite();
+		for (String county : spiderWeb.getState().getCounties()) {
+	        String firstCountyPageResultsUrl = site.generateResultsPageUrl(county);
+	        Document mainPageDoc = null;
+	        if (spiderWeb.getAttemptCount()<=maxAttempts) {
+		        try {
+		            logger.info("Trying to make initial connection to " + site.getName());
+		        	mainPageDoc = (Document) initiateConnection(firstCountyPageResultsUrl);
+		        } catch (IOException e) {
+		            logger.error("Couldn't make initial connection to site. Trying again " + (maxAttempts-spiderWeb.getAttemptCount()) + " more times", e);
+		            //if it's a 500, we're probably blocked. TODO Try a new IP if possible, else bail
+		            if (e instanceof HttpStatusException && ((HttpStatusException) e).getStatusCode()==500) {
+		            	connectionUtil = new ConnectionUtil(true);
+		            }
+	                spiderUtil.sleep(5000, true);
+		            spiderWeb.increaseAttemptCount();
+		            scrapeSite();
+		        }
+	            if (spiderUtil.docWasRetrieved(mainPageDoc)) {
+	                Map<Object, String> recordDetailUrlMap;
+	                //TODO implement uncrawled logic later
+//	                if (spiderWeb.retrieveMissedRecords() && !spiderWeb.getUncrawledIds().isEmpty()) {
+//	                    //create map from uncrawled records
+//	                    logger.info("Generating details page urls from backup file");
+//	
+//	                    //build a list of details page urls by reading in uncrawled ids file
+//	                    recordDetailUrlMap = compileRecordDetailUrlMapFromBackup(mainPageDoc, spiderWeb.getUncrawledIds());
+//	                    logger.info("Gathered links for "+recordDetailUrlMap.size()+" uncrawled record profiles and misc pages");
+//	
+//	                } else {
+	                    logger.info("Retrieving results page docs");
+	                    Map<Integer, Document> resultsDocPlusMiscMap = compileResultsDocMap(mainPageDoc);
+	                    //got here 1/26/18 @2:05
+	                    
+	                    if (resultsDocPlusMiscMap.isEmpty()) {
+	                        logger.info("No results doc pages were gathered. Quitting");
+	                        return;
+	                    }
+	
+	                    logger.info("Retrieving details page urls");
+	                    //build a list of details page urls by parsing results page docs
+	                    recordDetailUrlMap = compileRecordDetailUrlMap(mainPageDoc, resultsDocPlusMiscMap);
+	                    logger.info("Gathered links for "+recordDetailUrlMap.size()+" record profiles and misc pages");
+//	                }
+	                spiderUtil.sleep(spiderWeb.isOffline()?0:ConnectionUtil.getSleepTime(site)*2, true);
+	                //****iterate over collection, scraping records and simply opening others
+	                scrapeRecords(recordDetailUrlMap);
+	            } else {
+		            logger.error("Failed to load html doc from " + site.getBaseUrl()+ ". Trying again " + (maxAttempts-spiderWeb.getAttemptCount()) + " more times");
+		            spiderWeb.increaseAttemptCount();
+		            scrapeSite();
+		        }
+	        } else {
+	        	logger.error("Too many attempts accessing " + site.getBaseUrl()+ ". Quitting.");
 	        }
-            if (spiderUtil.docWasRetrieved(mainPageDoc)) {
-                Map<Object, String> recordDetailUrlMap;
-                if  (spiderWeb.retrieveMissedRecords() && !spiderWeb.getUncrawledIds().isEmpty()) {
-                    //create map from uncrawled records
-                    logger.info("Generating details page urls from backup file");
-
-                    //build a list of details page urls by reading in uncrawled ids file
-                    recordDetailUrlMap = compileRecordDetailUrlMapFromBackup(mainPageDoc, spiderWeb.getUncrawledIds());
-                    logger.info("Gathered links for "+recordDetailUrlMap.size()+" uncrawled record profiles and misc pages");
-
-                } else {
-                    spiderWeb.setNumberOfPages(getNumberOfResultsPages(mainPageDoc));
-
-                    logger.info("Generating list of results pages for : "+site.getName()+" - " + spiderWeb.getState().getName());
-                    Map<Object, String> resultsUrlPlusMiscMap = compileResultsUrlMap(mainPageDoc);
-
-                    logger.info("Retrieving results page docs");
-                    Map<Integer, Document> resultsDocPlusMiscMap = compileResultsDocMap(resultsUrlPlusMiscMap);
-
-                    if (resultsDocPlusMiscMap.isEmpty()) {
-                        logger.info("No results doc pages were gathered. Quitting");
-                        return;
-                    }
-
-                    logger.info("Retrieving details page urls");
-                    //build a list of details page urls by parsing results page docs
-                    recordDetailUrlMap = compileRecordDetailUrlMap(mainPageDoc, resultsDocPlusMiscMap);
-                    logger.info("Gathered links for "+recordDetailUrlMap.size()+" record profiles and misc pages");
-                }
-                spiderUtil.sleep(spiderWeb.isOffline()?0:ConnectionUtil.getSleepTime(site)*2, true);
-                //****iterate over collection, scraping records and simply opening others
-                scrapeRecords(recordDetailUrlMap);
-            } else {
-	            logger.error("Failed to load html doc from " + site.getBaseUrl()+ ". Trying again " + (maxAttempts-spiderWeb.getAttemptCount()) + " more times");
-	            spiderWeb.increaseAttemptCount();
-	            scrapeSite();
-	        }
-        } else {
-        	logger.error("Too many attempts accessing " + site.getBaseUrl()+ ". Quitting.");
-        }
+		}
 		finalizeOutput(arrestRecords);
 	}
 
+	public Map<Integer,Document> compileResultsDocMap(Document mainPageDoc) {
+		//build docs map by traversing next button to get total pages/records
+		Integer numberOfPages = 0;
+		Map<Integer,Document> resultsDocMap = new HashMap<>();
+		String nextPageUrl = site.getNextResultsPageUrl(mainPageDoc);
+		String currentPageUrl = mainPageDoc.baseUri();
+		while (nextPageUrl!=null) {
+			numberOfPages++;
+			Document docToCheck = null;
+			try {
+				Connection.Response response = connectionUtil.retrieveConnectionResponse(nextPageUrl, currentPageUrl, spiderWeb.getSessionCookies(), spiderWeb.getHeaders());
+				docToCheck = response.parse();
+				setCookies(response);
+				resultsDocMap.put(numberOfPages, docToCheck);
+			} catch (FileNotFoundException fnfe) {
+				logger.error("No html doc found for " + nextPageUrl);
+			} catch (IOException e) {
+				spiderWeb.increaseAttemptCount();
+				logger.error("Failed to get a connection to " + nextPageUrl, e);
+			}
+			currentPageUrl = nextPageUrl;
+			nextPageUrl = site.getNextResultsPageUrl(mainPageDoc);
+		}
+        spiderWeb.setNumberOfPages(numberOfPages);
+        return resultsDocMap;
+	}
+	
 	@Override
 	public Map<String, String> parseDocForUrls(Object objectToParse) {
 		// TODO Auto-generated method stub

@@ -1,14 +1,18 @@
 package com.mcd.spider.entities.site.html;
 
-import com.mcd.spider.entities.site.Url;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.mcd.spider.entities.site.Url;
 
 /**
  *
@@ -18,6 +22,8 @@ import java.util.Map;
 
 public class MugshotsDotComSite  implements SiteHTML{
 
+	public static final Logger logger = Logger.getLogger(MugshotsDotComSite.class);
+	
     private static final Url url = new Url("https://", "mugshots.com", new String[]{"US-Counties"});
     private static final String name = "Mugshots.com";
     private static final int[] perRecordSleepRange = new int[]{1000,5000};
@@ -40,7 +46,7 @@ public class MugshotsDotComSite  implements SiteHTML{
         if (baseUrl==null) {
             Url urlResult = getUrl();
             String builtUrl = urlResult.getProtocol() + urlResult.getDomain() + (args[0]!=null?args[0]+"/":"")
-            		+ args[1]!=null?("-County-" + args[2]):""
+            		+ args[1]!=null?("-County-" + args[1]):""
             		+ "/";
             baseUrl =  builtUrl;
         }
@@ -94,19 +100,6 @@ public class MugshotsDotComSite  implements SiteHTML{
 		return doc.select("#item-info > strong > div.p.graybox > div > div.field");
     }
 
-    @Override
-    public int getTotalPages(Document doc) {
-    	//TODO can't be determined without scrolling through pages
-    	//do some math on count shown in county list?
-        return 0;
-    }
-
-    @Override
-    public int getTotalRecordCount(Document doc) {
-    	//TODO use count shown in county list? does it round up or down?
-        return 0;
-    }
-
 	@Override
 	public String generateResultsPageUrl(String county) {
 		//expect county name
@@ -115,10 +108,6 @@ public class MugshotsDotComSite  implements SiteHTML{
 		return builtUrl.replace("-County-", county.replaceAll(" ", "-") + "-County-");
 	}
 
-	public String generateFirstResultsPageUrl() {
-		return generateResultsPageUrl("");
-	}
-	
     @Override
     public Map<Object, String> getMiscSafeUrlsFromDoc(Document doc, int pagesToMatch) {
     	//TODO refine 
@@ -182,6 +171,42 @@ public class MugshotsDotComSite  implements SiteHTML{
 	@Override
 	public String obtainDetailUrl(String id) {
         return baseUrl + "/" + id + ".html";
+	}
+	
+	public String getNextResultsPageUrl(Document doc) {
+        //only get until a certain date is reached (month back?) or None
+		boolean olderThanRange = false;
+		long currentTimeInMillis = Calendar.getInstance().getTimeInMillis();
+		long rangeToCrawlInMillis = 31*24*60*60*1000; //1 month
+		long nextPageTimeInMillis = 0l;
+		String nextPageParameters = "";
+		String currentPageUrl = doc.baseUri();
+		
+		Elements nextPageButtons = doc.select(".pagination .next.page");
+		Element nextPageButton = !nextPageButtons.isEmpty()?nextPageButtons.get(0):null;
+		if (nextPageButton!=null) {
+			nextPageParameters = nextPageButton.getElementsByAttribute("href").val();
+		}
+		if (!nextPageParameters.contains("None")) {
+			Calendar nextPageCalendar = Calendar.getInstance();
+			String nextPageDateString = nextPageParameters.substring(nextPageParameters.indexOf('=')+1);
+			try {
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-DD");
+				nextPageCalendar.setTime(sdf.parse(nextPageDateString));
+			} catch (ParseException e) {
+				logger.error("Couldn't parse " + nextPageDateString + " into a date during getNextResultsPageUrl() for " + currentPageUrl);
+			}
+		}
+		olderThanRange = currentTimeInMillis - nextPageTimeInMillis > rangeToCrawlInMillis;
+		
+		if (!nextPageParameters.equals("") && !olderThanRange) {
+			if (currentPageUrl.contains("?")) {
+				return currentPageUrl.substring(currentPageUrl.indexOf('?'))+nextPageParameters;
+			} else {
+				return currentPageUrl+nextPageParameters;
+			}
+		}
+		return null;
 	}
 
 }

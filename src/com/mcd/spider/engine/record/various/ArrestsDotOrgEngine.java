@@ -139,7 +139,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 	        }
             if (spiderUtil.docWasRetrieved(mainPageDoc)) {
                 Map<Object, String> recordDetailUrlMap;
-                if  (spiderWeb.retrieveMissedRecords() && !spiderWeb.getUncrawledIds().isEmpty()) {
+                if (spiderWeb.retrieveMissedRecords() && !spiderWeb.getUncrawledIds().isEmpty()) {
                     //create map from uncrawled records
                     logger.info("Generating details page urls from backup file");
 
