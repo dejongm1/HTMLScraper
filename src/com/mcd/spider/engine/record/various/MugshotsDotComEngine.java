@@ -1,19 +1,5 @@
 package com.mcd.spider.engine.record.various;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.log4j.Logger;
-import org.jsoup.Connection.Response;
-import org.jsoup.Connection;
-import org.jsoup.HttpStatusException;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-
 import com.mcd.spider.engine.record.ArrestRecordEngine;
 import com.mcd.spider.entities.record.ArrestRecord;
 import com.mcd.spider.entities.record.Record;
@@ -24,6 +10,19 @@ import com.mcd.spider.exception.SpiderException;
 import com.mcd.spider.util.ConnectionUtil;
 import com.mcd.spider.util.SpiderUtil;
 import com.mcd.spider.util.io.RecordIOUtil;
+import org.apache.log4j.Logger;
+import org.jsoup.Connection;
+import org.jsoup.Connection.Response;
+import org.jsoup.HttpStatusException;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -160,7 +159,7 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
 		finalizeOutput(arrestRecords);
 	}
 
-	public Map<Integer,Document> compileResultsDocMap(Document mainPageDoc) {
+    public Map<Integer,Document> compileResultsDocMap(Document mainPageDoc) {
 		//build docs map by traversing next button to get total pages/records
 		Integer numberOfPages = 0;
 		Map<Integer,Document> resultsDocMap = new HashMap<>();
@@ -212,16 +211,37 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
 	}
 
 	@Override
-	public Object initiateConnection(String arg) throws IOException {
+	public Object initiateConnection(String arg) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public RecordIOUtil initializeIOUtil(String stateName) throws SpiderException {
+	public RecordIOUtil initializeIOUtil(String stateName) {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+    public Map<Object,String> compileRecordDetailUrlMap(Document mainPageDoc, Map<Integer,Document> resultsDocPlusMiscMap) {
+        Map<Object,String> recordDetailUrlMap = new HashMap<>();
+        /*for (Map.Entry<Integer, Document> entry : resultsDocPlusMiscMap.entrySet()) {
+            Document doc = entry.getValue();
+            //only crawl for records if document was retrieved, is a results doc and has not already been crawled
+            int page = entry.getKey();
+            if (spiderUtil.docWasRetrieved(doc) && doc.baseUri().contains("&results=") && page<=spiderWeb.getFurthestPageToCheck()){
+                logger.info("Gather complete list of records to scrape from " + doc.baseUri());
+                recordDetailUrlMap.putAll(parseDocForUrls(doc));
+
+                //include some non-detail page links
+                if (spiderWeb.getMisc()) {
+                    recordDetailUrlMap.putAll(site.getMiscSafeUrlsFromDoc(mainPageDoc, recordDetailUrlMap.size()));
+                }
+            } else {
+                logger.info("Nothing was retrieved for " + doc.baseUri());
+            }
+        }*/
+        return recordDetailUrlMap;
+    }
 
 	@Override
 	public void setCookies(Response response) {

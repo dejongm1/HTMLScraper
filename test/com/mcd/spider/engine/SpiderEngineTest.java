@@ -1,18 +1,5 @@
 package com.mcd.spider.engine;
 
-import java.io.File;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-
-import org.apache.log4j.Logger;
-import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-
 import com.mcd.spider.engine.record.various.ArrestsDotOrgEngine;
 import com.mcd.spider.entities.io.RecordSheet;
 import com.mcd.spider.entities.io.RecordWorkbook;
@@ -22,6 +9,14 @@ import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
 import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
 import com.mcd.spider.entities.site.service.DesMoinesRegisterComSite;
 import com.mcd.spider.util.io.RecordIOUtil;
+import org.apache.log4j.Logger;
+import org.testng.Assert;
+import org.testng.annotations.*;
+
+import java.io.File;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
 
 /**
  * 
@@ -105,7 +100,7 @@ public class SpiderEngineTest {
 
 	@Test
 	public void getArrestRecordsByState() {
-		throw new RuntimeException("Test not implemented");
+        Assert.fail("Test not implemented");
 	}
 	
 	@Test

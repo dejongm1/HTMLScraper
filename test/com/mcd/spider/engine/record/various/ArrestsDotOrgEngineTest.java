@@ -45,11 +45,11 @@ public class ArrestsDotOrgEngineTest {
 	
 	
 	@BeforeClass
-	public void setUpClass() throws IOException, SpiderException {
+	public void setUpClass() throws IOException {
 		logger.info("********** Starting Test cases for ArrestsDotOrgEngine *****************");
 		System.setProperty("TestingSpider", "true");
-		mockMainPageDoc = Jsoup.parse(new File("test/resources/htmls/mainPageDoc.html"), "UTF-8");
-		mockDetailDoc = Jsoup.parse(new File("test/resources/htmls/recordDetailPage.html"), "UTF-8");
+		mockMainPageDoc = Jsoup.parse(new File("test/resources/htmls/mainPageDoc_ArrestsDotOrg.html"), "UTF-8");
+		mockDetailDoc = Jsoup.parse(new File("test/resources/htmls/recordDetailPage_ArrestsDotOrg.html"), "UTF-8");
 		mockWeb = new SpiderWeb(9999, true, false, RecordFilterEnum.NONE, State.IA);
 		mockWeb.setSessionCookies(new HashMap<>());
 		mockWeb.setCrawledIds(new HashSet<>());
@@ -117,7 +117,7 @@ public class ArrestsDotOrgEngineTest {
 	@Test
 	public void ArrestsDotOrgEngine_ConstructorStateName() {
 	    ArrestsDotOrgEngine mockEngine = new ArrestsDotOrgEngine(mockWeb);
-	    ArrestsDotOrgEngine mockTestEngine = new ArrestsDotOrgEngine("Iowa");
+	    ArrestsDotOrgEngine mockTestEngine = new ArrestsDotOrgEngine(State.IA.getName());
 		
 	    Assert.assertNotNull(mockEngine.getSite());
 	    Assert.assertNotNull(mockTestEngine.getSite());
@@ -485,7 +485,7 @@ public class ArrestsDotOrgEngineTest {
 
 	@Test
 	public void getArrestRecords() {
-		throw new RuntimeException("Test not implemented");
+        Assert.fail("Test not implemented");
 	}
 
 	@Test
@@ -865,7 +865,7 @@ public class ArrestsDotOrgEngineTest {
 
 	@Test
 	public void scrapeSite() {
-		throw new RuntimeException("Test not implemented");
+        Assert.fail("Test not implemented");
 	}
 
 	@Test

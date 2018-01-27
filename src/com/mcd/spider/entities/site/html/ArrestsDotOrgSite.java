@@ -1,8 +1,6 @@
 package com.mcd.spider.entities.site.html;
 
-import com.mcd.spider.engine.SpiderEngine;
 import com.mcd.spider.entities.site.Url;
-
 import org.apache.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -10,7 +8,6 @@ import org.jsoup.select.Elements;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class ArrestsDotOrgSite implements SiteHTML {
@@ -47,6 +44,8 @@ public class ArrestsDotOrgSite implements SiteHTML {
 	}
 	@Override
 	public void setBaseUrl(String[] args) {
+	    //expects state name
+	    //TODO what if not null? will the baseUrl ever need be changed?
 		if (baseUrl==null) {
 			Url url = getUrl();
 //			String resultsPerPage = args.length>1?args[1]:null;
@@ -61,6 +60,10 @@ public class ArrestsDotOrgSite implements SiteHTML {
 	public String getBaseUrl() {
 		return baseUrl;
 	}
+    @Override
+    public int getMaxAttempts() {
+        return maxAttempts;
+    }
 //	@Override
 //	public Element getRecordElement(Document doc) {
 //		//need to return a specific record?
@@ -93,6 +96,7 @@ public class ArrestsDotOrgSite implements SiteHTML {
 		}
 		return pages;
 	}
+	//TODO get rid of if not using
 //	@Override
 	public int getTotalRecordCount(Document doc) {
 		if (totalRecordCount==0) {
@@ -116,6 +120,7 @@ public class ArrestsDotOrgSite implements SiteHTML {
 		builtUrl += "&results=" + resultsPerPage;
 		return builtUrl;
 	}
+	//TODO get rid of if never used
 	public int getPageNumberFromDoc(Document doc) {
 		String baseUri = doc.baseUri();
 		return Character.getNumericValue(baseUri.charAt(baseUri.indexOf('&')-1));
@@ -178,10 +183,5 @@ public class ArrestsDotOrgSite implements SiteHTML {
 	@Override
     public String obtainDetailUrl(String id) {
         return baseUrl + "/Arrests/" + id + "/?d=1";
-    }
-
-    @Override
-    public int getMaxAttempts() {
-    	return maxAttempts;
     }
 }

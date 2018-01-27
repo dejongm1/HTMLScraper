@@ -1,12 +1,26 @@
 package com.mcd.spider.entities.record.filter;
 
-import org.testng.Assert;
-import org.testng.annotations.Test;
-
 import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
+import org.apache.log4j.Logger;
+import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 public class RecordFilterTest {
 
+    static final Logger logger = Logger.getLogger(RecordFilterTest.class);
+    @BeforeClass
+    public void setUpClass() {
+        logger.info("********** Starting Test cases for RecordFilter *****************");
+        System.setProperty("TestingSpider", "true");
+    }
+
+    @AfterClass
+    public void tearDownClass() {
+        System.setProperty("TestingSpider", "false");
+        logger.info("********** Finishing Test cases for RecordFilter *****************");
+    }
 
 	@Test
 	public void findFilter_Alcohol() {

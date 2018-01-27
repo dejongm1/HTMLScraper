@@ -8,7 +8,7 @@
 		<!--</classes> -->
 	<!--</test> -->
 	
-	<test name="util">
+	<test name="util-io">
 		<classes>
 			<class name="com.mcd.spider.util.io.RecordIOUtilTest" />
 			<class name="com.mcd.spider.util.io.RecordInputUtilTest" />
@@ -16,7 +16,7 @@
 		</classes>
 	</test>
 
-	<test name="entities">
+	<test name="entities-record">
 		<classes>
 			<class name="com.mcd.spider.entities.record.RecordTest" />
 			<class name="com.mcd.spider.entities.record.ArrestRecordTest" />
@@ -24,13 +24,20 @@
 		</classes>
 	</test>
 
+    <test name="entities-site-html">
+        <classes>
+            <class name="com.mcd.spider.entities.site.html.ArrestsDotOrgSiteTest" />
+            <class name="com.mcd.spider.entities.site.html.MugshotsDotComSiteTest" />
+        </classes>
+    </test>
+
 	<test name="engine">
 		<classes>
 			<class name="com.mcd.spider.engine.SpiderEngineTest" />
 		</classes>
 	</test>
 
-	<test name="engine.record">
+	<test name="engine-record">
 		<classes>
 			<class name="com.mcd.spider.engine.record.various.ArrestsDotOrgEngineTest" />
 		</classes>
