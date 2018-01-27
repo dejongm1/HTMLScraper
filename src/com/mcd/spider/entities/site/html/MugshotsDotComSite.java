@@ -1,18 +1,18 @@
 package com.mcd.spider.entities.site.html;
 
+import com.google.common.base.CaseFormat;
+import com.mcd.spider.entities.site.Url;
+import org.apache.log4j.Logger;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.log4j.Logger;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import com.mcd.spider.entities.site.Url;
 
 /**
  *
@@ -24,7 +24,7 @@ public class MugshotsDotComSite  implements SiteHTML{
 
 	public static final Logger logger = Logger.getLogger(MugshotsDotComSite.class);
 	
-    private static final Url url = new Url("https://", "mugshots.com", new String[]{"US-Counties"});
+    private static final Url url = new Url("https://", "mugshots.com", new String[]{"/US-Counties"});
     private static final String name = "Mugshots.com";
     private static final int[] perRecordSleepRange = new int[]{1000,5000};
     private String baseUrl;
@@ -45,8 +45,10 @@ public class MugshotsDotComSite  implements SiteHTML{
 		//example http://mugshots.com/US-Counties/Mississippi/-County-MI/
         if (baseUrl==null) {
             Url urlResult = getUrl();
-            String builtUrl = urlResult.getProtocol() + urlResult.getDomain() + (args[0]!=null?args[0]+"/":"")
-            		+ args[1]!=null?("-County-" + args[1]):""
+            String builtUrl = urlResult.getProtocol() + urlResult.getDomain()
+                    + urlResult.getExtensions()[0]
+                    + (args[0]!=null?"/"+CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, args[0])+"/":"/")
+            		+ (args[1]!=null?"-County-" + args[1]:"")
             		+ "/";
             baseUrl =  builtUrl;
         }
@@ -146,10 +148,8 @@ public class MugshotsDotComSite  implements SiteHTML{
     		Element breadcrumbList = doc.getElementById("small-breadcrumbs");
     		if (breadcrumbList!=null) {
     			Elements breadcrumbs = breadcrumbList.getElementsByAttribute("href");
-    			if (breadcrumbs.get(0).hasText() && breadcrumbs.get(0).text().equals("US-Counties")
-    					&& breadcrumbs.size()>=3) {
-    				return true;
-    			}
+                return breadcrumbs.get(0).hasText() && breadcrumbs.get(0).text().equals("US-Counties")
+                        && breadcrumbs.size() >= 3;
     		}
     	}
         return false;
@@ -160,12 +160,9 @@ public class MugshotsDotComSite  implements SiteHTML{
     	//uri has US-Counties
     	//AND has div itemtype="https://schema.org/Person"
     	//AND has div.p.graybox > div.fieldvalues 
-    	if (doc.baseUri().contains("US-Counties") 
-    			&& !doc.select("div.p.graybox > div.fieldvalues").isEmpty()
-    			&& !doc.select("div[itemtype=\"https://schema.org/Person\"]").isEmpty()) {
-    		return true;
-    	}
-        return false;
+        return doc.baseUri().contains("US-Counties")
+                && !doc.select("div.p.graybox > div.fieldvalues").isEmpty()
+                && !doc.select("div[itemtype=\"https://schema.org/Person\"]").isEmpty();
     }
 
 	@Override

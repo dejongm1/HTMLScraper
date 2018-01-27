@@ -6,7 +6,6 @@ import com.mcd.spider.entities.record.Record;
 import com.mcd.spider.entities.site.Site;
 import com.mcd.spider.entities.site.SpiderWeb;
 import com.mcd.spider.entities.site.html.MugshotsDotComSite;
-import com.mcd.spider.exception.SpiderException;
 import com.mcd.spider.util.ConnectionUtil;
 import com.mcd.spider.util.SpiderUtil;
 import com.mcd.spider.util.io.RecordIOUtil;
@@ -73,7 +72,7 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
 	}
 
 	@Override
-	public void getArrestRecords() throws SpiderException {
+	public void getArrestRecords() {
 	  long totalTime = System.currentTimeMillis();
 	  recordIOUtil = initializeIOUtil(spiderWeb.getState().getName());
 	

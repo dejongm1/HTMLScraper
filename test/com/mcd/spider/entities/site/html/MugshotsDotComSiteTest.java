@@ -10,8 +10,8 @@ import org.testng.annotations.Test;
 public class MugshotsDotComSiteTest {
 
     static final Logger logger = Logger.getLogger(MugshotsDotComSiteTest.class);
-    MugshotsDotComSite mockTexasSite = new MugshotsDotComSite(new String[]{State.TX.getName(), "Fort Bend", State.TX.getAbbreviation()});
-    MugshotsDotComSite mockArizonaSite = new MugshotsDotComSite(new String[]{State.AZ.getName(), "Maricopa", State.TX.getAbbreviation()});
+    MugshotsDotComSite mockTexasSite = new MugshotsDotComSite(new String[]{State.TX.getName(), State.TX.getAbbreviation()});
+    MugshotsDotComSite mockArizonaSite = new MugshotsDotComSite(new String[]{State.AZ.getName(), State.AZ.getAbbreviation()});
 
     @BeforeClass
     public void setUpClass() {
@@ -26,12 +26,12 @@ public class MugshotsDotComSiteTest {
     }
     @Test
     public void testConstructor_Texas() {
-        Assert.assertEquals(mockTexasSite.getBaseUrl(), "https://mugshots.com/Texas/Fort-Bend-County-TX");
+        Assert.assertEquals(mockTexasSite.getBaseUrl(), "https://mugshots.com/US-Counties/Texas/-County-TX/");
     }
 
     @Test
     public void testConstructor_Arizona() {
-        Assert.assertEquals(mockArizonaSite.getBaseUrl(), "https://mugshots.com/Arizona/Maricopa-County-AZ");
+        Assert.assertEquals(mockArizonaSite.getBaseUrl(), "https://mugshots.com/US-Counties/Arizona/-County-AZ/");
     }
 
     @Test
