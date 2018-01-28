@@ -81,10 +81,8 @@ public class MugshotsDotComSite  implements SiteHTML{
 
     @Override
     public String obtainRecordId(String url) {
-        //example http://mugshots.com/US-Counties/Iowa/Scott-County-IA/George-Allen-Freeman-Jr.141436546.html
         if (url.contains("-County-") && url.contains("/US-Counties") && url.endsWith(".html")) {
-            return url.substring(url.indexOf("-County-")+11, url.indexOf(".html"));
-            //OR return url.substring(lastIndexOf("/", ), url.indexOf(".html"));
+            return url.substring(url.lastIndexOf("/")+1, url.indexOf(".html"));
         } else {
             return null;
         }

@@ -210,8 +210,8 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
 	}
 
 	@Override
-	public Object initiateConnection(String arg) {
-		// TODO Auto-generated method stub
+	public Object initiateConnection(String firstPageResultsUrl) throws IOException{
+        Connection.Response response = connectionUtil.retrieveConnectionResponse(firstPageResultsUrl, "www.google.com");
 		return null;
 	}
 

@@ -35,8 +35,15 @@ public class MugshotsDotComSiteTest {
     }
 
     @Test
-    public void testObtainRecordId() {
-        Assert.fail("Test not implemented");
+    public void testObtainRecordId_Success() {
+        String mockUrl = "http://mugshots.com/US-Counties/Arizona/Scott-County-AZ/Bill-Allen-Manfree-Jr.141436546.html";
+        Assert.assertEquals(mockArizonaSite.obtainRecordId(mockUrl), "Bill-Allen-Manfree-Jr.141436546");
+    }
+
+    @Test
+    public void testObtainRecordId_NoRecordIDinUrl() {
+        String mockUrl = "http://mugshots.com/Most-Wanted/Arizona/Scott-County-AZ/Bill-Allen-Manfree-Jr.141436546.html";
+        Assert.assertNull(mockArizonaSite.obtainRecordId(mockUrl));
     }
 
     @Test

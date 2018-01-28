@@ -76,8 +76,15 @@ public class ArrestsDotOrgSiteTest {
     }
 
     @Test
-    public void testObtainRecordId() {
-        Assert.fail("Test not implemented");
+    public void testObtainRecordId_Success() {
+        String mockUrl = "https://texas.arrests.org/Arrests/Egroeg_Autsir_35373867/?d=1";
+        Assert.assertEquals(mockTexasSite.obtainRecordId(mockUrl), "Egroeg_Autsir_35373867");
+    }
+
+    @Test
+    public void testObtainRecordId_NoRecordIdinUrl() {
+        String mockUrl = "https://texas.arrests.org/Celebrities/Will-Smith/";
+        Assert.assertNull(mockTexasSite.obtainRecordId(mockUrl));
     }
 
     @Test

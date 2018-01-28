@@ -73,7 +73,17 @@ public class ArrestsDotOrgSite implements SiteHTML {
 //		//need to return a specific record?
 //		return null;
 //	}
-	@Override
+
+    @Override
+    public String obtainRecordId(String url) {
+        if (url.contains("/Arrests/") && url.contains("/?d=1")) {
+            return url.substring(url.indexOf("/Arrests/")+9, url.indexOf("/?d=1"));
+        } else {
+            return null;
+        }
+    }
+
+    @Override
 	public Elements getRecordElements(Document doc) {
 	    //TODO is this working properly?
 		return doc.select(".content-box .search-results .profile-card .title a");
@@ -174,15 +184,6 @@ public class ArrestsDotOrgSite implements SiteHTML {
             return false;
         }
     }
-
-	@Override
-	public String obtainRecordId(String url) {
-	    if (url.contains("/Arrests/") && url.contains("/?d=1")) {
-            return url.substring(url.indexOf("/Arrests/")+9, url.indexOf("/?d=1"));
-        } else {
-	        return null;
-        }
-	}
 
 	@Override
     public String obtainDetailUrl(String id) {
