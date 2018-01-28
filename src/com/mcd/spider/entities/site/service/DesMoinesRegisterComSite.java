@@ -7,7 +7,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
@@ -15,7 +14,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 public class DesMoinesRegisterComSite implements SiteService {
 
@@ -41,6 +39,7 @@ public class DesMoinesRegisterComSite implements SiteService {
 
 	@Override
 	public void setBaseUrl(String[] args) {
+	    //TODO rework to match others, setting state and allowing counties
 		if (baseUrl==null) {
             Url url = getUrl();
             String builtUrl = url.getProtocol() + url.getDomain();

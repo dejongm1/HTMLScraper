@@ -56,8 +56,8 @@ public class ArrestsDotOrgSiteTest {
     }
 
     @Test
-    public void testGenerateResultsPageUrl() {
-        Assert.fail("Test not implemented");
+    public void testGenerateResultsPageUrl_TexasPage2() {
+        Assert.assertEquals(mockTexasSite.generateResultsPageUrl("2"), "https://texas.arrests.org/?page=2&results=56");
     }
 
     @Test

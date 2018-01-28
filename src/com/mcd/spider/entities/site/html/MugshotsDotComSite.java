@@ -1,6 +1,7 @@
 package com.mcd.spider.entities.site.html;
 
 import com.google.common.base.CaseFormat;
+import com.mcd.spider.entities.record.State;
 import com.mcd.spider.entities.site.Url;
 import org.apache.log4j.Logger;
 import org.jsoup.nodes.Document;
@@ -29,9 +30,10 @@ public class MugshotsDotComSite  implements SiteHTML{
     private static final int[] perRecordSleepRange = new int[]{1000,5000};
     private String baseUrl;
     private int maxAttempts = 5;
+    private State state;
 
 	public MugshotsDotComSite (String[] args) {
-		setBaseUrl(args);
+	    setBaseUrl(args);
 	}
 	
     @Override
@@ -41,17 +43,25 @@ public class MugshotsDotComSite  implements SiteHTML{
 
     @Override
     public void setBaseUrl(String[] args) {
-		//expect state name, abbreviation
-		//example http://mugshots.com/US-Counties/Mississippi/-County-MI/
+        //expect state name OR abbreviation
+        //example http://mugshots.com/US-Counties/Mississippi
+        setState(State.getState(args[0]));
         if (baseUrl==null) {
             Url urlResult = getUrl();
             String builtUrl = urlResult.getProtocol() + urlResult.getDomain()
                     + urlResult.getExtensions()[0]
-                    + (args[0]!=null?"/"+CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, args[0])+"/":"/")
-            		+ (args[1]!=null?"-County-" + args[1]:"")
-            		+ "/";
+                    + (state!=null?"/"+CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, state.getName()):"");
             baseUrl =  builtUrl;
         }
+    }
+
+    @Override
+    public int[] getPerRecordSleepRange() {
+        return perRecordSleepRange;
+    }
+
+    private void setState(State state) {
+        this.state = state;
     }
 
     @Override
@@ -81,11 +91,6 @@ public class MugshotsDotComSite  implements SiteHTML{
     }
 
     @Override
-    public int[] getPerRecordSleepRange() {
-        return perRecordSleepRange;
-    }
-
-    @Override
     public Elements getRecordElements(Document doc) {
     	return doc.select("#main > div > div.gallery-listing > table > tbody > tr:nth-child(1) > td");
     }
@@ -106,8 +111,10 @@ public class MugshotsDotComSite  implements SiteHTML{
 	public String generateResultsPageUrl(String county) {
 		//expect county name
 		//example http://mugshots.com/US-Counties/Mississippi/Scott-County-MS/
-		String builtUrl = baseUrl;
-		return builtUrl.replace("-County-", county.replaceAll(" ", "-") + "-County-");
+		String builtUrl = baseUrl + "/"
+                            + county.replaceAll(" ", "-")
+                            + (state!=null?"-County-" + state.getAbbreviation():"");
+		return builtUrl;
 	}
 
     @Override

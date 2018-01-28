@@ -10,8 +10,8 @@ import org.testng.annotations.Test;
 public class MugshotsDotComSiteTest {
 
     static final Logger logger = Logger.getLogger(MugshotsDotComSiteTest.class);
-    MugshotsDotComSite mockTexasSite = new MugshotsDotComSite(new String[]{State.TX.getName(), State.TX.getAbbreviation()});
-    MugshotsDotComSite mockArizonaSite = new MugshotsDotComSite(new String[]{State.AZ.getName(), State.AZ.getAbbreviation()});
+    MugshotsDotComSite mockTexasSite = new MugshotsDotComSite(new String[]{State.TX.getName()});
+    MugshotsDotComSite mockArizonaSite = new MugshotsDotComSite(new String[]{State.AZ.getAbbreviation()});
 
     @BeforeClass
     public void setUpClass() {
@@ -25,13 +25,13 @@ public class MugshotsDotComSiteTest {
         logger.info("********** Finishing Test cases for MugshotsDotComSite *****************");
     }
     @Test
-    public void testConstructor_Texas() {
-        Assert.assertEquals(mockTexasSite.getBaseUrl(), "https://mugshots.com/US-Counties/Texas/-County-TX/");
+    public void testConstructor_TexasFullName() {
+        Assert.assertEquals(mockTexasSite.getBaseUrl(), "https://mugshots.com/US-Counties/Texas");
     }
 
     @Test
-    public void testConstructor_Arizona() {
-        Assert.assertEquals(mockArizonaSite.getBaseUrl(), "https://mugshots.com/US-Counties/Arizona/-County-AZ/");
+    public void testConstructor_ArizonaAbbreviation() {
+        Assert.assertEquals(mockArizonaSite.getBaseUrl(), "https://mugshots.com/US-Counties/Arizona");
     }
 
     @Test
@@ -60,8 +60,15 @@ public class MugshotsDotComSiteTest {
     }
 
     @Test
-    public void testGenerateResultsPageUrl() {
-        Assert.fail("Test not implemented");
+    public void testGenerateResultsPageUrl_BlackHawkCountyIA() {
+        MugshotsDotComSite mockIowaSite = new MugshotsDotComSite(new String[]{"Iowa"});
+        Assert.assertEquals(mockIowaSite.generateResultsPageUrl("Black Hawk"), "https://mugshots.com/US-Counties/Iowa/Black-Hawk-County-IA");
+    }
+
+    @Test
+    public void testGenerateResultsPageUrl_TravisCountyTX() {
+        MugshotsDotComSite mockIowaSite = new MugshotsDotComSite(new String[]{"TX"});
+        Assert.assertEquals(mockIowaSite.generateResultsPageUrl("Travis"), "https://mugshots.com/US-Counties/Texas/Travis-County-TX");
     }
 
     @Test

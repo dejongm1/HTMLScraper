@@ -1,5 +1,6 @@
 package com.mcd.spider.entities.site.html;
 
+import com.mcd.spider.entities.record.State;
 import com.mcd.spider.entities.site.Url;
 import org.apache.log4j.Logger;
 import org.jsoup.nodes.Document;
@@ -22,9 +23,10 @@ public class ArrestsDotOrgSite implements SiteHTML {
 	private static final int[] perRecordSleepRange = new int[]{5000,15000};
 	private int maxAttempts = 5;
 	private int resultsPerPage = 56;
+    private State state;
 
 	public ArrestsDotOrgSite (String[] args) {
-		setBaseUrl(args);
+	    setBaseUrl(args);
 	}
 	
 	@Override
@@ -42,20 +44,22 @@ public class ArrestsDotOrgSite implements SiteHTML {
 	public int getResultsPerPage() {
 		return resultsPerPage;
 	}
-	@Override
+
+    @Override
 	public void setBaseUrl(String[] args) {
 	    //expects state name
+        setState(State.getState(args[0]));
 	    //TODO what if not null? will the baseUrl ever need be changed?
 		if (baseUrl==null) {
 			Url url = getUrl();
-//			String resultsPerPage = args.length>1?args[1]:null;
-//			String pageNumber = args.length>2?args[2]:null;
-			String builtUrl = url.getProtocol() + (args[0]!=null?args[0]+".":"") + url.getDomain();
-//			builtUrl += "/?page="+(pageNumber!=null?pageNumber:"1");
-//			builtUrl += "&results="+(resultsPerPage!=null?resultsPerPage:"56");
+			String builtUrl = url.getProtocol() + (state!=null?state.getName()+".":"") + url.getDomain();
 			baseUrl =  builtUrl.toLowerCase();
 		}
 	}
+
+    private void setState(State state) {
+        this.state = state;
+    }
 	@Override
 	public String getBaseUrl() {
 		return baseUrl;
