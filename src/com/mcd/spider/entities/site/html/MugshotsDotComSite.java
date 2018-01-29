@@ -172,6 +172,8 @@ public class MugshotsDotComSite  implements SiteHTML{
 
 	@Override
 	public String obtainDetailUrl(String id) {
+		//state and county not necessary for ID specific URLs, redirects go to full url
+		//generating with state only for now
         return baseUrl + "/" + id + ".html";
 	}
 	

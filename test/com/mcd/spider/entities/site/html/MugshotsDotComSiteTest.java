@@ -95,7 +95,7 @@ public class MugshotsDotComSiteTest {
 
     @Test
     public void testObtainDetailUrl() {
-        Assert.fail("Test not implemented");
+    	Assert.assertEquals(mockTexasSite.obtainDetailUrl("Joe-Blow-32132342"), "https://mugshots.com/US-Counties/Texas/Joe-Blow-32132342.html");
     }
 
     @Test
