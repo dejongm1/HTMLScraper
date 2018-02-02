@@ -110,6 +110,6 @@ public class ArrestsDotOrgSiteTest {
 
     @Test
     public void testObtainDetailUrl() {
-        Assert.fail("Test not implemented");
+    	Assert.assertEquals(mockArizonaSite.obtainDetailUrl("Joe_Blow_32132342"), "https://arizona.arrests.org/Arrests/Joe_Blow_32132342/?d=1");
     }
 }
