@@ -5,6 +5,7 @@ import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -68,7 +69,10 @@ public class ArrestsDotOrgSiteTest {
 
     @Test
     public void testGetRecordDetailElements() {
-        Assert.fail("Test not implemented");
+    	Elements mockRecordDetails = mockTexasSite.getRecordDetailElements(mockDetailDoc);
+        Assert.assertEquals(mockRecordDetails.size(), 13);
+        Assert.assertTrue(mockRecordDetails.get(0).text().contains("Polk County"));
+        Assert.assertTrue(mockRecordDetails.get(2).text().contains("Roderick"));
     }
 
     @Test
