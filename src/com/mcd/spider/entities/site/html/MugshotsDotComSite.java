@@ -90,13 +90,18 @@ public class MugshotsDotComSite  implements SiteHTML{
 
     @Override
     public Elements getRecordElements(Document doc) {
-    	return doc.select("#main > div > div.gallery-listing > table > tbody > tr:nth-child(1) > td");
+    	return doc.select("div.gallery-listing table tr td a.image-preview");
     }
 
     @Override
-    public String getRecordDetailDocUrl(Element record) {		
-    	String pdLink = record.attr("href");
-    	return baseUrl+pdLink;
+    public String getRecordDetailDocUrl(Element record) {
+	    //extracting ID from partially qualified url and rebuilding so /US-Counties/... is not duplicated
+    	String pdLink = obtainRecordId(record.attr("href"))!=null?"/"+obtainRecordId(record.attr("href"))+".html":"";
+    	if (!pdLink.equals("")) {
+            return baseUrl+pdLink;
+        } else {
+    	    return "";
+        }
     }
 
     @Override

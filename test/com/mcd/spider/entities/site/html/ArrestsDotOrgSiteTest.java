@@ -2,21 +2,31 @@ package com.mcd.spider.entities.site.html;
 
 import com.mcd.spider.entities.record.State;
 import org.apache.log4j.Logger;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+
+import java.io.File;
+import java.io.IOException;
 
 public class ArrestsDotOrgSiteTest {
 
     static final Logger logger = Logger.getLogger(ArrestsDotOrgSiteTest.class);
     ArrestsDotOrgSite mockTexasSite = new ArrestsDotOrgSite(new String[]{State.TX.getName()});
     ArrestsDotOrgSite mockArizonaSite = new ArrestsDotOrgSite(new String[]{State.AZ.getName()});
+    Document mockMainPageDoc;
+    Document mockDetailDoc;
 
     @BeforeClass
-    public void setUpClass() {
+    public void setUpClass() throws IOException {
         logger.info("********** Starting Test cases for ArrestsDotOrgSite *****************");
         System.setProperty("TestingSpider", "true");
+        mockMainPageDoc = Jsoup.parse(new File("test/resources/htmls/mainPageDoc_ArrestsDotOrg.html"), "UTF-8");
+        mockDetailDoc = Jsoup.parse(new File("test/resources/htmls/recordDetailPage_ArrestsDotOrg.html"), "UTF-8");
     }
 
     @AfterClass
@@ -42,7 +52,18 @@ public class ArrestsDotOrgSiteTest {
 
     @Test
     public void testGetRecordDetailDocUrl() {
-        Assert.fail("Test not implemented");
+        Element mockRecordElement = new Element("a");
+        mockRecordElement.attr("href", "/Arrests/Mikey_Johansen_33799480/?d=1");
+        mockRecordElement.html("Mikey<br/>Johansen");
+        Assert.assertEquals(mockTexasSite.getRecordDetailDocUrl(mockRecordElement), "https://texas.arrests.org/Arrests/Mikey_Johansen_33799480/?d=1");
+    }
+
+    @Test
+    public void testGetRecordDetailDocUrl_NotAProperRecordElement() {
+        Element mockRecordElement = new Element("a");
+        mockRecordElement.attr("value", "/Arrests/Mikey_Johansen_33799480/?d=1");
+        mockRecordElement.html("Mikey<br/>Johansen");
+        Assert.assertEquals(mockTexasSite.getRecordDetailDocUrl(mockRecordElement), "");
     }
 
     @Test

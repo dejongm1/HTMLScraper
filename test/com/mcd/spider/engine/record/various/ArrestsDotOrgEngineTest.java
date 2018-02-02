@@ -686,9 +686,9 @@ public class ArrestsDotOrgEngineTest {
 	@Test(groups="online", enabled=false) //make these dependent on a test that gathers a handful of docs on class load instead of each test creating a new connection
 	public void obtainRecordDetailDoc_Online() throws IOException {
 		Elements recordUrl = ((ArrestsDotOrgSite) mockEngine.getSite()).getRecordElements(mockMainPageDoc);
-		String detaiLUrl = ((ArrestsDotOrgSite) mockEngine.getSite()).getRecordDetailDocUrl(recordUrl.get(0));
+		String detailUrl = ((ArrestsDotOrgSite) mockEngine.getSite()).getRecordDetailDocUrl(recordUrl.get(0));
 		
-		Document detailDoc = mockEngine.obtainRecordDetailDoc(detaiLUrl, "www.google.com");
+		Document detailDoc = mockEngine.obtainRecordDetailDoc(detailUrl, "www.google.com");
 		
 		Assert.assertNotNull(detailDoc);
 		Assert.assertFalse(detailDoc.text().equals(""));

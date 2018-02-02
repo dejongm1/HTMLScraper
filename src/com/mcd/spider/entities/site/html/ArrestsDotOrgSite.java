@@ -76,7 +76,7 @@ public class ArrestsDotOrgSite implements SiteHTML {
 
     @Override
     public String obtainRecordId(String url) {
-        if (url.contains("/Arrests/") && url.contains("/?d=1")) {
+        if (!url.equals("") && url.contains("/Arrests/") && url.contains("/?d=1")) {
             return url.substring(url.indexOf("/Arrests/")+9, url.indexOf("/?d=1"));
         } else {
             return null;
@@ -91,8 +91,11 @@ public class ArrestsDotOrgSite implements SiteHTML {
 	@Override
 	public String getRecordDetailDocUrl(Element record) {
 		String pdLink = record.attr("href");
-//		pdLink = pdLink.replace("?d=1", "");
-		return baseUrl+pdLink;
+		if (!pdLink.equals("")) {
+            return baseUrl+pdLink;
+        } else {
+		    return "";
+        }
 	}
 	@Override
 	public Elements getRecordDetailElements(Document doc) {
