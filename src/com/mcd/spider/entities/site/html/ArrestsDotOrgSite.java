@@ -85,7 +85,6 @@ public class ArrestsDotOrgSite implements SiteHTML {
 
     @Override
 	public Elements getRecordElements(Document doc) {
-	    //TODO is this working properly?
 		return doc.select(".content-box .search-results .profile-card .title a");
 	}
 	@Override
@@ -173,7 +172,8 @@ public class ArrestsDotOrgSite implements SiteHTML {
     @Override
     public boolean isAResultsDoc(Document doc) {
         if (doc!=null) {
-            return doc.baseUri().contains("/?page=") && doc.baseUri().contains("&results=");
+            return doc.baseUri().contains("/?page=") && doc.baseUri().contains("&results=") 
+            		|| !doc.select(".grid_24 .content-box .search-results").isEmpty();
         } else {
             return false;
         }

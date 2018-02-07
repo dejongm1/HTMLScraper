@@ -48,7 +48,16 @@ public class ArrestsDotOrgSiteTest {
 
     @Test
     public void testGetRecordElements() {
-        Assert.fail("Test not implemented");
+    	Elements recordElements = mockTexasSite.getRecordElements(mockMainPageDoc);
+        Assert.assertEquals(recordElements.size(), 56);
+        Assert.assertTrue(recordElements.get(0).text().contains("Watkins"));
+        Assert.assertTrue(recordElements.get(55).text().contains("Reda"));
+    }
+
+    @Test
+    public void testGetRecordElements_NotResultsPage() {
+    	Elements recordElements = mockTexasSite.getRecordElements(mockDetailDoc);
+        Assert.assertEquals(recordElements.size(), 0);
     }
 
     @Test
@@ -77,7 +86,7 @@ public class ArrestsDotOrgSiteTest {
 
     @Test
     public void testGetTotalPages() {
-        Assert.fail("Test not implemented");
+    	Assert.assertEquals(mockArizonaSite.getTotalPages(mockMainPageDoc), 18);
     }
 
     @Test
@@ -92,7 +101,8 @@ public class ArrestsDotOrgSiteTest {
 
     @Test
     public void testIsAResultsDoc() {
-        Assert.fail("Test not implemented");
+    	Assert.assertTrue(mockTexasSite.isAResultsDoc((mockMainPageDoc)));
+    	Assert.assertFalse(mockTexasSite.isAResultsDoc((mockDetailDoc)));
     }
 
     @Test
