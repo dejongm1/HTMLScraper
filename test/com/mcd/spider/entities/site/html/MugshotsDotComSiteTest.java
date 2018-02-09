@@ -58,11 +58,6 @@ public class MugshotsDotComSiteTest {
     }
 
     @Test
-    public void testGetPerRecordSleepRange() {
-        Assert.fail("Test not implemented");
-    }
-
-    @Test
     public void testGetRecordElements() {
         Elements mockElements = mockArizonaSite.getRecordElements(mockMainPageDoc);
         Assert.assertEquals(mockElements.size(), 120);

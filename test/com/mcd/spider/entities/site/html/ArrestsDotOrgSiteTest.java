@@ -107,7 +107,9 @@ public class ArrestsDotOrgSiteTest {
 
     @Test
     public void testIsARecordDetailDoc() {
-        Assert.fail("Test not implemented");
+    	Elements temp = mockDetailDoc.select("<div[class=info'] div[class='section']");
+        Assert.assertTrue(mockTexasSite.isARecordDetailDoc(mockDetailDoc));
+        Assert.assertTrue(mockArizonaSite.isARecordDetailDoc(mockDetailDoc));
     }
 
     @Test
