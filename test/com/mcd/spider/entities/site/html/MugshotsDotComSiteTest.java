@@ -1,6 +1,7 @@
 package com.mcd.spider.entities.site.html;
 
 import com.mcd.spider.entities.record.State;
+import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -13,6 +14,7 @@ import org.testng.annotations.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 
 public class MugshotsDotComSiteTest {
 
@@ -100,7 +102,10 @@ public class MugshotsDotComSiteTest {
 
     @Test
     public void testGetRecordDetailElements() {
-        Assert.fail("Test not implemented");
+        Elements mockRecordDetails = mockTexasSite.getRecordDetailElements(mockDetailDoc);
+        Assert.assertEquals(mockRecordDetails.size(), 12);
+        Assert.assertEquals(mockRecordDetails.get(1).select("span.value").text(), "Visah,Salim NMN");
+        Assert.assertEquals(mockRecordDetails.get(3).select("span.value").text(), "22");
     }
 
     @Test
@@ -116,18 +121,40 @@ public class MugshotsDotComSiteTest {
     }
 
     @Test
-    public void testGetMiscSafeUrlsFromDoc() {
-        Assert.fail("Test not implemented");
+    public void testGetMiscSafeUrlsFromDoc_Detail() {
+        String[] schemes = {"http","https"};
+        UrlValidator urlValidator = new UrlValidator(schemes);
+        Map<Object, String> urlMap = mockTexasSite.getMiscSafeUrlsFromDoc(mockDetailDoc, 5);
+        for (Map.Entry<Object, String> entry : urlMap.entrySet()) {
+            Assert.assertTrue(urlValidator.isValid(entry.getValue()));
+        }
+        Assert.assertTrue(urlMap.size()>0);
+        Assert.assertTrue(urlMap.size()<=5);
+    }
+
+    @Test
+    public void testGetMiscSafeUrlsFromDoc_Results() {
+        String[] schemes = {"http","https"};
+        UrlValidator urlValidator = new UrlValidator(schemes);
+        Map<Object, String> urlMap = mockArizonaSite.getMiscSafeUrlsFromDoc(mockMainPageDoc, 10);
+        for (Map.Entry<Object, String> entry : urlMap.entrySet()) {
+            Assert.assertTrue(urlValidator.isValid(entry.getValue()));
+            Assert.assertNull(mockArizonaSite.obtainRecordId(entry.getValue()));
+        }
+        Assert.assertTrue(urlMap.size()>0);
+        Assert.assertTrue(urlMap.size()<=10);
     }
 
     @Test
     public void testIsAResultsDoc() {
-        Assert.fail("Test not implemented");
+        Assert.assertTrue(mockTexasSite.isAResultsDoc((mockMainPageDoc)));
+        Assert.assertFalse(mockTexasSite.isAResultsDoc((mockDetailDoc)));
     }
 
     @Test
     public void testIsARecordDetailDoc() {
-        Assert.fail("Test not implemented");
+        Assert.assertTrue(mockTexasSite.isARecordDetailDoc(mockDetailDoc));
+        Assert.assertTrue(mockArizonaSite.isARecordDetailDoc(mockDetailDoc));
     }
 
     @Test

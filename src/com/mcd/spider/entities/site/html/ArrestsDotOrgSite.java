@@ -183,7 +183,9 @@ public class ArrestsDotOrgSite implements SiteHTML {
     public boolean isARecordDetailDoc(Document doc) {
         if (doc!=null) {
             return (doc.baseUri().matches(".*[A-Za-z]+_[0-9]/?.+") && doc.baseUri().endsWith("/?d=1"))
-            		|| (!doc.select("div[itemtype='http://schema.org/Person']").isEmpty());
+            		|| (!doc.select("div[itemtype='http://schema.org/Person']").isEmpty()
+                        && !doc.select("div[class='info'] div[class='section']").isEmpty()
+                        && doc.select("div[class='info'] div[class='section']").get(0).text().contains("Information"));
         } else {
             return false;
         }

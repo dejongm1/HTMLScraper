@@ -106,7 +106,6 @@ public class MugshotsDotComSite  implements SiteHTML{
 
     @Override
     public Elements getRecordDetailElements(Document doc) {
-    	//TODO any others? charges?
 		return doc.select("#item-info > strong > div.p.graybox > div > div.field");
     }
 
@@ -150,16 +149,15 @@ public class MugshotsDotComSite  implements SiteHTML{
 
     @Override
     public boolean isAResultsDoc(Document doc) {
-    	//uri has US-Counties
-    	//AND #counties > ul.cities
+    	//#counties > ul.cities
     	//AND has "US Counties" in breadcrumbs
     	//AND has an actual county
-    	if (doc.baseUri().contains("US-Counties") && !doc.select("#counties > ul.cities").isEmpty()) {
+    	if (!doc.select("#counties > ul.cities").isEmpty()) {
     		Element breadcrumbList = doc.getElementById("small-breadcrumbs");
     		if (breadcrumbList!=null) {
     			Elements breadcrumbs = breadcrumbList.getElementsByAttribute("href");
-                return breadcrumbs.get(0).hasText() && breadcrumbs.get(0).text().equals("US-Counties")
-                        && breadcrumbs.size() >= 3;
+                return breadcrumbs.get(0).hasText() && breadcrumbs.get(0).text().equals("US Counties")
+                        && breadcrumbs.size() >= 3 && breadcrumbs.get(2).text().contains("County");
     		}
     	}
         return false;
@@ -167,12 +165,10 @@ public class MugshotsDotComSite  implements SiteHTML{
 
     @Override
     public boolean isARecordDetailDoc(Document doc) {
-    	//uri has US-Counties
-    	//AND has div itemtype="https://schema.org/Person"
+    	//has div itemtype="https://schema.org/Person"
     	//AND has div.p.graybox > div.fieldvalues 
-        return doc.baseUri().contains("US-Counties")
-                && !doc.select("div.p.graybox > div.fieldvalues").isEmpty()
-                && !doc.select("div[itemtype=\"https://schema.org/Person\"]").isEmpty();
+        return !doc.select("div.p.graybox > div.fieldvalues").isEmpty()
+                && !doc.select("div[itemtype='http://schema.org/Person']").isEmpty();
     }
 
 	@Override
