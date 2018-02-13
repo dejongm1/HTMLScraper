@@ -464,4 +464,13 @@ public class DesMoinesRegisterComEngine implements ArrestRecordEngine{
 			connectionUtil.changeUserAgent();
         }
 	}
+
+
+	@Override
+	public List<String> findAvailableCounties() {
+		// TODO fill in
+		List<String> countiesList = new ArrayList<>();
+		return countiesList;
+		
+	}
 }

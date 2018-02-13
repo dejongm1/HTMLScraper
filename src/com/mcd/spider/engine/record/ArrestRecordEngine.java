@@ -35,5 +35,6 @@ public interface ArrestRecordEngine {
 	void formatArrestTime(ArrestRecord record, Element profileDetail);
 	String extractValue(Element profileDetail);
 	List<Record> filterRecords(List<Record> fullArrestRecords);
+	List<String> findAvailableCounties();
 	
 }

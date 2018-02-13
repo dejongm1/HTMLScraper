@@ -152,14 +152,18 @@ public class SpiderUtil {
 	}
     
 	public void sleep(long milliSecondsToSleep, boolean logGenericStatement) {
-        try {
-            if (logGenericStatement) {
-            	logger.debug("Sleeping for " + milliSecondsToSleep/1000 + " seconds");
-            }
-            Thread.sleep(milliSecondsToSleep);
-        } catch (InterruptedException e) {
-            logger.error("Error trying to sleep");
-        }
+		if (!Boolean.parseBoolean(System.getProperty("TestingSpider"))) {
+	        try {
+	            if (logGenericStatement) {
+	            	logger.debug("Sleeping for " + milliSecondsToSleep/1000 + " seconds");
+	            }
+	            Thread.sleep(milliSecondsToSleep);
+	        } catch (InterruptedException e) {
+	            logger.error("Error trying to sleep");
+	        }
+		} else {
+			logger.info("Skipping sleep because we're running tests");
+		}
     }
 	
 	public boolean sendEmail(String stateName) {

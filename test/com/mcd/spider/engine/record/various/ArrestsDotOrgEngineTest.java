@@ -913,4 +913,9 @@ public class ArrestsDotOrgEngineTest {
 		Assert.assertEquals(mockWeb.getSessionCookies().get("views_session"), "1");
 		Assert.assertEquals(mockWeb.getSessionCookies().get("views_24"), "1");
 	}
+	
+	@Test
+	public void findAvailableCounties() {
+		Assert.fail("Test not implemented");
+	}
 }

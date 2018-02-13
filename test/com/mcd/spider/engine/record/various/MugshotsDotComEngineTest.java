@@ -1,17 +1,26 @@
 package com.mcd.spider.engine.record.various;
 
-import com.mcd.spider.entities.record.Record;
-import com.mcd.spider.entities.record.State;
-import com.mcd.spider.entities.site.SpiderWeb;
-import com.mcd.spider.util.io.RecordIOUtil;
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+
 import org.apache.log4j.Logger;
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.io.File;
+import com.mcd.spider.entities.record.ArrestRecord;
+import com.mcd.spider.entities.record.Record;
+import com.mcd.spider.entities.record.State;
+import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
+import com.mcd.spider.entities.site.SpiderWeb;
+import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
+import com.mcd.spider.util.io.RecordIOUtil;
 
 public class MugshotsDotComEngineTest {
 
@@ -30,10 +39,10 @@ public class MugshotsDotComEngineTest {
     private RecordIOUtil ioUtil;
 
     @BeforeClass
-    public void setUpClass() {
+    public void setUpClass() throws IOException {
         logger.info("********** Starting Test cases for MugshotsDotComEngine *****************");
         System.setProperty("TestingSpider", "true");
-        /*mockMainPageDoc = Jsoup.parse(new File("test/resources/htmls/mainPageDoc_MugshotsDotCom.html"), "UTF-8");
+        mockMainPageDoc = Jsoup.parse(new File("test/resources/htmls/mainPageDoc_MugshotsDotCom.html"), "UTF-8");
         mockDetailDoc = Jsoup.parse(new File("test/resources/htmls/recordDetailPage_MugshotsDotCom.html"), "UTF-8");
         mockWeb = new SpiderWeb(9999, true, false, RecordFilterEnum.NONE, State.IA);
         mockWeb.setSessionCookies(new HashMap<>());
@@ -43,7 +52,7 @@ public class MugshotsDotComEngineTest {
         mainOutputPath = ioUtil.getMainDocPath();
         filteredOutputPath = ioUtil.getOutputter().getFilteredDocPath(RecordFilterEnum.ALCOHOL);
 
-
+        /*
         mockAlcoholRecordOne = new ArrestRecord();
         mockAlcoholRecordOne.setId("1231");
         ((ArrestRecord)mockAlcoholRecordOne).setFullName("Suzie Q Public");
@@ -205,4 +214,13 @@ public class MugshotsDotComEngineTest {
     public void testFilterRecords() {
         Assert.fail("Test not implemented");
     }
+	
+	@Test
+	public void findAvailableCounties() {
+		List<String> countiesList = mockEngine.findAvailableCounties();
+		
+		Assert.assertEquals(countiesList.size(), 2);
+		Assert.assertEquals(countiesList.get(0), "Benton");
+		Assert.assertEquals(countiesList.get(1), "Black Hawk");
+	}
 }

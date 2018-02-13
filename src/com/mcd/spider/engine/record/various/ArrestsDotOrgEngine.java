@@ -597,4 +597,12 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         }
         return recordDetailUrlMap;
     }
+
+	@Override
+	public List<String> findAvailableCounties() {
+		// TODO fill in
+		List<String> countiesList = new ArrayList<>();
+		return countiesList;
+		
+	}
 }

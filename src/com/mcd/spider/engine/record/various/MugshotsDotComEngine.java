@@ -1,5 +1,20 @@
 package com.mcd.spider.engine.record.various;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+import org.jsoup.Connection;
+import org.jsoup.Connection.Response;
+import org.jsoup.HttpStatusException;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import com.mcd.spider.engine.record.ArrestRecordEngine;
 import com.mcd.spider.entities.record.ArrestRecord;
 import com.mcd.spider.entities.record.Record;
@@ -9,19 +24,6 @@ import com.mcd.spider.entities.site.html.MugshotsDotComSite;
 import com.mcd.spider.util.ConnectionUtil;
 import com.mcd.spider.util.SpiderUtil;
 import com.mcd.spider.util.io.RecordIOUtil;
-import org.apache.log4j.Logger;
-import org.jsoup.Connection;
-import org.jsoup.Connection.Response;
-import org.jsoup.HttpStatusException;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  *
@@ -39,6 +41,7 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
     private RecordIOUtil recordIOUtil;
     private SpiderWeb spiderWeb;
     List<Record> arrestRecords = new ArrayList<>();
+    private boolean connectionEstablished = false;
 
     public MugshotsDotComEngine(SpiderWeb web) {
     	this.spiderWeb = web;
@@ -106,7 +109,11 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
 	        if (spiderWeb.getAttemptCount()<=maxAttempts) {
 		        try {
 		            logger.info("Trying to make initial connection to " + site.getName());
+		            if (!connectionEstablished) {
 		        	mainPageDoc = (Document) initiateConnection(firstCountyPageResultsUrl);
+		            } else {
+		            	//TODO don't use initiateConnection
+		            }
 		        } catch (IOException e) {
 		            logger.error("Couldn't make initial connection to site. Trying again " + (maxAttempts-spiderWeb.getAttemptCount()) + " more times", e);
 		            //if it's a 500, we're probably blocked. TODO Try a new IP if possible, else bail
@@ -210,9 +217,22 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
 	}
 
 	@Override
-	public Object initiateConnection(String firstPageResultsUrl) throws IOException{
-        Connection.Response response = connectionUtil.retrieveConnectionResponse(firstPageResultsUrl, "www.google.com");
-		return null;
+	public Object initiateConnection(String firstResultsPageUrl) throws IOException{
+		Connection.Response response = connectionUtil.retrieveConnectionResponse(firstResultsPageUrl, "www.google.com");
+        for (Map.Entry<String,String> cookieEntry : response.cookies().entrySet()){
+            logger.debug(cookieEntry.getKey() + "=" + cookieEntry.getValue());
+        }
+        Map<String,String> headers = new HashMap<>();
+//        headers.put("Host", "iowa.arrests.org");
+//        headers.put("Accept", "text/html, */*; q=0.01");
+//        headers.put("Accept-Language", "en-US,en;q=0.5  ");
+//        headers.put("Accept-Encoding", "gzip, deflate, br");
+//        headers.put("X-fancyBox", "true");
+//        headers.put("X-Requested-With", "XMLHttpRequest");
+//        headers.put("Connection", "keep-alive");
+        spiderWeb.setHeaders(headers);
+        spiderWeb.setSessionCookies(response.cookies());
+        return response.parse();
 	}
 
 	@Override
@@ -277,5 +297,44 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	@Override
+	public List<String> findAvailableCounties() {
+		Document doc = null;
+		if (spiderWeb.getAttemptCount()<=site.getMaxAttempts()) {
+			try {
+				logger.info("Trying to make initial connection to " + site.getName());
+				doc = (Document) initiateConnection(site.getBaseUrl());
+			} catch (IOException e) {
+				logger.error("Couldn't make initial connection to site. Trying again " + (site.getMaxAttempts()-spiderWeb.getAttemptCount()) + " more times", e);
+				if (e instanceof HttpStatusException && ((HttpStatusException) e).getStatusCode()==500) {
+					connectionUtil = new ConnectionUtil(true);
+				}
+				spiderUtil.sleep(5000, true);
+				spiderWeb.increaseAttemptCount();
+				findAvailableCounties();
+			}
+		}
+		return parseDocForCounties(doc);
+	}
 
+	private List<String> parseDocForCounties(Document doc) {
+		List<String> countiesList = new ArrayList<>();
+		if (doc!=null) {
+			connectionEstablished = true;
+			logger.info("Parsing counties with records for " + site.getName());
+			Elements countyItems = doc.select("#main .box #subcategories ul.categories li");
+			//skip class="zero" or text().endsWith("(0)") because it's an empty county
+			for (Element countyItem : countyItems) {
+				if (!countyItem.hasClass("zero")
+						&& countyItem.child(0)!=null && countyItem.child(0).text()!=null
+						&& !countyItem.child(0).text().endsWith("(0)") && countyItem.text().contains(" County, ")) {
+					countiesList.add(countyItem.text().substring(0, countyItem.text().indexOf(" County,")));
+				}
+			}
+		}
+		logger.info(countiesList.size() + " counties with records were found from " + site.getName());
+		spiderUtil.sleep(3000, true);
+		return countiesList;
+	}
 }

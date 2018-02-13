@@ -112,8 +112,8 @@ public final class State {
 	public List<String> getCounties() {
 		return counties;
 	}
-	public void addCounty(String county) {
-		getCounties().add(county);
+	public void setCounties(List<String> counties) {
+		this.counties = counties;
 	}
 	public static List<State> values() {
 		return (List<State>) abbreviationToState.values();
@@ -145,7 +145,7 @@ public final class State {
             SpiderWeb engineWeb = new SpiderWeb(web.getMaxNumberOfResults(), web.getMisc(), web.retrieveMissedRecords(), web.getFilter(), this);
 			engine.setSpiderWeb(engineWeb);
 			//TODO either read from stored file or crawl website for possible counties each run
-			//engine.getAvailableCounties();
+			setCounties(engine.findAvailableCounties());
 		}
 	}
 }
