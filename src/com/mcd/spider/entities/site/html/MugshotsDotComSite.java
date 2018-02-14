@@ -1,19 +1,21 @@
 package com.mcd.spider.entities.site.html;
 
-import com.google.common.base.CaseFormat;
-import com.mcd.spider.entities.record.State;
-import com.mcd.spider.entities.site.Url;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import com.google.common.base.CaseFormat;
+import com.mcd.spider.entities.record.State;
+import com.mcd.spider.entities.site.Url;
 
 /**
  *
@@ -180,9 +182,9 @@ public class MugshotsDotComSite  implements SiteHTML{
 	
 	public String getNextResultsPageUrl(Document doc) {
         //only get until a certain date is reached (month back?) or None
-		boolean olderThanRange = false;
-		long currentTimeInMillis = Calendar.getInstance().getTimeInMillis();
-		long rangeToCrawlInMillis = 31*24*60*60*1000; //1 month
+		boolean olderThanRange;
+		long currentTimeInMillis = 0l;
+		long rangeToCrawlInMillis = 31*24*60*60*1000l; //1 month
 		long nextPageTimeInMillis = 0l;
 		String nextPageParameters = "";
 		String currentPageUrl = doc.baseUri();
@@ -190,18 +192,21 @@ public class MugshotsDotComSite  implements SiteHTML{
 		Elements nextPageButtons = doc.select(".pagination .next.page");
 		Element nextPageButton = !nextPageButtons.isEmpty()?nextPageButtons.get(0):null;
 		if (nextPageButton!=null) {
-			nextPageParameters = nextPageButton.getElementsByAttribute("href").val();
+			nextPageParameters = nextPageButton.attr("href");
 		}
 		if (!nextPageParameters.contains("None")) {
 			Calendar nextPageCalendar = Calendar.getInstance();
-			String nextPageDateString = nextPageParameters.substring(nextPageParameters.indexOf('=')+1);
+			String nextPageDateString = nextPageParameters.substring(nextPageParameters.indexOf('=')+1, nextPageParameters.indexOf('+'));
 			try {
-				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-DD");
-				nextPageCalendar.setTime(sdf.parse(nextPageDateString));
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+				Date tempDate = sdf.parse(nextPageDateString);
+				nextPageCalendar.setTime(tempDate);
+				nextPageTimeInMillis = nextPageCalendar.getTimeInMillis();
 			} catch (ParseException e) {
 				logger.error("Couldn't parse " + nextPageDateString + " into a date during getNextResultsPageUrl() for " + currentPageUrl);
 			}
 		}
+		currentTimeInMillis = Calendar.getInstance().getTimeInMillis();
 		olderThanRange = currentTimeInMillis - nextPageTimeInMillis > rangeToCrawlInMillis;
 		
 		if (!nextPageParameters.equals("") && !olderThanRange) {

@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
+import java.util.Map.Entry;
 
 public class ArrestsDotOrgEngineTest {
 
@@ -268,8 +269,8 @@ public class ArrestsDotOrgEngineTest {
 		ArrestsDotOrgEngine mockEngine = new ArrestsDotOrgEngine(mockWeb);
 		Map<Object,String> resultUrlMap = mockEngine.compileResultsUrlMap(mockMainPageDoc);
 		Map<Integer,Document> resultDocMap = mockEngine.compileResultsDocMap(resultUrlMap);
-		
-		Assert.assertEquals(resultDocMap.size(), 2);//only have 2 html pages saved
+
+		Assert.assertEquals(resultDocMap.size(), 2);
 		Assert.assertEquals(mockEngine.getSpiderWeb().getFurthestPageToCheck(), 9999);
 		Assert.assertEquals(mockEngine.getSpiderWeb().getAttemptCount(), 1);
 	}
@@ -287,6 +288,7 @@ public class ArrestsDotOrgEngineTest {
 		Map<Object,String> resultUrlMap = mockEngine.compileResultsUrlMap(mockMainPageDoc);
 		Map<Integer,Document> resultDocMap = mockEngine.compileResultsDocMap(resultUrlMap);
 		
+		Assert.assertEquals(resultDocMap.size(), 1); //TODO fails depending on which order pages are added to Map, should it be <=? or should I remove pages that are past furthestPageToCheck?
 		Assert.assertEquals(mockEngine.getSpiderWeb().getFurthestPageToCheck(), 1);
 		Assert.assertEquals(mockEngine.getSpiderWeb().getAttemptCount(), 1);
 	}
@@ -916,6 +918,10 @@ public class ArrestsDotOrgEngineTest {
 	
 	@Test
 	public void findAvailableCounties() {
-		Assert.fail("Test not implemented");
+		List<String> countiesList = mockEngine.findAvailableCounties();
+		
+		Assert.assertEquals(countiesList.size(), 8);
+		Assert.assertEquals(countiesList.get(0), "Cerro Gordo");
+		Assert.assertEquals(countiesList.get(7), "Woodbury");
 	}
 }

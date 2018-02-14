@@ -1,6 +1,12 @@
 package com.mcd.spider.entities.site.html;
 
-import com.mcd.spider.entities.record.State;
+import java.io.File;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Map;
+
 import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
@@ -12,9 +18,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Map;
+import com.mcd.spider.entities.record.State;
 
 public class MugshotsDotComSiteTest {
 
@@ -163,7 +167,37 @@ public class MugshotsDotComSiteTest {
     }
 
     @Test
-    public void testGetNextResultsPageUrl() {
-        Assert.fail("Test not implemented");
+    public void testGetNextResultsPageUrl_New() {
+    	DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    	Calendar cal = Calendar.getInstance();
+    	String recentDate = dateFormat.format(cal.getTime());
+    	String htmlDoc = "<html><body>"
+    			+ "<div class=\"pagination\">"
+				+ "<a href=\"?from="+recentDate+"+23%3A30%3A42.173479&amp;from=156225870\" class=\"next page\">Next</a>"
+				+ "</div>"
+				+ "</body></html>";
+        Document doc = Jsoup.parse(htmlDoc);
+
+        Assert.assertNotNull(mockTexasSite.getNextResultsPageUrl(doc));
+        Assert.assertNotNull(mockArizonaSite.getNextResultsPageUrl(doc));
+    }
+
+    @Test
+    public void testGetNextResultsPageUrl_None() {
+    	String htmlDoc = "<html><body>"
+    			+ "<div class=\"pagination\">"
+				+ "<a href=\"None\" class=\"next page\">Next</a>"
+				+ "</div>"
+				+ "</body></html>";
+        Document doc = Jsoup.parse(htmlDoc);
+
+        Assert.assertNull(mockTexasSite.getNextResultsPageUrl(doc));
+        Assert.assertNull(mockArizonaSite.getNextResultsPageUrl(doc));
+    }
+    
+    @Test
+    public void testGetNextResultsPageUrl_Old() {
+        Assert.assertNull(mockTexasSite.getNextResultsPageUrl(mockMainPageDoc));
+        Assert.assertNull(mockArizonaSite.getNextResultsPageUrl(mockMainPageDoc));
     }
 }

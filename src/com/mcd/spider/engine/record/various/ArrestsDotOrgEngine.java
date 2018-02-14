@@ -57,6 +57,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     private RecordIOUtil recordIOUtil;
     private SpiderWeb spiderWeb;
     List<Record> arrestRecords = new ArrayList<>();
+    private boolean connectionEstablished = false;
 
     public ArrestsDotOrgEngine(SpiderWeb web) {
     	this.spiderWeb = web;
@@ -126,7 +127,11 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         if (spiderWeb.getAttemptCount()<=maxAttempts) {
 	        try {
 	            logger.info("Trying to make initial connection to " + site.getName());
-	        	mainPageDoc = (Document) initiateConnection(firstPageResultsUrl);
+	            if (!connectionEstablished) {
+	            	mainPageDoc = (Document) initiateConnection(firstPageResultsUrl);
+	            } else {
+	            	//TODO don't use initiateConnection if it was already used
+	            }
 	        } catch (IOException e) {
 	            logger.error("Couldn't make initial connection to site. Trying again " + (maxAttempts-spiderWeb.getAttemptCount()) + " more times", e);
 	            //if it's a 500, we're probably blocked. TODO Try a new IP if possible, else bail
@@ -412,10 +417,11 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     						if (docToCheck!=null && site.isAResultsDoc(docToCheck) && docToCheck.html().contains(crawledId)) {
     							//set as current page number
     							spiderWeb.setFurthestPageToCheck(page);
+    							//TODO remove docs past this point here?
     						}
     					}
     				}
-    				if (docToCheck!=null) {
+    				if (docToCheck!=null && !docToCheck.baseUri().equals(site.getBaseUrl()+"/")) {
     					resultsDocPlusMiscMap.put((Integer)k, docToCheck);
     				}
     				int sleepTime = ConnectionUtil.getSleepTime(site);
@@ -600,9 +606,45 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 
 	@Override
 	public List<String> findAvailableCounties() {
-		// TODO fill in
+		Document doc = null;
+		if (spiderWeb.getAttemptCount()<=site.getMaxAttempts()) {
+			try {
+				logger.info("Trying to make initial connection to " + site.getName());
+				doc = (Document) initiateConnection(site.getBaseUrl());
+			} catch (IOException e) {
+				logger.error("Couldn't make initial connection to site. Trying again " + (site.getMaxAttempts()-spiderWeb.getAttemptCount()) + " more times", e);
+				if (e instanceof HttpStatusException && ((HttpStatusException) e).getStatusCode()==500) {
+					connectionUtil = new ConnectionUtil(true);
+				}
+				spiderUtil.sleep(5000, true);
+				spiderWeb.increaseAttemptCount();
+				findAvailableCounties();
+			}
+		}
+		return parseDocForCounties(doc);
+	}
+	
+	private List<String> parseDocForCounties(Document doc) {
 		List<String> countiesList = new ArrayList<>();
+		if (doc!=null) {
+			connectionEstablished = true;
+			logger.info("Parsing counties with records for " + site.getName());
+			Elements navigationList = doc.select("div.navigation ul li");
+			Element countyListItem = null;
+			for (Element li : navigationList) {
+				if (li.text()!=null && li.text().contains("Counties")) {
+					countyListItem = li;
+				}
+			}
+			if (countyListItem!=null) {
+				for (Element item : countyListItem.select("ul li")) {
+					if (item.text()!=null)
+						countiesList.add(item.text());
+				}
+			}
+		}
+		logger.info(countiesList.size() + " counties with records were found from " + site.getName());
+		spiderUtil.sleep(3000, true);
 		return countiesList;
-		
 	}
 }

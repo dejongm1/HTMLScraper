@@ -110,7 +110,7 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
 		        try {
 		            logger.info("Trying to make initial connection to " + site.getName());
 		            if (!connectionEstablished) {
-		        	mainPageDoc = (Document) initiateConnection(firstCountyPageResultsUrl);
+		            	mainPageDoc = (Document) initiateConnection(firstCountyPageResultsUrl);
 		            } else {
 		            	//TODO don't use initiateConnection
 		            }
@@ -137,18 +137,18 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
 //	
 //	                } else {
 	                    logger.info("Retrieving results page docs");
-	                    Map<Integer, Document> resultsDocPlusMiscMap = compileResultsDocMap(mainPageDoc);
+	                    Map<Integer, Document> resultsDocMap = compileResultsDocMap(mainPageDoc);
 	                    //got here 1/26/18 @2:05
 	                    
-	                    if (resultsDocPlusMiscMap.isEmpty()) {
+	                    if (resultsDocMap.isEmpty()) {
 	                        logger.info("No results doc pages were gathered. Quitting");
 	                        return;
 	                    }
 	
 	                    logger.info("Retrieving details page urls");
 	                    //build a list of details page urls by parsing results page docs
-	                    recordDetailUrlMap = compileRecordDetailUrlMap(mainPageDoc, resultsDocPlusMiscMap);
-	                    logger.info("Gathered links for "+recordDetailUrlMap.size()+" record profiles and misc pages");
+	                    recordDetailUrlMap = compileRecordDetailUrlMap(mainPageDoc, resultsDocMap);
+	                    logger.info("Gathered links for "+recordDetailUrlMap.size()+" record profiles");
 //	                }
 	                spiderUtil.sleep(spiderWeb.isOffline()?0:ConnectionUtil.getSleepTime(site)*2, true);
 	                //****iterate over collection, scraping records and simply opening others
@@ -167,6 +167,7 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
 
     public Map<Integer,Document> compileResultsDocMap(Document mainPageDoc) {
 		//build docs map by traversing next button to get total pages/records
+    	//TODO should we add misc pages here to make crawling appear random?
 		Integer numberOfPages = 0;
 		Map<Integer,Document> resultsDocMap = new HashMap<>();
 		String nextPageUrl = site.getNextResultsPageUrl(mainPageDoc);
