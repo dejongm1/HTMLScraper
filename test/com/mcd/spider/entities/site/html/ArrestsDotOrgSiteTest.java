@@ -102,9 +102,10 @@ public class ArrestsDotOrgSiteTest {
         UrlValidator urlValidator = new UrlValidator(schemes);
         Map<Object, String> urlMap = mockTexasSite.getMiscSafeUrlsFromDoc(mockDetailDoc, 5);
         for (Map.Entry<Object, String> entry : urlMap.entrySet()) {
+            Assert.assertNull(mockTexasSite.obtainRecordId(entry.getValue()));
             Assert.assertTrue(urlValidator.isValid(entry.getValue()));
         }
-        Assert.assertTrue(urlMap.size()>0);
+        Assert.assertTrue(urlMap.size()>0);//TODO failed once
         Assert.assertTrue(urlMap.size()<=5);
     }
 

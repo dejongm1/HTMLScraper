@@ -1,28 +1,5 @@
 package com.mcd.spider.engine.record.various;
 
-import static com.mcd.spider.entities.record.ArrestRecord.ArrestDateComparator;
-import static com.mcd.spider.entities.record.ArrestRecord.CountyComparator;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.log4j.Logger;
-import org.jsoup.Connection;
-import org.jsoup.HttpStatusException;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
-import org.jsoup.select.Elements;
-
 import com.mcd.spider.engine.record.ArrestRecordEngine;
 import com.mcd.spider.entities.io.RecordWorkbook;
 import com.mcd.spider.entities.record.ArrestRecord;
@@ -40,6 +17,21 @@ import com.mcd.spider.util.ConnectionUtil;
 import com.mcd.spider.util.SpiderUtil;
 import com.mcd.spider.util.io.RecordIOUtil;
 import com.mcd.spider.util.io.RecordOutputUtil;
+import org.apache.log4j.Logger;
+import org.jsoup.Connection;
+import org.jsoup.HttpStatusException;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
+import org.jsoup.select.Elements;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.*;
+
+import static com.mcd.spider.entities.record.ArrestRecord.ArrestDateComparator;
+import static com.mcd.spider.entities.record.ArrestRecord.CountyComparator;
 
 /**
  *
@@ -127,11 +119,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         if (spiderWeb.getAttemptCount()<=maxAttempts) {
 	        try {
 	            logger.info("Trying to make initial connection to " + site.getName());
-	            if (!connectionEstablished) {
-	            	mainPageDoc = (Document) initiateConnection(firstPageResultsUrl);
-	            } else {
-	            	//TODO don't use initiateConnection if it was already used
-	            }
+                mainPageDoc = (Document) initiateConnection(firstPageResultsUrl);
 	        } catch (IOException e) {
 	            logger.error("Couldn't make initial connection to site. Trying again " + (maxAttempts-spiderWeb.getAttemptCount()) + " more times", e);
 	            //if it's a 500, we're probably blocked. TODO Try a new IP if possible, else bail
@@ -143,6 +131,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 	            scrapeSite();
 	        }
             if (spiderUtil.docWasRetrieved(mainPageDoc)) {
+                connectionEstablished = true;
                 Map<Object, String> recordDetailUrlMap;
                 if (spiderWeb.retrieveMissedRecords() && !spiderWeb.getUncrawledIds().isEmpty()) {
                     //create map from uncrawled records
@@ -343,20 +332,25 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     }
 
     @Override
-    public Object initiateConnection(String firstResultsPageUrl) throws IOException {
-        Connection.Response response = connectionUtil.retrieveConnectionResponse(firstResultsPageUrl, "www.google.com");
-        for (Map.Entry<String,String> cookieEntry : response.cookies().entrySet()){
-            logger.debug(cookieEntry.getKey() + "=" + cookieEntry.getValue());
+    public Object initiateConnection(String url) throws IOException {
+        Connection.Response response;
+        if (!connectionEstablished) {
+            response = connectionUtil.retrieveConnectionResponse(url, "www.google.com");
+            for (Map.Entry<String,String> cookieEntry : response.cookies().entrySet()){
+                logger.debug(cookieEntry.getKey() + "=" + cookieEntry.getValue());
+            }
+            Map<String, String> headers = new HashMap<>();
+            headers.put("Host", "iowa.arrests.org");
+            headers.put("Accept", "text/html, */*; q=0.01");
+            headers.put("Accept-Language", "en-US,en;q=0.5  ");
+            headers.put("Accept-Encoding", "gzip, deflate, br");
+            headers.put("X-fancyBox", "true");
+            headers.put("X-Requested-With", "XMLHttpRequest");
+            headers.put("Connection", "keep-alive");
+            spiderWeb.setHeaders(headers);
+        } else {
+            response = connectionUtil.retrieveConnectionResponse(url, "www.google.com", spiderWeb.getSessionCookies(), spiderWeb.getHeaders());
         }
-        Map<String,String> headers = new HashMap<>();
-        headers.put("Host", "iowa.arrests.org");
-        headers.put("Accept", "text/html, */*; q=0.01");
-        headers.put("Accept-Language", "en-US,en;q=0.5  ");
-        headers.put("Accept-Encoding", "gzip, deflate, br");
-        headers.put("X-fancyBox", "true");
-        headers.put("X-Requested-With", "XMLHttpRequest");
-        headers.put("Connection", "keep-alive");
-        spiderWeb.setHeaders(headers);
         spiderWeb.setSessionCookies(response.cookies());
         return response.parse();
     }
@@ -417,7 +411,6 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     						if (docToCheck!=null && site.isAResultsDoc(docToCheck) && docToCheck.html().contains(crawledId)) {
     							//set as current page number
     							spiderWeb.setFurthestPageToCheck(page);
-    							//TODO remove docs past this point here?
     						}
     					}
     				}
@@ -437,6 +430,8 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     		}	
 
     	}
+        //remove docs past this point here since we're not processing sequentially
+        removeCrawledDocs(resultsDocPlusMiscMap, spiderWeb.getFurthestPageToCheck());
     	return resultsDocPlusMiscMap;
     }
 
@@ -627,8 +622,8 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 	private List<String> parseDocForCounties(Document doc) {
 		List<String> countiesList = new ArrayList<>();
 		if (doc!=null) {
-			connectionEstablished = true;
-			logger.info("Parsing counties with records for " + site.getName());
+            connectionEstablished = true;
+			logger.info("Parsing counties with records for " + spiderWeb.getState().getName() + " in " + site.getName());
 			Elements navigationList = doc.select("div.navigation ul li");
 			Element countyListItem = null;
 			for (Element li : navigationList) {
@@ -647,4 +642,12 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
 		spiderUtil.sleep(3000, true);
 		return countiesList;
 	}
+
+	private void removeCrawledDocs(Map<Integer,Document> docsMap, int furthestKey) {
+        for(Map.Entry<Integer,Document> entry : docsMap.entrySet()) {
+            if (entry.getKey()>furthestKey && site.isAResultsDoc(entry.getValue())) {
+                docsMap.remove(entry.getKey());
+            }
+        }
+    }
 }

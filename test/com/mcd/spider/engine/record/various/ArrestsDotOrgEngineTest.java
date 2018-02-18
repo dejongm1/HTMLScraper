@@ -26,7 +26,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
-import java.util.Map.Entry;
 
 public class ArrestsDotOrgEngineTest {
 
@@ -288,11 +287,11 @@ public class ArrestsDotOrgEngineTest {
 		Map<Object,String> resultUrlMap = mockEngine.compileResultsUrlMap(mockMainPageDoc);
 		Map<Integer,Document> resultDocMap = mockEngine.compileResultsDocMap(resultUrlMap);
 		
-		Assert.assertEquals(resultDocMap.size(), 1); //TODO fails depending on which order pages are added to Map, should it be <=? or should I remove pages that are past furthestPageToCheck?
+		Assert.assertEquals(resultDocMap.size(), 1);
 		Assert.assertEquals(mockEngine.getSpiderWeb().getFurthestPageToCheck(), 1);
 		Assert.assertEquals(mockEngine.getSpiderWeb().getAttemptCount(), 1);
 	}
-	
+
 	@Test(groups="online", enabled=false) //make these dependent on a test that gathers a handful of docs on class load instead of each test creating a new connection
 	public void compileResultsDocMap_FailedAttemptsMaxReached_Online() {
 		OfflineResponse mockResponse = new OfflineResponse(200, "www.google.com");

@@ -151,12 +151,11 @@ public class ArrestsDotOrgSite implements SiteHTML {
 		try {
 			for (int u=pagesToMatch+1;safeUrls.size()<pagesToMatch;u++) {
 				Element link = links.get(u);
-				//(ignore rel=stylesheet, include '/ABC/', '/', '/Arrests/ABC')
-				if (!link.hasAttr("rel") &&  !link.attr("href").contains("?d=1")
+				//(ignore rel=stylesheet and detail docs, include '/ABC/', '/', '/Arrests/ABC')
+				if (!link.hasAttr("rel") && !link.attr("href").contains("?d=1")
 						&& (link.attr("href").startsWith("/Arrests/")
-							//|| link.attr("href").equals("#")
-							|| link.attr("href").matches("/[a-zA-Z]+/")
-							|| link.attr("href").equals("/"))) {
+							//|| link.attr("href").equals("#") || link.attr("href").equals("/")
+							|| link.attr("href").matches("/[a-zA-Z]+/"))) {
 					if (!safeUrls.containsValue(baseUrl + link.attr("href"))) {
 						safeUrls.put(u,baseUrl + link.attr("href"));
 					}
@@ -185,7 +184,8 @@ public class ArrestsDotOrgSite implements SiteHTML {
             return (doc.baseUri().matches(".*[A-Za-z]+_[0-9]/?.+") && doc.baseUri().endsWith("/?d=1"))
             		|| (!doc.select("div[itemtype='http://schema.org/Person']").isEmpty()
                         && !doc.select("div[class='info'] div[class='section']").isEmpty()
-                        && doc.select("div[class='info'] div[class='section']").get(0).text().contains("Information"));
+                        && doc.select("div[class='info'] div[class='section']").get(0).text().contains("Information")
+                        && !doc.select("div[class='profile profile-preview']").isEmpty());
         } else {
             return false;
         }

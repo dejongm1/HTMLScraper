@@ -8,13 +8,16 @@ import com.mcd.spider.entities.site.SpiderWeb;
 import java.util.*;
 
 public final class State {
-	private static Map<String, State> abbreviationToState = new HashMap<>();
+    private static final String ADO = "ArrestsDotOrg";
+	public static final State IL = new State("ILLINOIS", "IL", new ArrayList<>(Arrays.asList(ADO)), false);
+	public static final State OK = new State("OKLAHOMA", "OK", new ArrayList<>(Arrays.asList(ADO)), true);
+    private static final String MDC = "MugshotsDotCom";
 	private static Map<String, State> nameToState = new HashMap<>();
 	private static List<State> allStates = new ArrayList<>();
 
 	private String name;
 	private String abbreviation;
-	private List<ArrestRecordEngine> engines;
+    private static final String DMRDC = "DesMoinesRegisterDotCom";
 	private List<String> counties;
 	private boolean meetsLexisNexisCriteria;
 	
@@ -30,9 +33,9 @@ public final class State {
 	public static final State GA = new State("GEORGIA", "GA", new ArrayList<>(), false);
 	public static final State HI = new State("HAWAII", "HI", new ArrayList<>(), false);
 	public static final State ID = new State("IDAHO", "ID", new ArrayList<>(), false);
-	public static final State IL = new State("ILLINOIS", "IL", new ArrayList<>(Arrays.asList(new ArrestsDotOrgEngine("illinois"))), false);
+    public static final State IA = new State("IOWA", "IA", new ArrayList<>(Arrays.asList(ADO, DMRDC)), false);
 	public static final State IN = new State("INDIANA", "IN", new ArrayList<>(), false);
-    public static final State IA = new State("IOWA", "IA", new ArrayList<>(Arrays.asList(new ArrestsDotOrgEngine("iowa"), new DesMoinesRegisterComEngine())), false);
+    private static Map<String, State> abbreviationToState = new HashMap<>();
 	public static final State KS = new State("KANSAS", "KS", new ArrayList<>(), false);
 	public static final State KY = new State("KENTUCKY", "KY", new ArrayList<>(), false);
 	public static final State LA = new State("LOUISIANA", "LA", new ArrayList<>(), false);
@@ -53,7 +56,7 @@ public final class State {
 	public static final State NC = new State("NORTH CAROLINA", "NC", new ArrayList<>(), false);
 	public static final State ND = new State("NORTH DAKOTA", "ND", new ArrayList<>(), false);
 	public static final State OH = new State("OHIO", "OH", new ArrayList<>(), false);
-	public static final State OK = new State("OKLAHOMA", "OK", new ArrayList<>(Arrays.asList(new ArrestsDotOrgEngine("oklahoma"))), true);
+	private List<ArrestRecordEngine> engines = new ArrayList<>();
 	public static final State OR = new State("OREGON", "OR", new ArrayList<>(), false);
 	public static final State PA = new State("PENNSYLVANIA", "PA", new ArrayList<>(), false);
 	public static final State RI = new State("RHODE ISLAND", "RI", new ArrayList<>(), false);
@@ -79,17 +82,18 @@ public final class State {
 	public static final State VI = new State("VIRGIN ISLANDS", "VI", new ArrayList<>(), false);
 
 
-	private State(String name, String abbreviation, List<ArrestRecordEngine> engines, boolean meetsCriteria) {
+	private State(String name, String abbreviation, List<String> engines, boolean meetsCriteria) {
 		this.name = name;
 		this.abbreviation = abbreviation;
-		this.engines = engines;
-		abbreviationToState.put(abbreviation, this);
-		nameToState.put(name.toUpperCase(), this);
-		if (!this.getEngines().isEmpty()) {
+        abbreviationToState.put(abbreviation, this);
+        nameToState.put(name.toUpperCase(), this);
+        if (engines.contains(ADO)) this.engines.add(new ArrestsDotOrgEngine(name));
+        if (engines.contains(DMRDC)) this.engines.add(new DesMoinesRegisterComEngine());
+//        if (engines.contains(MDC)) this.engines.add(new MugshotsDotComEngine(name));
+		if (!this.engines.isEmpty()) {
 			allStates.add(this); 
 		}
 		this.meetsLexisNexisCriteria = meetsCriteria;
-		//TODO initialize with counties read from file here? or only when priming?
 	}
 	public void addEngine(ArrestRecordEngine engine) {
 		getEngines().add(engine);
@@ -144,7 +148,6 @@ public final class State {
 		    //give each engine it's own web
             SpiderWeb engineWeb = new SpiderWeb(web.getMaxNumberOfResults(), web.getMisc(), web.retrieveMissedRecords(), web.getFilter(), this);
 			engine.setSpiderWeb(engineWeb);
-			//TODO either read from stored file or crawl website for possible counties each run
 			setCounties(engine.findAvailableCounties());
 		}
 	}
