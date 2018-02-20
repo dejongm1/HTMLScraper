@@ -1,12 +1,18 @@
 package com.mcd.spider.engine.record.various;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import com.mcd.spider.engine.record.ArrestRecordEngine;
+import com.mcd.spider.entities.record.ArrestRecord;
+import com.mcd.spider.entities.record.Record;
+import com.mcd.spider.entities.site.Site;
+import com.mcd.spider.entities.site.SpiderWeb;
+import com.mcd.spider.entities.site.html.MugshotsDotComSite;
+import com.mcd.spider.exception.ExcelOutputException;
+import com.mcd.spider.exception.IDCheckException;
+import com.mcd.spider.exception.SpiderException;
+import com.mcd.spider.util.ConnectionUtil;
+import com.mcd.spider.util.SpiderUtil;
+import com.mcd.spider.util.io.RecordIOUtil;
+import com.mcd.spider.util.io.RecordOutputUtil;
 import org.apache.log4j.Logger;
 import org.jsoup.Connection;
 import org.jsoup.Connection.Response;
@@ -15,15 +21,12 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.mcd.spider.engine.record.ArrestRecordEngine;
-import com.mcd.spider.entities.record.ArrestRecord;
-import com.mcd.spider.entities.record.Record;
-import com.mcd.spider.entities.site.Site;
-import com.mcd.spider.entities.site.SpiderWeb;
-import com.mcd.spider.entities.site.html.MugshotsDotComSite;
-import com.mcd.spider.util.ConnectionUtil;
-import com.mcd.spider.util.SpiderUtil;
-import com.mcd.spider.util.io.RecordIOUtil;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.*;
+
+import static com.mcd.spider.entities.record.ArrestRecord.ArrestDateComparator;
 
 /**
  *
@@ -75,7 +78,7 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
 	}
 
 	@Override
-	public void getArrestRecords() {
+	public void getArrestRecords() throws SpiderException{
 	  long totalTime = System.currentTimeMillis();
 	  recordIOUtil = initializeIOUtil(spiderWeb.getState().getName());
 	
@@ -138,7 +141,6 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
 //	                } else {
 	                    logger.info("Retrieving results page docs");
 	                    Map<Integer, Document> resultsDocMap = compileResultsDocMap(mainPageDoc);
-	                    //got here 1/26/18 @2:05
 	                    
 	                    if (resultsDocMap.isEmpty()) {
 	                        logger.info("No results doc pages were gathered. Quitting");
@@ -147,11 +149,11 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
 	
 	                    logger.info("Retrieving details page urls");
 	                    //build a list of details page urls by parsing results page docs
-	                    recordDetailUrlMap = compileRecordDetailUrlMap(mainPageDoc, resultsDocMap);
+	                    recordDetailUrlMap = compileRecordDetailUrlMap(resultsDocMap);
 	                    logger.info("Gathered links for "+recordDetailUrlMap.size()+" record profiles");
 //	                }
 	                spiderUtil.sleep(spiderWeb.isOffline()?0:ConnectionUtil.getSleepTime(site)*2, true);
-	                //****iterate over collection, scraping records and simply opening others
+	                //****iterate over collection
 	                scrapeRecords(recordDetailUrlMap);
 	            } else {
 		            logger.error("Failed to load html doc from " + site.getBaseUrl()+ ". Trying again " + (maxAttempts-spiderWeb.getAttemptCount()) + " more times");
@@ -201,8 +203,67 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
 
 	@Override
 	public void scrapeRecords(Map<Object, String> recordsDetailsUrlMap) {
-		// TODO Auto-generated method stub
+        RecordOutputUtil recordOutputUtil = recordIOUtil.getOutputter();
+        arrestRecords.addAll(spiderWeb.getCrawledRecords().getRecords());
+        ArrestRecord arrestRecord;
+        List<Object> keys = new ArrayList<>(recordsDetailsUrlMap.keySet());
+        Collections.shuffle(keys);
+        String previousKey = String.valueOf(keys.get(keys.size()-1));
+        for (Object k : keys) {
+            if (spiderWeb.getRecordsProcessed()<spiderWeb.getMaxNumberOfResults()) {
+                String url = recordsDetailsUrlMap.get(k);
+                Document profileDetailDoc = null;
+                try {
+                    profileDetailDoc = obtainRecordDetailDoc(url, recordsDetailsUrlMap.get(previousKey));
+                } catch (FileNotFoundException fnfe) {
+                    logger.error("No html doc found for " + url);
+                } catch (IOException e) {
+                    spiderWeb.increaseAttemptCount();
+                    logger.error("Failed to get a connection to " + recordsDetailsUrlMap.get(k), e);
+                    if (spiderWeb.getAttemptCount()>=site.getMaxAttempts()) {
+                        //save remaining records to file and exit
+                        //TODO or retry with new connection/IP?
+                        logger.error("Hit the limit of failed connections. Saving list of unprocessed records, formatting the current output and quitting");
+                        recordOutputUtil.backupUnCrawledRecords(recordsDetailsUrlMap);
+                        return;
+                    }
+                }
 
+                if (spiderUtil.docWasRetrieved(profileDetailDoc)) {
+                    if (site.isARecordDetailDoc(profileDetailDoc)) {
+                        try {
+                            spiderWeb.addToRecordsProcessed(1);
+                            arrestRecord = populateArrestRecord(profileDetailDoc);
+                            //try to match the record/county to the state being crawled
+//                            if (arrestRecord.getState()==null || arrestRecord.getState().equalsIgnoreCase(spiderWeb.getState().getName())) {
+                                arrestRecords.add(arrestRecord);
+                                //save each record in case of failures mid-crawling
+                                recordOutputUtil.addRecordToMainWorkbook(arrestRecord);
+                                //"remove" record from recordsDetailUrlMap
+                                recordsDetailsUrlMap.replace(k, "CRAWLED" + recordsDetailsUrlMap.get(k));
+                                logger.debug("Record " + spiderWeb.getRecordsProcessed() + " saved");
+//                            }
+                            spiderUtil.sleep(ConnectionUtil.getSleepTime(site), true);//sleep at random interval
+                        } catch (Exception e) {
+                            logger.error("Generic exception caught while trying to grab arrest record for " + profileDetailDoc.baseUri(), e);
+                            logger.info("Sleeping for half time because no record was crawled");
+                            spiderUtil.sleep(ConnectionUtil.getSleepTime(site)/2, false);
+                        }
+
+                    } else {
+                        logger.debug("This doc doesn't have any record details: " + profileDetailDoc.baseUri());
+                        logger.info("Sleeping for half time because no record was crawled");
+                        spiderUtil.sleep(ConnectionUtil.getSleepTime(site)/2, false);
+                    }
+                } else {
+                    logger.error("Failed to load html doc from " + url);
+                    logger.info("Sleeping for half time because no record was crawled");
+                    spiderUtil.sleep(ConnectionUtil.getSleepTime(site)/2, false);
+                }
+
+                previousKey = String.valueOf(k);
+            }
+        }
 	}
 
 	@Override
@@ -218,48 +279,65 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
 	}
 
 	@Override
-	public Object initiateConnection(String firstResultsPageUrl) throws IOException{
-		Connection.Response response = connectionUtil.retrieveConnectionResponse(firstResultsPageUrl, "www.google.com");
-        for (Map.Entry<String,String> cookieEntry : response.cookies().entrySet()){
-            logger.debug(cookieEntry.getKey() + "=" + cookieEntry.getValue());
+	public Object initiateConnection(String url) throws IOException{
+        Connection.Response response;
+        if (!connectionEstablished) {
+            response = connectionUtil.retrieveConnectionResponse(url, "www.google.com");
+            for (Map.Entry<String,String> cookieEntry : response.cookies().entrySet()){
+                logger.debug(cookieEntry.getKey() + "=" + cookieEntry.getValue());
+            }
+            Map<String,String> headers = new HashMap<>();
+            headers.put("Host", "mugshots.com");
+            headers.put("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+            headers.put("Accept-Language", "en-US,en;q=0.5");
+            headers.put("Accept-Encoding", "gzip, deflate");
+            headers.put("Connection", "keep-alive");
+            headers.put("Upgrade-Insecure-Requests", "1");
+            headers.put("Cache-Control", "max-age=0");
+            spiderWeb.setHeaders(headers);
+        } else {
+            response = connectionUtil.retrieveConnectionResponse(url, "www.google.com", spiderWeb.getSessionCookies(), spiderWeb.getHeaders());
         }
-        Map<String,String> headers = new HashMap<>();
-//        headers.put("Host", "iowa.arrests.org");
-//        headers.put("Accept", "text/html, */*; q=0.01");
-//        headers.put("Accept-Language", "en-US,en;q=0.5  ");
-//        headers.put("Accept-Encoding", "gzip, deflate, br");
-//        headers.put("X-fancyBox", "true");
-//        headers.put("X-Requested-With", "XMLHttpRequest");
-//        headers.put("Connection", "keep-alive");
-        spiderWeb.setHeaders(headers);
         spiderWeb.setSessionCookies(response.cookies());
         return response.parse();
 	}
 
 	@Override
-	public RecordIOUtil initializeIOUtil(String stateName) {
-		// TODO Auto-generated method stub
-		return null;
+	public RecordIOUtil initializeIOUtil(String stateName) throws SpiderException {
+        RecordIOUtil ioUtil = new RecordIOUtil(stateName, new ArrestRecord(), site);
+        try {
+            //load previously written records IDs into memory
+            spiderWeb.setCrawledIds(ioUtil.getInputter().getCrawledIds());
+            if (spiderWeb.retrieveMissedRecords()) {
+                spiderWeb.setUncrawledIds(ioUtil.getInputter().getUnCrawledIds());
+            }
+            //load records in current spreadsheet into memory
+            spiderWeb.setCrawledRecords(ioUtil.getInputter().readRecordsFromSheet(new File(ioUtil.getMainDocPath()),0));
+            ioUtil.getOutputter().createWorkbook(ioUtil.getMainDocPath(), spiderWeb.getCrawledRecords(), true, ArrestDateComparator);
+        } catch (ExcelOutputException | IDCheckException e) {
+            throw e;
+        }
+        return ioUtil;
 	}
 
-    public Map<Object,String> compileRecordDetailUrlMap(Document mainPageDoc, Map<Integer,Document> resultsDocPlusMiscMap) {
+    public Map<Object,String> compileRecordDetailUrlMap(Map<Integer,Document> resultsDocMap) {
         Map<Object,String> recordDetailUrlMap = new HashMap<>();
-        /*for (Map.Entry<Integer, Document> entry : resultsDocPlusMiscMap.entrySet()) {
+        for (Map.Entry<Integer, Document> entry : resultsDocMap.entrySet()) {
             Document doc = entry.getValue();
-            //only crawl for records if document was retrieved, is a results doc and has not already been crawled
+            //only crawl for records if document was retrieved and has not already been crawled
             int page = entry.getKey();
-            if (spiderUtil.docWasRetrieved(doc) && doc.baseUri().contains("&results=") && page<=spiderWeb.getFurthestPageToCheck()){
+            if (spiderUtil.docWasRetrieved(doc) && page<=spiderWeb.getFurthestPageToCheck()){
                 logger.info("Gather complete list of records to scrape from " + doc.baseUri());
                 recordDetailUrlMap.putAll(parseDocForUrls(doc));
 
-                //include some non-detail page links
+                /*//include some non-detail page links
                 if (spiderWeb.getMisc()) {
                     recordDetailUrlMap.putAll(site.getMiscSafeUrlsFromDoc(mainPageDoc, recordDetailUrlMap.size()));
-                }
+                }*/
             } else {
                 logger.info("Nothing was retrieved for " + doc.baseUri());
             }
-        }*/
+        }
         return recordDetailUrlMap;
     }
 
