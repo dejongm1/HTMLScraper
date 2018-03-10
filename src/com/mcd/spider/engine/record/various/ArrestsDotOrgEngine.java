@@ -545,7 +545,7 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         fullName += " " + record.getLastName();
         record.setFullName(fullName);
     }
-    
+
     @Override
     public void formatArrestTime(ArrestRecord record, Element profileDetail) {
         Calendar arrestDate = record.getArrestDate();

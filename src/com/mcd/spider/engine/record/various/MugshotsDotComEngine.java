@@ -1,8 +1,12 @@
 package com.mcd.spider.engine.record.various;
 
 import com.mcd.spider.engine.record.ArrestRecordEngine;
+import com.mcd.spider.entities.io.RecordWorkbook;
 import com.mcd.spider.entities.record.ArrestRecord;
+import com.mcd.spider.entities.record.ArrestRecord.RecordColumnEnum;
 import com.mcd.spider.entities.record.Record;
+import com.mcd.spider.entities.record.filter.RecordFilter;
+import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
 import com.mcd.spider.entities.site.Site;
 import com.mcd.spider.entities.site.SpiderWeb;
 import com.mcd.spider.entities.site.html.MugshotsDotComSite;
@@ -19,6 +23,7 @@ import org.jsoup.Connection.Response;
 import org.jsoup.HttpStatusException;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
 
 import java.io.File;
@@ -27,6 +32,7 @@ import java.io.IOException;
 import java.util.*;
 
 import static com.mcd.spider.entities.record.ArrestRecord.ArrestDateComparator;
+import static com.mcd.spider.entities.record.ArrestRecord.CountyComparator;
 
 /**
  *
@@ -234,15 +240,12 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
                         try {
                             spiderWeb.addToRecordsProcessed(1);
                             arrestRecord = populateArrestRecord(profileDetailDoc);
-                            //try to match the record/county to the state being crawled
-//                            if (arrestRecord.getState()==null || arrestRecord.getState().equalsIgnoreCase(spiderWeb.getState().getName())) {
                                 arrestRecords.add(arrestRecord);
                                 //save each record in case of failures mid-crawling
                                 recordOutputUtil.addRecordToMainWorkbook(arrestRecord);
                                 //"remove" record from recordsDetailUrlMap
                                 recordsDetailsUrlMap.replace(k, "CRAWLED" + recordsDetailsUrlMap.get(k));
                                 logger.debug("Record " + spiderWeb.getRecordsProcessed() + " saved");
-//                            }
                             spiderUtil.sleep(ConnectionUtil.getSleepTime(site), true);//sleep at random interval
                         } catch (Exception e) {
                             logger.error("Generic exception caught while trying to grab arrest record for " + profileDetailDoc.baseUri(), e);
@@ -260,7 +263,6 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
                     logger.info("Sleeping for half time because no record was crawled");
                     spiderUtil.sleep(ConnectionUtil.getSleepTime(site)/2, false);
                 }
-
                 previousKey = String.valueOf(k);
             }
         }
@@ -268,14 +270,59 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
 
 	@Override
 	public ArrestRecord populateArrestRecord(Object profileDetailObj) {
-		// TODO Auto-generated method stub
-		return null;
+        Elements profileDetails = site.getRecordDetailElements((Document) profileDetailObj);
+        ArrestRecord record = new ArrestRecord();
+        record.setId(site.obtainRecordId(((Node) profileDetailObj).baseUri()));
+        for (Element profileDetail : profileDetails) {
+            matchPropertyToField(record, profileDetail);
+            logger.debug("\t" + profileDetail.text());
+        }
+        return record;
 	}
 
 	@Override
 	public void matchPropertyToField(ArrestRecord record, Object profileDetail) {
-		// TODO Auto-generated method stub
-
+        Element profileDetailElement = (Element) profileDetail;
+        String label = profileDetailElement.select("span[class='name']").text().toLowerCase();
+        Elements charges = profileDetailElement.select("div[class='value']");//TODO needs work
+        if (!charges.isEmpty()) {
+//            String[] chargeStrings = new String[charges.size()];
+//            for (int c = 0; c < charges.size(); c++) {
+//                chargeStrings[c] = charges.get(c).text();
+//            }
+//            record.setCharges(chargeStrings);
+        } else if (!label.equals("")) {
+            try {
+                /*if (label.contains("mugshots.com id")) {
+                    record.setId();
+                } else */if (label.contains("name")) {
+                    formatName(record, profileDetailElement);
+                } else if (label.contains("birthdate")) { //needs to be first to avoid arrest date getting put here
+                    Date date = new Date(extractValue(profileDetailElement));
+                    record.setDob(date);
+                } else if (label.contains("date booked")) {
+                    formatArrestTime(record, profileDetailElement);
+                } else if (label.contains("age")) {
+                    record.setArrestAge(Integer.parseInt(extractValue(profileDetailElement)));
+                } else if (label.contains("gender")) {
+                    record.setGender(extractValue(profileDetailElement));
+                } else if (label.contains("city")) {
+                    record.setCity(extractValue(profileDetailElement));
+                } else if (label.contains("height")) {
+                    record.setHeight(extractValue(profileDetailElement));
+                } else if (label.contains("weight")) {
+                    record.setWeight(extractValue(profileDetailElement));
+                } else if (label.contains("hair color")) {
+                    record.setHairColor(extractValue(profileDetailElement));
+                } else if (label.contains("eye color")) {
+                    record.setEyeColor(extractValue(profileDetailElement));
+                } else if (label.contains("race")) {
+                    record.setRace(extractValue(profileDetailElement));
+                }
+            } catch (NumberFormatException nfe) {
+                logger.error("Couldn't parse a numeric value from " + profileDetailElement.text());
+            }
+        }
 	}
 
 	@Override
@@ -329,7 +376,6 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
             if (spiderUtil.docWasRetrieved(doc) && page<=spiderWeb.getFurthestPageToCheck()){
                 logger.info("Gather complete list of records to scrape from " + doc.baseUri());
                 recordDetailUrlMap.putAll(parseDocForUrls(doc));
-
                 /*//include some non-detail page links
                 if (spiderWeb.getMisc()) {
                     recordDetailUrlMap.putAll(site.getMiscSafeUrlsFromDoc(mainPageDoc, recordDetailUrlMap.size()));
@@ -341,41 +387,107 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
         return recordDetailUrlMap;
     }
 
-	@Override
+    @Override
 	public void setCookies(Response response) {
-		// TODO Auto-generated method stub
+        for (Map.Entry<String,String> cookieEntry : response.cookies().entrySet()) {
+            spiderWeb.addSessionCookie(cookieEntry.getKey(), cookieEntry.getValue());
+            logger.debug(cookieEntry.getKey() + "=" + cookieEntry.getValue());
+        }
 
+        if (spiderWeb.getRecordsProcessed() % spiderWeb.getRecordCap() == 0 && spiderWeb.getRecordsProcessed() != 0) {
+            //reset any cookies set by site
+            connectionUtil.changeUserAgent();
+        }
 	}
 
 	@Override
 	public void finalizeOutput(List<Record> arrestRecords) {
-		// TODO Auto-generated method stub
-
+        //format the output
+        if (!arrestRecords.isEmpty()) {
+            logger.info("Starting to finalize the result output");
+            Collections.sort(arrestRecords, CountyComparator);
+            String columnDelimiter = RecordColumnEnum.COUNTY_COLUMN.getFieldName();
+            Class<ArrestRecord> clazz = ArrestRecord.class;
+            if (spiderWeb.getFilter()!=null && spiderWeb.getFilter()!=RecordFilterEnum.NONE) {
+                try {
+                    logger.info("Outputting filtered results");
+                    List<Record> filteredRecords = filterRecords(arrestRecords);
+                    RecordWorkbook splitRecords = Record.splitByField(filteredRecords, columnDelimiter, clazz);
+                    //create a separate sheet with filtered results
+                    logger.info(filteredRecords.size()+" "+spiderWeb.getFilter().filterName()+" records have been crawled");
+                    if (!filteredRecords.isEmpty()) {
+                        recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getOutputter().getFilteredDocPath(spiderWeb.getFilter()), columnDelimiter, splitRecords, clazz, ArrestDateComparator);
+                    }
+                } catch (Exception e) {
+                    logger.error("Error trying to create filtered spreadsheet", e);
+                }
+            }
+            try {
+                RecordWorkbook splitRecords = Record.splitByField(arrestRecords, columnDelimiter, clazz);
+                recordIOUtil.getOutputter().splitIntoSheets(recordIOUtil.getMainDocPath(), columnDelimiter, splitRecords, clazz, ArrestDateComparator);
+            } catch (Exception e) {
+                logger.error("Error trying to split full list of records", e);
+            }
+        } else {
+            logger.info("There were no records to output!!");
+        }
 	}
 
 	@Override
 	public void formatName(ArrestRecord record, Element profileDetail) {
-		// TODO Auto-generated method stub
-
+        String fullNameString = extractValue(profileDetail);
+		record.setFirstName(fullNameString.substring(0, fullNameString.indexOf(',')));
+		record.setLastName(fullNameString.substring(fullNameString.indexOf(',')));
+        String fullName = record.getFirstName();
+        fullName += record.getMiddleName()!=null?" " + record.getMiddleName():"";
+        fullName += " " + record.getLastName();
+        record.setFullName(fullName);
 	}
 
 	@Override
 	public void formatArrestTime(ArrestRecord record, Element profileDetail) {
-		// TODO Auto-generated method stub
+        String arrestDateTimeString = extractValue(profileDetail);
+        Calendar arrestDate = Calendar.getInstance();
+        Date date = new Date(arrestDateTimeString.substring(0, arrestDateTimeString.indexOf(" at ")).trim());
+        arrestDate.setTime(date);
 
+        String arrestTimeText = arrestDateTimeString.substring(arrestDateTimeString.indexOf(" at ")+4).trim();
+        arrestDate.set(Calendar.HOUR, Integer.parseInt(arrestTimeText.substring(0, arrestTimeText.indexOf(':'))));
+        arrestDate.set(Calendar.MINUTE, Integer.parseInt(arrestTimeText.substring(arrestTimeText.indexOf(':')+1, arrestTimeText.indexOf(' '))));
+//        arrestDate.set(Calendar.AM_PM, arrestTimeText.substring(arrestTimeText.indexOf(' ')+1)=="AM"?Calendar.AM:Calendar.PM);
+        record.setArrestDate(arrestDate);
 	}
 
-	@Override
-	public String extractValue(Element profileDetail) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public String extractValue(Element profileDetail) {
+        return profileDetail.select("span[class='value']").text().toLowerCase();
+    }
 
 	@Override
 	public List<Record> filterRecords(List<Record> fullArrestRecords) {
-		// TODO Auto-generated method stub
-		return null;
+        List<Record> filteredArrestRecords = new ArrayList<>();
+        for (Record record : fullArrestRecords) {
+            boolean recordMatches = false;
+            if (((ArrestRecord)record).getCharges()!=null) {
+                String[] charges = ((ArrestRecord)record).getCharges();
+                for (String charge : charges) {
+                    if (!recordMatches) {
+                        recordMatches = RecordFilter.filter(charge, spiderWeb.getFilter());
+                    }
+                }
+                if (recordMatches) {
+                    filteredArrestRecords.add(record);
+                }
+            }
+        }
+        return filteredArrestRecords;
 	}
+
+    public Document obtainRecordDetailDoc(String url, String referer) throws IOException {
+        Connection.Response response = connectionUtil.retrieveConnectionResponse(url, referer, spiderWeb.getSessionCookies(), spiderWeb.getHeaders());
+        setCookies(response);
+        return response.parse();
+    }
 	
 	@Override
 	public List<String> findAvailableCounties() {
