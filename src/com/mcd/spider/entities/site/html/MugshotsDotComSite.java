@@ -1,21 +1,16 @@
 package com.mcd.spider.entities.site.html;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-
+import com.google.common.base.CaseFormat;
+import com.mcd.spider.entities.record.State;
+import com.mcd.spider.entities.site.Url;
 import org.apache.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.google.common.base.CaseFormat;
-import com.mcd.spider.entities.record.State;
-import com.mcd.spider.entities.site.Url;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  *
@@ -83,7 +78,7 @@ public class MugshotsDotComSite  implements SiteHTML{
 
     @Override
     public String obtainRecordId(String url) {
-        if (url.contains("-County-") && url.contains("/US-Counties") && url.endsWith(".html")) {
+        if (/*url.contains("-County-") && */url.contains("/US-Counties") && url.endsWith(".html")) {
             return url.substring(url.lastIndexOf("/")+1, url.indexOf(".html"));
         } else {
             return null;
@@ -168,9 +163,9 @@ public class MugshotsDotComSite  implements SiteHTML{
     @Override
     public boolean isARecordDetailDoc(Document doc) {
     	//has div itemtype="https://schema.org/Person"
-    	//AND has div.p.graybox > div.fieldvalues 
+    	//AND has div.p.graybox > div.fieldvalues
         return !doc.select("div.p.graybox > div.fieldvalues").isEmpty()
-                && !doc.select("div[itemtype='http://schema.org/Person']").isEmpty();
+                && (!doc.select("div[itemtype='http://schema.org/Person']").isEmpty() || !doc.select("div[itemtype='https://schema.org/Person']").isEmpty());
     }
 
 	@Override

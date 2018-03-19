@@ -1,11 +1,12 @@
 package com.mcd.spider.engine.record.various;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-
+import com.mcd.spider.entities.record.ArrestRecord;
+import com.mcd.spider.entities.record.Record;
+import com.mcd.spider.entities.record.State;
+import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
+import com.mcd.spider.entities.site.SpiderWeb;
+import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
+import com.mcd.spider.util.io.RecordIOUtil;
 import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -14,13 +15,11 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import com.mcd.spider.entities.record.ArrestRecord;
-import com.mcd.spider.entities.record.Record;
-import com.mcd.spider.entities.record.State;
-import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
-import com.mcd.spider.entities.site.SpiderWeb;
-import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
-import com.mcd.spider.util.io.RecordIOUtil;
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 
 public class MugshotsDotComEngineTest {
 
@@ -111,7 +110,7 @@ public class MugshotsDotComEngineTest {
     @Test
     public void MugshotsDotComEngine_ConstructorStateName() {
         MugshotsDotComEngine mockEngine = new MugshotsDotComEngine(mockWeb);
-        MugshotsDotComEngine mockTestEngine = new MugshotsDotComEngine(State.IA.getName(), "Black Hawk", State.IA.getAbbreviation());
+        MugshotsDotComEngine mockTestEngine = new MugshotsDotComEngine(State.IA.getName());
 
         Assert.assertNotNull(mockEngine.getSite());
         Assert.assertNotNull(mockTestEngine.getSite());

@@ -29,6 +29,7 @@ import org.jsoup.select.Elements;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.*;
 
 import static com.mcd.spider.entities.record.ArrestRecord.ArrestDateComparator;
@@ -54,12 +55,12 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
 
     public MugshotsDotComEngine(SpiderWeb web) {
     	this.spiderWeb = web;
-    	this.site = new MugshotsDotComSite(new String[]{web.getState().getName(), web.getState().getAbbreviation()});
+    	this.site = new MugshotsDotComSite(new String[]{web.getState().getName()});
         connectionUtil = new ConnectionUtil(true);
     }
 
-    public MugshotsDotComEngine(String stateName, String countyName, String stateAbbreviation) {
-    	this.site = new MugshotsDotComSite(new String[]{stateName, countyName, stateAbbreviation});
+    public MugshotsDotComEngine(String stateName) {
+    	this.site = new MugshotsDotComSite(new String[]{stateName});
         connectionUtil = new ConnectionUtil(true);
     }
 
@@ -118,11 +119,7 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
 	        if (spiderWeb.getAttemptCount()<=maxAttempts) {
 		        try {
 		            logger.info("Trying to make initial connection to " + site.getName());
-		            if (!connectionEstablished) {
-		            	mainPageDoc = (Document) initiateConnection(firstCountyPageResultsUrl);
-		            } else {
-		            	//TODO don't use initiateConnection
-		            }
+                    mainPageDoc = (Document) initiateConnection(firstCountyPageResultsUrl);
 		        } catch (IOException e) {
 		            logger.error("Couldn't make initial connection to site. Trying again " + (maxAttempts-spiderWeb.getAttemptCount()) + " more times", e);
 		            //if it's a 500, we're probably blocked. TODO Try a new IP if possible, else bail
@@ -173,38 +170,72 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
 		finalizeOutput(arrestRecords);
 	}
 
-    public Map<Integer,Document> compileResultsDocMap(Document mainPageDoc) {
-		//build docs map by traversing next button to get total pages/records
-    	//TODO should we add misc pages here to make crawling appear random?
-		Integer numberOfPages = 0;
-		Map<Integer,Document> resultsDocMap = new HashMap<>();
-		String nextPageUrl = site.getNextResultsPageUrl(mainPageDoc);
-		String currentPageUrl = mainPageDoc.baseUri();
-		while (nextPageUrl!=null) {
-			numberOfPages++;
-			Document docToCheck = null;
-			try {
-				Connection.Response response = connectionUtil.retrieveConnectionResponse(nextPageUrl, currentPageUrl, spiderWeb.getSessionCookies(), spiderWeb.getHeaders());
-				docToCheck = response.parse();
-				setCookies(response);
-				resultsDocMap.put(numberOfPages, docToCheck);
-			} catch (FileNotFoundException fnfe) {
-				logger.error("No html doc found for " + nextPageUrl);
-			} catch (IOException e) {
-				spiderWeb.increaseAttemptCount();
-				logger.error("Failed to get a connection to " + nextPageUrl, e);
-			}
-			currentPageUrl = nextPageUrl;
-			nextPageUrl = site.getNextResultsPageUrl(mainPageDoc);
-		}
-        spiderWeb.setNumberOfPages(numberOfPages);
-        return resultsDocMap;
+	@Override
+	public Map<String, String> parseDocForUrls(Object doc) {
+        Map<String,String> recordDetailUrlMap = new HashMap<>();
+        Elements recordDetailElements = site.getRecordElements((Document) doc);
+        for(int e=0;e<recordDetailElements.size();e++) {
+            String url = site.getRecordDetailDocUrl(recordDetailElements.get(e));
+            String id = site.obtainRecordId(url);
+            //only add if we haven't already crawled it
+            if (id != null && !spiderWeb.getCrawledIds().contains(id)) {
+                recordDetailUrlMap.put(id, url);
+            }
+        }
+        return recordDetailUrlMap;
 	}
 	
 	@Override
-	public Map<String, String> parseDocForUrls(Object objectToParse) {
-		// TODO Auto-generated method stub
-		return null;
+	public void matchPropertyToField(ArrestRecord record, Object profileDetail) {
+        Element profileDetailElement = (Element) profileDetail;
+        String label = profileDetailElement.select("span[class='name']").text().toLowerCase();
+        Elements charges = profileDetailElement.select("div[class='value'] > table > tr");
+        if (!charges.isEmpty()) {
+            String[] chargeList = new String[charges.size()];
+            BigDecimal bondAmount = new BigDecimal(0);
+            for (int c = 1; c < charges.size(); c++) {
+                //0 is court case, 1 is charge, 2 is bond amount, 3 is bond type, 4 is paid date
+                chargeList[c] = charges.get(c).child(1).text();
+                try {
+                    bondAmount.add(new BigDecimal(charges.get(c).child(2).text()));
+                } catch (NumberFormatException nfe) {
+                    logger.debug(charges.get(c).child(2).text() + " could not be converted to a dollar value. Record " + record.getId());
+                }
+            }
+            record.setCharges(chargeList);
+            record.setTotalBond(bondAmount.longValue()==0?null:bondAmount.longValue());
+        } else if (!label.equals("")) {
+            try {
+                /*if (label.contains("mugshots.com id")) {
+                    record.setId();
+                } else */if (label.contains("name")) {
+                    formatName(record, profileDetailElement);
+                } else if (label.contains("birth date") || label.contains("birthdate")) { //needs to be first to avoid arrest date getting put here
+                    Date date = new Date(extractValue(profileDetailElement));
+                    record.setDob(date);
+                } else if (label.contains("date booked")) {
+                    formatArrestTime(record, profileDetailElement);
+                } else if (label.contains("age")) {
+                    record.setArrestAge(Integer.parseInt(extractValue(profileDetailElement)));
+                } else if (label.contains("gender")) {
+                    record.setGender(extractValue(profileDetailElement));
+                } else if (label.contains("city")) {
+                    record.setCity(extractValue(profileDetailElement));
+                } else if (label.contains("height")) {
+                    record.setHeight(extractValue(profileDetailElement));
+                } else if (label.contains("weight")) {
+                    record.setWeight(extractValue(profileDetailElement));
+                } else if (label.contains("hair")) {
+                    record.setHairColor(extractValue(profileDetailElement));
+                } else if (label.contains("eye color") || label.contains("eyes")) {
+                    record.setEyeColor(extractValue(profileDetailElement));
+                } else if (label.contains("race")) {
+                    record.setRace(extractValue(profileDetailElement));
+                }
+            } catch (NumberFormatException nfe) {
+                logger.error("Couldn't parse a numeric value from " + profileDetailElement.text());
+            }
+        }
 	}
 
 	@Override
@@ -280,49 +311,33 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
         return record;
 	}
 
-	@Override
-	public void matchPropertyToField(ArrestRecord record, Object profileDetail) {
-        Element profileDetailElement = (Element) profileDetail;
-        String label = profileDetailElement.select("span[class='name']").text().toLowerCase();
-        Elements charges = profileDetailElement.select("div[class='value']");//TODO needs work
-        if (!charges.isEmpty()) {
-//            String[] chargeStrings = new String[charges.size()];
-//            for (int c = 0; c < charges.size(); c++) {
-//                chargeStrings[c] = charges.get(c).text();
-//            }
-//            record.setCharges(chargeStrings);
-        } else if (!label.equals("")) {
-            try {
-                /*if (label.contains("mugshots.com id")) {
-                    record.setId();
-                } else */if (label.contains("name")) {
-                    formatName(record, profileDetailElement);
-                } else if (label.contains("birthdate")) { //needs to be first to avoid arrest date getting put here
-                    Date date = new Date(extractValue(profileDetailElement));
-                    record.setDob(date);
-                } else if (label.contains("date booked")) {
-                    formatArrestTime(record, profileDetailElement);
-                } else if (label.contains("age")) {
-                    record.setArrestAge(Integer.parseInt(extractValue(profileDetailElement)));
-                } else if (label.contains("gender")) {
-                    record.setGender(extractValue(profileDetailElement));
-                } else if (label.contains("city")) {
-                    record.setCity(extractValue(profileDetailElement));
-                } else if (label.contains("height")) {
-                    record.setHeight(extractValue(profileDetailElement));
-                } else if (label.contains("weight")) {
-                    record.setWeight(extractValue(profileDetailElement));
-                } else if (label.contains("hair color")) {
-                    record.setHairColor(extractValue(profileDetailElement));
-                } else if (label.contains("eye color")) {
-                    record.setEyeColor(extractValue(profileDetailElement));
-                } else if (label.contains("race")) {
-                    record.setRace(extractValue(profileDetailElement));
-                }
-            } catch (NumberFormatException nfe) {
-                logger.error("Couldn't parse a numeric value from " + profileDetailElement.text());
-            }
-        }
+    public Map<Integer,Document> compileResultsDocMap(Document mainPageDoc) {
+		//build docs map by traversing next button to get total pages/records
+    	//TODO should we add misc pages here to make crawling appear random?
+		Integer numberOfPages = 1;
+		Map<Integer,Document> resultsDocMap = new HashMap<>();
+		String currentPageUrl = mainPageDoc.baseUri();
+        resultsDocMap.put(numberOfPages, mainPageDoc);
+        String nextPageUrl = site.getNextResultsPageUrl(mainPageDoc);
+		while (nextPageUrl!=null) {
+			numberOfPages++;
+			Document docToCheck = null;
+			try {
+				Connection.Response response = connectionUtil.retrieveConnectionResponse(nextPageUrl, currentPageUrl, spiderWeb.getSessionCookies(), spiderWeb.getHeaders());
+				docToCheck = response.parse();
+				setCookies(response);
+				resultsDocMap.put(numberOfPages, docToCheck);
+			} catch (FileNotFoundException fnfe) {
+				logger.error("No html doc found for " + nextPageUrl);
+			} catch (IOException e) {
+				spiderWeb.increaseAttemptCount();
+				logger.error("Failed to get a connection to " + nextPageUrl, e);
+			}
+			currentPageUrl = nextPageUrl;
+			nextPageUrl = site.getNextResultsPageUrl(mainPageDoc);
+		}
+        spiderWeb.setNumberOfPages(numberOfPages);
+        return resultsDocMap;
 	}
 
 	@Override

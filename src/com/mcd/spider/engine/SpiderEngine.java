@@ -1,13 +1,5 @@
 package com.mcd.spider.engine;
 
-import static com.mcd.spider.entities.record.ArrestRecord.ArrestDateComparator;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.log4j.Logger;
-
 import com.mcd.spider.engine.audit.AuditEngine;
 import com.mcd.spider.engine.record.various.MugshotsDotComEngine;
 import com.mcd.spider.engine.router.StateRouter;
@@ -23,6 +15,14 @@ import com.mcd.spider.entities.site.SpiderWeb;
 import com.mcd.spider.exception.SpiderException;
 import com.mcd.spider.exception.StateNotReadyException;
 import com.mcd.spider.util.io.RecordIOUtil;
+import org.apache.log4j.Logger;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static com.mcd.spider.entities.record.ArrestRecord.ArrestDateComparator;
 
 /**
  * 
@@ -58,8 +58,9 @@ public class SpiderEngine {
 			SpiderWeb spiderWeb = new SpiderWeb(maxNumberOfResults, true, retrieveMissedRecords, filter, state);
 //          state.addEngine(new ArrestsDotOrgEngine());
 //			state.addEngine(new DesMoinesRegisterComEngine());
-			state.addEngine(new MugshotsDotComEngine("", "", ""));
+			state.addEngine(new MugshotsDotComEngine("Alabama"));
 			state.primeStateEngines(spiderWeb);
+			state.setCounties(Arrays.asList("Autauga"));
 			StateRouter router = new StateRouter(state);
 			router.collectRecords();
 			RecordIOUtil mainIOutil = new RecordIOUtil(state.getName(), new ArrestRecord(), state.getEngines().get(0).getSite());
