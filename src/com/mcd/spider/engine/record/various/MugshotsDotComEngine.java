@@ -451,14 +451,43 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
 	@Override
 	public void formatName(ArrestRecord record, Element profileDetail) {
         String fullNameString = extractValue(profileDetail);
-		record.setFirstName(fullNameString.substring(0, fullNameString.indexOf(',')));
-		record.setLastName(fullNameString.substring(fullNameString.indexOf(',')));
+    	String[] nameParts = fullNameString.split("[\\s,]");
+		//some have commas, others don't
+        if (fullNameString.contains(",")) {
+			record.setLastName(nameParts[0]);
+			record.setFirstName(nameParts[1]);
+			if (nameParts.length>2) {
+				record.setMiddleName(nameParts[2]);
+			}
+			if (nameParts.length>3) {
+				record.setLastName(record.getLastName() + " " + nameParts[3]);
+			}
+        } else {
+			record.setFirstName(nameParts[0]);
+			if (nameParts.length>2) {
+				record.setMiddleName(nameParts[1]);
+				record.setLastName(nameParts[2]);
+				if (nameParts.length>3) {
+					record.setLastName(record.getLastName() + " " + nameParts[3]);
+				}
+			} else {
+				record.setLastName(nameParts[1]);
+				if (nameParts.length>2) {
+					record.setLastName(record.getLastName() + " " + nameParts[2]);
+				}
+			}
+			
+        }
+        record.setFullName(buildFullName(record));
+	}
+
+	private String buildFullName(ArrestRecord record) {
         String fullName = record.getFirstName();
         fullName += record.getMiddleName()!=null?" " + record.getMiddleName():"";
         fullName += " " + record.getLastName();
-        record.setFullName(fullName);
+        return fullName;
 	}
-
+	
 	@Override
 	public void formatArrestTime(ArrestRecord record, Element profileDetail) {
         String arrestDateTimeString = extractValue(profileDetail);
@@ -475,7 +504,7 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
 
     @Override
     public String extractValue(Element profileDetail) {
-        return profileDetail.select("span[class='value']").text().toLowerCase();
+        return profileDetail.select("span[class='value']").text().trim();
     }
 
 	@Override

@@ -10,6 +10,7 @@ import com.mcd.spider.util.io.RecordIOUtil;
 import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -32,6 +33,7 @@ public class MugshotsDotComEngineTest {
     private Record mockTrafficRecordTwo;
     private Record mockTrafficRecordThree;
     private Document mockDetailDoc;
+    private Document mockDetailDocVariation;
     private Document mockMainPageDoc;
     private String mainOutputPath;
     private String filteredOutputPath;
@@ -43,6 +45,7 @@ public class MugshotsDotComEngineTest {
         System.setProperty("TestingSpider", "true");
         mockMainPageDoc = Jsoup.parse(new File("test/resources/htmls/mainPageDoc_MugshotsDotCom.html"), "UTF-8");
         mockDetailDoc = Jsoup.parse(new File("test/resources/htmls/recordDetailPage_MugshotsDotCom.html"), "UTF-8");
+        mockDetailDocVariation = Jsoup.parse(new File("test/resources/htmls/recordDetailPage2_MugshotsDotCom.html"), "UTF-8");
         mockWeb = new SpiderWeb(9999, true, false, RecordFilterEnum.NONE, State.IA);
         mockWeb.setSessionCookies(new HashMap<>());
         mockWeb.setCrawledIds(new HashSet<>());
@@ -196,9 +199,83 @@ public class MugshotsDotComEngineTest {
 
     @Test
     public void testFormatName() {
-        Assert.fail("Test not implemented");
+    	Element profileDetail = mockDetailDoc.select("div.graybox > div.fieldvalues > div.field").get(1); //second div in test file is name
+		ArrestRecord record = new ArrestRecord();
+		
+		mockEngine.formatName(record, profileDetail);
+		
+		Assert.assertEquals(record.getFullName(), "Salim NMN Visah");
+		Assert.assertEquals(record.getFirstName(), "Salim");
+		Assert.assertEquals(record.getLastName(), "Visah");
+		Assert.assertEquals(record.getMiddleName(), "NMN");
     }
 
+    @Test
+    public void testFormatNameVariation() {
+    	Element profileDetail = mockDetailDocVariation.select("div.graybox > div.fieldvalues > div.field").get(1); //second div in test file is name
+		ArrestRecord record = new ArrestRecord();
+		
+		mockEngine.formatName(record, profileDetail);
+		
+		Assert.assertEquals(record.getFullName(), "Brain Clark Stan");
+		Assert.assertEquals(record.getFirstName(), "Brain");
+		Assert.assertEquals(record.getLastName(), "Stan");
+		Assert.assertEquals(record.getMiddleName(), "Clark");
+    }
+
+    @Test
+    public void testFormatName_VariationSuffix() {
+		ArrestRecord record = new ArrestRecord();
+    	Element profileDetail = new Element("div");
+    	profileDetail.attr("class", "field");
+    	profileDetail.html("<span class=\"name\">Name</span>: <span class=\"value\">Brain Clark Stan Jr</span>");
+		
+		mockEngine.formatName(record, profileDetail);
+
+		Assert.assertEquals(record.getFullName(), "Brain Clark Stan Jr");
+		Assert.assertEquals(record.getFirstName(), "Brain");
+		Assert.assertEquals(record.getLastName(), "Stan Jr");
+		Assert.assertEquals(record.getMiddleName(), "Clark");
+    }
+
+    @Test
+    public void testFormatName_Suffix() {
+		ArrestRecord record = new ArrestRecord();
+    	Element profileDetail = new Element("div");
+    	profileDetail.attr("class", "field");
+    	profileDetail.html("<span class=\"name\">Name</span>: <span class=\"value\">Visah,Salim NMN Sr</span>");
+		mockEngine.formatName(record, profileDetail);
+		
+		Assert.assertEquals(record.getFullName(), "Salim NMN Visah Sr");
+		Assert.assertEquals(record.getFirstName(), "Salim");
+		Assert.assertEquals(record.getLastName(), "Visah Sr");
+		Assert.assertEquals(record.getMiddleName(), "NMN");
+    }
+
+    @Test
+    public void testFormatName_Split() {
+    	ArrestRecord record = new ArrestRecord();
+    	Element profileDetail = new Element("div");
+    	profileDetail.attr("class", "p graybox");
+    	profileDetail.html("<div class=\"fieldvalues\">"
+			    			+ "<div class=\"field\">"
+			    			+ "		<span class=\"name\">Last Name</span>: <span class=\"value\">JONES</span>"
+			    			+ "</div>"
+							+ "<div class=\"field\">"
+							+ "		<span class=\"name\">First Name</span>: <span class=\"value\">ROBERT</span>"
+							+ "</div>"
+							+ "<div class=\"field\">"
+							+ "		<span class=\"name\">Middle Name</span>: <span class=\"value\">JR</span>"
+							+ "</div>"
+							+ "<div class=\"field\">"
+							+ "		<span class=\"name\">Suffix</span>: <span class=\"value\">JR</span>"
+							+ "</div>"
+							+ "</div>");
+		mockEngine.formatName(record, profileDetail);
+		
+		Assert.fail("Test not implemented");
+    }
+    
     @Test
     public void testFormatArrestTime() {
         Assert.fail("Test not implemented");
