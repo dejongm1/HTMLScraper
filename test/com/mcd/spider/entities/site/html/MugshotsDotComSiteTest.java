@@ -27,6 +27,7 @@ public class MugshotsDotComSiteTest {
     MugshotsDotComSite mockArizonaSite = new MugshotsDotComSite(new String[]{State.AZ.getAbbreviation()});
     Document mockMainPageDoc;
     Document mockDetailDoc;
+    Document mockDetailDocVariation;
 
     @BeforeClass
     public void setUpClass() throws IOException {
@@ -34,6 +35,7 @@ public class MugshotsDotComSiteTest {
         System.setProperty("TestingSpider", "true");
         mockMainPageDoc = Jsoup.parse(new File("test/resources/htmls/mainPageDoc_MugshotsDotCom.html"), "UTF-8");
         mockDetailDoc = Jsoup.parse(new File("test/resources/htmls/recordDetailPage_MugshotsDotCom.html"), "UTF-8");
+        mockDetailDocVariation = Jsoup.parse(new File("test/resources/htmls/recordDetailPage2_MugshotsDotCom.html"), "UTF-8");
     }
 
     @AfterClass
@@ -113,6 +115,14 @@ public class MugshotsDotComSiteTest {
     }
 
     @Test
+    public void testGetRecordDetailElementsVariation() {
+        Elements mockRecordDetails = mockTexasSite.getRecordDetailElements(mockDetailDocVariation);
+        Assert.assertEquals(mockRecordDetails.size(), 15);
+        Assert.assertEquals(mockRecordDetails.get(1).select("span.value").text(), "Brain Clark Stan");
+        Assert.assertEquals(mockRecordDetails.get(2).select("span.value").text(), "30");
+    }
+
+    @Test
     public void testGenerateResultsPageUrl_BlackHawkCountyIA() {
         MugshotsDotComSite mockIowaSite = new MugshotsDotComSite(new String[]{"Iowa"});
         Assert.assertEquals(mockIowaSite.generateResultsPageUrl("Black Hawk"), "https://mugshots.com/US-Counties/Iowa/Black-Hawk-County-IA");
@@ -137,6 +147,18 @@ public class MugshotsDotComSiteTest {
     }
 
     @Test
+    public void testGetMiscSafeUrlsFromDocVariation_Detail() {
+        String[] schemes = {"http","https"};
+        UrlValidator urlValidator = new UrlValidator(schemes);
+        Map<Object, String> urlMap = mockTexasSite.getMiscSafeUrlsFromDoc(mockDetailDocVariation, 5);
+        for (Map.Entry<Object, String> entry : urlMap.entrySet()) {
+            Assert.assertTrue(urlValidator.isValid(entry.getValue()));
+        }
+        Assert.assertTrue(urlMap.size()>0);
+        Assert.assertTrue(urlMap.size()<=5);
+    }
+
+    @Test
     public void testGetMiscSafeUrlsFromDoc_Results() {
         String[] schemes = {"http","https"};
         UrlValidator urlValidator = new UrlValidator(schemes);
@@ -153,12 +175,15 @@ public class MugshotsDotComSiteTest {
     public void testIsAResultsDoc() {
         Assert.assertTrue(mockTexasSite.isAResultsDoc((mockMainPageDoc)));
         Assert.assertFalse(mockTexasSite.isAResultsDoc((mockDetailDoc)));
+        Assert.assertFalse(mockTexasSite.isAResultsDoc((mockDetailDocVariation)));
     }
 
     @Test
     public void testIsARecordDetailDoc() {
         Assert.assertTrue(mockTexasSite.isARecordDetailDoc(mockDetailDoc));
         Assert.assertTrue(mockArizonaSite.isARecordDetailDoc(mockDetailDoc));
+        Assert.assertTrue(mockTexasSite.isARecordDetailDoc(mockDetailDocVariation));
+        Assert.assertTrue(mockArizonaSite.isARecordDetailDoc(mockDetailDocVariation));
     }
 
     @Test
