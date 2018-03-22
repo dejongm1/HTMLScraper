@@ -272,17 +272,17 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
     @Override
     @SuppressWarnings("deprecation")
     public void matchPropertyToField(ArrestRecord record, Object profileDetail) {
-    	Element profileDetailElement = (Element) profileDetail;
+        Element profileDetailElement = (Element) profileDetail;
         String label = profileDetailElement.select("b").text().toLowerCase();
         Elements charges = profileDetailElement.select(".charges li");
-        if (!charges.isEmpty()) {
-            String[] chargeStrings = new String[charges.size()];
-            for (int c = 0; c < charges.size(); c++) {
-                chargeStrings[c] = charges.get(c).text();
-            }
-            record.setCharges(chargeStrings);
-        } else if (!label.equals("")) {
-            try {
+        try {
+            if (!charges.isEmpty()) {
+                String[] chargeStrings = new String[charges.size()];
+                for (int c = 0; c < charges.size(); c++) {
+                    chargeStrings[c] = charges.get(c).text();
+                }
+                record.setCharges(chargeStrings);
+            } else if (!label.equals("")) {
                 if (label.contains("full name")) {
                     formatName(record, profileDetailElement);
                 } else if (label.contains("birthdate")) { //needs to be first to avoid arrest date getting put here
@@ -319,15 +319,18 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
                 } else if (label.contains("birth")) {
                     record.setBirthPlace(extractValue(profileDetailElement));
                 }
-            } catch (NumberFormatException nfe) {
-                logger.error("Couldn't parse a numeric value from " + profileDetailElement.text());
+
+                //trying it twice as the data seems inconsistent for county
+            } else if (profileDetailElement.select("h3").hasText()) {
+                record.setCounty(profileDetailElement.select("h3").text().replaceAll("(?i)county", "").trim());
+            } else if (profileDetailElement.hasAttr("src") && profileDetailElement.attr("src").contains("/mugs")) {
+                String srcPath = profileDetailElement.attr("src").replaceAll("/mugs/", "");
+                record.setCounty(srcPath.substring(0, srcPath.indexOf('/')));
             }
-        //trying it twice as the data seems inconsistent for county
-        } else if (profileDetailElement.select("h3").hasText()) {
-            record.setCounty(profileDetailElement.select("h3").text().replaceAll("(?i)county", "").trim());
-        } else if (profileDetailElement.hasAttr("src") && profileDetailElement.attr("src").contains("/mugs")) {
-        	String srcPath = profileDetailElement.attr("src").replaceAll("/mugs/", "");
-            record.setCounty(srcPath.substring(0, srcPath.indexOf('/')));
+        } catch (NumberFormatException nfe) {
+            logger.error("Couldn't parse a numeric value from " + profileDetailElement.text());
+        } catch (Exception e) {
+            logger.error("Caught generic exception " + e.getClass().getName() + " while parsing " + profileDetailElement.text());
         }
     }
 

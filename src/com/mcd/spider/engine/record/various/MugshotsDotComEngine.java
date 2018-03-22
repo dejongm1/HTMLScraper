@@ -116,7 +116,8 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
 		for (String county : spiderWeb.getState().getCounties()) {
 	        String firstCountyPageResultsUrl = site.generateResultsPageUrl(county);
 	        Document mainPageDoc = null;
-	        if (spiderWeb.getAttemptCount()<=maxAttempts) {
+	        //split number of records across counties
+	        if (spiderWeb.getAttemptCount()<=maxAttempts && spiderWeb.getRecordsProcessed()<spiderWeb.getMaxNumberOfResults()/spiderWeb.getState().getCounties().size()) {
 		        try {
 		            logger.info("Trying to make initial connection to " + site.getName());
                     mainPageDoc = (Document) initiateConnection(firstCountyPageResultsUrl);
@@ -170,76 +171,8 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
 		finalizeOutput(arrestRecords);
 	}
 
-	@Override
-	public Map<String, String> parseDocForUrls(Object doc) {
-        Map<String,String> recordDetailUrlMap = new HashMap<>();
-        Elements recordDetailElements = site.getRecordElements((Document) doc);
-        for(int e=0;e<recordDetailElements.size();e++) {
-            String url = site.getRecordDetailDocUrl(recordDetailElements.get(e));
-            String id = site.obtainRecordId(url);
-            //only add if we haven't already crawled it
-            if (id != null && !spiderWeb.getCrawledIds().contains(id)) {
-                recordDetailUrlMap.put(id, url);
-            }
-        }
-        return recordDetailUrlMap;
-	}
-	
-	@Override
-	public void matchPropertyToField(ArrestRecord record, Object profileDetail) {
-        Element profileDetailElement = (Element) profileDetail;
-        String label = profileDetailElement.select("span[class='name']").text().toLowerCase();
-        Elements charges = profileDetailElement.select("div[class='value'] > table > tr");
-        if (!charges.isEmpty()) {
-            String[] chargeList = new String[charges.size()];
-            BigDecimal bondAmount = new BigDecimal(0);
-            for (int c = 1; c < charges.size(); c++) {
-                //0 is court case, 1 is charge, 2 is bond amount, 3 is bond type, 4 is paid date
-                chargeList[c] = charges.get(c).child(1).text();
-                try {
-                    bondAmount.add(new BigDecimal(charges.get(c).child(2).text()));
-                } catch (NumberFormatException nfe) {
-                    logger.debug(charges.get(c).child(2).text() + " could not be converted to a dollar value. Record " + record.getId());
-                }
-            }
-            record.setCharges(chargeList);
-            record.setTotalBond(bondAmount.longValue()==0?null:bondAmount.longValue());
-        } else if (!label.equals("")) {
-            try {
-                /*if (label.contains("mugshots.com id")) {
-                    record.setId();
-                } else */if (label.contains("name")) {
-                    formatName(record, profileDetailElement);
-                } else if (label.contains("birth date") || label.contains("birthdate")) { //needs to be first to avoid arrest date getting put here
-                    Date date = new Date(extractValue(profileDetailElement));
-                    record.setDob(date);
-                } else if (label.contains("date booked")) {
-                    formatArrestTime(record, profileDetailElement);
-                } else if (label.contains("age")) {
-                    record.setArrestAge(Integer.parseInt(extractValue(profileDetailElement)));
-                } else if (label.contains("gender")) {
-                    record.setGender(extractValue(profileDetailElement));
-                } else if (label.contains("city")) {
-                    record.setCity(extractValue(profileDetailElement));
-                } else if (label.contains("height")) {
-                    record.setHeight(extractValue(profileDetailElement));
-                } else if (label.contains("weight")) {
-                    record.setWeight(extractValue(profileDetailElement));
-                } else if (label.contains("hair")) {
-                    record.setHairColor(extractValue(profileDetailElement));
-                } else if (label.contains("eye color") || label.contains("eyes")) {
-                    record.setEyeColor(extractValue(profileDetailElement));
-                } else if (label.contains("race")) {
-                    record.setRace(extractValue(profileDetailElement));
-                }
-            } catch (NumberFormatException nfe) {
-                logger.error("Couldn't parse a numeric value from " + profileDetailElement.text());
-            }
-        }
-	}
-
-	@Override
-	public void scrapeRecords(Map<Object, String> recordsDetailsUrlMap) {
+    @Override
+    public void scrapeRecords(Map<Object, String> recordsDetailsUrlMap) {
         RecordOutputUtil recordOutputUtil = recordIOUtil.getOutputter();
         arrestRecords.addAll(spiderWeb.getCrawledRecords().getRecords());
         ArrestRecord arrestRecord;
@@ -271,12 +204,12 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
                         try {
                             spiderWeb.addToRecordsProcessed(1);
                             arrestRecord = populateArrestRecord(profileDetailDoc);
-                                arrestRecords.add(arrestRecord);
-                                //save each record in case of failures mid-crawling
-                                recordOutputUtil.addRecordToMainWorkbook(arrestRecord);
-                                //"remove" record from recordsDetailUrlMap
-                                recordsDetailsUrlMap.replace(k, "CRAWLED" + recordsDetailsUrlMap.get(k));
-                                logger.debug("Record " + spiderWeb.getRecordsProcessed() + " saved");
+                            arrestRecords.add(arrestRecord);
+                            //save each record in case of failures mid-crawling
+                            recordOutputUtil.addRecordToMainWorkbook(arrestRecord);
+                            //"remove" record from recordsDetailUrlMap
+                            recordsDetailsUrlMap.replace(k, "CRAWLED" + recordsDetailsUrlMap.get(k));
+                            logger.debug("Record " + spiderWeb.getRecordsProcessed() + " saved");
                             spiderUtil.sleep(ConnectionUtil.getSleepTime(site), true);//sleep at random interval
                         } catch (Exception e) {
                             logger.error("Generic exception caught while trying to grab arrest record for " + profileDetailDoc.baseUri(), e);
@@ -297,10 +230,25 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
                 previousKey = String.valueOf(k);
             }
         }
-	}
+    }
 
 	@Override
-	public ArrestRecord populateArrestRecord(Object profileDetailObj) {
+	public Map<String, String> parseDocForUrls(Object doc) {
+        Map<String,String> recordDetailUrlMap = new HashMap<>();
+        Elements recordDetailElements = site.getRecordElements((Document) doc);
+        for(int e=0;e<recordDetailElements.size();e++) {
+            String url = site.getRecordDetailDocUrl(recordDetailElements.get(e));
+            String id = site.obtainRecordId(url);
+            //only add if we haven't already crawled it
+            if (id != null && !spiderWeb.getCrawledIds().contains(id)) {
+                recordDetailUrlMap.put(id, url);
+            }
+        }
+        return recordDetailUrlMap;
+	}
+
+    @Override
+    public ArrestRecord populateArrestRecord(Object profileDetailObj) {
         Elements profileDetails = site.getRecordDetailElements((Document) profileDetailObj);
         ArrestRecord record = new ArrestRecord();
         record.setId(site.obtainRecordId(((Node) profileDetailObj).baseUri()));
@@ -309,6 +257,70 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
             logger.debug("\t" + profileDetail.text());
         }
         return record;
+    }
+
+    @Override
+	public void matchPropertyToField(ArrestRecord record, Object profileDetail) {
+        Element profileDetailElement = (Element) profileDetail;
+        String label = profileDetailElement.select("span[class='name']").text().toLowerCase();
+        Elements charges = profileDetailElement.select("div[class='value'] > table > tr");
+        try {
+            if (!charges.isEmpty()) {
+                String[] chargeList = new String[charges.size()];
+                BigDecimal bondAmount = new BigDecimal(0);
+                for (int c = 1; c < charges.size(); c++) {
+                    //different formats of table
+                    if (label!=null && label.toLowerCase().contains("offense")) {
+                        //0 is description, 1 is date convicted, 2 is state, 3 is release date, 4 is details
+                        chargeList[c] = charges.get(c).child(0).text();
+                    } else if (label!=null && label.toLowerCase().contains("charge")) {
+                        //0 is court case, 1 is charge, 2 is bond amount, 3 is bond type, 4 is paid date
+                        chargeList[c] = charges.get(c).child(1).text();
+                        try {
+                            bondAmount.add(new BigDecimal(charges.get(c).child(2).text()));
+                        } catch (NumberFormatException nfe) {
+                            logger.debug(charges.get(c).child(2).text()+" could not be converted to a dollar value. Record "+record.getId());
+                        }
+                    }
+                }
+                record.setCharges(chargeList);
+                record.setTotalBond(bondAmount.longValue()==0?null:bondAmount.longValue());
+            } else if (!label.equals("")) {
+                /*if (label.contains("mugshots.com id")) {
+                    record.setId();
+                } else */if (label.contains("name")) {
+                    formatName(record, profileDetailElement);
+                } else if (label.contains("birth date") || label.contains("birthdate")) {
+                    Date date = new Date(extractValue(profileDetailElement));
+                    record.setDob(date);
+                } else if (label.contains("date booked")) {
+                    formatArrestTime(record, profileDetailElement);
+                } else if (label.contains("age")) {
+                    record.setArrestAge(Integer.parseInt(extractValue(profileDetailElement)));
+                } else if (label.contains("gender")) {
+                    record.setGender(extractValue(profileDetailElement));
+                } else if (label.contains("city")) {
+                    record.setCity(extractValue(profileDetailElement));
+                } else if (label.contains("height")) {
+                    record.setHeight(extractValue(profileDetailElement));
+                } else if (label.contains("weight")) {
+                    record.setWeight(extractValue(profileDetailElement));
+                } else if (label.contains("hair")) {
+                    record.setHairColor(extractValue(profileDetailElement));
+                } else if (label.contains("eye color") || label.contains("eyes")) {
+                    record.setEyeColor(extractValue(profileDetailElement));
+                } else if (label.contains("race")) {
+                    record.setRace(extractValue(profileDetailElement));
+                }
+            } else if (profileDetailElement.id().equals("small-breadcrumbs") && !profileDetailElement.children().isEmpty()) {
+                record.setState(profileDetailElement.child(1).text());
+                record.setCounty(extractCountyName(profileDetailElement.child(2).text()));
+            }
+        } catch (NumberFormatException nfe) {
+            logger.error("Couldn't parse a numeric value from " + profileDetailElement.text());
+        } catch (Exception e) {
+            logger.error("Caught generic exception " + e.getClass().getName() + " while parsing " + profileDetailElement.text());
+        }
 	}
 
     public Map<Integer,Document> compileResultsDocMap(Document mainPageDoc) {
@@ -505,6 +517,10 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
     @Override
     public String extractValue(Element profileDetail) {
         return profileDetail.select("span[class='value']").text().trim();
+    }
+
+    private String extractCountyName(String countyStateString) {
+        return countyStateString.substring(0, countyStateString.indexOf(','));
     }
 
 	@Override

@@ -103,7 +103,7 @@ public class MugshotsDotComSite  implements SiteHTML{
 
     @Override
     public Elements getRecordDetailElements(Document doc) {
-		return doc.select("#item-info > strong > div.p.graybox > div > div.field");
+		return doc.select("#item-info > strong > div.p.graybox > div > div.field, div.box > div#small-breadcrumbs");
     }
 
 	@Override
