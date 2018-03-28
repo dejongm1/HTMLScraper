@@ -1,5 +1,31 @@
 package com.mcd.spider.engine.record.various;
 
+import static com.mcd.spider.entities.record.ArrestRecord.ArrestDateComparator;
+import static com.mcd.spider.entities.record.ArrestRecord.CountyComparator;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+import org.jsoup.Connection;
+import org.jsoup.Connection.Response;
+import org.jsoup.HttpStatusException;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
+import org.jsoup.select.Elements;
+import org.mockito.internal.util.collections.ArrayUtils;
+
 import com.mcd.spider.engine.record.ArrestRecordEngine;
 import com.mcd.spider.entities.io.RecordWorkbook;
 import com.mcd.spider.entities.record.ArrestRecord;
@@ -17,23 +43,6 @@ import com.mcd.spider.util.ConnectionUtil;
 import com.mcd.spider.util.SpiderUtil;
 import com.mcd.spider.util.io.RecordIOUtil;
 import com.mcd.spider.util.io.RecordOutputUtil;
-import org.apache.log4j.Logger;
-import org.jsoup.Connection;
-import org.jsoup.Connection.Response;
-import org.jsoup.HttpStatusException;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
-import org.jsoup.select.Elements;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.*;
-
-import static com.mcd.spider.entities.record.ArrestRecord.ArrestDateComparator;
-import static com.mcd.spider.entities.record.ArrestRecord.CountyComparator;
 
 /**
  *
@@ -462,44 +471,53 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
 
 	@Override
 	public void formatName(ArrestRecord record, Element profileDetail) {
-        String fullNameString = extractValue(profileDetail);
-    	String[] nameParts = fullNameString.split("[\\s,]");
-		//some have commas, others don't
-        if (fullNameString.contains(",")) {
-			record.setLastName(nameParts[0]);
-			record.setFirstName(nameParts[1]);
-			if (nameParts.length>2) {
-				record.setMiddleName(nameParts[2]);
-			}
-			if (nameParts.length>3) {
-				record.setLastName(record.getLastName() + " " + nameParts[3]);
-			}
-        } else {
-			record.setFirstName(nameParts[0]);
-			if (nameParts.length>2) {
-				record.setMiddleName(nameParts[1]);
-				record.setLastName(nameParts[2]);
+    	//sometimes the names will be split
+        String label = profileDetail.select("span[class='name']").text().toLowerCase();
+        if (Arrays.asList("last", "first", "middle", "suffix").parallelStream().anyMatch(label::contains)) {
+        	if (label.contains("first")) { 
+        		record.setFirstName(extractValue(profileDetail)); 
+        	} 
+        	if (label.contains("middle")) { 
+        		record.setMiddleName(extractValue(profileDetail)); 
+        	} 
+        	if (label.contains("last")) { 
+        		record.setLastName(extractValue(profileDetail)); 
+        	} 
+        	if (label.contains("suffix")) { 
+        		record.setLastName(record.getLastName()!=null?record.getLastName() + " " + extractValue(profileDetail):extractValue(profileDetail)); 
+        	} 
+    	} else {
+	        String fullNameString = extractValue(profileDetail);
+	    	String[] nameParts = fullNameString.split("[\\s,]");
+			//some have commas, others don't
+	        if (fullNameString.contains(",")) {
+				record.setLastName(nameParts[0]);
+				record.setFirstName(nameParts[1]);
+				if (nameParts.length>2) {
+					record.setMiddleName(nameParts[2]);
+				}
 				if (nameParts.length>3) {
 					record.setLastName(record.getLastName() + " " + nameParts[3]);
 				}
-			} else {
-				record.setLastName(nameParts[1]);
+	        } else {
+				record.setFirstName(nameParts[0]);
 				if (nameParts.length>2) {
-					record.setLastName(record.getLastName() + " " + nameParts[2]);
+					record.setMiddleName(nameParts[1]);
+					record.setLastName(nameParts[2]);
+					if (nameParts.length>3) {
+						record.setLastName(record.getLastName() + " " + nameParts[3]);
+					}
+				} else {
+					record.setLastName(nameParts[1]);
+					if (nameParts.length>2) {
+						record.setLastName(record.getLastName() + " " + nameParts[2]);
+					}
 				}
-			}
-			
-        }
-        record.setFullName(buildFullName(record));
+				
+	        }
+    	}
 	}
 
-	private String buildFullName(ArrestRecord record) {
-        String fullName = record.getFirstName();
-        fullName += record.getMiddleName()!=null?" " + record.getMiddleName():"";
-        fullName += " " + record.getLastName();
-        return fullName;
-	}
-	
 	@Override
 	public void formatArrestTime(ArrestRecord record, Element profileDetail) {
         String arrestDateTimeString = extractValue(profileDetail);

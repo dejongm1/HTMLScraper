@@ -543,10 +543,6 @@ public class ArrestsDotOrgEngine implements ArrestRecordEngine {
         record.setFirstName(profileDetail.select("span [itemprop=\"givenName\"]").text());
         record.setMiddleName(profileDetail.select("span [itemprop=\"additionalName\"]").text());
         record.setLastName(profileDetail.select("span [itemprop=\"familyName\"]").text());
-        String fullName = record.getFirstName();
-        fullName += record.getMiddleName()!=null?" " + record.getMiddleName():"";
-        fullName += " " + record.getLastName();
-        record.setFullName(fullName);
     }
 
     @Override

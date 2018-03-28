@@ -57,7 +57,12 @@ public class ArrestRecord implements Record, Comparable<ArrestRecord>{
     }
 
 	public String getFullName() {
-		return fullName;
+		if (fullName==null && firstName!=null) {
+	        fullName = firstName;
+	        fullName += middleName!=null && !middleName.equals("")?" " + middleName:"";
+	        fullName += lastName!=null && !lastName.equals("")?" " + lastName:"";
+		}
+        return fullName;
 	}
 	public void setFullName(String fullName) {
 		this.fullName = fullName;

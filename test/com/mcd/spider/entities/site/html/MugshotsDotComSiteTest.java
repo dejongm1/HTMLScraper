@@ -109,17 +109,17 @@ public class MugshotsDotComSiteTest {
     @Test
     public void testGetRecordDetailElements() {
         Elements mockRecordDetails = mockTexasSite.getRecordDetailElements(mockDetailDoc);
-        Assert.assertEquals(mockRecordDetails.size(), 12);
-        Assert.assertEquals(mockRecordDetails.get(1).select("span.value").text(), "Visah,Salim NMN");
-        Assert.assertEquals(mockRecordDetails.get(3).select("span.value").text(), "22");
+        Assert.assertEquals(mockRecordDetails.size(), 13);
+        Assert.assertEquals(mockRecordDetails.get(2).select("span.value").text(), "Visah,Salim NMN");
+        Assert.assertEquals(mockRecordDetails.get(4).select("span.value").text(), "22");
     }
 
     @Test
     public void testGetRecordDetailElementsVariation() {
         Elements mockRecordDetails = mockTexasSite.getRecordDetailElements(mockDetailDocVariation);
-        Assert.assertEquals(mockRecordDetails.size(), 15);
-        Assert.assertEquals(mockRecordDetails.get(1).select("span.value").text(), "Brain Clark Stan");
-        Assert.assertEquals(mockRecordDetails.get(2).select("span.value").text(), "30");
+        Assert.assertEquals(mockRecordDetails.size(), 16);
+        Assert.assertEquals(mockRecordDetails.get(2).select("span.value").text(), "Brain Clark Stan");
+        Assert.assertEquals(mockRecordDetails.get(3).select("span.value").text(), "30");
     }
 
     @Test

@@ -1,26 +1,29 @@
 package com.mcd.spider.engine.record.various;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+
+import org.apache.log4j.Logger;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import com.mcd.spider.entities.record.ArrestRecord;
 import com.mcd.spider.entities.record.Record;
 import com.mcd.spider.entities.record.State;
 import com.mcd.spider.entities.record.filter.RecordFilter.RecordFilterEnum;
 import com.mcd.spider.entities.site.SpiderWeb;
 import com.mcd.spider.entities.site.html.ArrestsDotOrgSite;
+import com.mcd.spider.entities.site.html.MugshotsDotComSite;
 import com.mcd.spider.util.io.RecordIOUtil;
-import org.apache.log4j.Logger;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 
 public class MugshotsDotComEngineTest {
 
@@ -256,24 +259,26 @@ public class MugshotsDotComEngineTest {
     public void testFormatName_Split() {
     	ArrestRecord record = new ArrestRecord();
     	Element profileDetail = new Element("div");
-    	profileDetail.attr("class", "p graybox");
-    	profileDetail.html("<div class=\"fieldvalues\">"
-			    			+ "<div class=\"field\">"
-			    			+ "		<span class=\"name\">Last Name</span>: <span class=\"value\">JONES</span>"
-			    			+ "</div>"
-							+ "<div class=\"field\">"
-							+ "		<span class=\"name\">First Name</span>: <span class=\"value\">ROBERT</span>"
-							+ "</div>"
-							+ "<div class=\"field\">"
-							+ "		<span class=\"name\">Middle Name</span>: <span class=\"value\">JR</span>"
-							+ "</div>"
-							+ "<div class=\"field\">"
-							+ "		<span class=\"name\">Suffix</span>: <span class=\"value\">JR</span>"
-							+ "</div>"
-							+ "</div>");
-		mockEngine.formatName(record, profileDetail);
-		
-		Assert.fail("Test not implemented");
+    	profileDetail.attr("class", "field");
+    	profileDetail.html("<span class=\"name\">Last Name</span>: <span class=\"value\">JONES</span>");
+    	Element profileDetail2 = new Element("div");
+    	profileDetail2.attr("class", "field");
+    	profileDetail2.html("<span class=\"name\">First Name</span>: <span class=\"value\">ROBERT</span>");
+    	Element profileDetail3 = new Element("div");
+    	profileDetail3.attr("class", "field");
+    	profileDetail3.html("<span class=\"name\">Middle Name</span>: <span class=\"value\"></span>");
+    	Element profileDetail4 = new Element("div");
+    	profileDetail4.attr("class", "field");
+    	profileDetail4.html("<span class=\"name\">Suffix</span>: <span class=\"value\">JR</span>");
+    	mockEngine.formatName(record, profileDetail);
+    	mockEngine.formatName(record, profileDetail2);
+    	mockEngine.formatName(record, profileDetail3);
+    	mockEngine.formatName(record, profileDetail4);
+
+		Assert.assertEquals(record.getFullName(), "ROBERT JONES JR");
+		Assert.assertEquals(record.getFirstName(), "ROBERT");
+		Assert.assertEquals(record.getLastName(), "JONES JR");
+		Assert.assertEquals(record.getMiddleName(), "");
     }
     
     @Test

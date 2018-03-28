@@ -100,13 +100,13 @@ public class ArrestsDotOrgSiteTest {
     public void testGetMiscSafeUrlsFromDoc_Detail() {
         String[] schemes = {"http","https"};
         UrlValidator urlValidator = new UrlValidator(schemes);
-        Map<Object, String> urlMap = mockTexasSite.getMiscSafeUrlsFromDoc(mockDetailDoc, 5);
+        Map<Object, String> urlMap = mockTexasSite.getMiscSafeUrlsFromDoc(mockDetailDoc, 15);
         for (Map.Entry<Object, String> entry : urlMap.entrySet()) {
             Assert.assertNull(mockTexasSite.obtainRecordId(entry.getValue()));
             Assert.assertTrue(urlValidator.isValid(entry.getValue()));
         }
-        Assert.assertTrue(urlMap.size()>0);//TODO failed once
-        Assert.assertTrue(urlMap.size()<=5);
+        Assert.assertTrue(urlMap.size()>0);//TODO fails on occasion
+        Assert.assertTrue(urlMap.size()<=15);
     }
 
     @Test
