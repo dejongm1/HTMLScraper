@@ -60,7 +60,7 @@ public class SpiderEngine {
 //			state.addEngine(new DesMoinesRegisterComEngine());
 			state.addEngine(new MugshotsDotComEngine("Alabama"));
 			state.primeStateEngines(spiderWeb);
-			state.setCounties(Arrays.asList("Autauga"));
+			state.setCounties(Arrays.asList("Baldwin"));
 			StateRouter router = new StateRouter(state);
 			router.collectRecords();
 			RecordIOUtil mainIOutil = new RecordIOUtil(state.getName(), new ArrestRecord(), state.getEngines().get(0).getSite());

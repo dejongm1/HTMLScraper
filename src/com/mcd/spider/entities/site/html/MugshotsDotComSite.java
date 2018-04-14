@@ -206,7 +206,7 @@ public class MugshotsDotComSite  implements SiteHTML{
 		
 		if (!nextPageParameters.equals("") && !olderThanRange) {
 			if (currentPageUrl.contains("?")) {
-				return currentPageUrl.substring(currentPageUrl.indexOf('?'))+nextPageParameters;
+				return currentPageUrl.substring(0, currentPageUrl.indexOf('?'))+nextPageParameters;
 			} else {
 				return currentPageUrl+nextPageParameters;
 			}

@@ -1,31 +1,5 @@
 package com.mcd.spider.engine.record.various;
 
-import static com.mcd.spider.entities.record.ArrestRecord.ArrestDateComparator;
-import static com.mcd.spider.entities.record.ArrestRecord.CountyComparator;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.log4j.Logger;
-import org.jsoup.Connection;
-import org.jsoup.Connection.Response;
-import org.jsoup.HttpStatusException;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
-import org.jsoup.select.Elements;
-import org.mockito.internal.util.collections.ArrayUtils;
-
 import com.mcd.spider.engine.record.ArrestRecordEngine;
 import com.mcd.spider.entities.io.RecordWorkbook;
 import com.mcd.spider.entities.record.ArrestRecord;
@@ -43,6 +17,23 @@ import com.mcd.spider.util.ConnectionUtil;
 import com.mcd.spider.util.SpiderUtil;
 import com.mcd.spider.util.io.RecordIOUtil;
 import com.mcd.spider.util.io.RecordOutputUtil;
+import org.apache.log4j.Logger;
+import org.jsoup.Connection;
+import org.jsoup.Connection.Response;
+import org.jsoup.HttpStatusException;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
+import org.jsoup.select.Elements;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.*;
+
+import static com.mcd.spider.entities.record.ArrestRecord.ArrestDateComparator;
+import static com.mcd.spider.entities.record.ArrestRecord.CountyComparator;
 
 /**
  *
@@ -120,12 +111,12 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
 	@Override
 	public void scrapeSite() {
     	arrestRecords = new ArrayList<>();
-	      //TODO loop through for each county? may need to adjust splitting if that's the case
 		int maxAttempts = site.getMaxAttempts();
 		for (String county : spiderWeb.getState().getCounties()) {
 	        String firstCountyPageResultsUrl = site.generateResultsPageUrl(county);
 	        Document mainPageDoc = null;
 	        //split number of records across counties
+            //TODO split based on percentage of records per county by gathering record count in parentheses and giving each a percentage
 	        if (spiderWeb.getAttemptCount()<=maxAttempts && spiderWeb.getRecordsProcessed()<spiderWeb.getMaxNumberOfResults()/spiderWeb.getState().getCounties().size()) {
 		        try {
 		            logger.info("Trying to make initial connection to " + site.getName());
@@ -302,11 +293,11 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
                 } else if (label.contains("birth date") || label.contains("birthdate")) {
                     Date date = new Date(extractValue(profileDetailElement));
                     record.setDob(date);
-                } else if (label.contains("date booked")) {
+                } else if (label.contains("date") && (label.contains("book") || label.contains("arrest"))) {
                     formatArrestTime(record, profileDetailElement);
                 } else if (label.contains("age")) {
                     record.setArrestAge(Integer.parseInt(extractValue(profileDetailElement)));
-                } else if (label.contains("gender")) {
+                } else if (label.contains("gender") || label.contains("sex")) {
                     record.setGender(extractValue(profileDetailElement));
                 } else if (label.contains("city")) {
                     record.setCity(extractValue(profileDetailElement));
@@ -332,33 +323,56 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
         }
 	}
 
-    public Map<Integer,Document> compileResultsDocMap(Document mainPageDoc) {
-		//build docs map by traversing next button to get total pages/records
-    	//TODO should we add misc pages here to make crawling appear random?
-		Integer numberOfPages = 1;
-		Map<Integer,Document> resultsDocMap = new HashMap<>();
-		String currentPageUrl = mainPageDoc.baseUri();
-        resultsDocMap.put(numberOfPages, mainPageDoc);
-        String nextPageUrl = site.getNextResultsPageUrl(mainPageDoc);
-		while (nextPageUrl!=null) {
-			numberOfPages++;
-			Document docToCheck = null;
-			try {
-				Connection.Response response = connectionUtil.retrieveConnectionResponse(nextPageUrl, currentPageUrl, spiderWeb.getSessionCookies(), spiderWeb.getHeaders());
-				docToCheck = response.parse();
-				setCookies(response);
-				resultsDocMap.put(numberOfPages, docToCheck);
-			} catch (FileNotFoundException fnfe) {
-				logger.error("No html doc found for " + nextPageUrl);
-			} catch (IOException e) {
-				spiderWeb.increaseAttemptCount();
-				logger.error("Failed to get a connection to " + nextPageUrl, e);
-			}
-			currentPageUrl = nextPageUrl;
-			nextPageUrl = site.getNextResultsPageUrl(mainPageDoc);
-		}
-        spiderWeb.setNumberOfPages(numberOfPages);
-        return resultsDocMap;
+	@Override
+	public void formatName(ArrestRecord record, Element profileDetail) {
+    	//sometimes the names will be split
+        String label = profileDetail.select("span[class='name']").text().toLowerCase();
+        if (Arrays.asList("last", "first", "middle", "suffix").parallelStream().anyMatch(label::contains)) {
+        	if (label.contains("first")) {
+        		record.setFirstName(extractValue(profileDetail));
+        	}
+        	if (label.contains("middle")) {
+        		record.setMiddleName(extractValue(profileDetail));
+        	}
+        	if (label.contains("last")) {
+        		record.setLastName(extractValue(profileDetail));
+        	}
+        	if (label.contains("suffix")) {
+        		record.setLastName(record.getLastName()!=null?record.getLastName() + " " + extractValue(profileDetail):extractValue(profileDetail));
+        	}
+    	} else {
+	        String fullNameString = extractValue(profileDetail);
+	    	String[] nameParts = fullNameString.split("[\\s,]");
+			//some have commas, others don't
+	        if (fullNameString.contains(",")) {
+				record.setLastName(nameParts[0]);
+				//splitting this way leaves an empty item for the comma
+				record.setFirstName(nameParts[2]);
+				if (nameParts.length>3) {
+					record.setMiddleName(nameParts[3]);
+				}
+				if (nameParts.length>4) {
+					record.setLastName(record.getLastName() + " " + nameParts[4]);
+				}
+	        } else {
+				record.setFirstName(nameParts[0]);
+				if (nameParts.length>2) {
+					record.setMiddleName(nameParts[1]);
+					record.setLastName(nameParts[2]);
+					if (nameParts.length>3) {
+						record.setLastName(record.getLastName() + " " + nameParts[3]);
+					}
+				} else {
+					record.setLastName(nameParts[1]);
+					if (nameParts.length>2) {
+						record.setLastName(record.getLastName() + " " + nameParts[2]);
+					}
+				}
+
+	        }
+    	}
+        String fullNameString = record.getFirstName() + (record.getMiddleName()!=null&&!record.getMiddleName().equals("")?" " + record.getMiddleName() + " ":" ") + record.getLastName();
+        record.setFullName(fullNameString);
 	}
 
 	@Override
@@ -470,66 +484,48 @@ public class MugshotsDotComEngine implements ArrestRecordEngine {
 	}
 
 	@Override
-	public void formatName(ArrestRecord record, Element profileDetail) {
-    	//sometimes the names will be split
-        String label = profileDetail.select("span[class='name']").text().toLowerCase();
-        if (Arrays.asList("last", "first", "middle", "suffix").parallelStream().anyMatch(label::contains)) {
-        	if (label.contains("first")) { 
-        		record.setFirstName(extractValue(profileDetail)); 
-        	} 
-        	if (label.contains("middle")) { 
-        		record.setMiddleName(extractValue(profileDetail)); 
-        	} 
-        	if (label.contains("last")) { 
-        		record.setLastName(extractValue(profileDetail)); 
-        	} 
-        	if (label.contains("suffix")) { 
-        		record.setLastName(record.getLastName()!=null?record.getLastName() + " " + extractValue(profileDetail):extractValue(profileDetail)); 
-        	} 
-    	} else {
-	        String fullNameString = extractValue(profileDetail);
-	    	String[] nameParts = fullNameString.split("[\\s,]");
-			//some have commas, others don't
-	        if (fullNameString.contains(",")) {
-				record.setLastName(nameParts[0]);
-				record.setFirstName(nameParts[1]);
-				if (nameParts.length>2) {
-					record.setMiddleName(nameParts[2]);
-				}
-				if (nameParts.length>3) {
-					record.setLastName(record.getLastName() + " " + nameParts[3]);
-				}
-	        } else {
-				record.setFirstName(nameParts[0]);
-				if (nameParts.length>2) {
-					record.setMiddleName(nameParts[1]);
-					record.setLastName(nameParts[2]);
-					if (nameParts.length>3) {
-						record.setLastName(record.getLastName() + " " + nameParts[3]);
-					}
-				} else {
-					record.setLastName(nameParts[1]);
-					if (nameParts.length>2) {
-						record.setLastName(record.getLastName() + " " + nameParts[2]);
-					}
-				}
-				
-	        }
-    	}
-	}
-
-	@Override
 	public void formatArrestTime(ArrestRecord record, Element profileDetail) {
         String arrestDateTimeString = extractValue(profileDetail);
         Calendar arrestDate = Calendar.getInstance();
         Date date = new Date(arrestDateTimeString.substring(0, arrestDateTimeString.indexOf(" at ")).trim());
         arrestDate.setTime(date);
 
-        String arrestTimeText = arrestDateTimeString.substring(arrestDateTimeString.indexOf(" at ")+4).trim();
+        String arrestTimeText = arrestDateTimeString.substring(arrestDateTimeString.indexOf(" at ")+4).trim().toUpperCase();
         arrestDate.set(Calendar.HOUR, Integer.parseInt(arrestTimeText.substring(0, arrestTimeText.indexOf(':'))));
-        arrestDate.set(Calendar.MINUTE, Integer.parseInt(arrestTimeText.substring(arrestTimeText.indexOf(':')+1, arrestTimeText.indexOf(' '))));
-//        arrestDate.set(Calendar.AM_PM, arrestTimeText.substring(arrestTimeText.indexOf(' ')+1)=="AM"?Calendar.AM:Calendar.PM);
+        arrestDate.set(Calendar.MINUTE, Integer.parseInt(arrestTimeText.substring(arrestTimeText.indexOf(':')+1, arrestTimeText.indexOf(':')+3)));
+        if (arrestDateTimeString.contains("M")) {
+            arrestDate.set(Calendar.AM_PM, arrestTimeText.substring(arrestTimeText.indexOf('M')-1).equals("AM")?Calendar.AM:Calendar.PM);
+        }
         record.setArrestDate(arrestDate);
+	}
+
+    public Map<Integer,Document> compileResultsDocMap(Document mainPageDoc) {
+		//build docs map by traversing next button to get total pages/records
+    	//TODO should we add misc pages here to make crawling appear random?
+		Integer numberOfPages = 1;
+		Map<Integer,Document> resultsDocMap = new HashMap<>();
+		String currentPageUrl = mainPageDoc.baseUri();
+        resultsDocMap.put(numberOfPages, mainPageDoc);
+        String nextPageUrl = site.getNextResultsPageUrl(mainPageDoc);
+		while (nextPageUrl!=null) {
+    			numberOfPages++;
+			Document docToCheck = null;
+			try {
+				Connection.Response response = connectionUtil.retrieveConnectionResponse(nextPageUrl, currentPageUrl, spiderWeb.getSessionCookies(), spiderWeb.getHeaders());
+				docToCheck = response.parse();
+				setCookies(response);
+				resultsDocMap.put(numberOfPages, docToCheck);
+			} catch (FileNotFoundException fnfe) {
+				logger.error("No html doc found for " + nextPageUrl);
+			} catch (IOException e) {
+				spiderWeb.increaseAttemptCount();
+				logger.error("Failed to get a connection to " + nextPageUrl, e);
+			}
+			currentPageUrl = nextPageUrl;
+			nextPageUrl = site.getNextResultsPageUrl(docToCheck);
+		}
+        spiderWeb.setNumberOfPages(numberOfPages);
+        return resultsDocMap;
 	}
 
     @Override

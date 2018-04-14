@@ -1,5 +1,38 @@
 Future feature list
 
+Must do's before shippable product
+            MDC - remove/ignore records older than certain date like paging?
+            MDC - add address to Record
+            MDC - divy max record count by county based on number of records  to evenly distribute
+            MDC - Records only kept in ALL tab if name is found, sync with county tabs
+            MDC - Splitting should ignore case on county name
+            MDC - Get name from ID if not listed
+            MDC - Name splitting doesn't work for FIRST LAST SUFFIX.
+            MDC - Name splitting doesn't work for LAST, FIRST MIDDLE SUFFIX.
+            MDC - tests for arrestTime with AM/PM
+            MDC - extracting charges
+
+            New tab for incomplete records?
+
+            ADO - tests for fullName
+
+            Exclude incomplete records?
+
+            debug "cell b356 already contains data"
+
+            if processing and workbook no longer found, start a new one
+
+            add uncrawled logic and max attempts to DSMReg
+
+            installation scripts
+
+            bin files for execution
+
+            ADO- misc url method grabbing detail pages from comments - need to exclude or error is thrown when crawling
+
+            RTT
+            MDC - stop looping through other counties if maxAttempts reached
+
 SE Audit
 	inbound links count and list (hashmap<url, count>)
 		- logic for relative vs absolute links

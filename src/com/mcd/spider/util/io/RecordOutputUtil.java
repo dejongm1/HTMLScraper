@@ -131,7 +131,9 @@ public class RecordOutputUtil {
             try {
             	newWorkbook = Workbook.createWorkbook(new File(workbookName));
             } catch (IOException ioe) {
-            	logger.error("Output workbook might be open. You have 15 seconds to close it.");
+                logger.error("*************************************************************************************************");
+                logger.error("****************OUTPUT WORKBOOK MIGHT BE OPEN. YOU HAVE 15 SECONDS TO CLOSE IT.******************");
+                logger.error("*************************************************************************************************");
                 try {
                     Thread.sleep(15000);
                     newWorkbook = Workbook.createWorkbook(new File(workbookName));
