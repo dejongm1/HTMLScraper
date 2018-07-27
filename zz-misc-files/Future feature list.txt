@@ -33,6 +33,7 @@ Must do's before shippable product
             RTT
             MDC - stop looping through other counties if maxAttempts reached
 
+
 SE Audit
 	inbound links count and list (hashmap<url, count>)
 		- logic for relative vs absolute links
@@ -52,6 +53,7 @@ SE Audit
 	obtaining actual sitemap
 		-getting truncated?? or only offline??
     Measure performance with JMeter/Selenium
+
 
 
 deployment package
