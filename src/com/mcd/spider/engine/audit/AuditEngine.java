@@ -41,8 +41,8 @@ public class AuditEngine {
 		//empty string checks because parameters are optional
 		try {
 			startTime = System.currentTimeMillis();
-			spider = new AuditSpider(auditParams.getUrlToAudit(), spiderUtil.offline());
-			spider.setSleepTime(auditParams.getSleepTime()==0?spiderUtil.offline()?0:2000:auditParams.getSleepTime()*1000);
+			spider = new AuditSpider(auditParams.getUrlToAudit(), SpiderUtil.offline());
+			spider.setSleepTime(auditParams.getSleepTime()==0?SpiderUtil.offline()?0:2000:auditParams.getSleepTime()*1000);
 			timeSpent+=System.currentTimeMillis()-startTime;
             sleep(spider.getSleepTime());
 		} catch (IOException ioe) {
