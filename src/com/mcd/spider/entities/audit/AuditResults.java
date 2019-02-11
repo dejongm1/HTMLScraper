@@ -44,10 +44,10 @@ public class AuditResults {
 				sb.append(auditResult.prettyPrint());
 			}
 		}
-		sb.append("\n\t\t200 results: " + twoHundredResponses.size());
-        sb.append("\n\t\t300 results: " + threeHundredResponses.size());
-        sb.append("\n\t\t400 results: " + fourHundredResponses.size());
-        sb.append("\n\t\t500 results: " + fiveHundredResponses.size());
+		sb.append("\n\t\t200 series results: " + twoHundredResponses.size());
+        sb.append("\n\t\t300 series results: " + threeHundredResponses.size());
+        sb.append("\n\t\t400 series results: " + fourHundredResponses.size());
+        sb.append("\n\t\t500 series results: " + fiveHundredResponses.size());
         //TODO Add total links counts and search results counts here
         if (getGeneratedSiteMap()!=null) {
             sb.append("\n\n\t\tSitemap generated and located at " + this.generatedSiteMap.getAbsolutePath());

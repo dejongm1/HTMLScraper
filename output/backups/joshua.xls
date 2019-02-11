@@ -1,0 +1,173 @@
+<?xml version="1.0"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:x="urn:schemas-microsoft-com:office:excel"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:html="http://www.w3.org/TR/REC-html40">
+ <DocumentProperties xmlns="urn:schemas-microsoft-com:office:office">
+  <Author>Amanda</Author>
+  <LastAuthor>Amanda</LastAuthor>
+  <Created>2017-09-01T18:33:10Z</Created>
+  <LastSaved>2017-09-01T18:33:11Z</LastSaved>
+  <Version>12.00</Version>
+ </DocumentProperties>
+ <OfficeDocumentSettings xmlns="urn:schemas-microsoft-com:office:office">
+  <ReadOnlyRecommended/>
+ </OfficeDocumentSettings>
+ <ExcelWorkbook xmlns="urn:schemas-microsoft-com:office:excel">
+  <WindowHeight>10560</WindowHeight>
+  <WindowWidth>20115</WindowWidth>
+  <WindowTopX>240</WindowTopX>
+  <WindowTopY>45</WindowTopY>
+  <CreateBackup/>
+  <ProtectStructure>False</ProtectStructure>
+  <ProtectWindows>False</ProtectWindows>
+ </ExcelWorkbook>
+ <Styles>
+  <Style ss:ID="Default" ss:Name="Normal">
+   <Alignment ss:Vertical="Bottom"/>
+   <Borders/>
+   <Font ss:FontName="Calibri" x:Family="Swiss" ss:Size="11" ss:Color="#000000"/>
+   <Interior/>
+   <NumberFormat/>
+   <Protection/>
+  </Style>
+  <Style ss:ID="s62">
+   <NumberFormat ss:Format="Short Date"/>
+  </Style>
+ </Styles>
+ <Worksheet ss:Name="Sheet1">
+  <Table ss:ExpandedColumnCount="4" ss:ExpandedRowCount="16" x:FullColumns="1"
+   x:FullRows="1" ss:DefaultRowHeight="15">
+   <Row>
+    <Cell><Data ss:Type="String">FirstName</Data></Cell>
+    <Cell><Data ss:Type="String">LastName</Data></Cell>
+    <Cell><Data ss:Type="String">DOB</Data></Cell>
+    <Cell><Data ss:Type="String">ArrestDate</Data></Cell>
+   </Row>
+   <Row ss:Index="3">
+    <Cell><Data ss:Type="String">Terry</Data></Cell>
+    <Cell><Data ss:Type="String">Holderman</Data></Cell>
+    <Cell ss:StyleID="s62"><Data ss:Type="DateTime">1957-03-10T00:00:00.000</Data></Cell>
+    <Cell ss:StyleID="s62"><Data ss:Type="DateTime">2017-09-01T00:00:00.000</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">Stephen</Data></Cell>
+    <Cell><Data ss:Type="String">Baldwin</Data></Cell>
+    <Cell ss:StyleID="s62"><Data ss:Type="DateTime">1990-07-31T00:00:00.000</Data></Cell>
+    <Cell ss:StyleID="s62"><Data ss:Type="DateTime">2017-09-01T00:00:00.000</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">Joshua</Data></Cell>
+    <Cell><Data ss:Type="String">Finkbeiner</Data></Cell>
+    <Cell ss:StyleID="s62"><Data ss:Type="DateTime">1990-07-24T00:00:00.000</Data></Cell>
+    <Cell ss:StyleID="s62"><Data ss:Type="DateTime">2017-09-01T00:00:00.000</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">Douglas</Data></Cell>
+    <Cell><Data ss:Type="String">Dainty</Data></Cell>
+    <Cell ss:StyleID="s62"><Data ss:Type="DateTime">1986-03-30T00:00:00.000</Data></Cell>
+    <Cell ss:StyleID="s62"><Data ss:Type="DateTime">2017-09-01T00:00:00.000</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">Theodore</Data></Cell>
+    <Cell><Data ss:Type="String">Eliot</Data></Cell>
+    <Cell ss:StyleID="s62"><Data ss:Type="DateTime">1954-03-18T00:00:00.000</Data></Cell>
+    <Cell ss:StyleID="s62"><Data ss:Type="DateTime">2017-08-31T00:00:00.000</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">Isaac</Data></Cell>
+    <Cell><Data ss:Type="String">Smith</Data></Cell>
+    <Cell ss:StyleID="s62"><Data ss:Type="DateTime">1975-09-03T00:00:00.000</Data></Cell>
+    <Cell ss:StyleID="s62"><Data ss:Type="DateTime">2017-08-31T00:00:00.000</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">Tammy</Data></Cell>
+    <Cell><Data ss:Type="String">Meyer</Data></Cell>
+    <Cell ss:StyleID="s62"><Data ss:Type="DateTime">1966-10-25T00:00:00.000</Data></Cell>
+    <Cell ss:StyleID="s62"><Data ss:Type="DateTime">2017-08-31T00:00:00.000</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">Richard</Data></Cell>
+    <Cell><Data ss:Type="String">Hill</Data></Cell>
+    <Cell ss:StyleID="s62"><Data ss:Type="DateTime">1969-09-29T00:00:00.000</Data></Cell>
+    <Cell ss:StyleID="s62"><Data ss:Type="DateTime">2017-08-31T00:00:00.000</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">Debra</Data></Cell>
+    <Cell><Data ss:Type="String">Chastain</Data></Cell>
+    <Cell ss:StyleID="s62"><Data ss:Type="DateTime">1964-05-30T00:00:00.000</Data></Cell>
+    <Cell ss:StyleID="s62"><Data ss:Type="DateTime">2017-08-31T00:00:00.000</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">Kendall</Data></Cell>
+    <Cell><Data ss:Type="String">Johnson</Data></Cell>
+    <Cell ss:StyleID="s62"><Data ss:Type="DateTime">1980-08-14T00:00:00.000</Data></Cell>
+    <Cell ss:StyleID="s62"><Data ss:Type="DateTime">2017-08-31T00:00:00.000</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">Michael</Data></Cell>
+    <Cell><Data ss:Type="String">Kinchion</Data></Cell>
+    <Cell ss:StyleID="s62"><Data ss:Type="DateTime">1979-10-19T00:00:00.000</Data></Cell>
+    <Cell ss:StyleID="s62"><Data ss:Type="DateTime">2017-08-31T00:00:00.000</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">Grover</Data></Cell>
+    <Cell><Data ss:Type="String">Merritt</Data></Cell>
+    <Cell ss:StyleID="s62"><Data ss:Type="DateTime">1958-06-13T00:00:00.000</Data></Cell>
+    <Cell ss:StyleID="s62"><Data ss:Type="DateTime">2017-08-31T00:00:00.000</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">Catherine</Data></Cell>
+    <Cell><Data ss:Type="String">Vallejo</Data></Cell>
+    <Cell ss:StyleID="s62"><Data ss:Type="DateTime">1982-04-21T00:00:00.000</Data></Cell>
+    <Cell ss:StyleID="s62"><Data ss:Type="DateTime">2017-08-31T00:00:00.000</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">Robert</Data></Cell>
+    <Cell><Data ss:Type="String">Perkey</Data></Cell>
+    <Cell ss:StyleID="s62"><Data ss:Type="DateTime">1964-01-30T00:00:00.000</Data></Cell>
+    <Cell ss:StyleID="s62"><Data ss:Type="DateTime">2017-08-30T00:00:00.000</Data></Cell>
+   </Row>
+  </Table>
+  <WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel">
+   <PageSetup>
+    <Header x:Margin="0.3"/>
+    <Footer x:Margin="0.3"/>
+    <PageMargins x:Bottom="0.75" x:Left="0.7" x:Right="0.7" x:Top="0.75"/>
+   </PageSetup>
+   <Selected/>
+   <ProtectObjects>False</ProtectObjects>
+   <ProtectScenarios>False</ProtectScenarios>
+  </WorksheetOptions>
+ </Worksheet>
+ <Worksheet ss:Name="Sheet2">
+  <Table ss:ExpandedColumnCount="1" ss:ExpandedRowCount="1" x:FullColumns="1"
+   x:FullRows="1" ss:DefaultRowHeight="15">
+  </Table>
+  <WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel">
+   <PageSetup>
+    <Header x:Margin="0.3"/>
+    <Footer x:Margin="0.3"/>
+    <PageMargins x:Bottom="0.75" x:Left="0.7" x:Right="0.7" x:Top="0.75"/>
+   </PageSetup>
+   <ProtectObjects>False</ProtectObjects>
+   <ProtectScenarios>False</ProtectScenarios>
+  </WorksheetOptions>
+ </Worksheet>
+ <Worksheet ss:Name="Sheet3">
+  <Table ss:ExpandedColumnCount="1" ss:ExpandedRowCount="1" x:FullColumns="1"
+   x:FullRows="1" ss:DefaultRowHeight="15">
+  </Table>
+  <WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel">
+   <PageSetup>
+    <Header x:Margin="0.3"/>
+    <Footer x:Margin="0.3"/>
+    <PageMargins x:Bottom="0.75" x:Left="0.7" x:Right="0.7" x:Top="0.75"/>
+   </PageSetup>
+   <ProtectObjects>False</ProtectObjects>
+   <ProtectScenarios>False</ProtectScenarios>
+  </WorksheetOptions>
+ </Worksheet>
+</Workbook>
